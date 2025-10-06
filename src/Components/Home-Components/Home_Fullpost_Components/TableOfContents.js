@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import DOMPurify from 'dompurify';
 import { FaList } from 'react-icons/fa';
 
 const TOCContainer = styled.div`

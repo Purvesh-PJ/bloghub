@@ -2,7 +2,7 @@ import { Container, Article, Title, Content } from './DisplayPost-Style';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getSinglePost } from '../../../services/postApi';
-import ReactHtmlParser from 'react-html-parser';
+import parse from 'html-react-parser';
 
 const DisplayPost = () => {
 
@@ -11,9 +11,6 @@ const DisplayPost = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // console.log(_id);
-    // console.log(singlePost);
-
     useEffect(() => {
         ;( async () => {
             setLoading(true);
@@ -21,7 +18,6 @@ const DisplayPost = () => {
             try {
                 const response = await getSinglePost(_id);
                 setSinglePost(response.data.data);
-                // console.log(response);
             } 
             catch (error) {
                 if(error.response){
@@ -52,7 +48,7 @@ const DisplayPost = () => {
                 !loading && !error && (
                     <Article>
                       <Title>{singlePost?.title}</Title>
-                      <Content>{ReactHtmlParser(singlePost?.content)}</Content>
+                      <Content>{parse(singlePost?.content || '')}</Content>
                     </Article>
                 )
             }

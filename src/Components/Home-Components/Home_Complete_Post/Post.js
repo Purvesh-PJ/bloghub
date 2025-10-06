@@ -29,7 +29,7 @@ import {
   PrintButton,
   FloatingShareContainer
 } from './Post-Style';
-import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
+import parse from 'html-react-parser';
 import PostAuthor from '../Home_Fullpost_Components/PostAuthor';
 import { useState, useEffect } from 'react';
 import { FaFacebook, FaTwitter, FaLinkedin, FaLink, FaRegClock, FaCalendarAlt, FaPrint, FaShareAlt } from 'react-icons/fa';
@@ -135,22 +135,17 @@ export const Post = ({ blogs }) => {
     // Mock tags - in a real app these would come from the blog data
     const tags = blogs?.tags || ['Technology', 'Programming', 'Web Development'];
 
-    // Custom transform function for ReactHtmlParser
-    const transformContent = (node, index) => {
-        // If it's an empty paragraph with non-breaking spaces or just whitespace
-        if (node.type === 'tag' && node.name === 'p') {
-            // Check if it only contains whitespace or &nbsp;
-            const hasOnlyWhitespace = node.children?.every(child => 
-                (child.type === 'text' && child.data.trim() === '') || 
+    // Replacement function for html-react-parser to clean empty paragraphs
+    const replaceEmptyParagraphs = (domNode) => {
+        if (domNode.type === 'tag' && domNode.name === 'p') {
+            const hasOnlyWhitespace = (domNode.children || []).every(child =>
+                (child.type === 'text' && child.data.trim() === '') ||
                 (child.type === 'tag' && child.name === 'br')
             );
-            
             if (hasOnlyWhitespace) {
-                return <p key={index} className="spacer-paragraph"></p>;
+                return <p className="spacer-paragraph" />;
             }
         }
-        
-        // Return null to use the default transform
         return undefined;
     };
     
@@ -163,8 +158,8 @@ export const Post = ({ blogs }) => {
                 <ArticleBody>
                     <Header>
                         <TitleAndTopicWrapper>
-                            <Title> 
-                                {ReactHtmlParser(blogs?.title)} 
+                            <Title>
+                                {parse(blogs?.title || '')}
                             </Title>
                             <PostMeta>
                                 <MetaItem>
@@ -227,7 +222,7 @@ export const Post = ({ blogs }) => {
                     </TextOptionsWrapper>
 
                     <Content className="Content" style={{ fontSize: `${fontSize}px` }}>
-                        {ReactHtmlParser(sanitizedContent, { transform: transformContent })}
+                        {parse(sanitizedContent || '', { replace: replaceEmptyParagraphs })}
                     </Content>
 
                     <TagsContainer>

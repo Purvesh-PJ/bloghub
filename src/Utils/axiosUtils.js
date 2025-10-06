@@ -1,5 +1,3 @@
-// import { refreshAccessToken } from "./refreshTokenUtil";
-// import { RefreshToken } from "../services/authApi";
 import { refreshAccessToken } from "./refreshTokenUtil";
 
 export const retryRefreshWithRefreshToken = async (error, api) => {
@@ -12,8 +10,7 @@ export const retryRefreshWithRefreshToken = async (error, api) => {
         const result = await refreshAccessToken(refreshToken);
 
         if (result.success && result.accessToken) {
-            // const { accessToken } = result.data.data;
-            const { accessToken } = result.accessToken;
+            const accessToken = result.accessToken;
             originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
             return api(originalRequest);
         } else {

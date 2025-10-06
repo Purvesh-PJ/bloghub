@@ -1,7 +1,7 @@
 // Configuration settings for the blogging platform
 
 // API URLs
-const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 
 // Default user avatar
 const defaultAvatar = '/assets/images/default-avatar.png';

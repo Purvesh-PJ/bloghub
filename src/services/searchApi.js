@@ -1,15 +1,14 @@
-import axios from 'axios';
-const API_SEARCH_URL = 'http://localhost:4000/search';
+import { API_SEARCH_URL } from './config';
+import { createApiInstance } from './axiosInstance';
+
+const api = createApiInstance(API_SEARCH_URL);
 
 export const getSearchResults = async (query) => {
-    // console.log(query);
     try {
-        const response = await axios.get(`${API_SEARCH_URL}/${query}`);
-        // console.log(response);
+        const q = encodeURIComponent(query);
+        const response = await api.get(`/${q}`);
         return response;
-    } 
-    catch (error) {
-        // console.log(error);
+    } catch (error) {
         throw error;
     }
 };

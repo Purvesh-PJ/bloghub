@@ -7,6 +7,8 @@ import { ToggleProvider } from './context/ToggleContext';
 import { ThemeProvider } from 'styled-components';
 import theme from './styles/theme';
 import GlobalStyle from './styles/theme/GlobalStyle';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // import './index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -14,6 +16,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <ThemeProvider theme={theme}>
     <GlobalStyle />
+    <ToastContainer />
     <BrowserRouter>
       <StrictMode>
         <ToggleProvider>
@@ -25,4 +28,3 @@ root.render(
     </BrowserRouter>
   </ThemeProvider>
 );
-
