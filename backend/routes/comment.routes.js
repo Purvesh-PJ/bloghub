@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const CommentControllers = require('../controllers/comment.controllers');
+const CommentController = require('../controllers/comment.controllers');
 
 // Comment Routes
-router.get('/', CommentControllers.getComments);
-router.post('/', CommentControllers.postComments);
-router.post('/replies', CommentControllers.postUserReplyComments);
+router.get('/', CommentController.getComments);
+router.post('/', CommentController.postComments);
+router.post('/replies', CommentController.postUserReplyComments);
 // Add more routes as needed
 
 module.exports = router;

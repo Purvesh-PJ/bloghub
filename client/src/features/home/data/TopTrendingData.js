@@ -1,0 +1,71 @@
+const TopTrendingData = [
+  {
+    id: 1,
+    rank: '1',
+    title: 'Artificial intelligence is that way that change the world in todays life',
+    views: '1k',
+    likes: '2k',
+    shares: '3k',
+    comments: '4k',
+    authorImage:
+      'https://plus.unsplash.com/premium_photo-1692340973718-6be7d39e8881?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDJ8cVBZc0R6dkpPWWN8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
+    authorName: 'GeekyQuantum',
+    postDate: '10-12-21',
+  },
+  {
+    id: 2,
+    rank: '2',
+    title: 'Future of human life is depend on artificial intelligence that the way to live',
+    views: '5k',
+    likes: '6k',
+    shares: '7k',
+    comments: '8k',
+    authorImage:
+      'https://plus.unsplash.com/premium_photo-1692340973718-6be7d39e8881?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDJ8cVBZc0R6dkpPWWN8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
+    authorName: 'GeekyQuantum',
+    postDate: '11-13-21',
+  },
+  {
+    id: 3,
+    rank: '3',
+    title: 'Artificial world that everything controlled by naturte ai learn from real world nature',
+    views: '9k',
+    likes: '10k',
+    shares: '11k',
+    comments: '12k',
+    authorImage:
+      'https://plus.unsplash.com/premium_photo-1692340973718-6be7d39e8881?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDJ8cVBZc0R6dkpPWWN8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
+    authorName: 'Quantum',
+    postDate: '12-13-22',
+  },
+  {
+    id: 4,
+    rank: '4',
+    title:
+      'Artificial intelligence the way better to make human life better also solved human problems',
+    views: '13k',
+    likes: '14k',
+    shares: '15k',
+    comments: '16k',
+    authorImage:
+      'https://plus.unsplash.com/premium_photo-1692340973718-6be7d39e8881?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDJ8cVBZc0R6dkpPWWN8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
+    authorName: 'QuantumGeeky',
+    postDate: '13-14-20',
+  },
+  {
+    id: 5,
+    rank: '5',
+    title:
+      'Human intelligence used to train an artificial intelligence using machine learning algorithms',
+    views: '17k',
+    likes: '18k',
+    shares: '19k',
+    comments: '20k',
+    authorImage:
+      'https://plus.unsplash.com/premium_photo-1692340973718-6be7d39e8881?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDJ8cVBZc0R6dkpPWWN8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
+    authorName: 'GeekyQuantum201',
+    postDate: '15-16-23',
+  },
+];
+
+export default TopTrendingData;

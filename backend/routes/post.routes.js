@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const PostControllers = require('../controllers/post.controller');
+const PostControllers = require('../controllers/post.controllers');
 const AuthUser = require('../middlewares/authenticateUser');
 
 router.get('/', PostControllers.getBlogs);

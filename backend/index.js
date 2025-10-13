@@ -2,8 +2,9 @@ const express = require('express');
 require('dotenv').config();
 const app = express();
 
-// IMPORT DATABASES
-require('./databases/My_Blog_Database');
+// IMPORT DATABASE CONNECTION
+const { connectDB } = require('./config/db');
+connectDB();
 
 const errorHandler = require('./middlewares/errorHandler'); // Import error handling middleware
 
