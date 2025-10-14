@@ -153,6 +153,10 @@ const Page_Home = () => {
               <SectionDivider />
 
               <Newsletter />
+
+              
+
+          
             </MainContent>
           </Container>
         </>

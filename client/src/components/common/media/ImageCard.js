@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Card, Box, Text, Flex, Button } from '../../ui/primitives';
+import { Card, Box, Text, Flex, Button, AspectRatio } from '../../ui/primitives';
 import styled from 'styled-components';
 
 const ImageContainer = styled(Box)`
@@ -62,7 +62,8 @@ const ContentContainer = styled(Box)`
  * @param {string} props.description - Card description
  * @param {React.ReactNode} props.content - Additional content
  * @param {React.ReactNode} props.actions - Action buttons
- * @param {string} props.imageHeight - Image height
+ * @param {string} props.aspectRatio - Image aspect ratio (e.g., '16/9', 'square', 'card')
+ * @param {string} props.imageHeight - Image height (deprecated - use aspectRatio instead)
  * @param {string} props.objectFit - Image object-fit property
  * @param {boolean} props.interactive - Whether image is interactive
  * @param {boolean} props.showOverlay - Whether to show overlay on hover
@@ -79,7 +80,8 @@ export const ImageCard = ({
   description,
   content,
   actions,
-  imageHeight = '200px',
+  aspectRatio = 'card',
+  imageHeight = '200px', // Deprecated - use aspectRatio instead
   objectFit = 'cover',
   interactive = false,
   showOverlay = false,
@@ -123,33 +125,65 @@ export const ImageCard = ({
       {...cardProps}
     >
       {/* Image or Placeholder */}
-      <ImageContainer>
+      <AspectRatio
+        $ratio={aspectRatio}
+        $objectFit={objectFit}
+        onClick={handleImageClick}
+        style={{ 
+          cursor: onImageClick ? 'pointer' : 'default',
+          borderRadius: '12px 12px 0 0',
+          overflow: 'hidden'
+        }}
+      >
         {shouldShowImage ? (
           <>
-            <Image
+            <img
               src={src}
               alt={alt}
-              $height={imageHeight}
-              $objectFit={objectFit}
-              $interactive={interactive || !!onImageClick}
-              onClick={handleImageClick}
               onLoad={handleImageLoad}
               onError={handleImageError}
-              style={{ cursor: onImageClick ? 'pointer' : 'default' }}
+              style={{ 
+                width: '100%',
+                height: '100%',
+                objectFit,
+                transition: interactive ? 'transform 0.3s ease' : 'none',
+                transform: interactive && isHovered ? 'scale(1.05)' : 'scale(1)'
+              }}
             />
-
+            
             {/* Overlay */}
             {shouldShowOverlay && (
-              <ImageOverlay $visible={shouldShowOverlay}>{overlayContent}</ImageOverlay>
+              <Box
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 100%)',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  padding: '16px',
+                  opacity: shouldShowOverlay ? 1 : 0,
+                  transition: 'opacity 0.3s ease',
+                }}
+              >
+                {overlayContent}
+              </Box>
             )}
           </>
         ) : (
-          <PlaceholderContainer
-            $height={imageHeight}
+          <Flex
             $align="center"
             $justify="center"
             $direction="column"
             $gap={2}
+            style={{
+              background: 'var(--background-subtle)',
+              color: 'var(--text-muted)',
+              width: '100%',
+              height: '100%'
+            }}
           >
             <Text $fontSize="2xl">{placeholder}</Text>
             {imageError && (
@@ -157,9 +191,9 @@ export const ImageCard = ({
                 Failed to load image
               </Text>
             )}
-          </PlaceholderContainer>
+          </Flex>
         )}
-      </ImageContainer>
+      </AspectRatio>
 
       {/* Content */}
       {(title || description || content || actions) && (
@@ -205,7 +239,8 @@ ImageCard.propTypes = {
   description: PropTypes.string,
   content: PropTypes.node,
   actions: PropTypes.node,
-  imageHeight: PropTypes.string,
+  aspectRatio: PropTypes.string,
+  imageHeight: PropTypes.string, // Deprecated
   objectFit: PropTypes.oneOf(['cover', 'contain', 'fill', 'none', 'scale-down']),
   interactive: PropTypes.bool,
   showOverlay: PropTypes.bool,

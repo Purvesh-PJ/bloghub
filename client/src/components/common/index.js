@@ -18,3 +18,9 @@ export * from './media';
 
 // Feedback Components
 export * from './feedback';
+
+// Interactive Components (Complex/Stateful)
+export * from './interactive';
+
+// Accessibility Utilities
+export * from './accessibility';

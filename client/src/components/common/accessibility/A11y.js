@@ -8,3 +8,5 @@ export const VisuallyHidden = styled.span`
   clip: rect(1px, 1px, 1px, 1px);
   white-space: nowrap;
 `;
+
+export default VisuallyHidden;
