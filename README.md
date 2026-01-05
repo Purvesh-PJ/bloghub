@@ -1,164 +1,203 @@
-# 📝 Blogging Platform
+# BlogHub
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![MERN Stack](https://img.shields.io/badge/stack-MERN-red.svg)
-![Status](https://img.shields.io/badge/status-in%20development-yellow.svg)
+A full-stack blogging platform built with the MERN stack. Create, publish, and discover blog posts with a clean, enterprise-grade interface.
 
-A modern MERN stack blogging platform that allows users to create, share, and discover blog posts and articles. Share your knowledge and experiences with the world through this intuitive platform.
+## Tech Stack
 
-## 📋 Table of Contents
-- [📝 Blogging Platform](#-blogging-platform)
-  - [📋 Table of Contents](#-table-of-contents)
-  - [🔍 Overview](#-overview)
-  - [✨ Features](#-features)
-  - [🚀 Installation](#-installation)
-    - [Prerequisites](#prerequisites)
-    - [Steps](#steps)
-  - [💻 Development](#-development)
-    - [Running the Application](#running-the-application)
-    - [Development Workflow](#development-workflow)
-  - [🤝 Contributing](#-contributing)
-  - [📊 Project Status](#-project-status)
-    - [✅ Completed](#-completed)
-    - [🔄 In Progress](#-in-progress)
-    - [📝 Todo](#-todo)
-    - [⚠️ Known Issues](#️-known-issues)
-  - [📄 License](#-license)
+**Backend:**
+- Node.js + Express.js
+- MongoDB + Mongoose
+- JWT Authentication
+- Express Validator
 
-## 🔍 Overview
+**Frontend:**
+- React 19 + Vite
+- Radix UI Themes
+- React Query (TanStack)
+- Zustand (State Management)
+- React Router v7
+- Lucide Icons
+- React Quill (Rich Text Editor)
 
-This blogging platform is built using the MERN stack (MongoDB, Express.js, React.js, Node.js) and provides a seamless experience for content creators and readers alike. Users can create accounts, publish blog posts, and interact with content from other users.
+## Features
 
-## ✨ Features
+- User authentication (signup, signin, JWT refresh tokens)
+- Create, edit, and delete blog posts
+- Rich text editor with formatting options
+- Categories and post organization
+- Comments and replies
+- Like/unlike posts
+- User profiles with follow/unfollow
+- Search functionality
+- User analytics dashboard
+- Admin panel for content management
+- Responsive design
 
-- 🔐 User authentication and authorization
-- ✍️ Create, edit, and delete blog posts
-- 📝 Rich text editor for content creation
-- 💬 Comment system for reader engagement
-- 📱 Responsive design for all devices
-- 👤 User profiles and dashboards
+## Prerequisites
 
-## 🚀 Installation
-
-### Prerequisites
-Ensure you have the following software installed:
-- Node.js (v14 or later)
+- Node.js v18+
+- MongoDB (local or Atlas)
 - npm or yarn
-- MongoDB (v4 or later)
 
-### Steps
+## Installation
 
-1. **Clone the repository:**
-```sh
+### 1. Clone the repository
+
+```bash
 git clone https://github.com/your-username/blogging_platform.git
-```
-
-2. **Navigate to the project directory:**
-```sh
 cd blogging_platform
 ```
 
-3. **Install server dependencies:**
-```sh
-cd server
+### 2. Setup Backend
+
+```bash
+cd backend
 npm install
-# or
-yarn install
 ```
 
-4. **Install client dependencies:**
-```sh
+Create `.env` file in the `backend` directory:
+
+```env
+DB_URI=mongodb://127.0.0.1:27017/bloghub
+PORT=4000
+JWT_SECRET=your_secure_jwt_secret_key_here
+```
+
+### 3. Setup Frontend
+
+```bash
 cd ../client
 npm install
-# or
-yarn install
 ```
 
-5. **Set up environment variables:**
-Create a `.env` file in the `server` directory and add the following:
-```sh
-MONGO_URI=your_mongodb_connection_string
-PORT=5000
-JWT_SECRET=your_jwt_secret
-```
-   
-## 💻 Development
+Create `.env` file in the `client` directory:
 
-### Running the Application
-
-1. **Start the server:**
-```sh
-cd server
-npm start
-# or
-yarn start
+```env
+VITE_API_URL=http://localhost:4000
 ```
 
-2. **Start the client:**
-In a new terminal window, navigate to the client directory:
-```sh
+### 4. Seed Database (Optional)
+
+Populate the database with sample data:
+
+```bash
+cd backend
+npm run seed
+```
+
+This creates:
+- 10 sample users with posts
+- Categories, comments, likes, and followers
+- Test accounts:
+  - Regular user: `john@example.com` / `password123`
+  - Admin user: `admin@bloghub.com` / `admin123`
+
+## Running the Application
+
+### Start Backend
+
+```bash
+cd backend
+npm run dev
+```
+
+Backend runs on `http://localhost:4000`
+
+### Start Frontend
+
+```bash
 cd client
-npm start
-# or
-yarn start
+npm run dev
 ```
 
-3. **Open the application:**
-Open your web browser and go to:
+Frontend runs on `http://localhost:3000`
+
+## Project Structure
+
 ```
-http://localhost:3000
+blogging_platform/
+├── backend/
+│   ├── config/          # Database configuration
+│   ├── controllers/     # Route controllers
+│   ├── middlewares/     # Auth and validation middleware
+│   ├── models/          # Mongoose models
+│   ├── routes/          # API routes
+│   ├── services/        # Business logic
+│   ├── index.js         # Entry point
+│   └── seed.js          # Database seeder
+│
+├── client/
+│   ├── src/
+│   │   ├── components/  # Reusable components
+│   │   ├── pages/       # Page components
+│   │   ├── services/    # API service functions
+│   │   ├── store/       # Zustand store
+│   │   ├── styles/      # Global styles
+│   │   ├── config/      # Axios configuration
+│   │   ├── App.jsx      # Main app component
+│   │   └── main.jsx     # Entry point
+│   └── index.html
+│
+└── README.md
 ```
 
-### Development Workflow
+## API Endpoints
 
-- 🖥️ Make changes in the `client/src` directory for frontend development
-- 🔧 Make changes in the `server` directory for backend development
-- 📊 Use version control (e.g., git) to manage your code changes
+### Authentication
+- `POST /auth/signup` - Register new user
+- `POST /auth/signin` - Login user
+- `POST /auth/refreshToken` - Refresh access token
 
-## 🤝 Contributing
+### Posts
+- `GET /posts` - Get all posts
+- `GET /posts/:id` - Get single post
+- `POST /posts` - Create post (auth required)
+- `PUT /posts/:id` - Update post (auth required)
+- `DELETE /posts/:id` - Delete post (auth required)
 
-We welcome contributions! To contribute, follow these steps:
+### Users
+- `GET /users/getUser` - Get current user
+- `PUT /users/setUser` - Update user profile
+- `GET /users/getUserPosts` - Get user's posts
+- `POST /users/followUser` - Follow a user
+- `POST /users/unfollowUser` - Unfollow a user
 
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature-branch`)
-3. Make your changes
-4. Commit your changes (`git commit -m 'Add new feature'`)
-5. Push to the branch (`git push origin feature-branch`)
-6. Open a pull request
+### Categories
+- `GET /categories` - Get all categories
+- `POST /categories` - Create category (admin)
+- `POST /categories/attachCategories` - Attach categories to post
 
-> [!IMPORTANT]
-> Please adhere to the following guidelines:
-> - Follow the existing code style
-> - Write clear commit messages
-> - Test your changes thoroughly
-> - Document new features or changes
+### Comments
+- `POST /comments` - Create comment
+- `POST /comments/replies` - Reply to comment
 
-## 📊 Project Status
+### Likes
+- `POST /likes` - Like a post
+- `DELETE /likes/:postId` - Unlike a post
 
-### ✅ Completed
-- Basic authentication system
-- Blog post creation and management
-- User profiles
+### Search
+- `GET /search/:query` - Search posts
 
-### 🔄 In Progress
-- User/Admin UI optimization
+## Scripts
 
-### 📝 Todo
-- Lobby UI: Research and develop new user interface
-- Performance optimizations
-- Enhanced mobile responsiveness
+### Backend
+```bash
+npm start       # Start production server
+npm run dev     # Start development server with nodemon
+npm run seed    # Seed database with sample data
+npm run lint    # Run ESLint
+npm run format  # Format code with Prettier
+```
 
-### ⚠️ Known Issues 
-- `axiosInstance` and `authApi` getting referenceError when created an instance of axios in authApi (not yet resolved)
+### Frontend
+```bash
+npm run dev     # Start development server
+npm run build   # Build for production
+npm run preview # Preview production build
+npm run lint    # Run ESLint
+npm run format  # Format code with Prettier
+```
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/Purvesh-PJ/web_developement/blob/main/MERN/blogging_platform/LICENSE) file for details.
-
----
-
-<div align="center">
-  <sub>Built with ❤️ by Your Team</sub>
-</div>
-
+MIT
