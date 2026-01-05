@@ -44,7 +44,7 @@ A full-stack blogging platform built with the MERN stack. Create, publish, and d
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/blogging_platform.git
+git clone https://github.com/Purvesh-PJ/blogging_platform.git
 cd blogging_platform
 ```
 
