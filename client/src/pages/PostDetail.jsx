@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Avatar } from '@radix-ui/themes';
 import { Heart, MessageCircle, Share2, Pencil, Trash2 } from 'lucide-react';
+import { Avatar } from '../components/common/Avatar';
 import { formatDistanceToNow, format } from 'date-fns';
 import styled from 'styled-components';
 import toast from 'react-hot-toast';
@@ -544,10 +544,8 @@ export function PostDetail() {
       <MetaRow>
         <AuthorInfo>
           <Avatar
-            size="2"
+            size="md"
             fallback={post.user?.username?.[0]?.toUpperCase() || 'U'}
-            radius="full"
-            color="gray"
           />
           <AuthorDetails>
             <AuthorName>{post.user?.username || 'Anonymous'}</AuthorName>
@@ -630,10 +628,8 @@ export function PostDetail() {
             <Card key={cmt._id}>
               <CommentItem>
                 <Avatar
-                  size="1"
+                  size="sm"
                   fallback={cmt.user?.username?.[0]?.toUpperCase() || 'U'}
-                  radius="full"
-                  color="gray"
                 />
                 <CommentContent>
                   <CommentHeader>
@@ -683,12 +679,10 @@ export function PostDetail() {
                       {cmt.replies.map((reply) => (
                         <ReplyItem key={reply._id}>
                           <Avatar
-                            size="1"
+                            size="sm"
                             fallback={
                               reply.user?.username?.[0]?.toUpperCase() || 'U'
                             }
-                            radius="full"
-                            color="gray"
                           />
                           <ReplyContent>
                             <ReplyHeader>
