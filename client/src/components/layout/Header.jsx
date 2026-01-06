@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { DropdownMenu, Avatar } from '@radix-ui/themes';
 import { Search, Plus, User, LogOut, Settings, LayoutDashboard, FileText, BarChart3 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { useAuthStore } from '../../store/authStore';
 import { ThemeToggle } from '../common/ThemeToggle';
@@ -49,7 +48,6 @@ const Logo = styled(Link)`
 const SearchForm = styled.form`
   display: flex;
   align-items: center;
-  gap: 0;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     display: none;
@@ -153,20 +151,45 @@ const SecondaryButton = styled(Button)`
 `;
 
 const AvatarButton = styled.button`
-  padding: 4px;
-  background: transparent;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: ${({ theme }) => theme.colors.bgTertiary};
   border: none;
-  border-radius: ${({ theme }) => theme.radii.full};
+  border-radius: 50%;
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textSecondary};
   
   &:hover {
-    background: ${({ theme }) => theme.colors.bgHover};
+    background: ${({ theme }) => theme.colors.bgActive};
   }
 `;
 
+const DropdownWrapper = styled.div`
+  position: relative;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: ${({ theme }) => theme.colors.cardBg};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+  z-index: ${({ theme }) => theme.zIndices.dropdown};
+  overflow: hidden;
+`;
+
 const DropdownHeader = styled.div`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const UserName = styled.div`
@@ -181,16 +204,72 @@ const UserEmail = styled.div`
   margin-top: 2px;
 `;
 
+const DropdownItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px ${({ theme }) => theme.spacing.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  transition: background ${({ theme }) => theme.transitions.fast};
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgHover};
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+  
+  svg { width: 14px; height: 14px; color: ${({ theme }) => theme.colors.textMuted}; }
+`;
+
+const DropdownButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px ${({ theme }) => theme.spacing.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.error};
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background ${({ theme }) => theme.transitions.fast};
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgHover};
+  }
+  
+  svg { width: 14px; height: 14px; }
+`;
+
+const DropdownDivider = styled.div`
+  height: 1px;
+  background: ${({ theme }) => theme.colors.border};
+`;
+
 const HideMobile = styled.span`
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     display: none;
   }
 `;
 
+
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const { isAuthenticated, user, logout, isAdmin } = useAuthStore();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -202,7 +281,12 @@ export function Header() {
 
   const handleLogout = () => {
     logout();
+    setIsDropdownOpen(false);
     navigate('/');
+  };
+
+  const handleDropdownItemClick = () => {
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -237,61 +321,46 @@ export function Header() {
                 <HideMobile>Write</HideMobile>
               </PrimaryButton>
 
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger>
-                  <AvatarButton>
-                    <Avatar
-                      size="2"
-                      fallback={user?.username?.[0]?.toUpperCase() || 'U'}
-                      radius="full"
-                      color="gray"
-                    />
-                  </AvatarButton>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Content align="end" sideOffset={8}>
-                  <DropdownHeader>
-                    <UserName>{user?.username}</UserName>
-                    <UserEmail>{user?.email}</UserEmail>
-                  </DropdownHeader>
-                  <DropdownMenu.Separator />
-                  
-                  {isAdmin() && (
-                    <>
-                      <DropdownMenu.Item asChild>
-                        <Link to="/admin">
-                          <LayoutDashboard size={14} /> Admin
-                        </Link>
-                      </DropdownMenu.Item>
-                      <DropdownMenu.Separator />
-                    </>
-                  )}
-                  
-                  <DropdownMenu.Item asChild>
-                    <Link to="/profile">
-                      <User size={14} /> Profile
-                    </Link>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item asChild>
-                    <Link to="/my-posts">
-                      <FileText size={14} /> My Posts
-                    </Link>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item asChild>
-                    <Link to="/analytics">
-                      <BarChart3 size={14} /> Analytics
-                    </Link>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item asChild>
-                    <Link to="/settings">
-                      <Settings size={14} /> Settings
-                    </Link>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Separator />
-                  <DropdownMenu.Item color="red" onClick={handleLogout}>
-                    <LogOut size={14} /> Sign Out
-                  </DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu.Root>
+              <DropdownWrapper ref={dropdownRef}>
+                <AvatarButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                  {user?.username?.[0]?.toUpperCase() || 'U'}
+                </AvatarButton>
+                
+                {isDropdownOpen && (
+                  <DropdownMenu>
+                    <DropdownHeader>
+                      <UserName>{user?.username}</UserName>
+                      <UserEmail>{user?.email}</UserEmail>
+                    </DropdownHeader>
+                    
+                    {isAdmin() && (
+                      <>
+                        <DropdownItem to="/admin" onClick={handleDropdownItemClick}>
+                          <LayoutDashboard /> Admin
+                        </DropdownItem>
+                        <DropdownDivider />
+                      </>
+                    )}
+                    
+                    <DropdownItem to="/profile" onClick={handleDropdownItemClick}>
+                      <User /> Profile
+                    </DropdownItem>
+                    <DropdownItem to="/my-posts" onClick={handleDropdownItemClick}>
+                      <FileText /> My Posts
+                    </DropdownItem>
+                    <DropdownItem to="/analytics" onClick={handleDropdownItemClick}>
+                      <BarChart3 /> Analytics
+                    </DropdownItem>
+                    <DropdownItem to="/settings" onClick={handleDropdownItemClick}>
+                      <Settings /> Settings
+                    </DropdownItem>
+                    <DropdownDivider />
+                    <DropdownButton onClick={handleLogout}>
+                      <LogOut /> Sign Out
+                    </DropdownButton>
+                  </DropdownMenu>
+                )}
+              </DropdownWrapper>
             </>
           ) : (
             <>
