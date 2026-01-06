@@ -1,25 +1,338 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import {
-  Box,
-  Container,
-  Flex,
-  Heading,
-  Text,
-  TextField,
-  Button,
-  Select,
-  Badge,
-  Card,
-  Separator,
-} from '@radix-ui/themes';
-import { Image, Eye } from 'lucide-react';
+import { Image, Eye, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
+import styled from 'styled-components';
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
 import { RichTextEditor } from '../components/common/RichTextEditor';
 import { Loading } from '../components/common/Loading';
+
+const PageWrapper = styled.div`
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
+`;
+
+const ContentLayout = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xl};
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: column;
+  }
+`;
+
+const MainEditor = styled.div`
+  flex: 1;
+`;
+
+const Sidebar = styled.div`
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    width: 100%;
+  }
+`;
+
+const Card = styled.div`
+  background: ${({ theme }) => theme.colors.cardBg};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.card};
+  padding: ${({ theme }) => theme.spacing.lg};
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const CardTitle = styled.h2`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+const ToggleButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgHover};
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+  
+  svg { width: 14px; height: 14px; }
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const Label = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: 8px;
+  
+  svg { width: 14px; height: 14px; }
+`;
+
+const SmallLabel = styled.label`
+  display: block;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-bottom: 6px;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 10px 12px;
+  background: ${({ theme }) => theme.colors.inputBg};
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.inputPlaceholder};
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 10px 32px 10px 12px;
+  background: ${({ theme }) => theme.colors.inputBg};
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+  }
+`;
+
+const ImagePreview = styled.div`
+  margin-top: 8px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    max-height: 120px;
+    object-fit: cover;
+  }
+`;
+
+const WordCount = styled.span`
+  display: block;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 8px;
+`;
+
+const Divider = styled.hr`
+  border: none;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  margin: ${({ theme }) => theme.spacing.md} 0;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const PrimaryButton = styled.button`
+  width: 100%;
+  padding: 10px 16px;
+  background: ${({ theme }) => theme.colors.buttonPrimaryBg};
+  color: ${({ theme }) => theme.colors.buttonPrimaryText};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.buttonPrimaryHover};
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const SecondaryButton = styled.button`
+  width: 100%;
+  padding: 10px 16px;
+  background: ${({ theme }) => theme.colors.buttonSecondaryBg};
+  color: ${({ theme }) => theme.colors.buttonSecondaryText};
+  border: 1px solid ${({ theme }) => theme.colors.buttonSecondaryBorder};
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.buttonSecondaryHover};
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const GhostButton = styled.button`
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgHover};
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+`;
+
+const SidebarTitle = styled.h3`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+`;
+
+const CategoriesWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+const CategoryBadge = styled.button`
+  padding: 4px 10px;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  border-radius: ${({ theme }) => theme.radii.full};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  border: none;
+  
+  ${({ $selected, theme }) => $selected ? `
+    background: ${theme.colors.badgeActiveBg};
+    color: ${theme.colors.badgeActiveText};
+  ` : `
+    background: ${theme.colors.badgeBg};
+    color: ${theme.colors.badgeText};
+    
+    &:hover {
+      background: ${theme.colors.bgActive};
+    }
+  `}
+`;
+
+const InfoText = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-bottom: 4px;
+`;
+
+const PreviewContent = styled.div`
+  h1, h2, h3 {
+    color: ${({ theme }) => theme.colors.textPrimary};
+    margin-bottom: ${({ theme }) => theme.spacing.md};
+  }
+  
+  p {
+    color: ${({ theme }) => theme.colors.textSecondary};
+    line-height: ${({ theme }) => theme.lineHeights.relaxed};
+    margin-bottom: ${({ theme }) => theme.spacing.md};
+  }
+`;
+
+const PreviewTitle = styled.h1`
+  font-size: ${({ theme }) => theme.fontSizes['2xl']};
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const PreviewImage = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.md};
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    max-height: 250px;
+    object-fit: cover;
+  }
+`;
+
+const EditorWrapper = styled.div`
+  .ql-container {
+    min-height: 300px;
+    font-size: ${({ theme }) => theme.fontSizes.md};
+  }
+  
+  .ql-editor {
+    min-height: 300px;
+  }
+  
+  .ql-toolbar {
+    border-radius: ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md} 0 0;
+    border-color: ${({ theme }) => theme.colors.inputBorder};
+    background: ${({ theme }) => theme.colors.bgSecondary};
+  }
+  
+  .ql-container {
+    border-radius: 0 0 ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md};
+    border-color: ${({ theme }) => theme.colors.inputBorder};
+  }
+`;
+
 
 export function WritePost() {
   const { id } = useParams();
@@ -160,186 +473,140 @@ export function WritePost() {
   const wordCount = content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length;
 
   return (
-    <Container size="3" py="5">
-      <Flex gap="5" direction={{ initial: 'column', md: 'row' }}>
-        {/* Main Editor */}
-        <Box style={{ flex: 1 }}>
+    <PageWrapper>
+      <ContentLayout>
+        <MainEditor>
           <Card>
-            <Box p="4">
-              <Flex direction="column" gap="4">
-                <Flex justify="between" align="center">
-                  <Heading size="4">{isEditing ? 'Edit Post' : 'New Post'}</Heading>
-                  <Button variant="ghost" size="1" onClick={() => setShowPreview(!showPreview)}>
-                    <Eye size={14} /> {showPreview ? 'Edit' : 'Preview'}
-                  </Button>
-                </Flex>
+            <CardHeader>
+              <CardTitle>{isEditing ? 'Edit Post' : 'New Post'}</CardTitle>
+              <ToggleButton onClick={() => setShowPreview(!showPreview)}>
+                {showPreview ? <><Pencil /> Edit</> : <><Eye /> Preview</>}
+              </ToggleButton>
+            </CardHeader>
 
-                {showPreview ? (
-                  <Box>
-                    <Heading size="5" mb="3">{title || 'Untitled'}</Heading>
-                    {imageURL && (
-                      <Box mb="3" style={{ borderRadius: '6px', overflow: 'hidden' }}>
-                        <img src={imageURL} alt="Cover" style={{ width: '100%', maxHeight: '250px', objectFit: 'cover' }} />
-                      </Box>
-                    )}
-                    <Box 
-                      className="post-content"
-                      dangerouslySetInnerHTML={{ __html: content || '<p>No content</p>' }} 
-                    />
-                  </Box>
-                ) : (
-                  <>
-                    <Box>
-                      <Text as="label" size="2" weight="medium" style={{ display: 'block', marginBottom: '6px' }}>
-                        Title
-                      </Text>
-                      <TextField.Root
-                        size="2"
-                        placeholder="Post title"
-                        value={title}
-                        onChange={handleTitleChange}
-                      />
-                    </Box>
-
-                    <Box>
-                      <Text as="label" size="2" weight="medium" style={{ display: 'block', marginBottom: '6px' }}>
-                        <Flex align="center" gap="1">
-                          <Image size={12} /> Cover Image URL
-                        </Flex>
-                      </Text>
-                      <TextField.Root
-                        size="2"
-                        placeholder="https://..."
-                        value={imageURL}
-                        onChange={(e) => setImageURL(e.target.value)}
-                      />
-                      {imageURL && (
-                        <Box mt="2" style={{ borderRadius: '4px', overflow: 'hidden' }}>
-                          <img 
-                            src={imageURL} 
-                            alt="Preview" 
-                            style={{ width: '100%', maxHeight: '120px', objectFit: 'cover' }}
-                            onError={(e) => e.target.style.display = 'none'}
-                          />
-                        </Box>
-                      )}
-                    </Box>
-
-                    <Box>
-                      <Text as="label" size="2" weight="medium" style={{ display: 'block', marginBottom: '6px' }}>
-                        Content
-                      </Text>
-                      <RichTextEditor value={content} onChange={setContent} />
-                      <Text size="1" color="gray" mt="1">{wordCount} words</Text>
-                    </Box>
-                  </>
+            {showPreview ? (
+              <PreviewContent>
+                <PreviewTitle>{title || 'Untitled'}</PreviewTitle>
+                {imageURL && (
+                  <PreviewImage>
+                    <img src={imageURL} alt="Cover" />
+                  </PreviewImage>
                 )}
-              </Flex>
-            </Box>
-          </Card>
-        </Box>
+                <div 
+                  className="post-content"
+                  dangerouslySetInnerHTML={{ __html: content || '<p>No content</p>' }} 
+                />
+              </PreviewContent>
+            ) : (
+              <>
+                <FormGroup>
+                  <Label>Title</Label>
+                  <Input
+                    type="text"
+                    placeholder="Post title"
+                    value={title}
+                    onChange={handleTitleChange}
+                  />
+                </FormGroup>
 
-        {/* Sidebar */}
-        <Box style={{ width: '280px', flexShrink: 0 }}>
-          <Flex direction="column" gap="4">
-            {/* Publish */}
-            <Card>
-              <Box p="3">
-                <Flex direction="column" gap="3">
-                  <Text size="2" weight="medium">Publish</Text>
-                  
-                  <Box>
-                    <Text as="label" size="1" color="gray" style={{ display: 'block', marginBottom: '4px' }}>
-                      Status
-                    </Text>
-                    <Select.Root value={visibility} onValueChange={setVisibility}>
-                      <Select.Trigger style={{ width: '100%' }} />
-                      <Select.Content>
-                        <Select.Item value="draft">Draft</Select.Item>
-                        <Select.Item value="private">Private</Select.Item>
-                        <Select.Item value="public">Public</Select.Item>
-                      </Select.Content>
-                    </Select.Root>
-                  </Box>
-
-                  <Box>
-                    <Text as="label" size="1" color="gray" style={{ display: 'block', marginBottom: '4px' }}>
-                      URL Slug
-                    </Text>
-                    <TextField.Root
-                      size="2"
-                      placeholder="post-slug"
-                      value={slug}
-                      onChange={(e) => setSlug(e.target.value)}
-                    />
-                  </Box>
-
-                  <Separator size="4" />
-
-                  <Flex direction="column" gap="2">
-                    <Button size="2" onClick={(e) => handleSubmit(e, 'public')} disabled={isPending}>
-                      {isPending ? 'Saving...' : isEditing ? 'Update' : 'Publish'}
-                    </Button>
-                    <Button variant="soft" size="2" onClick={(e) => handleSubmit(e, 'draft')} disabled={isPending}>
-                      Save Draft
-                    </Button>
-                    <Button variant="ghost" size="2" onClick={() => navigate(-1)}>
-                      Cancel
-                    </Button>
-                  </Flex>
-                </Flex>
-              </Box>
-            </Card>
-
-            {/* Categories */}
-            <Card>
-              <Box p="3">
-                <Flex direction="column" gap="2">
-                  <Text size="2" weight="medium">Categories</Text>
-                  {categories.length === 0 ? (
-                    <Text size="1" color="gray">No categories available</Text>
-                  ) : (
-                    <Flex gap="1" wrap="wrap">
-                      {categories.map((cat) => (
-                        <Badge
-                          key={cat._id}
-                          variant={selectedCategories.includes(cat.name) ? 'solid' : 'soft'}
-                          color="gray"
-                          size="1"
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => toggleCategory(cat.name)}
-                        >
-                          {cat.name}
-                        </Badge>
-                      ))}
-                    </Flex>
+                <FormGroup>
+                  <Label><Image /> Cover Image URL</Label>
+                  <Input
+                    type="text"
+                    placeholder="https://..."
+                    value={imageURL}
+                    onChange={(e) => setImageURL(e.target.value)}
+                  />
+                  {imageURL && (
+                    <ImagePreview>
+                      <img 
+                        src={imageURL} 
+                        alt="Preview" 
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    </ImagePreview>
                   )}
-                </Flex>
-              </Box>
-            </Card>
+                </FormGroup>
 
-            {/* Post Info */}
-            {isEditing && existingPost?.data && (
-              <Card>
-                <Box p="3">
-                  <Flex direction="column" gap="1">
-                    <Text size="2" weight="medium">Info</Text>
-                    <Text size="1" color="gray">
-                      Created: {new Date(existingPost.data.createdAt).toLocaleDateString()}
-                    </Text>
-                    <Text size="1" color="gray">
-                      Likes: {existingPost.data.likes?.length || 0}
-                    </Text>
-                    <Text size="1" color="gray">
-                      Comments: {existingPost.data.comments?.length || 0}
-                    </Text>
-                  </Flex>
-                </Box>
-              </Card>
+                <FormGroup>
+                  <Label>Content</Label>
+                  <EditorWrapper>
+                    <RichTextEditor value={content} onChange={setContent} />
+                  </EditorWrapper>
+                  <WordCount>{wordCount} words</WordCount>
+                </FormGroup>
+              </>
             )}
-          </Flex>
-        </Box>
-      </Flex>
-    </Container>
+          </Card>
+        </MainEditor>
+
+        <Sidebar>
+          <Card>
+            <SidebarTitle>Publish</SidebarTitle>
+            
+            <FormGroup>
+              <SmallLabel>Status</SmallLabel>
+              <Select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
+                <option value="draft">Draft</option>
+                <option value="private">Private</option>
+                <option value="public">Public</option>
+              </Select>
+            </FormGroup>
+
+            <FormGroup>
+              <SmallLabel>URL Slug</SmallLabel>
+              <Input
+                type="text"
+                placeholder="post-slug"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+              />
+            </FormGroup>
+
+            <Divider />
+
+            <ButtonGroup>
+              <PrimaryButton onClick={(e) => handleSubmit(e, 'public')} disabled={isPending}>
+                {isPending ? 'Saving...' : isEditing ? 'Update' : 'Publish'}
+              </PrimaryButton>
+              <SecondaryButton onClick={(e) => handleSubmit(e, 'draft')} disabled={isPending}>
+                Save Draft
+              </SecondaryButton>
+              <GhostButton onClick={() => navigate(-1)}>
+                Cancel
+              </GhostButton>
+            </ButtonGroup>
+          </Card>
+
+          <Card>
+            <SidebarTitle>Categories</SidebarTitle>
+            {categories.length === 0 ? (
+              <InfoText>No categories available</InfoText>
+            ) : (
+              <CategoriesWrapper>
+                {categories.map((cat) => (
+                  <CategoryBadge
+                    key={cat._id}
+                    $selected={selectedCategories.includes(cat.name)}
+                    onClick={() => toggleCategory(cat.name)}
+                  >
+                    {cat.name}
+                  </CategoryBadge>
+                ))}
+              </CategoriesWrapper>
+            )}
+          </Card>
+
+          {isEditing && existingPost?.data && (
+            <Card>
+              <SidebarTitle>Info</SidebarTitle>
+              <InfoText>Created: {new Date(existingPost.data.createdAt).toLocaleDateString()}</InfoText>
+              <InfoText>Likes: {existingPost.data.likes?.length || 0}</InfoText>
+              <InfoText>Comments: {existingPost.data.comments?.length || 0}</InfoText>
+            </Card>
+          )}
+        </Sidebar>
+      </ContentLayout>
+    </PageWrapper>
   );
 }
