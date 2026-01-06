@@ -1,68 +1,153 @@
 import { Link } from 'react-router-dom';
-import { Box, Container, Flex, Text, Separator } from '@radix-ui/themes';
+import styled from 'styled-components';
+
+const FooterWrapper = styled.footer`
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  background-color: ${({ theme }) => theme.colors.bgPrimary};
+  margin-top: auto;
+  transition: background-color ${({ theme }) => theme.transitions.normal},
+              border-color ${({ theme }) => theme.transitions.normal};
+`;
+
+const FooterContent = styled.div`
+  max-width: ${({ theme }) => theme.layout.maxContentWidth};
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};
+`;
+
+const FooterTop = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.sm}) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+`;
+
+const BrandSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const BrandName = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.xl};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.accent};
+`;
+
+const BrandTagline = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const LinksContainer = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xxl};
+`;
+
+const LinkGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const LinkGroupTitle = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+const FooterLink = styled(Link)`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textMuted};
+  transition: color ${({ theme }) => theme.transitions.fast};
+  
+  &:hover {
+    color: ${({ theme }) => theme.colors.textLink};
+  }
+`;
+
+const Divider = styled.hr`
+  border: none;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  margin: ${({ theme }) => theme.spacing.lg} 0;
+`;
+
+const FooterBottom = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+  
+  @media (min-width: ${({ theme }) => theme.breakpoints.sm}) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+`;
+
+const Copyright = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const LegalLinks = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const LegalLink = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textMuted};
+  cursor: pointer;
+  transition: color ${({ theme }) => theme.transitions.fast};
+  
+  &:hover {
+    color: ${({ theme }) => theme.colors.textLink};
+  }
+`;
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <Box
-      style={{
-        borderTop: '1px solid var(--gray-5)',
-        backgroundColor: 'var(--gray-1)',
-        marginTop: 'auto',
-      }}
-    >
-      <Container size="4" py="6">
-        <Flex direction={{ initial: 'column', sm: 'row' }} justify="between" align="center" gap="4">
-          <Flex direction="column" gap="2">
-            <Text size="4" weight="bold" style={{ color: 'var(--accent-9)' }}>
-              BlogHub
-            </Text>
-            <Text size="1" color="gray">
-              Share your stories with the world
-            </Text>
-          </Flex>
+    <FooterWrapper>
+      <FooterContent>
+        <FooterTop>
+          <BrandSection>
+            <BrandName>BlogHub</BrandName>
+            <BrandTagline>Share your stories with the world</BrandTagline>
+          </BrandSection>
 
-          <Flex gap="6">
-            <Flex direction="column" gap="2">
-              <Text size="2" weight="medium">Platform</Text>
-              <Link to="/">
-                <Text size="1" color="gray">Home</Text>
-              </Link>
-              <Link to="/search">
-                <Text size="1" color="gray">Explore</Text>
-              </Link>
-              <Link to="/write">
-                <Text size="1" color="gray">Write</Text>
-              </Link>
-            </Flex>
-            <Flex direction="column" gap="2">
-              <Text size="2" weight="medium">Account</Text>
-              <Link to="/profile">
-                <Text size="1" color="gray">Profile</Text>
-              </Link>
-              <Link to="/settings">
-                <Text size="1" color="gray">Settings</Text>
-              </Link>
-              <Link to="/my-posts">
-                <Text size="1" color="gray">My Posts</Text>
-              </Link>
-            </Flex>
-          </Flex>
-        </Flex>
+          <LinksContainer>
+            <LinkGroup>
+              <LinkGroupTitle>Platform</LinkGroupTitle>
+              <FooterLink to="/">Home</FooterLink>
+              <FooterLink to="/search">Explore</FooterLink>
+              <FooterLink to="/write">Write</FooterLink>
+            </LinkGroup>
+            <LinkGroup>
+              <LinkGroupTitle>Account</LinkGroupTitle>
+              <FooterLink to="/profile">Profile</FooterLink>
+              <FooterLink to="/settings">Settings</FooterLink>
+              <FooterLink to="/my-posts">My Posts</FooterLink>
+            </LinkGroup>
+          </LinksContainer>
+        </FooterTop>
 
-        <Separator size="4" my="4" />
+        <Divider />
 
-        <Flex justify="between" align="center">
-          <Text size="1" color="gray">
-            © {currentYear} BlogHub. All rights reserved.
-          </Text>
-          <Flex gap="4">
-            <Text size="1" color="gray">Privacy</Text>
-            <Text size="1" color="gray">Terms</Text>
-          </Flex>
-        </Flex>
-      </Container>
-    </Box>
+        <FooterBottom>
+          <Copyright>© {currentYear} BlogHub. All rights reserved.</Copyright>
+          <LegalLinks>
+            <LegalLink>Privacy</LegalLink>
+            <LegalLink>Terms</LegalLink>
+          </LegalLinks>
+        </FooterBottom>
+      </FooterContent>
+    </FooterWrapper>
   );
 }

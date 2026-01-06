@@ -1,7 +1,9 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Box, Flex, Text, Button, Separator, Avatar } from '@radix-ui/themes';
+import { Avatar } from '@radix-ui/themes';
 import { LayoutDashboard, FileText, Users, FolderOpen, Settings, LogOut, Home } from 'lucide-react';
+import styled from 'styled-components';
 import { useAuthStore } from '../../store/authStore';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 const navItems = [
   { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
@@ -10,6 +12,149 @@ const navItems = [
   { path: '/admin/users', icon: Users, label: 'Users' },
   { path: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
+
+const LayoutWrapper = styled.div`
+  display: flex;
+  min-height: 100vh;
+`;
+
+const Sidebar = styled.aside`
+  width: 240px;
+  background-color: ${({ theme }) => theme.colors.bgPrimary};
+  border-right: 1px solid ${({ theme }) => theme.colors.border};
+  display: flex;
+  flex-direction: column;
+  transition: background-color ${({ theme }) => theme.transitions.normal},
+              border-color ${({ theme }) => theme.transitions.normal};
+`;
+
+const LogoSection = styled.div`
+  padding: ${({ theme }) => theme.spacing.md};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const Logo = styled(Link)`
+  font-size: ${({ theme }) => theme.fontSizes.xl};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+`;
+
+const Divider = styled.hr`
+  border: none;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  margin: 0;
+`;
+
+const Navigation = styled.nav`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacing.md};
+  flex: 1;
+`;
+
+const NavItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ $active, theme }) =>
+    $active ? theme.fontWeights.medium : theme.fontWeights.normal};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.textPrimary : theme.colors.textSecondary};
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.bgTertiary : 'transparent'};
+  border-radius: ${({ theme }) => theme.radii.md};
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgHover};
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const NavDivider = styled(Divider)`
+  margin: ${({ theme }) => theme.spacing.md} 0;
+`;
+
+const UserSection = styled.div`
+  padding: ${({ theme }) => theme.spacing.md};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+`;
+
+const UserDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const UserName = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+const UserRole = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const LogoutButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing.sm};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.error};
+  background: ${({ theme }) => theme.colors.errorBg};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.errorBorder};
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const MainContent = styled.main`
+  flex: 1;
+  background-color: ${({ theme }) => theme.colors.bgSecondary};
+  overflow: auto;
+  transition: background-color ${({ theme }) => theme.transitions.normal};
+`;
+
+const ContentWrapper = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacing.xl};
+`;
 
 export function AdminLayout() {
   const location = useLocation();
@@ -29,91 +174,59 @@ export function AdminLayout() {
   };
 
   return (
-    <Flex style={{ minHeight: '100vh' }}>
-      {/* Sidebar */}
-      <Box
-        style={{
-          width: '240px',
-          backgroundColor: '#ffffff',
-          borderRight: '1px solid var(--border-color)',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* Logo */}
-        <Box p="4">
-          <Link to="/admin">
-            <Text size="4" weight="bold">Admin</Text>
-          </Link>
-        </Box>
+    <LayoutWrapper>
+      <Sidebar>
+        <LogoSection>
+          <Logo to="/admin">Admin</Logo>
+          <ThemeToggle />
+        </LogoSection>
 
-        <Separator size="4" />
+        <Divider />
 
-        {/* Navigation */}
-        <Flex direction="column" gap="1" p="3" style={{ flex: 1 }}>
+        <Navigation>
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item);
             return (
-              <Button
-                key={item.path}
-                variant={active ? 'soft' : 'ghost'}
-                asChild
-                style={{
-                  justifyContent: 'flex-start',
-                  fontWeight: active ? '500' : '400',
-                }}
-              >
-                <Link to={item.path}>
-                  <Icon size={16} />
-                  {item.label}
-                </Link>
-              </Button>
+              <NavItem key={item.path} to={item.path} $active={active}>
+                <Icon />
+                {item.label}
+              </NavItem>
             );
           })}
 
-          <Separator size="4" my="3" />
+          <NavDivider />
 
-          <Button variant="ghost" asChild style={{ justifyContent: 'flex-start' }}>
-            <Link to="/">
-              <Home size={16} />
-              Back to Site
-            </Link>
-          </Button>
-        </Flex>
+          <NavItem to="/" $active={false}>
+            <Home />
+            Back to Site
+          </NavItem>
+        </Navigation>
 
-        {/* User */}
-        <Box p="3" style={{ borderTop: '1px solid var(--border-color)' }}>
-          <Flex align="center" gap="2" mb="2">
+        <UserSection>
+          <UserInfo>
             <Avatar
               size="1"
               fallback={user?.username?.[0]?.toUpperCase() || 'A'}
               radius="full"
               color="gray"
             />
-            <Box>
-              <Text size="2" weight="medium">{user?.username}</Text>
-              <Text size="1" color="gray">Admin</Text>
-            </Box>
-          </Flex>
-          <Button
-            variant="soft"
-            color="red"
-            size="1"
-            onClick={handleLogout}
-            style={{ width: '100%' }}
-          >
-            <LogOut size={14} /> Logout
-          </Button>
-        </Box>
-      </Box>
+            <UserDetails>
+              <UserName>{user?.username}</UserName>
+              <UserRole>Admin</UserRole>
+            </UserDetails>
+          </UserInfo>
+          <LogoutButton onClick={handleLogout}>
+            <LogOut /> Logout
+          </LogoutButton>
+        </UserSection>
+      </Sidebar>
 
-      {/* Main */}
-      <Box style={{ flex: 1, backgroundColor: 'var(--bg-secondary)', overflow: 'auto' }}>
-        <Box p="5" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <MainContent>
+        <ContentWrapper>
           <Outlet />
-        </Box>
-      </Box>
-    </Flex>
+        </ContentWrapper>
+      </MainContent>
+    </LayoutWrapper>
   );
 }

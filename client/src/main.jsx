@@ -6,8 +6,8 @@ import { Theme } from '@radix-ui/themes';
 import { Toaster } from 'react-hot-toast';
 import App from './App';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { ThemeProvider } from './styles/ThemeProvider';
 import '@radix-ui/themes/styles.css';
-import './styles/index.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,10 +24,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <Theme accentColor="gray" grayColor="slate" radius="small" scaling="100%">
-            <App />
-            <Toaster position="top-right" />
-          </Theme>
+          <ThemeProvider>
+            <Theme accentColor="gray" grayColor="slate" radius="small" scaling="100%">
+              <App />
+              <Toaster position="top-right" />
+            </Theme>
+          </ThemeProvider>
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>

@@ -1,9 +1,168 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Box, Container, Card, Flex, Heading, Text, TextField, Button, Callout } from '@radix-ui/themes';
 import { User, Mail, Lock, AlertTriangle, CheckCircle } from 'lucide-react';
+import styled from 'styled-components';
 import toast from 'react-hot-toast';
 import { authService } from '../services/authService';
+
+const PageWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - ${({ theme }) => theme.layout.headerHeight});
+  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};
+`;
+
+const Card = styled.div`
+  width: 100%;
+  max-width: 400px;
+  background: ${({ theme }) => theme.colors.cardBg};
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  padding: ${({ theme }) => theme.spacing.xl};
+`;
+
+const Header = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const Title = styled.h1`
+  font-size: ${({ theme }) => theme.fontSizes['3xl']};
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Subtitle = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const ErrorAlert = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.errorBg};
+  border: 1px solid ${({ theme }) => theme.colors.errorBorder};
+  border-radius: ${({ theme }) => theme.radii.md};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+
+  svg {
+    color: ${({ theme }) => theme.colors.error};
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  span {
+    font-size: ${({ theme }) => theme.fontSizes.base};
+    color: ${({ theme }) => theme.colors.error};
+  }
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Label = styled.label`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+const InputWrapper = styled.div`
+  position: relative;
+
+  svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: ${({ theme }) => theme.colors.textMuted};
+    pointer-events: none;
+  }
+`;
+
+const Input = styled.input`
+  width: 100%;
+  height: 40px;
+  padding: 0 ${({ $hasRightIcon }) => ($hasRightIcon ? '40px' : '12px')} 0 40px;
+  background: ${({ theme }) => theme.colors.inputBg};
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.inputPlaceholder};
+  }
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.inputBorderHover};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+`;
+
+const RightIcon = styled.div`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${({ theme }) => theme.colors.success};
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  height: 40px;
+  margin-top: ${({ theme }) => theme.spacing.sm};
+  background: ${({ theme }) => theme.colors.buttonPrimaryBg};
+  color: ${({ theme }) => theme.colors.buttonPrimaryText};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.buttonPrimaryHover};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const Footer = styled.p`
+  text-align: center;
+  margin-top: ${({ theme }) => theme.spacing.lg};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.textMuted};
+
+  a {
+    color: ${({ theme }) => theme.colors.textLink};
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
+
+    &:hover {
+      color: ${({ theme }) => theme.colors.textLinkHover};
+    }
+  }
+`;
 
 export function Register() {
   const [username, setUsername] = useState('');
@@ -56,7 +215,7 @@ export function Register() {
     } catch (err) {
       const errorData = err.response?.data;
       if (errorData?.errors?.length > 0) {
-        setError(errorData.errors.map(e => e.msg).join('. '));
+        setError(errorData.errors.map((e) => e.msg).join('. '));
       } else {
         setError(errorData?.message || 'Registration failed');
       }
@@ -65,108 +224,95 @@ export function Register() {
     }
   };
 
+  const showPasswordMatch = confirmPassword && password === confirmPassword;
+
   return (
-    <Container size="1" py="9">
+    <PageWrapper>
       <Card>
-        <Box p="5">
-          <Flex direction="column" gap="4">
-            <Box mb="2">
-              <Heading size="4" mb="1">Create account</Heading>
-              <Text size="2" color="gray">
-                Sign up to get started
-              </Text>
-            </Box>
+        <Header>
+          <Title>Create account</Title>
+          <Subtitle>Sign up to get started</Subtitle>
+        </Header>
 
-            {error && (
-              <Callout.Root color="red" size="1">
-                <Callout.Icon>
-                  <AlertTriangle size={14} />
-                </Callout.Icon>
-                <Callout.Text>{error}</Callout.Text>
-              </Callout.Root>
-            )}
+        {error && (
+          <ErrorAlert>
+            <AlertTriangle size={16} />
+            <span>{error}</span>
+          </ErrorAlert>
+        )}
 
-            <form onSubmit={handleSubmit}>
-              <Flex direction="column" gap="3">
-                <Box>
-                  <Text as="label" size="2" weight="medium" mb="1">Username</Text>
-                  <TextField.Root
-                    placeholder="Choose a username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    autoComplete="username"
-                  >
-                    <TextField.Slot>
-                      <User size={14} />
-                    </TextField.Slot>
-                  </TextField.Root>
-                </Box>
+        <Form onSubmit={handleSubmit}>
+          <FormGroup>
+            <Label>Username</Label>
+            <InputWrapper>
+              <User size={16} />
+              <Input
+                type="text"
+                placeholder="Choose a username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+              />
+            </InputWrapper>
+          </FormGroup>
 
-                <Box>
-                  <Text as="label" size="2" weight="medium" mb="1">Email</Text>
-                  <TextField.Root
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoComplete="email"
-                  >
-                    <TextField.Slot>
-                      <Mail size={14} />
-                    </TextField.Slot>
-                  </TextField.Root>
-                </Box>
+          <FormGroup>
+            <Label>Email</Label>
+            <InputWrapper>
+              <Mail size={16} />
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+              />
+            </InputWrapper>
+          </FormGroup>
 
-                <Box>
-                  <Text as="label" size="2" weight="medium" mb="1">Password</Text>
-                  <TextField.Root
-                    type="password"
-                    placeholder="Min 6 characters"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="new-password"
-                  >
-                    <TextField.Slot>
-                      <Lock size={14} />
-                    </TextField.Slot>
-                  </TextField.Root>
-                </Box>
+          <FormGroup>
+            <Label>Password</Label>
+            <InputWrapper>
+              <Lock size={16} />
+              <Input
+                type="password"
+                placeholder="Min 6 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+              />
+            </InputWrapper>
+          </FormGroup>
 
-                <Box>
-                  <Text as="label" size="2" weight="medium" mb="1">Confirm Password</Text>
-                  <TextField.Root
-                    type="password"
-                    placeholder="Confirm password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    autoComplete="new-password"
-                  >
-                    <TextField.Slot>
-                      <Lock size={14} />
-                    </TextField.Slot>
-                    {confirmPassword && password === confirmPassword && (
-                      <TextField.Slot>
-                        <CheckCircle size={14} color="var(--green-9)" />
-                      </TextField.Slot>
-                    )}
-                  </TextField.Root>
-                </Box>
+          <FormGroup>
+            <Label>Confirm Password</Label>
+            <InputWrapper>
+              <Lock size={16} />
+              <Input
+                type="password"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+                $hasRightIcon={showPasswordMatch}
+              />
+              {showPasswordMatch && (
+                <RightIcon>
+                  <CheckCircle size={16} />
+                </RightIcon>
+              )}
+            </InputWrapper>
+          </FormGroup>
 
-                <Button type="submit" size="2" disabled={loading} mt="2">
-                  {loading ? 'Creating...' : 'Create Account'}
-                </Button>
-              </Flex>
-            </form>
+          <SubmitButton type="submit" disabled={loading}>
+            {loading ? 'Creating...' : 'Create Account'}
+          </SubmitButton>
+        </Form>
 
-            <Text size="2" align="center" color="gray">
-              Already have an account?{' '}
-              <Link to="/login" style={{ color: 'var(--accent-color)', fontWeight: 500 }}>
-                Sign in
-              </Link>
-            </Text>
-          </Flex>
-        </Box>
+        <Footer>
+          Already have an account? <Link to="/login">Sign in</Link>
+        </Footer>
       </Card>
-    </Container>
+    </PageWrapper>
   );
 }

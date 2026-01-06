@@ -1,7 +1,157 @@
 import { Link } from 'react-router-dom';
-import { Box, Card, Flex, Text, Avatar, Badge } from '@radix-ui/themes';
+import { Avatar } from '@radix-ui/themes';
 import { Heart, MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import styled from 'styled-components';
+
+const Card = styled.article`
+  background: ${({ theme }) => theme.colors.cardBg};
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  padding: ${({ theme }) => theme.spacing.md};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.borderHover};
+    box-shadow: ${({ theme }) => theme.shadows.md};
+  }
+`;
+
+const CardContent = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const ImageWrapper = styled(Link)`
+  flex-shrink: 0;
+  width: 120px;
+  height: 80px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform ${({ theme }) => theme.transitions.normal};
+  }
+  
+  &:hover img {
+    transform: scale(1.05);
+  }
+`;
+
+const ContentWrapper = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const BadgeContainer = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  flex-wrap: wrap;
+`;
+
+const Badge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 2px ${({ theme }) => theme.spacing.sm};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  background: ${({ theme }) => theme.colors.bgTertiary};
+  border-radius: ${({ theme }) => theme.radii.sm};
+`;
+
+const Title = styled(Link)`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color ${({ theme }) => theme.transitions.fast};
+  
+  &:hover {
+    color: ${({ theme }) => theme.colors.textLink};
+  }
+`;
+
+const Excerpt = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.textMuted};
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const MetaRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: ${({ theme }) => theme.spacing.xs};
+`;
+
+const AuthorInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const AuthorLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  
+  &:hover span {
+    color: ${({ theme }) => theme.colors.textLink};
+  }
+`;
+
+const AuthorName = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textMuted};
+  transition: color ${({ theme }) => theme.transitions.fast};
+`;
+
+const Separator = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const TimeStamp = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const Stats = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const StatItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  color: ${({ theme }) => theme.colors.textMuted};
+  
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  span {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+  }
+`;
 
 export function PostCard({ post }) {
   const stripHtml = (html) => {
@@ -11,81 +161,58 @@ export function PostCard({ post }) {
 
   return (
     <Card>
-      <Flex gap="4" p="1">
+      <CardContent>
         {post.imageURL && (
-          <Link to={`/post/${post._id}`}>
-            <Box
-              style={{
-                width: '120px',
-                height: '80px',
-                borderRadius: '4px',
-                overflow: 'hidden',
-                flexShrink: 0,
-              }}
-            >
-              <img
-                src={post.imageURL}
-                alt={post.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={(e) => e.target.style.display = 'none'}
-              />
-            </Box>
-          </Link>
+          <ImageWrapper to={`/post/${post._id}`}>
+            <img
+              src={post.imageURL}
+              alt={post.title}
+              onError={(e) => (e.target.style.display = 'none')}
+            />
+          </ImageWrapper>
         )}
 
-        <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 0 }}>
-          <Flex gap="2" wrap="wrap">
+        <ContentWrapper>
+          <BadgeContainer>
             {post.categories?.slice(0, 2).map((cat) => (
-              <Badge key={cat._id || cat} variant="soft" color="gray" size="1">
-                {cat.name || cat}
-              </Badge>
+              <Badge key={cat._id || cat}>{cat.name || cat}</Badge>
             ))}
-          </Flex>
+          </BadgeContainer>
 
-          <Link to={`/post/${post._id}`}>
-            <Text size="3" weight="medium" className="text-truncate-2" style={{ lineHeight: 1.4 }}>
-              {post.title}
-            </Text>
-          </Link>
+          <Title to={`/post/${post._id}`}>{post.title}</Title>
 
-          <Text size="2" color="gray" className="text-truncate-2">
-            {stripHtml(post.content)}
-          </Text>
+          <Excerpt>{stripHtml(post.content)}</Excerpt>
 
-          <Flex justify="between" align="center" mt="1">
-            <Flex align="center" gap="2">
-              <Link to={post.user?._id ? `/user/${post.user._id}` : '#'}>
-                <Flex align="center" gap="1">
-                  <Avatar
-                    size="1"
-                    fallback={post.user?.username?.[0]?.toUpperCase() || 'U'}
-                    radius="full"
-                    color="gray"
-                  />
-                  <Text size="1" color="gray">
-                    {post.user?.username || 'Anonymous'}
-                  </Text>
-                </Flex>
-              </Link>
-              <Text size="1" color="gray">·</Text>
-              <Text size="1" color="gray">
+          <MetaRow>
+            <AuthorInfo>
+              <AuthorLink to={post.user?._id ? `/user/${post.user._id}` : '#'}>
+                <Avatar
+                  size="1"
+                  fallback={post.user?.username?.[0]?.toUpperCase() || 'U'}
+                  radius="full"
+                  color="gray"
+                />
+                <AuthorName>{post.user?.username || 'Anonymous'}</AuthorName>
+              </AuthorLink>
+              <Separator>·</Separator>
+              <TimeStamp>
                 {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-              </Text>
-            </Flex>
+              </TimeStamp>
+            </AuthorInfo>
 
-            <Flex gap="3" align="center">
-              <Flex align="center" gap="1">
-                <Heart size={12} color="var(--text-muted)" />
-                <Text size="1" color="gray">{post.likes?.length || 0}</Text>
-              </Flex>
-              <Flex align="center" gap="1">
-                <MessageCircle size={12} color="var(--text-muted)" />
-                <Text size="1" color="gray">{post.comments?.length || 0}</Text>
-              </Flex>
-            </Flex>
-          </Flex>
-        </Flex>
-      </Flex>
+            <Stats>
+              <StatItem>
+                <Heart />
+                <span>{post.likes?.length || 0}</span>
+              </StatItem>
+              <StatItem>
+                <MessageCircle />
+                <span>{post.comments?.length || 0}</span>
+              </StatItem>
+            </Stats>
+          </MetaRow>
+        </ContentWrapper>
+      </CardContent>
     </Card>
   );
 }
