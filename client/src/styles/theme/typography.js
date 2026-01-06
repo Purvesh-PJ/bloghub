@@ -1,23 +1,23 @@
-// Typography system
+// Typography system - clean, professional
 export const typography = {
   fonts: {
-    body: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    heading: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    mono: "'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace",
+    body: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+    heading: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+    mono: "'SF Mono', 'Fira Code', 'Consolas', monospace",
   },
 
   fontSizes: {
-    xs: '11px',
-    sm: '12px',
-    base: '13px',
-    md: '14px',
-    lg: '15px',
-    xl: '16px',
-    '2xl': '18px',
-    '3xl': '20px',
-    '4xl': '24px',
-    '5xl': '30px',
-    '6xl': '36px',
+    xs: '12px',
+    sm: '13px',
+    base: '14px',
+    md: '15px',
+    lg: '16px',
+    xl: '18px',
+    '2xl': '20px',
+    '3xl': '24px',
+    '4xl': '28px',
+    '5xl': '32px',
+    '6xl': '40px',
   },
 
   fontWeights: {
@@ -29,74 +29,76 @@ export const typography = {
 
   lineHeights: {
     none: 1,
-    tight: 1.25,
-    snug: 1.375,
+    tight: 1.2,
+    snug: 1.35,
     normal: 1.5,
-    relaxed: 1.625,
+    relaxed: 1.6,
     loose: 1.75,
   },
 
   letterSpacing: {
-    tighter: '-0.05em',
-    tight: '-0.025em',
+    tighter: '-0.03em',
+    tight: '-0.02em',
     normal: '0',
-    wide: '0.025em',
-    wider: '0.05em',
+    wide: '0.01em',
   },
 
-  // Pre-defined text styles for consistency
+  // Pre-defined text styles
   textStyles: {
+    // Display - for hero sections
+    display: {
+      fontSize: '40px',
+      fontWeight: 700,
+      lineHeight: 1.1,
+      letterSpacing: '-0.03em',
+    },
     // Headings
     h1: {
-      fontSize: '30px',
-      fontWeight: 700,
-      lineHeight: 1.25,
-      letterSpacing: '-0.025em',
+      fontSize: '32px',
+      fontWeight: 600,
+      lineHeight: 1.2,
+      letterSpacing: '-0.02em',
     },
     h2: {
       fontSize: '24px',
       fontWeight: 600,
-      lineHeight: 1.3,
-      letterSpacing: '-0.025em',
+      lineHeight: 1.25,
+      letterSpacing: '-0.02em',
     },
     h3: {
       fontSize: '20px',
       fontWeight: 600,
-      lineHeight: 1.4,
+      lineHeight: 1.3,
+      letterSpacing: '-0.01em',
     },
     h4: {
       fontSize: '16px',
       fontWeight: 600,
-      lineHeight: 1.5,
-    },
-    h5: {
-      fontSize: '14px',
-      fontWeight: 600,
-      lineHeight: 1.5,
+      lineHeight: 1.4,
     },
     // Body text
     body: {
-      fontSize: '14px',
-      fontWeight: 400,
-      lineHeight: 1.5,
-    },
-    bodyLarge: {
       fontSize: '15px',
       fontWeight: 400,
-      lineHeight: 1.7,
+      lineHeight: 1.6,
     },
     bodySmall: {
-      fontSize: '13px',
+      fontSize: '14px',
       fontWeight: 400,
       lineHeight: 1.5,
     },
     // UI text
     label: {
-      fontSize: '13px',
+      fontSize: '14px',
       fontWeight: 500,
       lineHeight: 1.4,
     },
     caption: {
+      fontSize: '13px',
+      fontWeight: 400,
+      lineHeight: 1.4,
+    },
+    small: {
       fontSize: '12px',
       fontWeight: 400,
       lineHeight: 1.4,
@@ -105,13 +107,8 @@ export const typography = {
       fontSize: '11px',
       fontWeight: 600,
       lineHeight: 1.4,
-      letterSpacing: '0.05em',
+      letterSpacing: '0.06em',
       textTransform: 'uppercase',
-    },
-    code: {
-      fontSize: '13px',
-      fontWeight: 400,
-      lineHeight: 1.5,
     },
   },
 };

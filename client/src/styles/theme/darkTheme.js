@@ -1,106 +1,112 @@
-// Dark theme colors
+// Dark theme - Clean, minimal, Notion-inspired
 export const darkTheme = {
   mode: 'dark',
 
   colors: {
-    // Backgrounds
-    bgPrimary: '#0d1117',
-    bgSecondary: '#161b22',
-    bgTertiary: '#21262d',
-    bgElevated: '#1c2128',
-    bgHover: '#262c36',
-    bgActive: '#2d333b',
+    // Backgrounds - subtle hierarchy
+    bgPrimary: '#191919',
+    bgSecondary: '#121212',
+    bgTertiary: '#232323',
+    bgElevated: '#1e1e1e',
+    bgHover: 'rgba(255, 255, 255, 0.05)',
+    bgActive: 'rgba(255, 255, 255, 0.08)',
     bgOverlay: 'rgba(0, 0, 0, 0.6)',
 
-    // Text
-    textPrimary: '#e6edf3',
-    textSecondary: '#9198a1',
-    textMuted: '#6e7681',
-    textDisabled: '#484f58',
-    textInverse: '#0d1117',
-    textLink: '#58a6ff',
-    textLinkHover: '#79b8ff',
+    // Text - high contrast, clear hierarchy
+    textPrimary: '#ebebeb',
+    textSecondary: '#a0a0a0',
+    textMuted: '#6b6b6b',
+    textDisabled: '#4a4a4a',
+    textInverse: '#121212',
+    textLink: '#ebebeb',
+    textLinkHover: '#a0a0a0',
 
-    // Borders
-    border: '#30363d',
-    borderLight: '#21262d',
-    borderHover: '#484f58',
-    borderFocus: '#58a6ff',
+    // Borders - minimal, only when needed
+    border: 'rgba(255, 255, 255, 0.08)',
+    borderLight: 'rgba(255, 255, 255, 0.04)',
+    borderHover: 'rgba(255, 255, 255, 0.12)',
+    borderFocus: '#ebebeb',
 
-    // Brand/Accent
-    accent: '#58a6ff',
-    accentHover: '#79b8ff',
-    accentActive: '#a5d6ff',
-    accentSubtle: 'rgba(56, 139, 253, 0.15)',
-    accentMuted: 'rgba(56, 139, 253, 0.4)',
+    // Brand/Accent - neutral white
+    accent: '#ebebeb',
+    accentHover: '#ffffff',
+    accentActive: '#ffffff',
+    accentSubtle: 'rgba(255, 255, 255, 0.05)',
+    accentMuted: 'rgba(255, 255, 255, 0.1)',
 
-    // Semantic - Success
-    success: '#3fb950',
-    successHover: '#56d364',
-    successBg: 'rgba(46, 160, 67, 0.15)',
-    successBorder: 'rgba(46, 160, 67, 0.4)',
+    // Semantic - muted, professional
+    success: '#22c55e',
+    successHover: '#4ade80',
+    successBg: 'rgba(34, 197, 94, 0.15)',
+    successBorder: 'rgba(34, 197, 94, 0.25)',
 
-    // Semantic - Warning
-    warning: '#d29922',
-    warningHover: '#e3b341',
-    warningBg: 'rgba(187, 128, 9, 0.15)',
-    warningBorder: 'rgba(187, 128, 9, 0.4)',
+    warning: '#f59e0b',
+    warningHover: '#fbbf24',
+    warningBg: 'rgba(245, 158, 11, 0.15)',
+    warningBorder: 'rgba(245, 158, 11, 0.25)',
 
-    // Semantic - Error
-    error: '#f85149',
-    errorHover: '#ff7b72',
-    errorBg: 'rgba(248, 81, 73, 0.15)',
-    errorBorder: 'rgba(248, 81, 73, 0.4)',
+    error: '#ef4444',
+    errorHover: '#f87171',
+    errorBg: 'rgba(239, 68, 68, 0.15)',
+    errorBorder: 'rgba(239, 68, 68, 0.25)',
 
-    // Semantic - Info
-    info: '#58a6ff',
-    infoHover: '#79b8ff',
-    infoBg: 'rgba(56, 139, 253, 0.15)',
-    infoBorder: 'rgba(56, 139, 253, 0.4)',
+    info: '#a0a0a0',
+    infoHover: '#ebebeb',
+    infoBg: 'rgba(255, 255, 255, 0.05)',
+    infoBorder: 'rgba(255, 255, 255, 0.1)',
 
-    // Interactive states
-    buttonPrimaryBg: '#238636',
-    buttonPrimaryText: '#ffffff',
-    buttonPrimaryHover: '#2ea043',
-    buttonSecondaryBg: '#21262d',
-    buttonSecondaryText: '#c9d1d9',
-    buttonSecondaryHover: '#30363d',
-    buttonSecondaryBorder: '#363b42',
+    // Buttons - clean, minimal
+    buttonPrimaryBg: '#ebebeb',
+    buttonPrimaryText: '#121212',
+    buttonPrimaryHover: '#ffffff',
+    buttonSecondaryBg: '#232323',
+    buttonSecondaryText: '#ebebeb',
+    buttonSecondaryHover: '#2d2d2d',
+    buttonSecondaryBorder: 'rgba(255, 255, 255, 0.1)',
+    buttonGhostHover: 'rgba(255, 255, 255, 0.05)',
 
-    // Input
-    inputBg: '#0d1117',
-    inputBorder: '#30363d',
-    inputBorderHover: '#484f58',
-    inputBorderFocus: '#58a6ff',
-    inputPlaceholder: '#6e7681',
+    // Input - clean, subtle
+    inputBg: '#191919',
+    inputBorder: 'rgba(255, 255, 255, 0.1)',
+    inputBorderHover: 'rgba(255, 255, 255, 0.2)',
+    inputBorderFocus: '#ebebeb',
+    inputPlaceholder: '#6b6b6b',
 
-    // Card
-    cardBg: '#161b22',
-    cardBorder: '#30363d',
-    cardShadow: '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
-    cardHoverShadow: '0 8px 24px rgba(0, 0, 0, 0.24)',
+    // Card - elevation based, no borders
+    cardBg: '#191919',
+    cardBorder: 'transparent',
+    cardHoverBg: '#1e1e1e',
 
     // Scrollbar
-    scrollbarTrack: '#161b22',
-    scrollbarThumb: '#484f58',
-    scrollbarThumbHover: '#6e7681',
+    scrollbarTrack: 'transparent',
+    scrollbarThumb: 'rgba(255, 255, 255, 0.15)',
+    scrollbarThumbHover: 'rgba(255, 255, 255, 0.25)',
 
     // Selection
-    selection: 'rgba(56, 139, 253, 0.4)',
-    selectionText: '#e6edf3',
+    selection: 'rgba(255, 255, 255, 0.15)',
+    selectionText: '#ebebeb',
 
     // Code
-    codeBg: '#161b22',
-    codeBorder: '#30363d',
+    codeBg: '#232323',
+    codeBorder: 'transparent',
+
+    // Badge
+    badgeBg: 'rgba(255, 255, 255, 0.08)',
+    badgeText: '#a0a0a0',
+    badgeActiveBg: '#ebebeb',
+    badgeActiveText: '#121212',
   },
 
   shadows: {
-    xs: '0 1px 2px rgba(0, 0, 0, 0.16)',
-    sm: '0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12)',
-    md: '0 4px 8px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.16)',
-    lg: '0 8px 24px rgba(0, 0, 0, 0.32), 0 4px 8px rgba(0, 0, 0, 0.16)',
-    xl: '0 12px 48px rgba(0, 0, 0, 0.4)',
-    focus: '0 0 0 3px rgba(88, 166, 255, 0.4)',
-    focusError: '0 0 0 3px rgba(248, 81, 73, 0.4)',
+    none: 'none',
+    xs: '0 1px 2px rgba(0, 0, 0, 0.2)',
+    sm: '0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2)',
+    md: '0 4px 6px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15)',
+    lg: '0 10px 20px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(0, 0, 0, 0.2)',
+    xl: '0 15px 40px rgba(0, 0, 0, 0.4), 0 5px 15px rgba(0, 0, 0, 0.2)',
+    card: '0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1)',
+    cardHover: '0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2)',
+    focus: '0 0 0 2px rgba(255, 255, 255, 0.1)',
+    focusRing: '0 0 0 2px #191919, 0 0 0 4px #ebebeb',
   },
 };
