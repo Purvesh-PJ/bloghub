@@ -6,8 +6,8 @@ const ToggleButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.colors.bgPrimary};
@@ -18,11 +18,6 @@ const ToggleButton = styled.button`
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
     color: ${({ theme }) => theme.colors.textPrimary};
-    border-color: ${({ theme }) => theme.colors.borderHover};
-  }
-
-  &:active {
-    background: ${({ theme }) => theme.colors.bgActive};
   }
 
   svg {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { User, Lock, AlertTriangle } from 'lucide-react';
+import { User, Lock, AlertCircle } from 'lucide-react';
 import styled from 'styled-components';
 import toast from 'react-hot-toast';
 import { authService } from '../services/authService';
@@ -11,31 +11,33 @@ const PageWrapper = styled.div`
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - ${({ theme }) => theme.layout.headerHeight});
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
 `;
 
 const Card = styled.div`
   width: 100%;
   max-width: 400px;
   background: ${({ theme }) => theme.colors.cardBg};
-  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
-  border-radius: ${({ theme }) => theme.radii.lg};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
   padding: ${({ theme }) => theme.spacing.xl};
 `;
 
 const Header = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  text-align: center;
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes['3xl']};
   font-weight: ${({ theme }) => theme.fontWeights.semibold};
   color: ${({ theme }) => theme.colors.textPrimary};
+  letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
   margin-bottom: ${({ theme }) => theme.spacing.xs};
 `;
 
 const Subtitle = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
@@ -43,11 +45,10 @@ const ErrorAlert = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md};
   background: ${({ theme }) => theme.colors.errorBg};
-  border: 1px solid ${({ theme }) => theme.colors.errorBorder};
   border-radius: ${({ theme }) => theme.radii.md};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
 
   svg {
     color: ${({ theme }) => theme.colors.error};
@@ -55,7 +56,7 @@ const ErrorAlert = styled.div`
   }
 
   span {
-    font-size: ${({ theme }) => theme.fontSizes.base};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.error};
   }
 `;
@@ -63,19 +64,17 @@ const ErrorAlert = styled.div`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.lg};
 `;
 
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
+const FormGroup = styled.div``;
 
 const Label = styled.label`
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  display: block;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
 `;
 
 const InputWrapper = styled.div`
@@ -83,22 +82,23 @@ const InputWrapper = styled.div`
 
   svg {
     position: absolute;
-    left: 12px;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
     color: ${({ theme }) => theme.colors.textMuted};
-    pointer-events: none;
+    width: 18px;
+    height: 18px;
   }
 `;
 
 const Input = styled.input`
   width: 100%;
-  height: 40px;
-  padding: 0 ${({ theme }) => theme.spacing.sm} 0 40px;
+  height: 48px;
+  padding: 0 ${({ theme }) => theme.spacing.md} 0 46px;
   background: ${({ theme }) => theme.colors.inputBg};
   border: 1px solid ${({ theme }) => theme.colors.inputBorder};
   border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textPrimary};
   transition: all ${({ theme }) => theme.transitions.fast};
 
@@ -119,13 +119,12 @@ const Input = styled.input`
 
 const SubmitButton = styled.button`
   width: 100%;
-  height: 40px;
-  margin-top: ${({ theme }) => theme.spacing.sm};
+  height: 48px;
   background: ${({ theme }) => theme.colors.buttonPrimaryBg};
   color: ${({ theme }) => theme.colors.buttonPrimaryText};
   border: none;
   border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
@@ -142,16 +141,16 @@ const SubmitButton = styled.button`
 
 const Footer = styled.p`
   text-align: center;
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textMuted};
 
   a {
-    color: ${({ theme }) => theme.colors.textLink};
+    color: ${({ theme }) => theme.colors.textPrimary};
     font-weight: ${({ theme }) => theme.fontWeights.medium};
 
     &:hover {
-      color: ${({ theme }) => theme.colors.textLinkHover};
+      text-decoration: underline;
     }
   }
 `;
@@ -181,7 +180,7 @@ export function Login() {
       const response = await authService.signIn(credential, password);
       if (response.success) {
         setAuth(response.data);
-        toast.success('Signed in');
+        toast.success('Welcome back!');
         navigate(from, { replace: true });
       } else {
         setError(response.message || 'Login failed');
@@ -197,13 +196,13 @@ export function Login() {
     <PageWrapper>
       <Card>
         <Header>
-          <Title>Sign in</Title>
-          <Subtitle>Enter your credentials to continue</Subtitle>
+          <Title>Welcome back</Title>
+          <Subtitle>Sign in to your account</Subtitle>
         </Header>
 
         {error && (
           <ErrorAlert>
-            <AlertTriangle size={16} />
+            <AlertCircle size={18} />
             <span>{error}</span>
           </ErrorAlert>
         )}
@@ -212,7 +211,7 @@ export function Login() {
           <FormGroup>
             <Label>Email or Username</Label>
             <InputWrapper>
-              <User size={16} />
+              <User />
               <Input
                 type="text"
                 placeholder="Enter email or username"
@@ -226,7 +225,7 @@ export function Login() {
           <FormGroup>
             <Label>Password</Label>
             <InputWrapper>
-              <Lock size={16} />
+              <Lock />
               <Input
                 type="password"
                 placeholder="Enter password"

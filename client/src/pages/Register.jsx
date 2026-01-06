@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { User, Mail, Lock, AlertCircle, Check } from 'lucide-react';
 import styled from 'styled-components';
 import toast from 'react-hot-toast';
 import { authService } from '../services/authService';
@@ -10,31 +10,33 @@ const PageWrapper = styled.div`
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - ${({ theme }) => theme.layout.headerHeight});
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
 `;
 
 const Card = styled.div`
   width: 100%;
   max-width: 400px;
   background: ${({ theme }) => theme.colors.cardBg};
-  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
-  border-radius: ${({ theme }) => theme.radii.lg};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
   padding: ${({ theme }) => theme.spacing.xl};
 `;
 
 const Header = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  text-align: center;
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes['3xl']};
   font-weight: ${({ theme }) => theme.fontWeights.semibold};
   color: ${({ theme }) => theme.colors.textPrimary};
+  letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
   margin-bottom: ${({ theme }) => theme.spacing.xs};
 `;
 
 const Subtitle = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
@@ -42,20 +44,19 @@ const ErrorAlert = styled.div`
   display: flex;
   align-items: flex-start;
   gap: ${({ theme }) => theme.spacing.sm};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md};
   background: ${({ theme }) => theme.colors.errorBg};
-  border: 1px solid ${({ theme }) => theme.colors.errorBorder};
   border-radius: ${({ theme }) => theme.radii.md};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
 
   svg {
     color: ${({ theme }) => theme.colors.error};
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 1px;
   }
 
   span {
-    font-size: ${({ theme }) => theme.fontSizes.base};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.error};
   }
 `;
@@ -63,42 +64,41 @@ const ErrorAlert = styled.div`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.lg};
 `;
 
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
+const FormGroup = styled.div``;
 
 const Label = styled.label`
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  display: block;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
 `;
 
 const InputWrapper = styled.div`
   position: relative;
 
-  svg {
+  svg:first-child {
     position: absolute;
-    left: 12px;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
     color: ${({ theme }) => theme.colors.textMuted};
-    pointer-events: none;
+    width: 18px;
+    height: 18px;
   }
 `;
 
 const Input = styled.input`
   width: 100%;
-  height: 40px;
-  padding: 0 ${({ $hasRightIcon }) => ($hasRightIcon ? '40px' : '12px')} 0 40px;
+  height: 48px;
+  padding: 0 ${({ $hasRightIcon }) => ($hasRightIcon ? '46px' : '16px')} 0 46px;
   background: ${({ theme }) => theme.colors.inputBg};
   border: 1px solid ${({ theme }) => theme.colors.inputBorder};
   border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textPrimary};
   transition: all ${({ theme }) => theme.transitions.fast};
 
@@ -119,7 +119,7 @@ const Input = styled.input`
 
 const RightIcon = styled.div`
   position: absolute;
-  right: 12px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: ${({ theme }) => theme.colors.success};
@@ -127,13 +127,12 @@ const RightIcon = styled.div`
 
 const SubmitButton = styled.button`
   width: 100%;
-  height: 40px;
-  margin-top: ${({ theme }) => theme.spacing.sm};
+  height: 48px;
   background: ${({ theme }) => theme.colors.buttonPrimaryBg};
   color: ${({ theme }) => theme.colors.buttonPrimaryText};
   border: none;
   border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
@@ -150,16 +149,16 @@ const SubmitButton = styled.button`
 
 const Footer = styled.p`
   text-align: center;
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textMuted};
 
   a {
-    color: ${({ theme }) => theme.colors.textLink};
+    color: ${({ theme }) => theme.colors.textPrimary};
     font-weight: ${({ theme }) => theme.fontWeights.medium};
 
     &:hover {
-      color: ${({ theme }) => theme.colors.textLinkHover};
+      text-decoration: underline;
     }
   }
 `;
@@ -207,7 +206,7 @@ export function Register() {
     try {
       const response = await authService.signUp(username, email, password, confirmPassword);
       if (response.success) {
-        toast.success('Account created');
+        toast.success('Account created successfully!');
         navigate('/login');
       } else {
         setError(response.message || 'Registration failed');
@@ -231,12 +230,12 @@ export function Register() {
       <Card>
         <Header>
           <Title>Create account</Title>
-          <Subtitle>Sign up to get started</Subtitle>
+          <Subtitle>Join the community today</Subtitle>
         </Header>
 
         {error && (
           <ErrorAlert>
-            <AlertTriangle size={16} />
+            <AlertCircle size={18} />
             <span>{error}</span>
           </ErrorAlert>
         )}
@@ -245,7 +244,7 @@ export function Register() {
           <FormGroup>
             <Label>Username</Label>
             <InputWrapper>
-              <User size={16} />
+              <User />
               <Input
                 type="text"
                 placeholder="Choose a username"
@@ -259,7 +258,7 @@ export function Register() {
           <FormGroup>
             <Label>Email</Label>
             <InputWrapper>
-              <Mail size={16} />
+              <Mail />
               <Input
                 type="email"
                 placeholder="Enter your email"
@@ -273,7 +272,7 @@ export function Register() {
           <FormGroup>
             <Label>Password</Label>
             <InputWrapper>
-              <Lock size={16} />
+              <Lock />
               <Input
                 type="password"
                 placeholder="Min 6 characters"
@@ -287,7 +286,7 @@ export function Register() {
           <FormGroup>
             <Label>Confirm Password</Label>
             <InputWrapper>
-              <Lock size={16} />
+              <Lock />
               <Input
                 type="password"
                 placeholder="Confirm password"
@@ -298,14 +297,14 @@ export function Register() {
               />
               {showPasswordMatch && (
                 <RightIcon>
-                  <CheckCircle size={16} />
+                  <Check size={18} />
                 </RightIcon>
               )}
             </InputWrapper>
           </FormGroup>
 
           <SubmitButton type="submit" disabled={loading}>
-            {loading ? 'Creating...' : 'Create Account'}
+            {loading ? 'Creating account...' : 'Create Account'}
           </SubmitButton>
         </Form>
 

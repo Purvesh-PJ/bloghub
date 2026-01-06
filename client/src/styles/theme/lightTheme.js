@@ -1,106 +1,112 @@
-// Light theme colors
+// Light theme - Clean, minimal, Notion-inspired
 export const lightTheme = {
   mode: 'light',
 
   colors: {
-    // Backgrounds
+    // Backgrounds - subtle hierarchy
     bgPrimary: '#ffffff',
-    bgSecondary: '#f6f8fa',
-    bgTertiary: '#f0f2f4',
+    bgSecondary: '#fafafa',
+    bgTertiary: '#f5f5f5',
     bgElevated: '#ffffff',
-    bgHover: '#f3f4f6',
-    bgActive: '#ebecef',
-    bgOverlay: 'rgba(27, 31, 36, 0.5)',
+    bgHover: 'rgba(0, 0, 0, 0.03)',
+    bgActive: 'rgba(0, 0, 0, 0.05)',
+    bgOverlay: 'rgba(0, 0, 0, 0.4)',
 
-    // Text
-    textPrimary: '#1f2328',
-    textSecondary: '#59636e',
-    textMuted: '#8b949e',
-    textDisabled: '#b1b8c0',
+    // Text - high contrast, clear hierarchy
+    textPrimary: '#1a1a1a',
+    textSecondary: '#6b6b6b',
+    textMuted: '#9a9a9a',
+    textDisabled: '#c4c4c4',
     textInverse: '#ffffff',
-    textLink: '#0969da',
-    textLinkHover: '#0550ae',
+    textLink: '#1a1a1a',
+    textLinkHover: '#6b6b6b',
 
-    // Borders
-    border: '#d1d9e0',
-    borderLight: '#e8ebef',
-    borderHover: '#b8c0c8',
-    borderFocus: '#0969da',
+    // Borders - minimal, only when needed
+    border: 'rgba(0, 0, 0, 0.08)',
+    borderLight: 'rgba(0, 0, 0, 0.04)',
+    borderHover: 'rgba(0, 0, 0, 0.12)',
+    borderFocus: '#1a1a1a',
 
-    // Brand/Accent
-    accent: '#0969da',
-    accentHover: '#0550ae',
-    accentActive: '#033d8b',
-    accentSubtle: '#ddf4ff',
-    accentMuted: '#b6d9fc',
+    // Brand/Accent - neutral black
+    accent: '#1a1a1a',
+    accentHover: '#333333',
+    accentActive: '#000000',
+    accentSubtle: 'rgba(0, 0, 0, 0.05)',
+    accentMuted: 'rgba(0, 0, 0, 0.1)',
 
-    // Semantic - Success
-    success: '#1a7f37',
-    successHover: '#116329',
-    successBg: '#dafbe1',
-    successBorder: '#aceebb',
+    // Semantic - muted, professional
+    success: '#22c55e',
+    successHover: '#16a34a',
+    successBg: 'rgba(34, 197, 94, 0.1)',
+    successBorder: 'rgba(34, 197, 94, 0.2)',
 
-    // Semantic - Warning
-    warning: '#9a6700',
-    warningHover: '#7d4e00',
-    warningBg: '#fff8c5',
-    warningBorder: '#f5d547',
+    warning: '#f59e0b',
+    warningHover: '#d97706',
+    warningBg: 'rgba(245, 158, 11, 0.1)',
+    warningBorder: 'rgba(245, 158, 11, 0.2)',
 
-    // Semantic - Error
-    error: '#cf222e',
-    errorHover: '#a40e26',
-    errorBg: '#ffebe9',
-    errorBorder: '#f8a9a3',
+    error: '#ef4444',
+    errorHover: '#dc2626',
+    errorBg: 'rgba(239, 68, 68, 0.1)',
+    errorBorder: 'rgba(239, 68, 68, 0.2)',
 
-    // Semantic - Info
-    info: '#0969da',
-    infoHover: '#0550ae',
-    infoBg: '#ddf4ff',
-    infoBorder: '#80ccff',
+    info: '#6b6b6b',
+    infoHover: '#525252',
+    infoBg: 'rgba(0, 0, 0, 0.05)',
+    infoBorder: 'rgba(0, 0, 0, 0.1)',
 
-    // Interactive states
-    buttonPrimaryBg: '#1f2328',
+    // Buttons - clean, minimal
+    buttonPrimaryBg: '#1a1a1a',
     buttonPrimaryText: '#ffffff',
-    buttonPrimaryHover: '#32383f',
-    buttonSecondaryBg: '#f6f8fa',
-    buttonSecondaryText: '#1f2328',
-    buttonSecondaryHover: '#eaeef2',
-    buttonSecondaryBorder: '#d1d9e0',
+    buttonPrimaryHover: '#333333',
+    buttonSecondaryBg: '#ffffff',
+    buttonSecondaryText: '#1a1a1a',
+    buttonSecondaryHover: '#f5f5f5',
+    buttonSecondaryBorder: 'rgba(0, 0, 0, 0.1)',
+    buttonGhostHover: 'rgba(0, 0, 0, 0.05)',
 
-    // Input
+    // Input - clean, subtle
     inputBg: '#ffffff',
-    inputBorder: '#d1d9e0',
-    inputBorderHover: '#b8c0c8',
-    inputBorderFocus: '#0969da',
-    inputPlaceholder: '#8b949e',
+    inputBorder: 'rgba(0, 0, 0, 0.1)',
+    inputBorderHover: 'rgba(0, 0, 0, 0.2)',
+    inputBorderFocus: '#1a1a1a',
+    inputPlaceholder: '#9a9a9a',
 
-    // Card
+    // Card - elevation based, no borders
     cardBg: '#ffffff',
-    cardBorder: '#d1d9e0',
-    cardShadow: '0 1px 3px rgba(27, 31, 36, 0.04), 0 1px 2px rgba(27, 31, 36, 0.06)',
-    cardHoverShadow: '0 4px 12px rgba(27, 31, 36, 0.08)',
+    cardBorder: 'transparent',
+    cardHoverBg: '#ffffff',
 
     // Scrollbar
-    scrollbarTrack: '#f6f8fa',
-    scrollbarThumb: '#c1c8cd',
-    scrollbarThumbHover: '#a8b1b8',
+    scrollbarTrack: 'transparent',
+    scrollbarThumb: 'rgba(0, 0, 0, 0.15)',
+    scrollbarThumbHover: 'rgba(0, 0, 0, 0.25)',
 
     // Selection
-    selection: '#ddf4ff',
-    selectionText: '#1f2328',
+    selection: 'rgba(0, 0, 0, 0.1)',
+    selectionText: '#1a1a1a',
 
     // Code
-    codeBg: '#f6f8fa',
-    codeBorder: '#e8ebef',
+    codeBg: '#f5f5f5',
+    codeBorder: 'transparent',
+
+    // Badge
+    badgeBg: 'rgba(0, 0, 0, 0.05)',
+    badgeText: '#6b6b6b',
+    badgeActiveBg: '#1a1a1a',
+    badgeActiveText: '#ffffff',
   },
 
   shadows: {
-    xs: '0 1px 2px rgba(27, 31, 36, 0.04)',
-    sm: '0 1px 3px rgba(27, 31, 36, 0.04), 0 1px 2px rgba(27, 31, 36, 0.06)',
-    md: '0 4px 8px rgba(27, 31, 36, 0.06), 0 2px 4px rgba(27, 31, 36, 0.04)',
-    lg: '0 8px 24px rgba(27, 31, 36, 0.08), 0 4px 8px rgba(27, 31, 36, 0.04)',
-    xl: '0 12px 48px rgba(27, 31, 36, 0.12)',
-    focus: '0 0 0 3px rgba(9, 105, 218, 0.3)',
-    focusError: '0 0 0 3px rgba(207, 34, 46, 0.3)',
+    none: 'none',
+    xs: '0 1px 2px rgba(0, 0, 0, 0.04)',
+    sm: '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+    md: '0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.03)',
+    lg: '0 10px 20px rgba(0, 0, 0, 0.06), 0 3px 6px rgba(0, 0, 0, 0.04)',
+    xl: '0 15px 40px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04)',
+    card: '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
+    cardHover: '0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)',
+    focus: '0 0 0 2px rgba(0, 0, 0, 0.1)',
+    focusRing: '0 0 0 2px #ffffff, 0 0 0 4px #1a1a1a',
   },
 };

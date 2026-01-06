@@ -26,14 +26,20 @@ const HeaderContent = styled.div`
   height: 100%;
   max-width: ${({ theme }) => theme.layout.maxContentWidth};
   margin: 0 auto;
-  padding: 0 ${({ theme }) => theme.spacing.md};
+  padding: 0 ${({ theme }) => theme.spacing.lg};
+`;
+
+const LeftSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xl};
 `;
 
 const Logo = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.xl};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   color: ${({ theme }) => theme.colors.textPrimary};
-  letter-spacing: -0.5px;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
   
   &:hover {
     color: ${({ theme }) => theme.colors.textPrimary};
@@ -41,48 +47,67 @@ const Logo = styled(Link)`
 `;
 
 const SearchForm = styled.form`
-  flex: 1;
-  max-width: 400px;
-  margin: 0 ${({ theme }) => theme.spacing.xl};
+  display: flex;
+  align-items: center;
+  gap: 0;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     display: none;
   }
 `;
 
-const SearchInput = styled.div`
+const SearchInputWrapper = styled.div`
   position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+const SearchIcon = styled.div`
+  position: absolute;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  color: ${({ theme }) => theme.colors.textMuted};
+  pointer-events: none;
+`;
+
+const SearchInput = styled.input`
+  width: 280px;
+  height: 40px;
+  padding: 0 ${({ theme }) => theme.spacing.sm} 0 40px;
+  background: ${({ theme }) => theme.colors.bgSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-right: none;
+  border-radius: ${({ theme }) => theme.radii.md} 0 0 ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  transition: all ${({ theme }) => theme.transitions.fast};
   
-  input {
-    width: 100%;
-    height: 36px;
-    padding: 0 ${({ theme }) => theme.spacing.sm} 0 36px;
-    background: ${({ theme }) => theme.colors.bgSecondary};
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${({ theme }) => theme.radii.md};
-    font-size: ${({ theme }) => theme.fontSizes.base};
-    color: ${({ theme }) => theme.colors.textPrimary};
-    transition: all ${({ theme }) => theme.transitions.fast};
-    
-    &::placeholder {
-      color: ${({ theme }) => theme.colors.inputPlaceholder};
-    }
-    
-    &:focus {
-      outline: none;
-      border-color: ${({ theme }) => theme.colors.borderFocus};
-      box-shadow: ${({ theme }) => theme.shadows.focus};
-      background: ${({ theme }) => theme.colors.bgPrimary};
-    }
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.inputPlaceholder};
   }
   
-  svg {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: ${({ theme }) => theme.colors.textMuted};
-    pointer-events: none;
+  &:focus {
+    outline: none;
+    background: ${({ theme }) => theme.colors.bgPrimary};
+    border-color: ${({ theme }) => theme.colors.borderHover};
+  }
+`;
+
+const SearchButton = styled.button`
+  height: 40px;
+  padding: 0 ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.buttonPrimaryBg};
+  color: ${({ theme }) => theme.colors.buttonPrimaryText};
+  border: none;
+  border-radius: 0 ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md} 0;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.buttonPrimaryHover};
   }
 `;
 
@@ -95,10 +120,11 @@ const Actions = styled.div`
 const Button = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  height: 36px;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
   padding: 0 ${({ theme }) => theme.spacing.md};
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
@@ -113,17 +139,16 @@ const PrimaryButton = styled(Button)`
   
   &:hover {
     background: ${({ theme }) => theme.colors.buttonPrimaryHover};
-    color: ${({ theme }) => theme.colors.buttonPrimaryText};
   }
 `;
 
-const GhostButton = styled(Button)`
-  background: transparent;
-  color: ${({ theme }) => theme.colors.textSecondary};
+const SecondaryButton = styled(Button)`
+  background: ${({ theme }) => theme.colors.buttonSecondaryBg};
+  color: ${({ theme }) => theme.colors.buttonSecondaryText};
+  border: 1px solid ${({ theme }) => theme.colors.buttonSecondaryBorder};
   
   &:hover {
-    background: ${({ theme }) => theme.colors.bgHover};
-    color: ${({ theme }) => theme.colors.textPrimary};
+    background: ${({ theme }) => theme.colors.buttonSecondaryHover};
   }
 `;
 
@@ -145,14 +170,15 @@ const DropdownHeader = styled.div`
 `;
 
 const UserName = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 const UserEmail = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 2px;
 `;
 
 const HideMobile = styled.span`
@@ -182,19 +208,24 @@ export function Header() {
   return (
     <HeaderWrapper>
       <HeaderContent>
-        <Logo to="/">BlogHub</Logo>
-
-        <SearchForm onSubmit={handleSearch}>
-          <SearchInput>
-            <Search size={14} strokeWidth={2} />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </SearchInput>
-        </SearchForm>
+        <LeftSection>
+          <Logo to="/">BlogHub</Logo>
+          
+          <SearchForm onSubmit={handleSearch}>
+            <SearchInputWrapper>
+              <SearchIcon>
+                <Search size={16} />
+              </SearchIcon>
+              <SearchInput
+                type="text"
+                placeholder="Search posts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </SearchInputWrapper>
+            <SearchButton type="submit">Search</SearchButton>
+          </SearchForm>
+        </LeftSection>
 
         <Actions>
           <ThemeToggle />
@@ -202,8 +233,8 @@ export function Header() {
           {isAuthenticated ? (
             <>
               <PrimaryButton as={Link} to="/write">
-                <Plus size={16} strokeWidth={2} />
-                <HideMobile>New Post</HideMobile>
+                <Plus size={16} />
+                <HideMobile>Write</HideMobile>
               </PrimaryButton>
 
               <DropdownMenu.Root>
@@ -264,7 +295,7 @@ export function Header() {
             </>
           ) : (
             <>
-              <GhostButton as={Link} to="/login">Sign In</GhostButton>
+              <SecondaryButton as={Link} to="/login">Sign In</SecondaryButton>
               <PrimaryButton as={Link} to="/register">Sign Up</PrimaryButton>
             </>
           )}

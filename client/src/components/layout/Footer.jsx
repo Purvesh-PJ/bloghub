@@ -5,20 +5,19 @@ const FooterWrapper = styled.footer`
   border-top: 1px solid ${({ theme }) => theme.colors.border};
   background-color: ${({ theme }) => theme.colors.bgPrimary};
   margin-top: auto;
-  transition: background-color ${({ theme }) => theme.transitions.normal},
-              border-color ${({ theme }) => theme.transitions.normal};
+  transition: background-color ${({ theme }) => theme.transitions.normal};
 `;
 
 const FooterContent = styled.div`
   max-width: ${({ theme }) => theme.layout.maxContentWidth};
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
 `;
 
 const FooterTop = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacing.xl};
 
   @media (min-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: row;
@@ -27,19 +26,17 @@ const FooterTop = styled.div`
   }
 `;
 
-const BrandSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
+const BrandSection = styled.div``;
 
-const BrandName = styled.span`
-  font-size: ${({ theme }) => theme.fontSizes.xl};
+const BrandName = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
 `;
 
-const BrandTagline = styled.span`
+const BrandTagline = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textMuted};
 `;
@@ -49,25 +46,28 @@ const LinksContainer = styled.div`
   gap: ${({ theme }) => theme.spacing.xxl};
 `;
 
-const LinkGroup = styled.div`
+const LinkGroup = styled.div``;
+
+const LinkGroupTitle = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const LinkList = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.sm};
-`;
-
-const LinkGroupTitle = styled.span`
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 const FooterLink = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textMuted};
   transition: color ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
-    color: ${({ theme }) => theme.colors.textLink};
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 `;
 
@@ -81,7 +81,7 @@ const FooterBottom = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.sm};
-  
+
   @media (min-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: row;
     justify-content: space-between;
@@ -96,7 +96,7 @@ const Copyright = styled.span`
 
 const LegalLinks = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.lg};
 `;
 
 const LegalLink = styled.span`
@@ -104,9 +104,9 @@ const LegalLink = styled.span`
   color: ${({ theme }) => theme.colors.textMuted};
   cursor: pointer;
   transition: color ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
-    color: ${({ theme }) => theme.colors.textLink};
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 `;
 
@@ -125,15 +125,19 @@ export function Footer() {
           <LinksContainer>
             <LinkGroup>
               <LinkGroupTitle>Platform</LinkGroupTitle>
-              <FooterLink to="/">Home</FooterLink>
-              <FooterLink to="/search">Explore</FooterLink>
-              <FooterLink to="/write">Write</FooterLink>
+              <LinkList>
+                <FooterLink to="/">Home</FooterLink>
+                <FooterLink to="/search">Explore</FooterLink>
+                <FooterLink to="/write">Write</FooterLink>
+              </LinkList>
             </LinkGroup>
             <LinkGroup>
               <LinkGroupTitle>Account</LinkGroupTitle>
-              <FooterLink to="/profile">Profile</FooterLink>
-              <FooterLink to="/settings">Settings</FooterLink>
-              <FooterLink to="/my-posts">My Posts</FooterLink>
+              <LinkList>
+                <FooterLink to="/profile">Profile</FooterLink>
+                <FooterLink to="/settings">Settings</FooterLink>
+                <FooterLink to="/my-posts">My Posts</FooterLink>
+              </LinkList>
             </LinkGroup>
           </LinksContainer>
         </FooterTop>
