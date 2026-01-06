@@ -17,21 +17,30 @@ exports.signUp = async (req, res) => {
   }
 
   const { username, email, password } = req.body;
+  const normalizedEmail = email.toLowerCase().trim();
 
   try {
-    // Find user is already exists
-    let user = await User.findOne({ email });
-    if(user){
+    // Check if user already exists
+    let user = await User.findOne({ 
+      $or: [
+        { email: normalizedEmail },
+        { username: username }
+      ]
+    });
+    
+    if (user) {
+      const field = user.email === normalizedEmail ? 'Email' : 'Username';
       return res.status(409).json({ 
         success: false,
-        message : 'User already exists',
+        message: `${field} already exists`,
         error: 'UserExists'
       });
     }
-    // If user new then create user
+    
+    // Create new user
     user = new User({
-      username, 
-      email, 
+      username: username.trim(), 
+      email: normalizedEmail, 
       password
     });
     // Hash password 
@@ -81,24 +90,28 @@ exports.signIn = async(req, res) => {
   const { credential, password } = req.body;
 
   try {
+    // Search by email or username (case-insensitive for email)
     const user = await User.findOne({
-      $or : [{email : credential}, {username : credential}]
+      $or: [
+        { email: credential.toLowerCase() },
+        { username: credential }
+      ]
     });
     
-    if(!user){
+    if (!user) {
       return res.status(401).json({ 
         success: false, 
-        message : 'Invalid Credentials email', 
+        message: 'Invalid email/username or password', 
         error: 'AuthenticationError'
       });  
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if(!isPasswordValid){
+    if (!isPasswordValid) {
       return res.status(401).json({ 
         success: false, 
-        message : 'Invalid Credentials pass',
+        message: 'Invalid email/username or password',
         error: 'AuthenticationError'
       });
     }
