@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 import { Bold, Italic, Underline, List, ListOrdered, Quote, Code, Link, Image } from 'lucide-react';
 
@@ -27,7 +27,7 @@ const ToolbarButton = styled.button`
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: ${({ $active, theme }) => $active ? theme.colors.bgActive : 'transparent'};
+  background: transparent;
   border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
@@ -66,7 +66,7 @@ const EditorArea = styled.div`
   
   h1, h2, h3 {
     margin: 0.5em 0;
-    font-weight: ${({ theme }) => theme.fontWeights.semibold};
+    font-weight: 600;
   }
   
   h1 { font-size: 1.5em; }
@@ -89,7 +89,7 @@ const EditorArea = styled.div`
   
   pre, code {
     background: ${({ theme }) => theme.colors.codeBg};
-    border-radius: ${({ theme }) => theme.radii.sm};
+    border-radius: 4px;
     font-family: monospace;
   }
   
@@ -109,24 +109,33 @@ const EditorArea = styled.div`
   
   img {
     max-width: 100%;
-    border-radius: ${({ theme }) => theme.radii.md};
+    border-radius: 8px;
   }
 `;
 
 export function RichTextEditor({ value, onChange, placeholder = 'Write your content...' }) {
   const editorRef = useRef(null);
+  const isInternalChange = useRef(false);
 
-  const execCommand = useCallback((command, value = null) => {
-    document.execCommand(command, false, value);
+  // Only set initial value once
+  useEffect(() => {
+    if (editorRef.current && value && !editorRef.current.innerHTML) {
+      editorRef.current.innerHTML = value;
+    }
+  }, []);
+
+  const execCommand = useCallback((command, val = null) => {
+    document.execCommand(command, false, val);
     editorRef.current?.focus();
-    // Trigger onChange with updated content
     if (editorRef.current) {
+      isInternalChange.current = true;
       onChange(editorRef.current.innerHTML);
     }
   }, [onChange]);
 
   const handleInput = useCallback(() => {
     if (editorRef.current) {
+      isInternalChange.current = true;
       onChange(editorRef.current.innerHTML);
     }
   }, [onChange]);
@@ -154,40 +163,40 @@ export function RichTextEditor({ value, onChange, placeholder = 'Write your cont
   return (
     <EditorContainer>
       <Toolbar>
-        <ToolbarButton onClick={() => execCommand('bold')} title="Bold">
+        <ToolbarButton type="button" onClick={() => execCommand('bold')} title="Bold">
           <Bold />
         </ToolbarButton>
-        <ToolbarButton onClick={() => execCommand('italic')} title="Italic">
+        <ToolbarButton type="button" onClick={() => execCommand('italic')} title="Italic">
           <Italic />
         </ToolbarButton>
-        <ToolbarButton onClick={() => execCommand('underline')} title="Underline">
+        <ToolbarButton type="button" onClick={() => execCommand('underline')} title="Underline">
           <Underline />
         </ToolbarButton>
         
         <ToolbarDivider />
         
-        <ToolbarButton onClick={() => execCommand('insertUnorderedList')} title="Bullet List">
+        <ToolbarButton type="button" onClick={() => execCommand('insertUnorderedList')} title="Bullet List">
           <List />
         </ToolbarButton>
-        <ToolbarButton onClick={() => execCommand('insertOrderedList')} title="Numbered List">
+        <ToolbarButton type="button" onClick={() => execCommand('insertOrderedList')} title="Numbered List">
           <ListOrdered />
         </ToolbarButton>
         
         <ToolbarDivider />
         
-        <ToolbarButton onClick={() => execCommand('formatBlock', 'blockquote')} title="Quote">
+        <ToolbarButton type="button" onClick={() => execCommand('formatBlock', 'blockquote')} title="Quote">
           <Quote />
         </ToolbarButton>
-        <ToolbarButton onClick={() => execCommand('formatBlock', 'pre')} title="Code Block">
+        <ToolbarButton type="button" onClick={() => execCommand('formatBlock', 'pre')} title="Code Block">
           <Code />
         </ToolbarButton>
         
         <ToolbarDivider />
         
-        <ToolbarButton onClick={insertLink} title="Insert Link">
+        <ToolbarButton type="button" onClick={insertLink} title="Insert Link">
           <Link />
         </ToolbarButton>
-        <ToolbarButton onClick={insertImage} title="Insert Image">
+        <ToolbarButton type="button" onClick={insertImage} title="Insert Image">
           <Image />
         </ToolbarButton>
       </Toolbar>
@@ -198,7 +207,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Write your cont
         data-placeholder={placeholder}
         onInput={handleInput}
         onPaste={handlePaste}
-        dangerouslySetInnerHTML={{ __html: value }}
+        suppressContentEditableWarning
       />
     </EditorContainer>
   );
