@@ -210,9 +210,7 @@ export function PostCard({ post }) {
           <MetaRow>
             <AuthorInfo>
               <AuthorLink to={post.user?._id ? `/user/${post.user._id}` : '#'}>
-                <AuthorAvatar>
-                  {post.user?.username?.[0]?.toUpperCase() || 'U'}
-                </AuthorAvatar>
+                <AuthorAvatar>{post.user?.username?.[0]?.toUpperCase() || 'U'}</AuthorAvatar>
                 <AuthorName>{post.user?.username || 'Anonymous'}</AuthorName>
               </AuthorLink>
               <MetaDot />

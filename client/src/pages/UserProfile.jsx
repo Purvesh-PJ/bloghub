@@ -72,9 +72,8 @@ export function UserProfile() {
   }
 
   // Filter posts by this user
-  const userPosts = allPosts?.filter(
-    (post) => post.user?._id === userId && post.visibility === 'public'
-  ) || [];
+  const userPosts =
+    allPosts?.filter((post) => post.user?._id === userId && post.visibility === 'public') || [];
 
   const totalLikes = userPosts.reduce((acc, p) => acc + (p.likes?.length || 0), 0);
   const authorName = userPosts[0]?.user?.username || 'User';
@@ -99,22 +98,28 @@ export function UserProfile() {
         {/* Profile Header */}
         <Card>
           <Flex direction={{ initial: 'column', sm: 'row' }} gap="5" p="5" align="center">
-            <Avatar
-              size="8"
-              fallback={authorName[0]?.toUpperCase() || 'U'}
-              radius="full"
-            />
+            <Avatar size="8" fallback={authorName[0]?.toUpperCase() || 'U'} radius="full" />
             <Box style={{ flex: 1, textAlign: 'center' }}>
-              <Heading size="6" mb="2">{authorName}</Heading>
-              
+              <Heading size="6" mb="2">
+                {authorName}
+              </Heading>
+
               <Flex gap="6" justify="center" mb="4">
                 <Box style={{ textAlign: 'center' }}>
-                  <Text size="5" weight="bold">{userPosts.length}</Text>
-                  <Text size="1" color="gray" style={{ display: 'block' }}>Posts</Text>
+                  <Text size="5" weight="bold">
+                    {userPosts.length}
+                  </Text>
+                  <Text size="1" color="gray" style={{ display: 'block' }}>
+                    Posts
+                  </Text>
                 </Box>
                 <Box style={{ textAlign: 'center' }}>
-                  <Text size="5" weight="bold">{totalLikes}</Text>
-                  <Text size="1" color="gray" style={{ display: 'block' }}>Likes</Text>
+                  <Text size="5" weight="bold">
+                    {totalLikes}
+                  </Text>
+                  <Text size="1" color="gray" style={{ display: 'block' }}>
+                    Likes
+                  </Text>
                 </Box>
               </Flex>
 
@@ -134,7 +139,9 @@ export function UserProfile() {
 
         {/* Posts */}
         <Box>
-          <Heading size="5" mb="4">Posts by {authorName}</Heading>
+          <Heading size="5" mb="4">
+            Posts by {authorName}
+          </Heading>
           {userPosts.length === 0 ? (
             <Card>
               <Flex direction="column" align="center" py="9">

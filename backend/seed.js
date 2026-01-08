@@ -22,20 +22,71 @@ const categories = [
   'Food',
   'Health',
   'Business',
-  'Science'
+  'Science',
 ];
 
 const users = [
-  { username: 'john_doe', email: 'john@example.com', password: 'password123', bio: 'Full-stack developer passionate about React and Node.js' },
-  { username: 'jane_smith', email: 'jane@example.com', password: 'password123', bio: 'UX Designer and tech enthusiast' },
-  { username: 'mike_wilson', email: 'mike@example.com', password: 'password123', bio: 'DevOps engineer and cloud architect' },
-  { username: 'sarah_jones', email: 'sarah@example.com', password: 'password123', bio: 'Frontend developer specializing in Vue.js' },
-  { username: 'alex_brown', email: 'alex@example.com', password: 'password123', bio: 'Mobile app developer and startup founder' },
-  { username: 'emily_davis', email: 'emily@example.com', password: 'password123', bio: 'Data scientist and machine learning enthusiast' },
-  { username: 'chris_taylor', email: 'chris@example.com', password: 'password123', bio: 'Backend developer with expertise in Python' },
-  { username: 'lisa_anderson', email: 'lisa@example.com', password: 'password123', bio: 'Product manager and agile coach' },
-  { username: 'david_martin', email: 'david@example.com', password: 'password123', bio: 'Security researcher and ethical hacker' },
-  { username: 'admin', email: 'admin@bloghub.com', password: 'admin123', bio: 'BlogHub Administrator', roles: ['user', 'admin'] }
+  {
+    username: 'john_doe',
+    email: 'john@example.com',
+    password: 'password123',
+    bio: 'Full-stack developer passionate about React and Node.js',
+  },
+  {
+    username: 'jane_smith',
+    email: 'jane@example.com',
+    password: 'password123',
+    bio: 'UX Designer and tech enthusiast',
+  },
+  {
+    username: 'mike_wilson',
+    email: 'mike@example.com',
+    password: 'password123',
+    bio: 'DevOps engineer and cloud architect',
+  },
+  {
+    username: 'sarah_jones',
+    email: 'sarah@example.com',
+    password: 'password123',
+    bio: 'Frontend developer specializing in Vue.js',
+  },
+  {
+    username: 'alex_brown',
+    email: 'alex@example.com',
+    password: 'password123',
+    bio: 'Mobile app developer and startup founder',
+  },
+  {
+    username: 'emily_davis',
+    email: 'emily@example.com',
+    password: 'password123',
+    bio: 'Data scientist and machine learning enthusiast',
+  },
+  {
+    username: 'chris_taylor',
+    email: 'chris@example.com',
+    password: 'password123',
+    bio: 'Backend developer with expertise in Python',
+  },
+  {
+    username: 'lisa_anderson',
+    email: 'lisa@example.com',
+    password: 'password123',
+    bio: 'Product manager and agile coach',
+  },
+  {
+    username: 'david_martin',
+    email: 'david@example.com',
+    password: 'password123',
+    bio: 'Security researcher and ethical hacker',
+  },
+  {
+    username: 'admin',
+    email: 'admin@bloghub.com',
+    password: 'admin123',
+    bio: 'BlogHub Administrator',
+    roles: ['user', 'admin'],
+  },
 ];
 
 const samplePosts = [
@@ -52,7 +103,7 @@ const samplePosts = [
 <p>Start experimenting with these features today and see the difference in your applications!</p>`,
     imageURL: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800',
     visibility: 'public',
-    categoryIndex: 1
+    categoryIndex: 1,
   },
   {
     title: 'The Art of Clean Code: Best Practices for Developers',
@@ -68,7 +119,7 @@ const samplePosts = [
 <p>Remember: Code is read more often than it's written. Invest in readability!</p>`,
     imageURL: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800',
     visibility: 'public',
-    categoryIndex: 1
+    categoryIndex: 1,
   },
   {
     title: 'Building Scalable APIs with Node.js and Express',
@@ -84,7 +135,7 @@ const samplePosts = [
 <p>With these practices, your API will be ready for production!</p>`,
     imageURL: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800',
     visibility: 'public',
-    categoryIndex: 2
+    categoryIndex: 2,
   },
   {
     title: 'Modern CSS Techniques Every Developer Should Know',
@@ -100,7 +151,7 @@ const samplePosts = [
 <p>Embrace these modern techniques and write better CSS!</p>`,
     imageURL: 'https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=800',
     visibility: 'public',
-    categoryIndex: 3
+    categoryIndex: 3,
   },
   {
     title: 'Introduction to Machine Learning for Beginners',
@@ -116,7 +167,7 @@ const samplePosts = [
 <p>The journey of a thousand models begins with a single dataset!</p>`,
     imageURL: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800',
     visibility: 'public',
-    categoryIndex: 9
+    categoryIndex: 9,
   },
   {
     title: 'Remote Work: Tips for Staying Productive',
@@ -132,7 +183,7 @@ const samplePosts = [
 <p>Remote work is a skill that improves with practice!</p>`,
     imageURL: 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800',
     visibility: 'public',
-    categoryIndex: 4
+    categoryIndex: 4,
   },
   {
     title: 'Docker for Developers: A Practical Guide',
@@ -148,7 +199,7 @@ const samplePosts = [
 <p>Containerize your apps and deploy with confidence!</p>`,
     imageURL: 'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=800',
     visibility: 'public',
-    categoryIndex: 0
+    categoryIndex: 0,
   },
   {
     title: 'The Future of Web Development in 2024',
@@ -164,7 +215,7 @@ const samplePosts = [
 <p>Stay curious and keep learning!</p>`,
     imageURL: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800',
     visibility: 'public',
-    categoryIndex: 2
+    categoryIndex: 2,
   },
   {
     title: 'Database Design Patterns for Modern Applications',
@@ -180,7 +231,7 @@ const samplePosts = [
 <p>Design your database with your queries in mind!</p>`,
     imageURL: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800',
     visibility: 'public',
-    categoryIndex: 0
+    categoryIndex: 0,
   },
   {
     title: 'Healthy Habits for Software Developers',
@@ -196,8 +247,8 @@ const samplePosts = [
 <p>Your health is your most important asset!</p>`,
     imageURL: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800',
     visibility: 'public',
-    categoryIndex: 7
-  }
+    categoryIndex: 7,
+  },
 ];
 
 const comments = [
@@ -210,7 +261,7 @@ const comments = [
   'I implemented this in my project and it works perfectly!',
   'Clear and concise. Thank you for this guide.',
   'This changed my perspective on the subject. Great insights!',
-  'One of the best articles I have read on this topic.'
+  'One of the best articles I have read on this topic.',
 ];
 
 async function seed() {
@@ -230,7 +281,7 @@ async function seed() {
     // Create categories
     console.log('Creating categories...');
     const createdCategories = await Category.insertMany(
-      categories.map(name => ({ name, posts: [] }))
+      categories.map((name) => ({ name, posts: [] })),
     );
     console.log(`Created ${createdCategories.length} categories`);
 
@@ -240,13 +291,13 @@ async function seed() {
     for (const userData of users) {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(userData.password, salt);
-      
+
       const user = new User({
         username: userData.username,
         email: userData.email,
         password: hashedPassword,
         roles: userData.roles || ['user'],
-        posts: []
+        posts: [],
       });
       await user.save();
 
@@ -258,7 +309,7 @@ async function seed() {
         followers: [],
         postCount: 0,
         followingsCount: 0,
-        followersCount: 0
+        followersCount: 0,
       });
       await profile.save();
 
@@ -287,7 +338,7 @@ async function seed() {
         categories: [category._id],
         likes: [],
         comments: [],
-        views: []
+        views: [],
       });
       await post.save();
 
@@ -296,10 +347,7 @@ async function seed() {
       await user.save();
 
       // Update user's profile post count
-      await Profile.findOneAndUpdate(
-        { user: user._id },
-        { $inc: { postCount: 1 } }
-      );
+      await Profile.findOneAndUpdate({ user: user._id }, { $inc: { postCount: 1 } });
 
       // Update category
       category.posts.push(post._id);
@@ -324,7 +372,7 @@ async function seed() {
           likes: [],
           dislikes: [],
           replies: [],
-          replyCount: 0
+          replyCount: 0,
         });
         await comment.save();
 
@@ -341,11 +389,11 @@ async function seed() {
     for (const post of createdPosts) {
       const numLikes = Math.floor(Math.random() * 6) + 2;
       const shuffledUsers = [...createdUsers].sort(() => Math.random() - 0.5);
-      
+
       for (let i = 0; i < Math.min(numLikes, shuffledUsers.length); i++) {
         const like = new Like({
           user: shuffledUsers[i]._id,
-          posts: post._id
+          posts: post._id,
         });
         await like.save();
         post.likes.push(like._id);
@@ -360,23 +408,23 @@ async function seed() {
     for (let i = 0; i < createdUsers.length; i++) {
       const user = createdUsers[i];
       const numFollowers = Math.floor(Math.random() * 5) + 1;
-      
+
       for (let j = 0; j < numFollowers; j++) {
         const followerIndex = (i + j + 1) % createdUsers.length;
         if (followerIndex !== i) {
           await Profile.findOneAndUpdate(
             { user: user._id },
-            { 
+            {
               $addToSet: { followers: createdUsers[followerIndex]._id },
-              $inc: { followersCount: 1 }
-            }
+              $inc: { followersCount: 1 },
+            },
           );
           await Profile.findOneAndUpdate(
             { user: createdUsers[followerIndex]._id },
-            { 
+            {
               $addToSet: { followings: user._id },
-              $inc: { followingsCount: 1 }
-            }
+              $inc: { followingsCount: 1 },
+            },
           );
         }
       }

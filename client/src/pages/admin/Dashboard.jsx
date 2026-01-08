@@ -43,7 +43,9 @@ export function AdminDashboard() {
       <Flex justify="between" align="center" mb="5">
         <Box>
           <Heading size="5">Dashboard</Heading>
-          <Text size="2" color="gray">Overview of your platform</Text>
+          <Text size="2" color="gray">
+            Overview of your platform
+          </Text>
         </Box>
         <Button size="2" asChild>
           <Link to="/write">New Post</Link>
@@ -60,8 +62,12 @@ export function AdminDashboard() {
                 <Flex justify="between" align="start" mb="2">
                   <Icon size={16} color="var(--text-muted)" />
                 </Flex>
-                <Text size="5" weight="bold">{stat.value}</Text>
-                <Text size="1" color="gray">{stat.label}</Text>
+                <Text size="5" weight="bold">
+                  {stat.value}
+                </Text>
+                <Text size="1" color="gray">
+                  {stat.label}
+                </Text>
               </Box>
             </Card>
           );
@@ -73,7 +79,9 @@ export function AdminDashboard() {
         <Card>
           <Box p="4">
             <Flex justify="between" align="center" mb="3">
-              <Text size="3" weight="medium">Recent Posts</Text>
+              <Text size="3" weight="medium">
+                Recent Posts
+              </Text>
               <Button variant="ghost" size="1" asChild>
                 <Link to="/admin/posts">
                   View All <ArrowRight size={12} />
@@ -82,13 +90,20 @@ export function AdminDashboard() {
             </Flex>
             <Flex direction="column" gap="2">
               {recentPosts.length === 0 ? (
-                <Text color="gray" size="2">No posts yet</Text>
+                <Text color="gray" size="2">
+                  No posts yet
+                </Text>
               ) : (
                 recentPosts.map((post) => (
                   <Flex key={post._id} justify="between" align="center" py="2">
                     <Box style={{ flex: 1, minWidth: 0 }}>
                       <Link to={`/post/${post._id}`}>
-                        <Text size="2" weight="medium" className="text-truncate" style={{ display: 'block' }}>
+                        <Text
+                          size="2"
+                          weight="medium"
+                          className="text-truncate"
+                          style={{ display: 'block' }}
+                        >
                           {post.title}
                         </Text>
                       </Link>
@@ -96,7 +111,9 @@ export function AdminDashboard() {
                         {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                       </Text>
                     </Box>
-                    <Badge color="gray" size="1">{post.visibility}</Badge>
+                    <Badge color="gray" size="1">
+                      {post.visibility}
+                    </Badge>
                   </Flex>
                 ))
               )}
@@ -107,7 +124,9 @@ export function AdminDashboard() {
         {/* Quick Actions */}
         <Card>
           <Box p="4">
-            <Text size="3" weight="medium" mb="3">Quick Actions</Text>
+            <Text size="3" weight="medium" mb="3">
+              Quick Actions
+            </Text>
             <Grid columns="2" gap="2">
               <Button variant="soft" size="2" asChild>
                 <Link to="/write">New Post</Link>
@@ -128,23 +147,41 @@ export function AdminDashboard() {
         {/* Content Summary */}
         <Card>
           <Box p="4">
-            <Text size="3" weight="medium" mb="3">Content Summary</Text>
+            <Text size="3" weight="medium" mb="3">
+              Content Summary
+            </Text>
             <Flex direction="column" gap="2">
               <Flex justify="between">
-                <Text size="2" color="gray">Public Posts</Text>
-                <Text size="2" weight="medium">{publicPosts}</Text>
+                <Text size="2" color="gray">
+                  Public Posts
+                </Text>
+                <Text size="2" weight="medium">
+                  {publicPosts}
+                </Text>
               </Flex>
               <Flex justify="between">
-                <Text size="2" color="gray">Draft Posts</Text>
-                <Text size="2" weight="medium">{draftPosts}</Text>
+                <Text size="2" color="gray">
+                  Draft Posts
+                </Text>
+                <Text size="2" weight="medium">
+                  {draftPosts}
+                </Text>
               </Flex>
               <Flex justify="between">
-                <Text size="2" color="gray">Private Posts</Text>
-                <Text size="2" weight="medium">{posts?.filter((p) => p.visibility === 'private').length || 0}</Text>
+                <Text size="2" color="gray">
+                  Private Posts
+                </Text>
+                <Text size="2" weight="medium">
+                  {posts?.filter((p) => p.visibility === 'private').length || 0}
+                </Text>
               </Flex>
               <Flex justify="between">
-                <Text size="2" color="gray">Total Engagement</Text>
-                <Text size="2" weight="medium">{totalLikes + totalComments}</Text>
+                <Text size="2" color="gray">
+                  Total Engagement
+                </Text>
+                <Text size="2" weight="medium">
+                  {totalLikes + totalComments}
+                </Text>
               </Flex>
             </Flex>
           </Box>
@@ -153,7 +190,9 @@ export function AdminDashboard() {
         {/* Performance */}
         <Card>
           <Box p="4">
-            <Text size="3" weight="medium" mb="3">Top Posts</Text>
+            <Text size="3" weight="medium" mb="3">
+              Top Posts
+            </Text>
             <Flex direction="column" gap="2">
               {recentPosts.slice(0, 4).map((post) => (
                 <Flex key={post._id} justify="between" align="center">

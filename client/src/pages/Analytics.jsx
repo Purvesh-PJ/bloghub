@@ -34,11 +34,11 @@ const StatsGrid = styled.div`
   grid-template-columns: repeat(5, 1fr);
   gap: ${({ theme }) => theme.spacing.md};
   margin-bottom: ${({ theme }) => theme.spacing.xl};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -50,7 +50,7 @@ const StatCard = styled.div`
   box-shadow: ${({ theme }) => theme.shadows.card};
   padding: ${({ theme }) => theme.spacing.lg};
   transition: all ${({ theme }) => theme.transitions.normal};
-  
+
   &:hover {
     box-shadow: ${({ theme }) => theme.shadows.cardHover};
     transform: translateY(-2px);
@@ -67,8 +67,11 @@ const StatIcon = styled.div`
   justify-content: center;
   margin-bottom: ${({ theme }) => theme.spacing.md};
   color: ${({ theme }) => theme.colors.textSecondary};
-  
-  svg { width: 20px; height: 20px; }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
 `;
 
 const StatValue = styled.div`
@@ -109,7 +112,7 @@ const EngagementGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: ${({ theme }) => theme.spacing.xl};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     grid-template-columns: 1fr;
   }
@@ -134,7 +137,7 @@ const TwoColumnGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: ${({ theme }) => theme.spacing.lg};
   margin-bottom: ${({ theme }) => theme.spacing.lg};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     grid-template-columns: 1fr;
   }
@@ -175,14 +178,19 @@ const PostStat = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textSecondary};
-  
-  svg { width: 14px; height: 14px; }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 `;
 
 const PerformanceItem = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
-  
-  &:last-child { margin-bottom: 0; }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 const PerformanceHeader = styled.div`
@@ -213,8 +221,11 @@ const PerformanceStat = styled.span`
   gap: 4px;
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.textMuted};
-  
-  svg { width: 12px; height: 12px; }
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
 `;
 
 const ProgressBar = styled.div`
@@ -271,8 +282,13 @@ export function Analytics() {
   ];
 
   const sortedByLikes = [...posts].sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0));
-  const sortedByComments = [...posts].sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0));
-  const maxEngagement = Math.max(...posts.map(p => (p.likes?.length || 0) + (p.comments?.length || 0)), 1);
+  const sortedByComments = [...posts].sort(
+    (a, b) => (b.comments?.length || 0) - (a.comments?.length || 0)
+  );
+  const maxEngagement = Math.max(
+    ...posts.map((p) => (p.likes?.length || 0) + (p.comments?.length || 0)),
+    1
+  );
 
   return (
     <PageWrapper>
@@ -286,7 +302,9 @@ export function Analytics() {
           const Icon = stat.icon;
           return (
             <StatCard key={stat.label}>
-              <StatIcon><Icon /></StatIcon>
+              <StatIcon>
+                <Icon />
+              </StatIcon>
               <StatValue>{stat.value}</StatValue>
               <StatLabel>{stat.label}</StatLabel>
             </StatCard>
@@ -315,7 +333,10 @@ export function Analytics() {
             <EngagementItem>
               <EngagementLabel>Engagement Rate</EngagementLabel>
               <EngagementValue>
-                {totalPosts > 0 ? (((totalLikes + totalComments) / totalPosts) * 10).toFixed(1) : '0'}%
+                {totalPosts > 0
+                  ? (((totalLikes + totalComments) / totalPosts) * 10).toFixed(1)
+                  : '0'}
+                %
               </EngagementValue>
             </EngagementItem>
           </EngagementGrid>
@@ -388,8 +409,12 @@ export function Analytics() {
                   <PerformanceHeader>
                     <PerformanceTitle>{post.title}</PerformanceTitle>
                     <PerformanceStats>
-                      <PerformanceStat><Heart /> {post.likes?.length || 0}</PerformanceStat>
-                      <PerformanceStat><MessageCircle /> {post.comments?.length || 0}</PerformanceStat>
+                      <PerformanceStat>
+                        <Heart /> {post.likes?.length || 0}
+                      </PerformanceStat>
+                      <PerformanceStat>
+                        <MessageCircle /> {post.comments?.length || 0}
+                      </PerformanceStat>
                     </PerformanceStats>
                   </PerformanceHeader>
                   <ProgressBar>

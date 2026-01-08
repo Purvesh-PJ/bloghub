@@ -6,7 +6,7 @@ const EditorContainer = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.inputBorder};
   border-radius: ${({ theme }) => theme.radii.md};
   overflow: hidden;
-  
+
   &:focus-within {
     border-color: ${({ theme }) => theme.colors.inputBorderFocus};
   }
@@ -33,13 +33,16 @@ const ToolbarButton = styled.button`
   color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
     color: ${({ theme }) => theme.colors.textPrimary};
   }
-  
-  svg { width: 16px; height: 16px; }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const ToolbarDivider = styled.div`
@@ -58,55 +61,67 @@ const EditorArea = styled.div`
   line-height: 1.6;
   color: ${({ theme }) => theme.colors.textPrimary};
   outline: none;
-  
+
   &:empty:before {
     content: attr(data-placeholder);
     color: ${({ theme }) => theme.colors.inputPlaceholder};
   }
-  
-  h1, h2, h3 {
+
+  h1,
+  h2,
+  h3 {
     margin: 0.5em 0;
     font-weight: 600;
   }
-  
-  h1 { font-size: 1.5em; }
-  h2 { font-size: 1.25em; }
-  h3 { font-size: 1.1em; }
-  
-  p { margin: 0.5em 0; }
-  
-  ul, ol {
+
+  h1 {
+    font-size: 1.5em;
+  }
+  h2 {
+    font-size: 1.25em;
+  }
+  h3 {
+    font-size: 1.1em;
+  }
+
+  p {
+    margin: 0.5em 0;
+  }
+
+  ul,
+  ol {
     margin: 0.5em 0;
     padding-left: 1.5em;
   }
-  
+
   blockquote {
     margin: 0.5em 0;
     padding-left: 1em;
     border-left: 3px solid ${({ theme }) => theme.colors.border};
     color: ${({ theme }) => theme.colors.textSecondary};
   }
-  
-  pre, code {
+
+  pre,
+  code {
     background: ${({ theme }) => theme.colors.codeBg};
     border-radius: 4px;
     font-family: monospace;
   }
-  
+
   pre {
     padding: 1em;
     overflow-x: auto;
   }
-  
+
   code {
     padding: 0.2em 0.4em;
   }
-  
+
   a {
     color: ${({ theme }) => theme.colors.textLink};
     text-decoration: underline;
   }
-  
+
   img {
     max-width: 100%;
     border-radius: 8px;
@@ -124,14 +139,17 @@ export function RichTextEditor({ value, onChange, placeholder = 'Write your cont
     }
   }, []);
 
-  const execCommand = useCallback((command, val = null) => {
-    document.execCommand(command, false, val);
-    editorRef.current?.focus();
-    if (editorRef.current) {
-      isInternalChange.current = true;
-      onChange(editorRef.current.innerHTML);
-    }
-  }, [onChange]);
+  const execCommand = useCallback(
+    (command, val = null) => {
+      document.execCommand(command, false, val);
+      editorRef.current?.focus();
+      if (editorRef.current) {
+        isInternalChange.current = true;
+        onChange(editorRef.current.innerHTML);
+      }
+    },
+    [onChange]
+  );
 
   const handleInput = useCallback(() => {
     if (editorRef.current) {
@@ -172,27 +190,43 @@ export function RichTextEditor({ value, onChange, placeholder = 'Write your cont
         <ToolbarButton type="button" onClick={() => execCommand('underline')} title="Underline">
           <Underline />
         </ToolbarButton>
-        
+
         <ToolbarDivider />
-        
-        <ToolbarButton type="button" onClick={() => execCommand('insertUnorderedList')} title="Bullet List">
+
+        <ToolbarButton
+          type="button"
+          onClick={() => execCommand('insertUnorderedList')}
+          title="Bullet List"
+        >
           <List />
         </ToolbarButton>
-        <ToolbarButton type="button" onClick={() => execCommand('insertOrderedList')} title="Numbered List">
+        <ToolbarButton
+          type="button"
+          onClick={() => execCommand('insertOrderedList')}
+          title="Numbered List"
+        >
           <ListOrdered />
         </ToolbarButton>
-        
+
         <ToolbarDivider />
-        
-        <ToolbarButton type="button" onClick={() => execCommand('formatBlock', 'blockquote')} title="Quote">
+
+        <ToolbarButton
+          type="button"
+          onClick={() => execCommand('formatBlock', 'blockquote')}
+          title="Quote"
+        >
           <Quote />
         </ToolbarButton>
-        <ToolbarButton type="button" onClick={() => execCommand('formatBlock', 'pre')} title="Code Block">
+        <ToolbarButton
+          type="button"
+          onClick={() => execCommand('formatBlock', 'pre')}
+          title="Code Block"
+        >
           <Code />
         </ToolbarButton>
-        
+
         <ToolbarDivider />
-        
+
         <ToolbarButton type="button" onClick={insertLink} title="Insert Link">
           <Link />
         </ToolbarButton>
@@ -200,7 +234,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Write your cont
           <Image />
         </ToolbarButton>
       </Toolbar>
-      
+
       <EditorArea
         ref={editorRef}
         contentEditable

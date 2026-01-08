@@ -18,7 +18,7 @@ const PageWrapper = styled.div`
 const ContentLayout = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.xl};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     flex-direction: column;
   }
@@ -34,7 +34,7 @@ const Sidebar = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     width: 100%;
   }
@@ -72,13 +72,16 @@ const ToggleButton = styled.button`
   color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
     color: ${({ theme }) => theme.colors.textPrimary};
   }
-  
-  svg { width: 14px; height: 14px; }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 `;
 
 const FormGroup = styled.div`
@@ -93,8 +96,11 @@ const Label = styled.label`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textPrimary};
   margin-bottom: 8px;
-  
-  svg { width: 14px; height: 14px; }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 `;
 
 const SmallLabel = styled.label`
@@ -113,11 +119,11 @@ const Input = styled.input`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textPrimary};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &::placeholder {
     color: ${({ theme }) => theme.colors.inputPlaceholder};
   }
-  
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.inputBorderFocus};
@@ -138,7 +144,7 @@ const Select = styled.select`
   background-repeat: no-repeat;
   background-position: right 10px center;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.inputBorderFocus};
@@ -149,7 +155,7 @@ const ImagePreview = styled.div`
   margin-top: 8px;
   border-radius: ${({ theme }) => theme.radii.md};
   overflow: hidden;
-  
+
   img {
     width: 100%;
     max-height: 120px;
@@ -187,11 +193,11 @@ const PrimaryButton = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover:not(:disabled) {
     background: ${({ theme }) => theme.colors.buttonPrimaryHover};
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -209,11 +215,11 @@ const SecondaryButton = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover:not(:disabled) {
     background: ${({ theme }) => theme.colors.buttonSecondaryHover};
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -231,7 +237,7 @@ const GhostButton = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
     color: ${({ theme }) => theme.colors.textPrimary};
@@ -259,11 +265,14 @@ const CategoryBadge = styled.button`
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
   border: none;
-  
-  ${({ $selected, theme }) => $selected ? `
+
+  ${({ $selected, theme }) =>
+    $selected
+      ? `
     background: ${theme.colors.badgeActiveBg};
     color: ${theme.colors.badgeActiveText};
-  ` : `
+  `
+      : `
     background: ${theme.colors.badgeBg};
     color: ${theme.colors.badgeText};
     
@@ -280,11 +289,13 @@ const InfoText = styled.p`
 `;
 
 const PreviewContent = styled.div`
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     color: ${({ theme }) => theme.colors.textPrimary};
     margin-bottom: ${({ theme }) => theme.spacing.md};
   }
-  
+
   p {
     color: ${({ theme }) => theme.colors.textSecondary};
     line-height: ${({ theme }) => theme.lineHeights.relaxed};
@@ -303,7 +314,7 @@ const PreviewImage = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.md};
   border-radius: ${({ theme }) => theme.radii.md};
   overflow: hidden;
-  
+
   img {
     width: 100%;
     max-height: 250px;
@@ -316,23 +327,22 @@ const EditorWrapper = styled.div`
     min-height: 300px;
     font-size: ${({ theme }) => theme.fontSizes.md};
   }
-  
+
   .ql-editor {
     min-height: 300px;
   }
-  
+
   .ql-toolbar {
     border-radius: ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md} 0 0;
     border-color: ${({ theme }) => theme.colors.inputBorder};
     background: ${({ theme }) => theme.colors.bgSecondary};
   }
-  
+
   .ql-container {
     border-radius: 0 0 ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md};
     border-color: ${({ theme }) => theme.colors.inputBorder};
   }
 `;
-
 
 export function WritePost() {
   const { id } = useParams();
@@ -396,7 +406,7 @@ export function WritePost() {
     onSuccess: async () => {
       const addedCategories = selectedCategories.filter((c) => !originalCategories.includes(c));
       const removedCategories = originalCategories.filter((c) => !selectedCategories.includes(c));
-      
+
       if (addedCategories.length > 0 || removedCategories.length > 0) {
         try {
           await categoryService.updatePostCategories(id, addedCategories, removedCategories);
@@ -470,7 +480,10 @@ export function WritePost() {
 
   const isPending = createMutation.isPending || updateMutation.isPending;
   const categories = categoriesData?.data || [];
-  const wordCount = content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length;
+  const wordCount = content
+    .replace(/<[^>]*>/g, '')
+    .split(/\s+/)
+    .filter(Boolean).length;
 
   return (
     <PageWrapper>
@@ -480,7 +493,15 @@ export function WritePost() {
             <CardHeader>
               <CardTitle>{isEditing ? 'Edit Post' : 'New Post'}</CardTitle>
               <ToggleButton onClick={() => setShowPreview(!showPreview)}>
-                {showPreview ? <><Pencil /> Edit</> : <><Eye /> Preview</>}
+                {showPreview ? (
+                  <>
+                    <Pencil /> Edit
+                  </>
+                ) : (
+                  <>
+                    <Eye /> Preview
+                  </>
+                )}
               </ToggleButton>
             </CardHeader>
 
@@ -492,9 +513,9 @@ export function WritePost() {
                     <img src={imageURL} alt="Cover" />
                   </PreviewImage>
                 )}
-                <div 
+                <div
                   className="post-content"
-                  dangerouslySetInnerHTML={{ __html: content || '<p>No content</p>' }} 
+                  dangerouslySetInnerHTML={{ __html: content || '<p>No content</p>' }}
                 />
               </PreviewContent>
             ) : (
@@ -510,7 +531,9 @@ export function WritePost() {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label><Image /> Cover Image URL</Label>
+                  <Label>
+                    <Image /> Cover Image URL
+                  </Label>
                   <Input
                     type="text"
                     placeholder="https://..."
@@ -519,10 +542,10 @@ export function WritePost() {
                   />
                   {imageURL && (
                     <ImagePreview>
-                      <img 
-                        src={imageURL} 
-                        alt="Preview" 
-                        onError={(e) => e.target.style.display = 'none'}
+                      <img
+                        src={imageURL}
+                        alt="Preview"
+                        onError={(e) => (e.target.style.display = 'none')}
                       />
                     </ImagePreview>
                   )}
@@ -543,7 +566,7 @@ export function WritePost() {
         <Sidebar>
           <Card>
             <SidebarTitle>Publish</SidebarTitle>
-            
+
             <FormGroup>
               <SmallLabel>Status</SmallLabel>
               <Select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
@@ -572,9 +595,7 @@ export function WritePost() {
               <SecondaryButton onClick={(e) => handleSubmit(e, 'draft')} disabled={isPending}>
                 Save Draft
               </SecondaryButton>
-              <GhostButton onClick={() => navigate(-1)}>
-                Cancel
-              </GhostButton>
+              <GhostButton onClick={() => navigate(-1)}>Cancel</GhostButton>
             </ButtonGroup>
           </Card>
 
@@ -600,7 +621,9 @@ export function WritePost() {
           {isEditing && existingPost?.data && (
             <Card>
               <SidebarTitle>Info</SidebarTitle>
-              <InfoText>Created: {new Date(existingPost.data.createdAt).toLocaleDateString()}</InfoText>
+              <InfoText>
+                Created: {new Date(existingPost.data.createdAt).toLocaleDateString()}
+              </InfoText>
               <InfoText>Likes: {existingPost.data.likes?.length || 0}</InfoText>
               <InfoText>Comments: {existingPost.data.comments?.length || 0}</InfoText>
             </Card>

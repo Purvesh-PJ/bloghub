@@ -53,22 +53,26 @@ export function AdminPosts() {
 
   const getVisibilityColor = (visibility) => {
     switch (visibility) {
-      case 'public': return 'green';
-      case 'private': return 'orange';
-      default: return 'gray';
+      case 'public':
+        return 'green';
+      case 'private':
+        return 'orange';
+      default:
+        return 'gray';
     }
   };
 
   // Filter posts
   let filteredPosts = posts || [];
-  
+
   if (searchQuery) {
-    filteredPosts = filteredPosts.filter((post) =>
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.user?.username?.toLowerCase().includes(searchQuery.toLowerCase())
+    filteredPosts = filteredPosts.filter(
+      (post) =>
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.user?.username?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }
-  
+
   if (filterStatus !== 'all') {
     filteredPosts = filteredPosts.filter((post) => post.visibility === filterStatus);
   }
@@ -78,7 +82,9 @@ export function AdminPosts() {
       <Flex justify="between" align="center" mb="6">
         <Box>
           <Heading size="7">Posts</Heading>
-          <Text size="2" color="gray">Manage all blog posts</Text>
+          <Text size="2" color="gray">
+            Manage all blog posts
+          </Text>
         </Box>
         <Button asChild>
           <Link to="/write">
@@ -117,13 +123,19 @@ export function AdminPosts() {
       <Flex gap="4" mb="4">
         <Card style={{ flex: 1 }}>
           <Flex direction="column" p="3">
-            <Text size="1" color="gray">Total</Text>
-            <Text size="5" weight="bold">{posts?.length || 0}</Text>
+            <Text size="1" color="gray">
+              Total
+            </Text>
+            <Text size="5" weight="bold">
+              {posts?.length || 0}
+            </Text>
           </Flex>
         </Card>
         <Card style={{ flex: 1 }}>
           <Flex direction="column" p="3">
-            <Text size="1" color="gray">Published</Text>
+            <Text size="1" color="gray">
+              Published
+            </Text>
             <Text size="5" weight="bold" color="green">
               {posts?.filter((p) => p.visibility === 'public').length || 0}
             </Text>
@@ -131,7 +143,9 @@ export function AdminPosts() {
         </Card>
         <Card style={{ flex: 1 }}>
           <Flex direction="column" p="3">
-            <Text size="1" color="gray">Drafts</Text>
+            <Text size="1" color="gray">
+              Drafts
+            </Text>
             <Text size="5" weight="bold" color="orange">
               {posts?.filter((p) => p.visibility === 'draft').length || 0}
             </Text>
@@ -139,7 +153,9 @@ export function AdminPosts() {
         </Card>
         <Card style={{ flex: 1 }}>
           <Flex direction="column" p="3">
-            <Text size="1" color="gray">Private</Text>
+            <Text size="1" color="gray">
+              Private
+            </Text>
             <Text size="5" weight="bold" color="gray">
               {posts?.filter((p) => p.visibility === 'private').length || 0}
             </Text>
@@ -152,7 +168,9 @@ export function AdminPosts() {
         {filteredPosts.length === 0 ? (
           <Flex direction="column" align="center" py="9">
             <Text color="gray">
-              {searchQuery || filterStatus !== 'all' ? 'No posts match your filters' : 'No posts yet'}
+              {searchQuery || filterStatus !== 'all'
+                ? 'No posts match your filters'
+                : 'No posts yet'}
             </Text>
           </Flex>
         ) : (
@@ -172,7 +190,11 @@ export function AdminPosts() {
                 <Table.Row key={post._id}>
                   <Table.Cell>
                     <Link to={`/post/${post._id}`}>
-                      <Text weight="medium" className="text-truncate" style={{ maxWidth: '250px', display: 'block' }}>
+                      <Text
+                        weight="medium"
+                        className="text-truncate"
+                        style={{ maxWidth: '250px', display: 'block' }}
+                      >
                         {post.title}
                       </Text>
                     </Link>
@@ -236,7 +258,9 @@ export function AdminPosts() {
           </AlertDialog.Description>
           <Flex gap="3" mt="4" justify="end">
             <AlertDialog.Cancel>
-              <Button variant="soft" color="gray">Cancel</Button>
+              <Button variant="soft" color="gray">
+                Cancel
+              </Button>
             </AlertDialog.Cancel>
             <AlertDialog.Action>
               <Button color="red" onClick={() => deleteMutation.mutate(deleteId)}>

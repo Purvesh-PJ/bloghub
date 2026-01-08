@@ -38,18 +38,24 @@ const Tab = styled.button`
   padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ $active, theme }) => $active ? theme.colors.textPrimary : theme.colors.textMuted};
+  color: ${({ $active, theme }) => ($active ? theme.colors.textPrimary : theme.colors.textMuted)};
   background: transparent;
   border: none;
-  border-bottom: 2px solid ${({ $active, theme }) => $active ? theme.colors.textPrimary : 'transparent'};
+  border-bottom: 2px solid
+    ${({ $active, theme }) => ($active ? theme.colors.textPrimary : 'transparent')};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
   margin-bottom: -1px;
   white-space: nowrap;
-  
-  &:hover { color: ${({ theme }) => theme.colors.textPrimary}; }
-  
-  svg { width: 16px; height: 16px; }
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const Card = styled.div`
@@ -105,9 +111,13 @@ const Input = styled.input`
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textPrimary};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
-  &::placeholder { color: ${({ theme }) => theme.colors.inputPlaceholder}; }
-  &:hover { border-color: ${({ theme }) => theme.colors.inputBorderHover}; }
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.inputPlaceholder};
+  }
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.inputBorderHover};
+  }
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.inputBorderFocus};
@@ -127,9 +137,13 @@ const TextArea = styled.textarea`
   color: ${({ theme }) => theme.colors.textPrimary};
   resize: vertical;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
-  &::placeholder { color: ${({ theme }) => theme.colors.inputPlaceholder}; }
-  &:hover { border-color: ${({ theme }) => theme.colors.inputBorderHover}; }
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.inputPlaceholder};
+  }
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.inputBorderHover};
+  }
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.inputBorderFocus};
@@ -192,27 +206,36 @@ const Button = styled.button`
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
   border: none;
-  
-  &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const PrimaryButton = styled(Button)`
   background: ${({ theme }) => theme.colors.buttonPrimaryBg};
   color: ${({ theme }) => theme.colors.buttonPrimaryText};
-  &:hover:not(:disabled) { background: ${({ theme }) => theme.colors.buttonPrimaryHover}; }
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.buttonPrimaryHover};
+  }
 `;
 
 const SecondaryButton = styled(Button)`
   background: ${({ theme }) => theme.colors.buttonSecondaryBg};
   color: ${({ theme }) => theme.colors.buttonSecondaryText};
   border: 1px solid ${({ theme }) => theme.colors.buttonSecondaryBorder};
-  &:hover:not(:disabled) { background: ${({ theme }) => theme.colors.buttonSecondaryHover}; }
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.buttonSecondaryHover};
+  }
 `;
 
 const DangerButton = styled(Button)`
   background: ${({ theme }) => theme.colors.errorBg};
   color: ${({ theme }) => theme.colors.error};
-  &:hover:not(:disabled) { background: ${({ theme }) => theme.colors.errorBorder}; }
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.errorBorder};
+  }
 `;
 
 const Divider = styled.hr`
@@ -226,7 +249,7 @@ const SettingRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: ${({ theme }) => theme.spacing.md} 0;
-  
+
   &:not(:last-child) {
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   }
@@ -250,21 +273,23 @@ const Toggle = styled.button`
   width: 44px;
   height: 24px;
   border-radius: 12px;
-  background: ${({ $checked, theme }) => $checked ? theme.colors.textPrimary : theme.colors.bgTertiary};
+  background: ${({ $checked, theme }) =>
+    $checked ? theme.colors.textPrimary : theme.colors.bgTertiary};
   border: none;
   cursor: pointer;
   position: relative;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &::after {
     content: '';
     position: absolute;
     top: 2px;
-    left: ${({ $checked }) => $checked ? '22px' : '2px'};
+    left: ${({ $checked }) => ($checked ? '22px' : '2px')};
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: ${({ $checked, theme }) => $checked ? theme.colors.bgPrimary : theme.colors.textMuted};
+    background: ${({ $checked, theme }) =>
+      $checked ? theme.colors.bgPrimary : theme.colors.textMuted};
     transition: all ${({ theme }) => theme.transitions.fast};
   }
 `;
@@ -281,15 +306,22 @@ const ThemeOption = styled.button`
   align-items: center;
   gap: 8px;
   padding: ${({ theme }) => theme.spacing.lg};
-  background: ${({ $active, theme }) => $active ? theme.colors.bgTertiary : theme.colors.cardBg};
-  border: 2px solid ${({ $active, theme }) => $active ? theme.colors.textPrimary : theme.colors.border};
+  background: ${({ $active, theme }) => ($active ? theme.colors.bgTertiary : theme.colors.cardBg)};
+  border: 2px solid
+    ${({ $active, theme }) => ($active ? theme.colors.textPrimary : theme.colors.border)};
   border-radius: ${({ theme }) => theme.radii.lg};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
-  &:hover { border-color: ${({ theme }) => theme.colors.textMuted}; }
-  
-  svg { width: 24px; height: 24px; color: ${({ theme }) => theme.colors.textSecondary}; }
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.textMuted};
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
 `;
 
 const ThemeLabel = styled.span`
@@ -339,7 +371,7 @@ export function Settings() {
   const { user } = useAuthStore();
   const { mode, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('profile');
-  
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
@@ -422,17 +454,30 @@ export function Settings() {
 
               <FormGroup>
                 <Label>Username</Label>
-                <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Your username" />
+                <Input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Your username"
+                />
               </FormGroup>
 
               <FormGroup>
                 <Label>Email</Label>
-                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" />
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Your email"
+                />
               </FormGroup>
 
               <FormGroup>
                 <Label>Bio</Label>
-                <TextArea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about yourself" />
+                <TextArea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell us about yourself"
+                />
               </FormGroup>
 
               <ButtonRow>
@@ -480,7 +525,9 @@ export function Settings() {
 
             <DangerZone>
               <DangerTitle>Danger Zone</DangerTitle>
-              <DangerText>Once you delete your account, there is no going back. Please be certain.</DangerText>
+              <DangerText>
+                Once you delete your account, there is no going back. Please be certain.
+              </DangerText>
               <DangerButton type="button">
                 <Trash2 size={16} /> Delete Account
               </DangerButton>
@@ -517,7 +564,10 @@ export function Settings() {
                 <SettingTitle>Email Notifications</SettingTitle>
                 <SettingDescription>Receive email notifications for updates</SettingDescription>
               </SettingInfo>
-              <Toggle $checked={emailNotifications} onClick={() => setEmailNotifications(!emailNotifications)} />
+              <Toggle
+                $checked={emailNotifications}
+                onClick={() => setEmailNotifications(!emailNotifications)}
+              />
             </SettingRow>
 
             <ButtonRow>

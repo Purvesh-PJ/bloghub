@@ -7,11 +7,11 @@ export const authService = {
   },
 
   signUp: async (username, email, password, confirmPassword) => {
-    const response = await api.post('/auth/signup', { 
-      username, 
-      email, 
+    const response = await api.post('/auth/signup', {
+      username,
+      email,
       password,
-      confirmPassword 
+      confirmPassword,
     });
     return response.data;
   },

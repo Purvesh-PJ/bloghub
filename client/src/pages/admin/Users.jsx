@@ -8,7 +8,8 @@ export function AdminUsers() {
       </Heading>
       <Card>
         <Text color="gray">
-          User management functionality coming soon. The backend needs additional endpoints for listing all users.
+          User management functionality coming soon. The backend needs additional endpoints for
+          listing all users.
         </Text>
       </Card>
     </Box>
