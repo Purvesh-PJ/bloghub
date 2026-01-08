@@ -308,23 +308,11 @@ export function Header() {
   return (
     <HeaderWrapper>
       <HeaderContent>
+        
         <LeftSection>
-          <Logo to="/">BlogHub</Logo>
-
-          <SearchForm onSubmit={handleSearch}>
-            <SearchInputWrapper>
-              <SearchIcon>
-                <Search size={16} />
-              </SearchIcon>
-              <SearchInput
-                type="text"
-                placeholder="Search posts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </SearchInputWrapper>
-            <SearchButton type="submit">Search</SearchButton>
-          </SearchForm>
+          <Logo to="/">
+            BlogHub
+          </Logo>
         </LeftSection>
 
         <Actions>

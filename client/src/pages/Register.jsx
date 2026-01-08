@@ -19,12 +19,13 @@ const Card = styled.div`
   background: ${({ theme }) => theme.colors.cardBg};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacing.lg};
+  background: ${({theme}) => theme.colors.bgPrimary }
 `;
 
 const Header = styled.div`
   text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
 
 const Title = styled.h1`
