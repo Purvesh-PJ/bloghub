@@ -11,8 +11,11 @@ import { Loading } from '../components/common/Loading';
 
 const PageWrapper = styled.div`
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 20px auto;
   padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
+  background : ${({theme}) => theme.colors.bgPrimary};
+  border-radius: ${({theme}) => theme.radii.lg};
+  box-shadow: ${({theme}) => theme.shadows.card}
 `;
 
 const PageHeader = styled.div`
@@ -20,6 +23,7 @@ const PageHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${({ theme }) => theme.spacing.xl};
+  padding : ${({theme}) => theme.spacing.lg};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;
@@ -78,8 +82,9 @@ const StatsGrid = styled.div`
 `;
 
 const StatCard = styled.div`
-  background: ${({ theme }) => theme.colors.cardBg};
+  background: ${({ theme }) => theme.colors.bgSecondary};
   border-radius: ${({ theme }) => theme.radii.lg};
+  // box-shadow: ${({ theme }) => theme.shadows.card};
   box-shadow: ${({ theme }) => theme.shadows.card};
   padding: ${({ theme }) => theme.spacing.lg};
   text-align: center;
@@ -183,10 +188,11 @@ const PostsCard = styled.div`
 const PostsTable = styled.table`
   width: 100%;
   border-collapse: collapse;
+  background: ${({theme}) => theme.colors.bgSecondary};
 `;
 
 const TableHeader = styled.thead`
-  background: ${({ theme }) => theme.colors.bgSecondary};
+  // background: ${({ theme }) => theme.colors.bgSecondary};
 `;
 
 const TableHeaderCell = styled.th`
