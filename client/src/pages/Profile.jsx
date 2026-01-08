@@ -25,7 +25,7 @@ const ProfileCard = styled.div`
 const ProfileHeader = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.xl};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;
     align-items: center;
@@ -56,7 +56,7 @@ const ProfileTop = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: ${({ theme }) => theme.spacing.md};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;
     align-items: center;
@@ -89,13 +89,16 @@ const EditButton = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.buttonSecondaryHover};
     color: ${({ theme }) => theme.colors.buttonSecondaryText};
   }
-  
-  svg { width: 16px; height: 16px; }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const Bio = styled.p`
@@ -131,9 +134,12 @@ const StatItem = styled.div`
   gap: 8px;
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  
-  svg { width: 16px; height: 16px; }
-  
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
   strong {
     color: ${({ theme }) => theme.colors.textPrimary};
     font-weight: ${({ theme }) => theme.fontWeights.semibold};
@@ -166,7 +172,7 @@ const StatsGrid = styled.div`
   grid-template-columns: repeat(4, 1fr);
   gap: ${({ theme }) => theme.spacing.md};
   margin-bottom: ${({ theme }) => theme.spacing.xl};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -206,14 +212,15 @@ const Tab = styled.button`
   padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ $active, theme }) => $active ? theme.colors.textPrimary : theme.colors.textMuted};
+  color: ${({ $active, theme }) => ($active ? theme.colors.textPrimary : theme.colors.textMuted)};
   background: transparent;
   border: none;
-  border-bottom: 2px solid ${({ $active, theme }) => $active ? theme.colors.textPrimary : 'transparent'};
+  border-bottom: 2px solid
+    ${({ $active, theme }) => ($active ? theme.colors.textPrimary : 'transparent')};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
   margin-bottom: -1px;
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.textPrimary};
   }
@@ -250,7 +257,7 @@ const PrimaryButton = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.buttonPrimaryHover};
     color: ${({ theme }) => theme.colors.buttonPrimaryText};
@@ -283,10 +290,14 @@ export function Profile() {
 
   const getActivePosts = () => {
     switch (activeTab) {
-      case 'published': return publicPosts;
-      case 'drafts': return draftPosts;
-      case 'private': return privatePosts;
-      default: return publicPosts;
+      case 'published':
+        return publicPosts;
+      case 'drafts':
+        return draftPosts;
+      case 'private':
+        return privatePosts;
+      default:
+        return publicPosts;
     }
   };
 
@@ -305,21 +316,27 @@ export function Profile() {
                 <Settings /> Edit Profile
               </EditButton>
             </ProfileTop>
-            
+
             {profile?.profile?.bio && <Bio>{profile.profile.bio}</Bio>}
-            
+
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
               {user?.roles?.map((role) => (
                 <RoleBadge key={role}>{role}</RoleBadge>
               ))}
             </div>
-            
+
             <StatsRow>
-              <StatItem><FileText /> <strong>{posts.length}</strong> Posts</StatItem>
-              <StatItem><Heart /> <strong>{totalLikes}</strong> Likes</StatItem>
-              <StatItem><MessageCircle /> <strong>{totalComments}</strong> Comments</StatItem>
+              <StatItem>
+                <FileText /> <strong>{posts.length}</strong> Posts
+              </StatItem>
+              <StatItem>
+                <Heart /> <strong>{totalLikes}</strong> Likes
+              </StatItem>
+              <StatItem>
+                <MessageCircle /> <strong>{totalComments}</strong> Comments
+              </StatItem>
             </StatsRow>
-            
+
             <FollowStats>
               <FollowItem>
                 <FollowCount>{profile?.profile?.followersCount || 0}</FollowCount>
@@ -372,8 +389,11 @@ export function Profile() {
       ) : getActivePosts().length === 0 ? (
         <EmptyState>
           <EmptyText>
-            {activeTab === 'published' ? 'No published posts yet' : 
-             activeTab === 'drafts' ? 'No drafts' : 'No private posts'}
+            {activeTab === 'published'
+              ? 'No published posts yet'
+              : activeTab === 'drafts'
+                ? 'No drafts'
+                : 'No private posts'}
           </EmptyText>
           {activeTab === 'published' && (
             <PrimaryButton to="/write">Write your first post</PrimaryButton>

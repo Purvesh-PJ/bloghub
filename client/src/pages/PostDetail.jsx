@@ -128,23 +128,32 @@ const Content = styled.div`
   line-height: ${({ theme }) => theme.lineHeights.loose};
   color: ${({ theme }) => theme.colors.textPrimary};
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-weight: ${({ theme }) => theme.fontWeights.semibold};
     margin-top: 1.5em;
     margin-bottom: 0.5em;
     color: ${({ theme }) => theme.colors.textPrimary};
   }
 
-  h1 { font-size: 1.75rem; }
-  h2 { font-size: 1.375rem; }
-  h3 { font-size: 1.125rem; }
+  h1 {
+    font-size: 1.75rem;
+  }
+  h2 {
+    font-size: 1.375rem;
+  }
+  h3 {
+    font-size: 1.125rem;
+  }
 
   p {
     margin-bottom: 1em;
     color: ${({ theme }) => theme.colors.textSecondary};
   }
 
-  ul, ol {
+  ul,
+  ol {
     margin-bottom: 1em;
     padding-left: 1.5em;
   }
@@ -455,8 +464,7 @@ export function PostDetail() {
   });
 
   const likeMutation = useMutation({
-    mutationFn: () =>
-      liked ? likeService.unlikePost(id) : likeService.likePost(id),
+    mutationFn: () => (liked ? likeService.unlikePost(id) : likeService.likePost(id)),
     onSuccess: () => {
       setLiked(!liked);
       queryClient.invalidateQueries(['post', id]);
@@ -543,10 +551,7 @@ export function PostDetail() {
 
       <MetaRow>
         <AuthorInfo>
-          <Avatar
-            size="md"
-            fallback={post.user?.username?.[0]?.toUpperCase() || 'U'}
-          />
+          <Avatar size="md" fallback={post.user?.username?.[0]?.toUpperCase() || 'U'} />
           <AuthorDetails>
             <AuthorName>{post.user?.username || 'Anonymous'}</AuthorName>
             <PostDate>{format(new Date(post.createdAt), 'MMM d, yyyy')}</PostDate>
@@ -627,15 +632,10 @@ export function PostDetail() {
           post.comments?.map((cmt) => (
             <Card key={cmt._id}>
               <CommentItem>
-                <Avatar
-                  size="sm"
-                  fallback={cmt.user?.username?.[0]?.toUpperCase() || 'U'}
-                />
+                <Avatar size="sm" fallback={cmt.user?.username?.[0]?.toUpperCase() || 'U'} />
                 <CommentContent>
                   <CommentHeader>
-                    <CommentAuthor>
-                      {cmt.user?.username || 'Anonymous'}
-                    </CommentAuthor>
+                    <CommentAuthor>{cmt.user?.username || 'Anonymous'}</CommentAuthor>
                     <CommentTime>
                       {formatDistanceToNow(new Date(cmt.date), { addSuffix: true })}
                     </CommentTime>
@@ -643,11 +643,7 @@ export function PostDetail() {
                   <CommentText>{cmt.message}</CommentText>
 
                   {isAuthenticated && (
-                    <ReplyButton
-                      onClick={() =>
-                        setReplyTo(replyTo === cmt._id ? null : cmt._id)
-                      }
-                    >
+                    <ReplyButton onClick={() => setReplyTo(replyTo === cmt._id ? null : cmt._id)}>
                       Reply
                     </ReplyButton>
                   )}
@@ -664,10 +660,7 @@ export function PostDetail() {
                         <GhostButton type="button" onClick={() => setReplyTo(null)}>
                           Cancel
                         </GhostButton>
-                        <PrimaryButton
-                          type="submit"
-                          disabled={replyMutation.isPending}
-                        >
+                        <PrimaryButton type="submit" disabled={replyMutation.isPending}>
                           Reply
                         </PrimaryButton>
                       </ButtonRow>
@@ -680,15 +673,11 @@ export function PostDetail() {
                         <ReplyItem key={reply._id}>
                           <Avatar
                             size="sm"
-                            fallback={
-                              reply.user?.username?.[0]?.toUpperCase() || 'U'
-                            }
+                            fallback={reply.user?.username?.[0]?.toUpperCase() || 'U'}
                           />
                           <ReplyContent>
                             <ReplyHeader>
-                              <CommentAuthor>
-                                {reply.user?.username || 'Anonymous'}
-                              </CommentAuthor>
+                              <CommentAuthor>{reply.user?.username || 'Anonymous'}</CommentAuthor>
                               <CommentTime>
                                 {formatDistanceToNow(new Date(reply.date), {
                                   addSuffix: true,

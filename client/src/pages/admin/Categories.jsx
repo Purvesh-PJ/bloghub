@@ -1,16 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Box,
-  Flex,
-  Heading,
-  Text,
-  Card,
-  Table,
-  Button,
-  TextField,
-  Dialog,
-} from '@radix-ui/themes';
+import { Box, Flex, Heading, Text, Card, Table, Button, TextField, Dialog } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import toast from 'react-hot-toast';
 import { categoryService } from '../../services/categoryService';
@@ -71,7 +61,9 @@ export function AdminCategories() {
                 />
                 <Flex gap="3" justify="end">
                   <Dialog.Close>
-                    <Button variant="soft" color="gray">Cancel</Button>
+                    <Button variant="soft" color="gray">
+                      Cancel
+                    </Button>
                   </Dialog.Close>
                   <Button type="submit" disabled={createMutation.isPending}>
                     {createMutation.isPending ? 'Creating...' : 'Create'}

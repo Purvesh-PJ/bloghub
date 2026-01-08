@@ -10,7 +10,12 @@ router.get('/post/:id', AnalyticsController.getAnalytics);
 router.get('/user/:userId', AuthUser.authenticateUser, AnalyticsController.getUserAnalytics);
 
 // Get admin analytics (overall site analytics)
-router.get('/admin', AuthUser.authenticateUser, AuthUser.authorizeAdmin, AnalyticsController.getAdminAnalytics);
+router.get(
+  '/admin',
+  AuthUser.authenticateUser,
+  AuthUser.authorizeAdmin,
+  AnalyticsController.getAdminAnalytics,
+);
 
 // Track a page view
 router.post('/view/:postId', AnalyticsController.trackPageView);

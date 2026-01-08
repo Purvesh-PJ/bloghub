@@ -36,7 +36,7 @@ export const useAuthStore = create(
       },
 
       isLoggedIn: () => get().isAuthenticated && get().accessToken,
-      
+
       isAdmin: () => {
         const user = get().user;
         return user?.roles?.includes('admin') || false;

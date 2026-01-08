@@ -24,10 +24,10 @@ const settingsRoutes = require('./routes/settings.routes');
 
 const logger = require('./middlewares/logger'); // Import logging middleware
 
-// REQUIRED SERVER 
+// REQUIRED SERVER
 const cors = require('cors');
 app.use(logger); // Use the logging middleware
-app.use(cors());            // for handling Cross-Origin Resource Sharing
+app.use(cors()); // for handling Cross-Origin Resource Sharing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -50,6 +50,6 @@ app.use(errorHandler);
 
 // SERVER LISTENING
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => { 
-    console.log(`Server running on port ${PORT}`); 
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

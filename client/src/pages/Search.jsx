@@ -39,7 +39,7 @@ const ResultCard = styled(Link)`
   box-shadow: ${({ theme }) => theme.shadows.card};
   padding: ${({ theme }) => theme.spacing.lg};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     box-shadow: ${({ theme }) => theme.shadows.cardHover};
     transform: translateY(-1px);
@@ -98,7 +98,9 @@ export function Search() {
     <PageWrapper>
       <Header>
         <Title>Search Results</Title>
-        <Subtitle>{results.length} results for "{query}"</Subtitle>
+        <Subtitle>
+          {results.length} results for "{query}"
+        </Subtitle>
       </Header>
 
       {results.length === 0 ? (

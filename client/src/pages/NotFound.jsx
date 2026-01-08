@@ -64,9 +64,7 @@ export function NotFound() {
     <PageWrapper>
       <ErrorCode>404</ErrorCode>
       <Title>Page not found</Title>
-      <Description>
-        The page you're looking for doesn't exist or has been moved.
-      </Description>
+      <Description>The page you're looking for doesn't exist or has been moved.</Description>
       <HomeButton to="/">
         <ArrowLeft size={16} /> Back to Home
       </HomeButton>

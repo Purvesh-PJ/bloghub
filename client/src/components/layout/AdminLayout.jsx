@@ -24,8 +24,9 @@ const Sidebar = styled.aside`
   border-right: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   flex-direction: column;
-  transition: background-color ${({ theme }) => theme.transitions.normal},
-              border-color ${({ theme }) => theme.transitions.normal};
+  transition:
+    background-color ${({ theme }) => theme.transitions.normal},
+    border-color ${({ theme }) => theme.transitions.normal};
 `;
 
 const LogoSection = styled.div`
@@ -69,8 +70,7 @@ const NavItem = styled(Link)`
     $active ? theme.fontWeights.medium : theme.fontWeights.normal};
   color: ${({ $active, theme }) =>
     $active ? theme.colors.textPrimary : theme.colors.textSecondary};
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.bgTertiary : 'transparent'};
+  background: ${({ $active, theme }) => ($active ? theme.colors.bgTertiary : 'transparent')};
   border-radius: ${({ theme }) => theme.radii.md};
   transition: all ${({ theme }) => theme.transitions.fast};
 

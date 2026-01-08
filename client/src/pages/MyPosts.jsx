@@ -20,7 +20,7 @@ const PageHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${({ theme }) => theme.spacing.xl};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;
     gap: ${({ theme }) => theme.spacing.md};
@@ -54,13 +54,16 @@ const PrimaryButton = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.buttonPrimaryHover};
     color: ${({ theme }) => theme.colors.buttonPrimaryText};
   }
-  
-  svg { width: 16px; height: 16px; }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const StatsGrid = styled.div`
@@ -68,7 +71,7 @@ const StatsGrid = styled.div`
   grid-template-columns: repeat(4, 1fr);
   gap: ${({ theme }) => theme.spacing.md};
   margin-bottom: ${({ theme }) => theme.spacing.xl};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -103,7 +106,7 @@ const FiltersCard = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.md};
   align-items: center;
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;
   }
@@ -119,12 +122,12 @@ const SearchWrapper = styled.div`
   padding: 0 12px;
   border: 1px solid transparent;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:focus-within {
     border-color: ${({ theme }) => theme.colors.borderFocus};
     background: ${({ theme }) => theme.colors.inputBg};
   }
-  
+
   svg {
     width: 16px;
     height: 16px;
@@ -139,11 +142,11 @@ const SearchInput = styled.input`
   border: none;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textPrimary};
-  
+
   &::placeholder {
     color: ${({ theme }) => theme.colors.inputPlaceholder};
   }
-  
+
   &:focus {
     outline: none;
   }
@@ -162,7 +165,7 @@ const FilterSelect = styled.select`
   background-repeat: no-repeat;
   background-position: right 8px center;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.borderFocus};
@@ -194,7 +197,7 @@ const TableHeaderCell = styled.th`
   color: ${({ theme }) => theme.colors.textMuted};
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  
+
   &:last-child {
     text-align: right;
   }
@@ -205,11 +208,11 @@ const TableBody = styled.tbody``;
 const TableRow = styled.tr`
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   transition: background ${({ theme }) => theme.transitions.fast};
-  
+
   &:last-child {
     border-bottom: none;
   }
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
   }
@@ -218,7 +221,7 @@ const TableRow = styled.tr`
 const TableCell = styled.td`
   padding: ${({ theme }) => theme.spacing.md};
   vertical-align: middle;
-  
+
   &:last-child {
     text-align: right;
   }
@@ -234,7 +237,7 @@ const PostTitle = styled(Link)`
   overflow: hidden;
   text-overflow: ellipsis;
   transition: color ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.textSecondary};
   }
@@ -247,7 +250,7 @@ const Badge = styled.span`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   border-radius: ${({ theme }) => theme.radii.full};
   text-transform: capitalize;
-  
+
   ${({ $variant, theme }) => {
     switch ($variant) {
       case 'public':
@@ -291,13 +294,16 @@ const ActionButton = styled.button`
   color: ${({ theme }) => theme.colors.textMuted};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
     color: ${({ theme }) => theme.colors.textPrimary};
   }
-  
-  svg { width: 16px; height: 16px; }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const DropdownWrapper = styled.div`
@@ -327,15 +333,18 @@ const DropdownItem = styled.button`
   background: transparent;
   border: none;
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ $danger, theme }) => $danger ? theme.colors.error : theme.colors.textPrimary};
+  color: ${({ $danger, theme }) => ($danger ? theme.colors.error : theme.colors.textPrimary)};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
   }
-  
-  svg { width: 14px; height: 14px; }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 `;
 
 const DropdownLink = styled(Link)`
@@ -350,13 +359,16 @@ const DropdownLink = styled(Link)`
   color: ${({ theme }) => theme.colors.textPrimary};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
     color: ${({ theme }) => theme.colors.textPrimary};
   }
-  
-  svg { width: 14px; height: 14px; }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 `;
 
 const DropdownDivider = styled.div`
@@ -380,8 +392,11 @@ const EmptyIcon = styled.div`
   background: ${({ theme }) => theme.colors.bgTertiary};
   border-radius: ${({ theme }) => theme.radii.lg};
   color: ${({ theme }) => theme.colors.textMuted};
-  
-  svg { width: 24px; height: 24px; }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
 `;
 
 const EmptyText = styled.p`
@@ -440,7 +455,7 @@ const SecondaryButton = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.buttonSecondaryHover};
   }
@@ -456,11 +471,11 @@ const DangerButton = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.errorHover};
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -496,7 +511,13 @@ function ActionsDropdown({ post, onDelete }) {
             <Pencil /> Edit
           </DropdownLink>
           <DropdownDivider />
-          <DropdownItem $danger onClick={() => { onDelete(post._id); setIsOpen(false); }}>
+          <DropdownItem
+            $danger
+            onClick={() => {
+              onDelete(post._id);
+              setIsOpen(false);
+            }}
+          >
             <Trash2 /> Delete
           </DropdownItem>
         </DropdownMenu>
@@ -504,7 +525,6 @@ function ActionsDropdown({ post, onDelete }) {
     </DropdownWrapper>
   );
 }
-
 
 export function MyPosts() {
   const queryClient = useQueryClient();
@@ -531,13 +551,13 @@ export function MyPosts() {
 
   // Filter posts
   let filteredPosts = posts || [];
-  
+
   if (searchQuery) {
     filteredPosts = filteredPosts.filter((post) =>
       post.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }
-  
+
   if (filterStatus !== 'all') {
     filteredPosts = filteredPosts.filter((post) => post.visibility === filterStatus);
   }
@@ -599,10 +619,12 @@ export function MyPosts() {
       <PostsCard>
         {filteredPosts.length === 0 ? (
           <EmptyState>
-            <EmptyIcon><FileText /></EmptyIcon>
+            <EmptyIcon>
+              <FileText />
+            </EmptyIcon>
             <EmptyText>
-              {searchQuery || filterStatus !== 'all' 
-                ? 'No posts match your filters' 
+              {searchQuery || filterStatus !== 'all'
+                ? 'No posts match your filters'
                 : 'No posts yet'}
             </EmptyText>
             {!searchQuery && filterStatus === 'all' && (
@@ -659,7 +681,7 @@ export function MyPosts() {
             </ModalDescription>
             <ModalActions>
               <SecondaryButton onClick={() => setDeleteId(null)}>Cancel</SecondaryButton>
-              <DangerButton 
+              <DangerButton
                 onClick={() => deleteMutation.mutate(deleteId)}
                 disabled={deleteMutation.isPending}
               >

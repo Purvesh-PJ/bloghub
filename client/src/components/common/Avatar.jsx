@@ -13,7 +13,7 @@ const AvatarWrapper = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
   flex-shrink: 0;
   overflow: hidden;
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -28,13 +28,13 @@ export function Avatar({ src, fallback, size = 'md', ...props }) {
     md: 32,
     lg: 40,
     xl: 48,
-    '1': 24,
-    '2': 32,
-    '3': 40,
+    1: 24,
+    2: 32,
+    3: 40,
   };
-  
+
   const pixelSize = typeof size === 'number' ? size : sizeMap[size] || 32;
-  
+
   return (
     <AvatarWrapper $size={pixelSize} {...props}>
       {src ? <img src={src} alt={fallback || ''} /> : fallback}

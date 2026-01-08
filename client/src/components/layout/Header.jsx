@@ -1,5 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Plus, User, LogOut, Settings, LayoutDashboard, FileText, BarChart3 } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  User,
+  LogOut,
+  Settings,
+  LayoutDashboard,
+  FileText,
+  BarChart3,
+} from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { useAuthStore } from '../../store/authStore';
@@ -14,8 +23,9 @@ const HeaderWrapper = styled.header`
   background-color: ${({ theme }) => theme.colors.bgPrimary};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   z-index: ${({ theme }) => theme.zIndices.sticky};
-  transition: background-color ${({ theme }) => theme.transitions.normal},
-              border-color ${({ theme }) => theme.transitions.normal};
+  transition:
+    background-color ${({ theme }) => theme.transitions.normal},
+    border-color ${({ theme }) => theme.transitions.normal};
 `;
 
 const HeaderContent = styled.div`
@@ -39,7 +49,7 @@ const Logo = styled(Link)`
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   color: ${({ theme }) => theme.colors.textPrimary};
   letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.textPrimary};
   }
@@ -80,11 +90,11 @@ const SearchInput = styled.input`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textPrimary};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &::placeholder {
     color: ${({ theme }) => theme.colors.inputPlaceholder};
   }
-  
+
   &:focus {
     outline: none;
     background: ${({ theme }) => theme.colors.bgPrimary};
@@ -103,7 +113,7 @@ const SearchButton = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.buttonPrimaryHover};
   }
@@ -134,7 +144,7 @@ const Button = styled.button`
 const PrimaryButton = styled(Button)`
   background: ${({ theme }) => theme.colors.buttonPrimaryBg};
   color: ${({ theme }) => theme.colors.buttonPrimaryText};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.buttonPrimaryHover};
   }
@@ -144,7 +154,7 @@ const SecondaryButton = styled(Button)`
   background: ${({ theme }) => theme.colors.buttonSecondaryBg};
   color: ${({ theme }) => theme.colors.buttonSecondaryText};
   border: 1px solid ${({ theme }) => theme.colors.buttonSecondaryBorder};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.buttonSecondaryHover};
   }
@@ -165,7 +175,7 @@ const AvatarButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textSecondary};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgActive};
   }
@@ -212,13 +222,17 @@ const DropdownItem = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textPrimary};
   transition: background ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
     color: ${({ theme }) => theme.colors.textPrimary};
   }
-  
-  svg { width: 14px; height: 14px; color: ${({ theme }) => theme.colors.textMuted}; }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: ${({ theme }) => theme.colors.textMuted};
+  }
 `;
 
 const DropdownButton = styled.button`
@@ -233,12 +247,15 @@ const DropdownButton = styled.button`
   border: none;
   cursor: pointer;
   transition: background ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
   }
-  
-  svg { width: 14px; height: 14px; }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 `;
 
 const DropdownDivider = styled.div`
@@ -251,7 +268,6 @@ const HideMobile = styled.span`
     display: none;
   }
 `;
-
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -294,7 +310,7 @@ export function Header() {
       <HeaderContent>
         <LeftSection>
           <Logo to="/">BlogHub</Logo>
-          
+
           <SearchForm onSubmit={handleSearch}>
             <SearchInputWrapper>
               <SearchIcon>
@@ -313,7 +329,7 @@ export function Header() {
 
         <Actions>
           <ThemeToggle />
-          
+
           {isAuthenticated ? (
             <>
               <PrimaryButton as={Link} to="/write">
@@ -325,14 +341,14 @@ export function Header() {
                 <AvatarButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                   {user?.username?.[0]?.toUpperCase() || 'U'}
                 </AvatarButton>
-                
+
                 {isDropdownOpen && (
                   <DropdownMenu>
                     <DropdownHeader>
                       <UserName>{user?.username}</UserName>
                       <UserEmail>{user?.email}</UserEmail>
                     </DropdownHeader>
-                    
+
                     {isAdmin() && (
                       <>
                         <DropdownItem to="/admin" onClick={handleDropdownItemClick}>
@@ -341,7 +357,7 @@ export function Header() {
                         <DropdownDivider />
                       </>
                     )}
-                    
+
                     <DropdownItem to="/profile" onClick={handleDropdownItemClick}>
                       <User /> Profile
                     </DropdownItem>
@@ -364,8 +380,12 @@ export function Header() {
             </>
           ) : (
             <>
-              <SecondaryButton as={Link} to="/login">Sign In</SecondaryButton>
-              <PrimaryButton as={Link} to="/register">Sign Up</PrimaryButton>
+              <SecondaryButton as={Link} to="/login">
+                Sign In
+              </SecondaryButton>
+              <PrimaryButton as={Link} to="/register">
+                Sign Up
+              </PrimaryButton>
             </>
           )}
         </Actions>

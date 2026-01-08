@@ -32,7 +32,9 @@ const Grid = styled.div`
 
 const MainContent = styled.main``;
 const Sidebar = styled.aside`
-  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) { display: none; }
+  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    display: none;
+  }
 `;
 
 const Card = styled.div`
@@ -61,7 +63,9 @@ const FeaturedImage = styled.div`
     object-fit: cover;
     transition: transform ${({ theme }) => theme.transitions.slow};
   }
-  ${FeaturedCard}:hover & img { transform: scale(1.03); }
+  ${FeaturedCard}:hover & img {
+    transform: scale(1.03);
+  }
 `;
 
 const FeaturedContent = styled.div`
@@ -81,13 +85,16 @@ const Badge = styled.span`
   padding: 4px 12px;
   font-size: ${({ theme }) => theme.fontSizes.xs};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme, $active }) => $active ? theme.colors.badgeActiveText : theme.colors.badgeText};
-  background: ${({ theme, $active }) => $active ? theme.colors.badgeActiveBg : theme.colors.badgeBg};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.badgeActiveText : theme.colors.badgeText};
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.badgeActiveBg : theme.colors.badgeBg};
   border-radius: ${({ theme }) => theme.radii.full};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
   &:hover {
-    background: ${({ theme, $active }) => $active ? theme.colors.badgeActiveBg : theme.colors.bgActive};
+    background: ${({ theme, $active }) =>
+      $active ? theme.colors.badgeActiveBg : theme.colors.bgActive};
   }
 `;
 
@@ -193,7 +200,9 @@ const Button = styled.button`
 const PrimaryButton = styled(Button)`
   background: ${({ theme }) => theme.colors.buttonPrimaryBg};
   color: ${({ theme }) => theme.colors.buttonPrimaryText};
-  &:hover { background: ${({ theme }) => theme.colors.buttonPrimaryHover}; }
+  &:hover {
+    background: ${({ theme }) => theme.colors.buttonPrimaryHover};
+  }
 `;
 
 const GhostButton = styled(Button)`
@@ -231,7 +240,9 @@ const AuthorItem = styled(Link)`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
-  &:hover { opacity: 0.8; }
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 const AuthorAvatar = styled.div`
@@ -273,13 +284,16 @@ const CategoryItem = styled.div`
   border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  &:hover { background: ${({ theme }) => theme.colors.bgHover}; }
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgHover};
+  }
 `;
 
 const CategoryName = styled.span`
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ $active, theme }) => $active ? theme.colors.textPrimary : theme.colors.textSecondary};
-  font-weight: ${({ $active }) => $active ? 500 : 400};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.textPrimary : theme.colors.textSecondary};
+  font-weight: ${({ $active }) => ($active ? 500 : 400)};
 `;
 
 const CategoryCount = styled.span`
@@ -332,9 +346,13 @@ export function Home() {
     );
   }
 
-  const featuredPost = [...publicPosts].sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0))[0];
+  const featuredPost = [...publicPosts].sort(
+    (a, b) => (b.likes?.length || 0) - (a.likes?.length || 0)
+  )[0];
   const remainingPosts = publicPosts.filter((p) => p._id !== featuredPost?._id);
-  const authors = [...new Map(publicPosts.map((p) => [p.user?._id, p.user]).filter(([id]) => id)).values()].slice(0, 5);
+  const authors = [
+    ...new Map(publicPosts.map((p) => [p.user?._id, p.user]).filter(([id]) => id)).values(),
+  ].slice(0, 5);
 
   if (isLoading) return <Loading text="Loading posts..." />;
 
@@ -371,14 +389,25 @@ export function Home() {
 
             <FilterSection>
               <FilterTabs>
-                <Badge $active={selectedCategory === 'all'} onClick={() => setSelectedCategory('all')}>All Posts</Badge>
+                <Badge
+                  $active={selectedCategory === 'all'}
+                  onClick={() => setSelectedCategory('all')}
+                >
+                  All Posts
+                </Badge>
                 {categories.slice(0, 5).map((cat) => (
-                  <Badge key={cat._id} $active={selectedCategory === cat.name} onClick={() => setSelectedCategory(cat.name)}>
+                  <Badge
+                    key={cat._id}
+                    $active={selectedCategory === cat.name}
+                    onClick={() => setSelectedCategory(cat.name)}
+                  >
                     {cat.name}
                   </Badge>
                 ))}
               </FilterTabs>
-              <PostCount>{remainingPosts.length} {remainingPosts.length === 1 ? 'post' : 'posts'}</PostCount>
+              <PostCount>
+                {remainingPosts.length} {remainingPosts.length === 1 ? 'post' : 'posts'}
+              </PostCount>
             </FilterSection>
 
             {remainingPosts.length === 0 && !featuredPost ? (
@@ -386,14 +415,20 @@ export function Home() {
                 <EmptyTitle>No posts yet</EmptyTitle>
                 <EmptyText>Be the first to share your thoughts.</EmptyText>
                 {isAuthenticated ? (
-                  <PrimaryButton as={Link} to="/write"><Plus size={16} /> Write a Post</PrimaryButton>
+                  <PrimaryButton as={Link} to="/write">
+                    <Plus size={16} /> Write a Post
+                  </PrimaryButton>
                 ) : (
-                  <PrimaryButton as={Link} to="/register">Get Started <ArrowRight size={16} /></PrimaryButton>
+                  <PrimaryButton as={Link} to="/register">
+                    Get Started <ArrowRight size={16} />
+                  </PrimaryButton>
                 )}
               </EmptyState>
             ) : (
               <PostList>
-                {remainingPosts.map((post) => (<PostCard key={post._id} post={post} />))}
+                {remainingPosts.map((post) => (
+                  <PostCard key={post._id} post={post} />
+                ))}
               </PostList>
             )}
           </MainContent>
@@ -401,10 +436,31 @@ export function Home() {
           <Sidebar>
             {isAuthenticated && (
               <SidebarCard>
-                <PrimaryButton as={Link} to="/write" style={{ width: '100%' }}><Plus size={16} /> Write a Post</PrimaryButton>
-                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <GhostButton as={Link} to="/my-posts" style={{ width: '100%', justifyContent: 'flex-start' }}>My Posts</GhostButton>
-                  <GhostButton as={Link} to="/analytics" style={{ width: '100%', justifyContent: 'flex-start' }}>Analytics</GhostButton>
+                <PrimaryButton as={Link} to="/write" style={{ width: '100%' }}>
+                  <Plus size={16} /> Write a Post
+                </PrimaryButton>
+                <div
+                  style={{
+                    marginTop: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                  }}
+                >
+                  <GhostButton
+                    as={Link}
+                    to="/my-posts"
+                    style={{ width: '100%', justifyContent: 'flex-start' }}
+                  >
+                    My Posts
+                  </GhostButton>
+                  <GhostButton
+                    as={Link}
+                    to="/analytics"
+                    style={{ width: '100%', justifyContent: 'flex-start' }}
+                  >
+                    Analytics
+                  </GhostButton>
                 </div>
               </SidebarCard>
             )}
@@ -418,7 +474,9 @@ export function Home() {
                       <AuthorAvatar>{author.username?.[0]?.toUpperCase() || 'U'}</AuthorAvatar>
                       <AuthorInfo>
                         <AuthorName>{author.username}</AuthorName>
-                        <AuthorMeta>{publicPosts.filter((p) => p.user?._id === author._id).length} posts</AuthorMeta>
+                        <AuthorMeta>
+                          {publicPosts.filter((p) => p.user?._id === author._id).length} posts
+                        </AuthorMeta>
                       </AuthorInfo>
                     </AuthorItem>
                   ))}
@@ -432,7 +490,9 @@ export function Home() {
                 <CategoryList>
                   {categories.slice(0, 8).map((cat) => (
                     <CategoryItem key={cat._id} onClick={() => setSelectedCategory(cat.name)}>
-                      <CategoryName $active={selectedCategory === cat.name}>{cat.name}</CategoryName>
+                      <CategoryName $active={selectedCategory === cat.name}>
+                        {cat.name}
+                      </CategoryName>
                       <CategoryCount>{cat.posts?.length || 0}</CategoryCount>
                     </CategoryItem>
                   ))}
@@ -443,8 +503,12 @@ export function Home() {
             {!isAuthenticated && (
               <CTACard>
                 <CTATitle>Join BlogHub</CTATitle>
-                <CTAText>Create an account to start writing and connect with the community.</CTAText>
-                <PrimaryButton as={Link} to="/register" style={{ width: '100%' }}>Sign Up Free</PrimaryButton>
+                <CTAText>
+                  Create an account to start writing and connect with the community.
+                </CTAText>
+                <PrimaryButton as={Link} to="/register" style={{ width: '100%' }}>
+                  Sign Up Free
+                </PrimaryButton>
               </CTACard>
             )}
           </Sidebar>

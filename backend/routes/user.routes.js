@@ -21,7 +21,12 @@ const upload = multer({ storage: storage });
 router.get('/getUser', AuthUser.authenticateUser, UserController.getUser);
 router.put('/setUser', AuthUser.authenticateUser, upload.single('image'), UserController.setUser);
 router.get('/getUserPosts', AuthUser.authenticateUser, UserController.getUserSelfPosts);
-router.post('/postUserProfile', AuthUser.authenticateUser, upload.single('image'), UserController.postUserProfile);
+router.post(
+  '/postUserProfile',
+  AuthUser.authenticateUser,
+  upload.single('image'),
+  UserController.postUserProfile,
+);
 router.get('/getUserProfile', AuthUser.authenticateUser, UserController.getUserProfile);
 router.post('/followUser', AuthUser.authenticateUser, UserController.followUser);
 router.post('/unfollowUser', AuthUser.authenticateUser, UserController.unfollowUser);

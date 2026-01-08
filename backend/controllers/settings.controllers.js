@@ -6,10 +6,10 @@ const UserProfile = require('../models/user-profile.model');
 exports.getUserSettings = async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     // Find user settings or create default if not exists
     let userSettings = await UserSettings.findOne({ user: userId });
-    
+
     if (!userSettings) {
       userSettings = new UserSettings({
         user: userId,
@@ -17,12 +17,12 @@ exports.getUserSettings = async (req, res) => {
         emailNotifications: true,
         privacySettings: {
           showEmail: false,
-          showActivity: true
-        }
+          showActivity: true,
+        },
       });
       await userSettings.save();
     }
-    
+
     res.json(userSettings);
   } catch (error) {
     console.error(error);
@@ -35,19 +35,19 @@ exports.updateUserSettings = async (req, res) => {
   try {
     const userId = req.user._id;
     const { theme, emailNotifications, privacySettings } = req.body;
-    
+
     // Find and update user settings
     const updatedSettings = await UserSettings.findOneAndUpdate(
       { user: userId },
-      { 
-        theme, 
-        emailNotifications, 
+      {
+        theme,
+        emailNotifications,
         privacySettings,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
-    
+
     res.json(updatedSettings);
   } catch (error) {
     console.error(error);
@@ -59,15 +59,17 @@ exports.updateUserSettings = async (req, res) => {
 exports.getUserProfile = async (req, res) => {
   try {
     const userId = req.params.userId || req.user._id;
-    
+
     // Find user profile
-    const userProfile = await UserProfile.findOne({ user: userId })
-      .populate('user', 'username email');
-    
+    const userProfile = await UserProfile.findOne({ user: userId }).populate(
+      'user',
+      'username email',
+    );
+
     if (!userProfile) {
       return res.status(404).json({ error: 'User profile not found' });
     }
-    
+
     res.json(userProfile);
   } catch (error) {
     console.error(error);
@@ -79,30 +81,23 @@ exports.getUserProfile = async (req, res) => {
 exports.updateUserProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { 
-      fullName, 
-      bio, 
-      location, 
-      website, 
-      socialLinks,
-      profilePicture
-    } = req.body;
-    
+    const { fullName, bio, location, website, socialLinks, profilePicture } = req.body;
+
     // Find and update user profile
     const updatedProfile = await UserProfile.findOneAndUpdate(
       { user: userId },
-      { 
-        fullName, 
-        bio, 
-        location, 
-        website, 
+      {
+        fullName,
+        bio,
+        location,
+        website,
         socialLinks,
         profilePicture,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
-    
+
     res.json(updatedProfile);
   } catch (error) {
     console.error(error);
@@ -115,23 +110,23 @@ exports.updateSecuritySettings = async (req, res) => {
   try {
     const userId = req.user._id;
     const { twoFactorEnabled, securityQuestions } = req.body;
-    
+
     // Find user
     const user = await User.findById(userId);
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     // Update security settings
     user.twoFactorEnabled = twoFactorEnabled;
-    
+
     if (securityQuestions) {
       user.securityQuestions = securityQuestions;
     }
-    
+
     await user.save();
-    
+
     res.json({ message: 'Security settings updated successfully' });
   } catch (error) {
     console.error(error);
@@ -144,17 +139,17 @@ exports.updatePrivacySettings = async (req, res) => {
   try {
     const userId = req.user._id;
     const { privacySettings } = req.body;
-    
+
     // Find and update user settings
     const updatedSettings = await UserSettings.findOneAndUpdate(
       { user: userId },
-      { 
-        'privacySettings': privacySettings,
-        updatedAt: new Date()
+      {
+        privacySettings: privacySettings,
+        updatedAt: new Date(),
       },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
-    
+
     res.json(updatedSettings);
   } catch (error) {
     console.error(error);
@@ -167,21 +162,21 @@ exports.updateAppearanceSettings = async (req, res) => {
   try {
     const userId = req.user._id;
     const { theme, fontSize, colorScheme } = req.body;
-    
+
     // Find and update user settings
     const updatedSettings = await UserSettings.findOneAndUpdate(
       { user: userId },
-      { 
+      {
         theme,
         appearance: {
           fontSize,
-          colorScheme
+          colorScheme,
         },
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
-    
+
     res.json(updatedSettings);
   } catch (error) {
     console.error(error);

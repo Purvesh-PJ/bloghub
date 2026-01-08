@@ -9,7 +9,9 @@ export function AdminSettings() {
       <Card>
         <Flex direction="column" gap="4">
           <Box>
-            <Text weight="medium" mb="2">Site Settings</Text>
+            <Text weight="medium" mb="2">
+              Site Settings
+            </Text>
             <Text size="2" color="gray">
               Configure site-wide settings and preferences.
             </Text>

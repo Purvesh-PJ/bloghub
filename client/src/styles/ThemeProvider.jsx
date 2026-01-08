@@ -17,17 +17,17 @@ export const useTheme = () => {
 // Get initial theme from localStorage or system preference
 const getInitialTheme = () => {
   if (typeof window === 'undefined') return 'light';
-  
+
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme && ['light', 'dark'].includes(savedTheme)) {
     return savedTheme;
   }
-  
+
   // Check system preference
   if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
     return 'dark';
   }
-  
+
   return 'light';
 };
 
@@ -50,21 +50,18 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('theme', mode);
     document.documentElement.setAttribute('data-theme', mode);
-    
+
     // Update meta theme-color for mobile browsers
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
-      metaThemeColor.setAttribute(
-        'content',
-        mode === 'dark' ? '#0d1117' : '#ffffff'
-      );
+      metaThemeColor.setAttribute('content', mode === 'dark' ? '#0d1117' : '#ffffff');
     }
   }, [mode]);
 
   // Listen for system preference changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+
     const handleChange = (e) => {
       // Only auto-switch if user hasn't manually set a preference
       const savedTheme = localStorage.getItem('theme');

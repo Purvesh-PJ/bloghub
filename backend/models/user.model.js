@@ -23,25 +23,25 @@ const UserSchema = new mongoose.Schema(
     },
 
     profile: {
-      type : mongoose.Schema.Types.ObjectId,
-      ref : 'UserProfile'
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'UserProfile',
     },
 
     settings: {
-      type : mongoose.Schema.Types.ObjectId,
-      ref : 'UserSetting'
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'UserSetting',
     },
 
-    posts : [{ 
-      type : mongoose.Schema.Types.ObjectId, 
-      ref: 'Post'
-    }],
-
-  }, 
-  { 
-    timestamps : true 
-  }
+    posts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post',
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  },
 );
 
- 
-module.exports = mongoose.model('User', UserSchema);;
+module.exports = mongoose.model('User', UserSchema);

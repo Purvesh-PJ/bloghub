@@ -31,4 +31,3 @@ const analyticsSchema = new mongoose.Schema({
 const Analytics = mongoose.model('Analytics', analyticsSchema);
 
 module.exports = Analytics;
-
