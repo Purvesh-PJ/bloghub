@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar } from '@radix-ui/themes';
 import { LayoutDashboard, FileText, Users, FolderOpen, Settings, LogOut, Home } from 'lucide-react';
 import styled from 'styled-components';
-import { useAuthStore } from '../../store/authStore';
+import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../common/ThemeToggle';
 
 const navItems = [
@@ -159,7 +159,7 @@ const ContentWrapper = styled.div`
 export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, user } = useAuthStore();
+  const { logout, user } = useAuth();
 
   const handleLogout = () => {
     logout();

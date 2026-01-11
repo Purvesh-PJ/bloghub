@@ -1,8 +1,8 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../../store/authStore';
+import { useAuth } from '../../context/AuthContext';
 
 export function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {

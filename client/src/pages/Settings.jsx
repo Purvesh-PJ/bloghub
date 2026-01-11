@@ -1,97 +1,192 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { User, Shield, Eye, Palette, Lock, Trash2, Sun, Moon, Monitor } from 'lucide-react';
+import { User, Bell, Palette, Shield, Sun, Moon, Monitor, Camera, Check } from 'lucide-react';
 import styled from 'styled-components';
 import toast from 'react-hot-toast';
 import { userService } from '../services/userService';
-import { settingsService } from '../services/settingsService';
 import { Loading } from '../components/common/Loading';
-import { useAuthStore } from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../styles/ThemeProvider';
 
 const PageWrapper = styled.div`
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
 `;
 
+const PageHeader = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
+`;
+
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes['3xl']};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
   color: ${({ theme }) => theme.colors.textPrimary};
-  letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
 `;
 
-const TabList = styled.div`
+const PageSubtitle = styled.p`
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const Layout = styled.div`
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: ${({ theme }) => theme.spacing.xl};
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Sidebar = styled.nav`
   display: flex;
+  flex-direction: column;
   gap: 4px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  overflow-x: auto;
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: ${({ theme }) => theme.spacing.md};
+    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+  }
 `;
 
-const Tab = styled.button`
+const NavItem = styled.button`
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  gap: 12px;
+  padding: 12px 16px;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ $active, theme }) => ($active ? theme.colors.textPrimary : theme.colors.textMuted)};
-  background: transparent;
+  color: ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.textSecondary};
+  background: ${({ $active, theme }) => $active ? theme.colors.accentSubtle : 'transparent'};
   border: none;
-  border-bottom: 2px solid
-    ${({ $active, theme }) => ($active ? theme.colors.textPrimary : 'transparent')};
+  border-radius: ${({ theme }) => theme.radii.lg};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  margin-bottom: -1px;
   white-space: nowrap;
-
+  
   &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
+    background: ${({ $active, theme }) => $active ? theme.colors.accentSubtle : theme.colors.bgHover};
+    color: ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.textPrimary};
   }
-
+  
   svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
   }
 `;
 
-const Card = styled.div`
-  background: ${({ theme }) => theme.colors.cardBg};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.card};
+const Content = styled.div``;
+
+const Section = styled.section`
+  background: ${({ theme }) => theme.colors.bgPrimary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  overflow: hidden;
 `;
 
-const CardHeader = styled.div`
+const SectionHeader = styled.div`
   padding: ${({ theme }) => theme.spacing.lg};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-const CardTitle = styled.h2`
+const SectionTitle = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.semibold};
   color: ${({ theme }) => theme.colors.textPrimary};
   margin-bottom: 4px;
 `;
 
-const CardDescription = styled.p`
+const SectionDesc = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
-const CardContent = styled.div`
+const SectionBody = styled.div`
   padding: ${({ theme }) => theme.spacing.lg};
 `;
 
-const Form = styled.form`
+const AvatarSection = styled.div`
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
 
-const FormGroup = styled.div``;
+const Avatar = styled.div`
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  color: white;
+`;
+
+const AvatarUpload = styled.button`
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.bgPrimary};
+  border: 2px solid ${({ theme }) => theme.colors.border};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.accent};
+    border-color: ${({ theme }) => theme.colors.accent};
+    color: white;
+  }
+  
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const AvatarInfo = styled.div``;
+
+const AvatarName = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: 4px;
+`;
+
+const AvatarEmail = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing.lg};
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FormGroup = styled.div`
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+`;
 
 const Label = styled.label`
   display: block;
@@ -103,153 +198,96 @@ const Label = styled.label`
 
 const Input = styled.input`
   width: 100%;
-  height: 44px;
-  padding: 0 ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.inputBg};
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  border-radius: ${({ theme }) => theme.radii.md};
+  padding: 12px 16px;
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textPrimary};
+  background: ${({ theme }) => theme.colors.bgSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.lg};
   transition: all ${({ theme }) => theme.transitions.fast};
-
+  
   &::placeholder {
-    color: ${({ theme }) => theme.colors.inputPlaceholder};
+    color: ${({ theme }) => theme.colors.textMuted};
   }
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.inputBorderHover};
-  }
+  
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    border-color: ${({ theme }) => theme.colors.accent};
     box-shadow: ${({ theme }) => theme.shadows.focus};
   }
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  min-height: 100px;
-  padding: ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.inputBg};
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.md};
+  min-height: 120px;
+  padding: 12px 16px;
   font-family: inherit;
+  font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textPrimary};
+  background: ${({ theme }) => theme.colors.bgSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.lg};
   resize: vertical;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
+  
   &::placeholder {
-    color: ${({ theme }) => theme.colors.inputPlaceholder};
+    color: ${({ theme }) => theme.colors.textMuted};
   }
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.inputBorderHover};
-  }
+  
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
-    box-shadow: ${({ theme }) => theme.shadows.focus};
+    border-color: ${({ theme }) => theme.colors.accent};
   }
 `;
 
-const AvatarSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const Avatar = styled.div`
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.colors.bgTertiary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const AvatarInfo = styled.div``;
-
-const AvatarTitle = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: 4px;
-`;
-
-const AvatarHint = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const ButtonRow = styled.div`
+const Actions = styled.div`
   display: flex;
   justify-content: flex-end;
-  padding-top: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding-top: ${({ theme }) => theme.spacing.lg};
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-  margin-top: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacing.lg};
 `;
 
 const Button = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 ${({ theme }) => theme.spacing.lg};
+  padding: 10px 20px;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  border-radius: ${({ theme }) => theme.radii.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  border: none;
-
+  
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 `;
 
-const PrimaryButton = styled(Button)`
-  background: ${({ theme }) => theme.colors.buttonPrimaryBg};
-  color: ${({ theme }) => theme.colors.buttonPrimaryText};
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.buttonPrimaryHover};
-  }
-`;
-
-const SecondaryButton = styled(Button)`
-  background: ${({ theme }) => theme.colors.buttonSecondaryBg};
-  color: ${({ theme }) => theme.colors.buttonSecondaryText};
-  border: 1px solid ${({ theme }) => theme.colors.buttonSecondaryBorder};
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.buttonSecondaryHover};
-  }
-`;
-
-const DangerButton = styled(Button)`
-  background: ${({ theme }) => theme.colors.errorBg};
-  color: ${({ theme }) => theme.colors.error};
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.errorBorder};
-  }
-`;
-
-const Divider = styled.hr`
+const PrimaryBtn = styled(Button)`
+  background: ${({ theme }) => theme.colors.accent};
+  color: white;
   border: none;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  margin: ${({ theme }) => theme.spacing.lg} 0;
+  
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.accentHover};
+  }
 `;
 
-const SettingRow = styled.div`
+const SecondaryBtn = styled(Button)`
+  background: transparent;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgHover};
+  }
+`;
+
+const SettingItem = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: ${({ theme }) => theme.spacing.md} 0;
-
+  
   &:not(:last-child) {
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   }
@@ -257,100 +295,102 @@ const SettingRow = styled.div`
 
 const SettingInfo = styled.div``;
 
-const SettingTitle = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+const SettingLabel = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textPrimary};
   margin-bottom: 2px;
 `;
 
-const SettingDescription = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.xs};
+const SettingDesc = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
 const Toggle = styled.button`
-  width: 44px;
-  height: 24px;
-  border-radius: 12px;
-  background: ${({ $checked, theme }) =>
-    $checked ? theme.colors.textPrimary : theme.colors.bgTertiary};
+  width: 48px;
+  height: 28px;
+  border-radius: 14px;
+  background: ${({ $on, theme }) => $on ? theme.colors.accent : theme.colors.bgTertiary};
   border: none;
   cursor: pointer;
   position: relative;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
+  transition: background ${({ theme }) => theme.transitions.fast};
+  
   &::after {
     content: '';
     position: absolute;
-    top: 2px;
-    left: ${({ $checked }) => ($checked ? '22px' : '2px')};
-    width: 20px;
-    height: 20px;
+    top: 3px;
+    left: ${({ $on }) => $on ? '23px' : '3px'};
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    background: ${({ $checked, theme }) =>
-      $checked ? theme.colors.bgPrimary : theme.colors.textMuted};
-    transition: all ${({ theme }) => theme.transitions.fast};
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: left ${({ theme }) => theme.transitions.fast};
   }
 `;
 
-const ThemeOptions = styled.div`
+const ThemeGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const ThemeOption = styled.button`
+const ThemeCard = styled.button`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   padding: ${({ theme }) => theme.spacing.lg};
-  background: ${({ $active, theme }) => ($active ? theme.colors.bgTertiary : theme.colors.cardBg)};
-  border: 2px solid
-    ${({ $active, theme }) => ($active ? theme.colors.textPrimary : theme.colors.border)};
-  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ $active, theme }) => $active ? theme.colors.accentSubtle : theme.colors.bgSecondary};
+  border: 2px solid ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.xl};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-
+  position: relative;
+  
   &:hover {
-    border-color: ${({ theme }) => theme.colors.textMuted};
+    border-color: ${({ theme }) => theme.colors.accent};
   }
-
+  
   svg {
-    width: 24px;
-    height: 24px;
-    color: ${({ theme }) => theme.colors.textSecondary};
+    width: 28px;
+    height: 28px;
+    color: ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.textMuted};
   }
 `;
 
-const ThemeLabel = styled.span`
+const ThemeName = styled.span`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
-const InfoRow = styled.div`
+const CheckBadge = styled.div`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.accent};
   display: flex;
-  justify-content: space-between;
-  padding: ${({ theme }) => theme.spacing.sm} 0;
-`;
-
-const InfoLabel = styled.span`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const InfoValue = styled.span`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textPrimary};
+  align-items: center;
+  justify-content: center;
+  
+  svg {
+    width: 12px;
+    height: 12px;
+    color: white;
+  }
 `;
 
 const DangerZone = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xl};
-  padding: ${({ theme }) => theme.spacing.lg};
   background: ${({ theme }) => theme.colors.errorBg};
-  border-radius: ${({ theme }) => theme.radii.lg};
+  border: 1px solid ${({ theme }) => theme.colors.errorBorder};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  padding: ${({ theme }) => theme.spacing.lg};
 `;
 
 const DangerTitle = styled.h3`
@@ -366,18 +406,27 @@ const DangerText = styled.p`
   margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
 
+const DangerBtn = styled(Button)`
+  background: ${({ theme }) => theme.colors.error};
+  color: white;
+  border: none;
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.errorHover};
+  }
+`;
+
 export function Settings() {
   const queryClient = useQueryClient();
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const { mode, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('profile');
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [showEmail, setShowEmail] = useState(false);
-  const [showActivity, setShowActivity] = useState(true);
+  const [website, setWebsite] = useState('');
+  const [notifications, setNotifications] = useState({ email: true, push: false, weekly: true });
 
   const { data: userData, isLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -392,216 +441,231 @@ export function Settings() {
     }
   }, [userData]);
 
-  const updateProfileMutation = useMutation({
+  const updateMutation = useMutation({
     mutationFn: (formData) => userService.updateUser(formData),
     onSuccess: () => {
       queryClient.invalidateQueries(['currentUser']);
       toast.success('Profile updated!');
     },
-    onError: () => toast.error('Failed to update profile'),
+    onError: () => toast.error('Failed to update'),
   });
 
-  const handleProfileSubmit = (e) => {
+  const handleSave = (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('username', username);
     formData.append('email', email);
     formData.append('bio', bio);
-    updateProfileMutation.mutate(formData);
+    updateMutation.mutate(formData);
   };
 
-  if (isLoading) return <Loading text="Loading settings..." />;
+  if (isLoading) return <Loading text="Loading..." />;
 
   const profile = userData?.User;
-
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
-    { id: 'account', label: 'Account', icon: Shield },
-    { id: 'privacy', label: 'Privacy', icon: Eye },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'appearance', label: 'Appearance', icon: Palette },
+    { id: 'security', label: 'Security', icon: Shield },
   ];
 
   return (
     <PageWrapper>
-      <PageTitle>Settings</PageTitle>
+      <PageHeader>
+        <PageTitle>Settings</PageTitle>
+        <PageSubtitle>Manage your account preferences</PageSubtitle>
+      </PageHeader>
 
-      <TabList>
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <Tab key={tab.id} $active={activeTab === tab.id} onClick={() => setActiveTab(tab.id)}>
-              <Icon /> {tab.label}
-            </Tab>
-          );
-        })}
-      </TabList>
+      <Layout>
+        <Sidebar>
+          {tabs.map((tab) => (
+            <NavItem
+              key={tab.id}
+              $active={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <tab.icon /> {tab.label}
+            </NavItem>
+          ))}
+        </Sidebar>
 
-      {activeTab === 'profile' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>Update your personal details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form onSubmit={handleProfileSubmit}>
-              <AvatarSection>
-                <Avatar>{profile?.username?.[0]?.toUpperCase() || 'U'}</Avatar>
-                <AvatarInfo>
-                  <AvatarTitle>Profile Picture</AvatarTitle>
-                  <AvatarHint>JPG, PNG or GIF. Max 2MB.</AvatarHint>
-                </AvatarInfo>
-              </AvatarSection>
+        <Content>
+          {activeTab === 'profile' && (
+            <Section>
+              <SectionHeader>
+                <SectionTitle>Profile Information</SectionTitle>
+                <SectionDesc>Update your personal details and public profile</SectionDesc>
+              </SectionHeader>
+              <SectionBody>
+                <form onSubmit={handleSave}>
+                  <AvatarSection>
+                    <Avatar>
+                      {profile?.username?.[0]?.toUpperCase() || 'U'}
+                      <AvatarUpload type="button">
+                        <Camera />
+                      </AvatarUpload>
+                    </Avatar>
+                    <AvatarInfo>
+                      <AvatarName>{profile?.username}</AvatarName>
+                      <AvatarEmail>{profile?.email}</AvatarEmail>
+                    </AvatarInfo>
+                  </AvatarSection>
 
-              <FormGroup>
-                <Label>Username</Label>
-                <Input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Your username"
-                />
-              </FormGroup>
+                  <FormGrid>
+                    <FormGroup>
+                      <Label>Username</Label>
+                      <Input
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Your username"
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Email</Label>
+                      <Input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Website</Label>
+                      <Input
+                        value={website}
+                        onChange={(e) => setWebsite(e.target.value)}
+                        placeholder="https://yoursite.com"
+                      />
+                    </FormGroup>
+                    <FormGroup className="full-width">
+                      <Label>Bio</Label>
+                      <TextArea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Tell readers about yourself..."
+                      />
+                    </FormGroup>
+                  </FormGrid>
 
-              <FormGroup>
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your email"
-                />
-              </FormGroup>
+                  <Actions>
+                    <SecondaryBtn type="button">Cancel</SecondaryBtn>
+                    <PrimaryBtn type="submit" disabled={updateMutation.isPending}>
+                      {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                    </PrimaryBtn>
+                  </Actions>
+                </form>
+              </SectionBody>
+            </Section>
+          )}
 
-              <FormGroup>
-                <Label>Bio</Label>
-                <TextArea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell us about yourself"
-                />
-              </FormGroup>
+          {activeTab === 'notifications' && (
+            <Section>
+              <SectionHeader>
+                <SectionTitle>Notification Preferences</SectionTitle>
+                <SectionDesc>Choose how you want to be notified</SectionDesc>
+              </SectionHeader>
+              <SectionBody>
+                <SettingItem>
+                  <SettingInfo>
+                    <SettingLabel>Email notifications</SettingLabel>
+                    <SettingDesc>Receive emails about comments and likes</SettingDesc>
+                  </SettingInfo>
+                  <Toggle
+                    $on={notifications.email}
+                    onClick={() => setNotifications({ ...notifications, email: !notifications.email })}
+                  />
+                </SettingItem>
+                <SettingItem>
+                  <SettingInfo>
+                    <SettingLabel>Push notifications</SettingLabel>
+                    <SettingDesc>Get notified in your browser</SettingDesc>
+                  </SettingInfo>
+                  <Toggle
+                    $on={notifications.push}
+                    onClick={() => setNotifications({ ...notifications, push: !notifications.push })}
+                  />
+                </SettingItem>
+                <SettingItem>
+                  <SettingInfo>
+                    <SettingLabel>Weekly digest</SettingLabel>
+                    <SettingDesc>Summary of your stats every week</SettingDesc>
+                  </SettingInfo>
+                  <Toggle
+                    $on={notifications.weekly}
+                    onClick={() => setNotifications({ ...notifications, weekly: !notifications.weekly })}
+                  />
+                </SettingItem>
+              </SectionBody>
+            </Section>
+          )}
 
-              <ButtonRow>
-                <PrimaryButton type="submit" disabled={updateProfileMutation.isPending}>
-                  {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
-                </PrimaryButton>
-              </ButtonRow>
-            </Form>
-          </CardContent>
-        </Card>
-      )}
+          {activeTab === 'appearance' && (
+            <Section>
+              <SectionHeader>
+                <SectionTitle>Appearance</SectionTitle>
+                <SectionDesc>Customize how BlogHub looks for you</SectionDesc>
+              </SectionHeader>
+              <SectionBody>
+                <Label style={{ marginBottom: 16 }}>Theme</Label>
+                <ThemeGrid>
+                  <ThemeCard $active={mode === 'light'} onClick={() => setTheme('light')}>
+                    {mode === 'light' && <CheckBadge><Check /></CheckBadge>}
+                    <Sun />
+                    <ThemeName>Light</ThemeName>
+                  </ThemeCard>
+                  <ThemeCard $active={mode === 'dark'} onClick={() => setTheme('dark')}>
+                    {mode === 'dark' && <CheckBadge><Check /></CheckBadge>}
+                    <Moon />
+                    <ThemeName>Dark</ThemeName>
+                  </ThemeCard>
+                  <ThemeCard $active={false}>
+                    <Monitor />
+                    <ThemeName>System</ThemeName>
+                  </ThemeCard>
+                </ThemeGrid>
+              </SectionBody>
+            </Section>
+          )}
 
-      {activeTab === 'account' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-            <CardDescription>Manage your account details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <InfoRow>
-              <InfoLabel>User ID</InfoLabel>
-              <InfoValue>{user?.user_id}</InfoValue>
-            </InfoRow>
-            <InfoRow>
-              <InfoLabel>Account Type</InfoLabel>
-              <InfoValue>{user?.roles?.join(', ') || 'User'}</InfoValue>
-            </InfoRow>
+          {activeTab === 'security' && (
+            <>
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Change Password</SectionTitle>
+                  <SectionDesc>Update your password regularly for security</SectionDesc>
+                </SectionHeader>
+                <SectionBody>
+                  <FormGrid>
+                    <FormGroup className="full-width">
+                      <Label>Current Password</Label>
+                      <Input type="password" placeholder="Enter current password" />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>New Password</Label>
+                      <Input type="password" placeholder="Enter new password" />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Confirm Password</Label>
+                      <Input type="password" placeholder="Confirm new password" />
+                    </FormGroup>
+                  </FormGrid>
+                  <Actions>
+                    <PrimaryBtn type="button">Update Password</PrimaryBtn>
+                  </Actions>
+                </SectionBody>
+              </Section>
 
-            <Divider />
-
-            <FormGroup>
-              <Label>Change Password</Label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <Input type="password" placeholder="Current password" />
-                <Input type="password" placeholder="New password" />
-                <Input type="password" placeholder="Confirm new password" />
-              </div>
-            </FormGroup>
-
-            <ButtonRow>
-              <SecondaryButton type="button">
-                <Lock size={16} /> Update Password
-              </SecondaryButton>
-            </ButtonRow>
-
-            <DangerZone>
-              <DangerTitle>Danger Zone</DangerTitle>
-              <DangerText>
-                Once you delete your account, there is no going back. Please be certain.
-              </DangerText>
-              <DangerButton type="button">
-                <Trash2 size={16} /> Delete Account
-              </DangerButton>
-            </DangerZone>
-          </CardContent>
-        </Card>
-      )}
-
-      {activeTab === 'privacy' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Privacy Settings</CardTitle>
-            <CardDescription>Control your privacy preferences</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SettingRow>
-              <SettingInfo>
-                <SettingTitle>Show Email</SettingTitle>
-                <SettingDescription>Allow others to see your email address</SettingDescription>
-              </SettingInfo>
-              <Toggle $checked={showEmail} onClick={() => setShowEmail(!showEmail)} />
-            </SettingRow>
-
-            <SettingRow>
-              <SettingInfo>
-                <SettingTitle>Show Activity</SettingTitle>
-                <SettingDescription>Display your activity on your profile</SettingDescription>
-              </SettingInfo>
-              <Toggle $checked={showActivity} onClick={() => setShowActivity(!showActivity)} />
-            </SettingRow>
-
-            <SettingRow>
-              <SettingInfo>
-                <SettingTitle>Email Notifications</SettingTitle>
-                <SettingDescription>Receive email notifications for updates</SettingDescription>
-              </SettingInfo>
-              <Toggle
-                $checked={emailNotifications}
-                onClick={() => setEmailNotifications(!emailNotifications)}
-              />
-            </SettingRow>
-
-            <ButtonRow>
-              <PrimaryButton type="button">Save Privacy Settings</PrimaryButton>
-            </ButtonRow>
-          </CardContent>
-        </Card>
-      )}
-
-      {activeTab === 'appearance' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Appearance</CardTitle>
-            <CardDescription>Customize how BlogHub looks</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Label>Theme</Label>
-            <ThemeOptions>
-              <ThemeOption $active={mode === 'light'} onClick={() => setTheme('light')}>
-                <Sun />
-                <ThemeLabel>Light</ThemeLabel>
-              </ThemeOption>
-              <ThemeOption $active={mode === 'dark'} onClick={() => setTheme('dark')}>
-                <Moon />
-                <ThemeLabel>Dark</ThemeLabel>
-              </ThemeOption>
-              <ThemeOption $active={false} onClick={() => {}}>
-                <Monitor />
-                <ThemeLabel>System</ThemeLabel>
-              </ThemeOption>
-            </ThemeOptions>
-          </CardContent>
-        </Card>
-      )}
+              <DangerZone>
+                <DangerTitle>Delete Account</DangerTitle>
+                <DangerText>
+                  Once you delete your account, all your data will be permanently removed. This action cannot be undone.
+                </DangerText>
+                <DangerBtn>Delete My Account</DangerBtn>
+              </DangerZone>
+            </>
+          )}
+        </Content>
+      </Layout>
     </PageWrapper>
   );
 }

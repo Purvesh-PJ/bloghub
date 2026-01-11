@@ -4,9 +4,9 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { Image, Eye, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 import styled from 'styled-components';
+import MDEditor from '@uiw/react-md-editor';
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
-import { RichTextEditor } from '../components/common/RichTextEditor';
 import { Loading } from '../components/common/Loading';
 
 const PageWrapper = styled.div`
@@ -323,24 +323,70 @@ const PreviewImage = styled.div`
 `;
 
 const EditorWrapper = styled.div`
-  .ql-container {
-    min-height: 300px;
-    font-size: ${({ theme }) => theme.fontSizes.md};
+  .w-md-editor {
+    background: ${({ theme }) => theme.colors.inputBg};
+    border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+    border-radius: ${({ theme }) => theme.radii.lg};
+    box-shadow: none;
   }
-
-  .ql-editor {
-    min-height: 300px;
-  }
-
-  .ql-toolbar {
-    border-radius: ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md} 0 0;
-    border-color: ${({ theme }) => theme.colors.inputBorder};
+  
+  .w-md-editor-toolbar {
     background: ${({ theme }) => theme.colors.bgSecondary};
+    border-bottom: 1px solid ${({ theme }) => theme.colors.inputBorder};
+    border-radius: ${({ theme }) => theme.radii.lg} ${({ theme }) => theme.radii.lg} 0 0;
+    padding: 8px;
   }
-
-  .ql-container {
-    border-radius: 0 0 ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md};
-    border-color: ${({ theme }) => theme.colors.inputBorder};
+  
+  .w-md-editor-toolbar ul > li > button {
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+  
+  .w-md-editor-toolbar ul > li > button:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
+    background: ${({ theme }) => theme.colors.bgHover};
+  }
+  
+  .w-md-editor-content {
+    background: ${({ theme }) => theme.colors.inputBg};
+  }
+  
+  .w-md-editor-text-pre > code,
+  .w-md-editor-text-input {
+    font-size: 15px !important;
+    line-height: 1.7 !important;
+    color: ${({ theme }) => theme.colors.textPrimary} !important;
+  }
+  
+  .w-md-editor-preview {
+    background: ${({ theme }) => theme.colors.inputBg};
+    padding: 16px;
+  }
+  
+  .wmde-markdown {
+    background: transparent;
+    color: ${({ theme }) => theme.colors.textPrimary};
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  
+  .wmde-markdown h1, .wmde-markdown h2, .wmde-markdown h3 {
+    color: ${({ theme }) => theme.colors.textPrimary};
+    border-bottom: none;
+  }
+  
+  .wmde-markdown code {
+    background: ${({ theme }) => theme.colors.bgSecondary};
+    color: ${({ theme }) => theme.colors.accent};
+  }
+  
+  .wmde-markdown pre {
+    background: ${({ theme }) => theme.colors.bgSecondary};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+  }
+  
+  .wmde-markdown blockquote {
+    border-left: 3px solid ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.textSecondary};
   }
 `;
 
@@ -450,7 +496,7 @@ export function WritePost() {
       toast.error('Title is required');
       return;
     }
-    if (!content.trim() || content === '<p><br></p>') {
+    if (!content.trim()) {
       toast.error('Content is required');
       return;
     }
@@ -480,10 +526,7 @@ export function WritePost() {
 
   const isPending = createMutation.isPending || updateMutation.isPending;
   const categories = categoriesData?.data || [];
-  const wordCount = content
-    .replace(/<[^>]*>/g, '')
-    .split(/\s+/)
-    .filter(Boolean).length;
+  const wordCount = content.split(/\s+/).filter(Boolean).length;
 
   return (
     <PageWrapper>
@@ -513,10 +556,9 @@ export function WritePost() {
                     <img src={imageURL} alt="Cover" />
                   </PreviewImage>
                 )}
-                <div
-                  className="post-content"
-                  dangerouslySetInnerHTML={{ __html: content || '<p>No content</p>' }}
-                />
+                <EditorWrapper data-color-mode="light">
+                  <MDEditor.Markdown source={content || 'No content'} />
+                </EditorWrapper>
               </PreviewContent>
             ) : (
               <>
@@ -553,8 +595,14 @@ export function WritePost() {
 
                 <FormGroup>
                   <Label>Content</Label>
-                  <EditorWrapper>
-                    <RichTextEditor value={content} onChange={setContent} />
+                  <EditorWrapper data-color-mode="light">
+                    <MDEditor
+                      value={content}
+                      onChange={(val) => setContent(val || '')}
+                      height={400}
+                      preview="edit"
+                      hideToolbar={false}
+                    />
                   </EditorWrapper>
                   <WordCount>{wordCount} words</WordCount>
                 </FormGroup>

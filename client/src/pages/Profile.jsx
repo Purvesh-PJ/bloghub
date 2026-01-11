@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Settings, FileText, Heart, MessageCircle, Users, UserPlus } from 'lucide-react';
 import styled from 'styled-components';
 import { userService } from '../services/userService';
-import { useAuthStore } from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 import { PostCard } from '../components/common/PostCard';
 import { Loading } from '../components/common/Loading';
 
@@ -265,7 +265,7 @@ const PrimaryButton = styled(Link)`
 `;
 
 export function Profile() {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('published');
 
   const { data: userData, isLoading: userLoading } = useQuery({

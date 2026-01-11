@@ -1,17 +1,18 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search,
-  Plus,
+  PenLine,
   User,
   LogOut,
   Settings,
   LayoutDashboard,
   FileText,
   BarChart3,
+  Bell,
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { useAuthStore } from '../../store/authStore';
+import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../common/ThemeToggle';
 
 const HeaderWrapper = styled.header`
@@ -20,12 +21,9 @@ const HeaderWrapper = styled.header`
   left: 0;
   right: 0;
   height: ${({ theme }) => theme.layout.headerHeight};
-  background-color: ${({ theme }) => theme.colors.bgPrimary};
+  background: ${({ theme }) => theme.colors.bgPrimary};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   z-index: ${({ theme }) => theme.zIndices.sticky};
-  transition:
-    background-color ${({ theme }) => theme.transitions.normal},
-    border-color ${({ theme }) => theme.transitions.normal};
 `;
 
 const HeaderContent = styled.div`
@@ -33,7 +31,7 @@ const HeaderContent = styled.div`
   align-items: center;
   justify-content: space-between;
   height: 100%;
-  max-width: ${({ theme }) => theme.layout.maxContentWidth};
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 ${({ theme }) => theme.spacing.lg};
 `;
@@ -41,81 +39,62 @@ const HeaderContent = styled.div`
 const LeftSection = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacing.lg};
 `;
 
 const Logo = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.xl};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-`;
-
-const SearchForm = styled.form`
+  color: ${({ theme }) => theme.colors.accent};
   display: flex;
   align-items: center;
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    display: none;
-  }
+  gap: 8px;
 `;
 
-const SearchInputWrapper = styled.div`
-  position: relative;
+const LogoIcon = styled.div`
+  width: 32px;
+  height: 32px;
+  background: ${({ theme }) => theme.colors.accent};
+  border-radius: ${({ theme }) => theme.radii.md};
   display: flex;
   align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-size: 16px;
 `;
 
-const SearchIcon = styled.div`
-  position: absolute;
-  left: 12px;
+const SearchBar = styled.div`
   display: flex;
   align-items: center;
-  color: ${({ theme }) => theme.colors.textMuted};
-  pointer-events: none;
-`;
-
-const SearchInput = styled.input`
-  width: 280px;
-  height: 40px;
-  padding: 0 ${({ theme }) => theme.spacing.sm} 0 40px;
+  gap: 8px;
+  padding: 8px 14px;
   background: ${({ theme }) => theme.colors.bgSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-right: none;
-  border-radius: ${({ theme }) => theme.radii.md} 0 0 ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.inputPlaceholder};
-  }
-
-  &:focus {
-    outline: none;
-    background: ${({ theme }) => theme.colors.bgPrimary};
-    border-color: ${({ theme }) => theme.colors.borderHover};
-  }
-`;
-
-const SearchButton = styled.button`
-  height: 40px;
-  padding: 0 ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.buttonPrimaryBg};
-  color: ${({ theme }) => theme.colors.buttonPrimaryText};
-  border: none;
-  border-radius: 0 ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md} 0;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  border-radius: ${({ theme }) => theme.radii.full};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-
+  
   &:hover {
-    background: ${({ theme }) => theme.colors.buttonPrimaryHover};
+    border-color: ${({ theme }) => theme.colors.borderHover};
+  }
+  
+  svg {
+    color: ${({ theme }) => theme.colors.textMuted};
+    width: 16px;
+    height: 16px;
+  }
+  
+  span {
+    color: ${({ theme }) => theme.colors.textMuted};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+  }
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    span {
+      display: none;
+    }
+    padding: 8px;
   }
 `;
 
@@ -125,38 +104,79 @@ const Actions = styled.div`
   gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-const Button = styled.button`
-  display: inline-flex;
+const IconButton = styled.button`
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 ${({ theme }) => theme.spacing.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  border-radius: ${({ theme }) => theme.radii.md};
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  text-decoration: none;
-  border: none;
-`;
-
-const PrimaryButton = styled(Button)`
-  background: ${({ theme }) => theme.colors.buttonPrimaryBg};
-  color: ${({ theme }) => theme.colors.buttonPrimaryText};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.buttonPrimaryHover};
+    background: ${({ theme }) => theme.colors.bgHover};
+    color: ${({ theme }) => theme.colors.accent};
   }
 `;
 
-const SecondaryButton = styled(Button)`
-  background: ${({ theme }) => theme.colors.buttonSecondaryBg};
-  color: ${({ theme }) => theme.colors.buttonSecondaryText};
-  border: 1px solid ${({ theme }) => theme.colors.buttonSecondaryBorder};
+const WriteButton = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.buttonPrimaryText};
+  background: ${({ theme }) => theme.colors.accent};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.full};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.buttonSecondaryHover};
+    background: ${({ theme }) => theme.colors.accentHover};
+    transform: translateY(-1px);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    span {
+      display: none;
+    }
+    padding: 8px 12px;
+  }
+`;
+
+const AuthButton = styled(Link)`
+  padding: 8px 16px;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  border-radius: ${({ theme }) => theme.radii.full};
+  transition: all ${({ theme }) => theme.transitions.fast};
+`;
+
+const SignInButton = styled(AuthButton)`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  
+  &:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+`;
+
+const SignUpButton = styled(AuthButton)`
+  background: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.buttonPrimaryText};
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.accentHover};
   }
 `;
 
@@ -164,20 +184,20 @@ const AvatarButton = styled.button`
   width: 36px;
   height: 36px;
   padding: 0;
-  background: ${({ theme }) => theme.colors.bgTertiary};
-  border: none;
+  background: ${({ theme }) => theme.colors.accentSubtle};
+  border: 2px solid ${({ theme }) => theme.colors.accent};
   border-radius: 50%;
   cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textSecondary};
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  color: ${({ theme }) => theme.colors.accent};
+  transition: all ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.bgActive};
+    transform: scale(1.05);
   }
 `;
 
@@ -189,9 +209,10 @@ const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 200px;
-  background: ${({ theme }) => theme.colors.cardBg};
-  border-radius: ${({ theme }) => theme.radii.lg};
+  min-width: 220px;
+  background: ${({ theme }) => theme.colors.bgPrimary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
   z-index: ${({ theme }) => theme.zIndices.dropdown};
   overflow: hidden;
@@ -199,12 +220,13 @@ const DropdownMenu = styled.div`
 
 const DropdownHeader = styled.div`
   padding: ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.bgSecondary};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const UserName = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
@@ -217,44 +239,44 @@ const UserEmail = styled.div`
 const DropdownItem = styled(Link)`
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px ${({ theme }) => theme.spacing.md};
+  gap: 12px;
+  padding: 12px ${({ theme }) => theme.spacing.md};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  transition: background ${({ theme }) => theme.transitions.fast};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  transition: all ${({ theme }) => theme.transitions.fast};
 
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
-    color: ${({ theme }) => theme.colors.textPrimary};
+    color: ${({ theme }) => theme.colors.accent};
   }
 
   svg {
-    width: 14px;
-    height: 14px;
-    color: ${({ theme }) => theme.colors.textMuted};
+    width: 16px;
+    height: 16px;
   }
 `;
 
 const DropdownButton = styled.button`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 10px ${({ theme }) => theme.spacing.md};
+  padding: 12px ${({ theme }) => theme.spacing.md};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.error};
+  color: ${({ theme }) => theme.colors.textMuted};
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transitions.fast};
+  transition: all ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.bgHover};
+    background: ${({ theme }) => theme.colors.errorBg};
+    color: ${({ theme }) => theme.colors.error};
   }
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
   }
 `;
 
@@ -263,20 +285,12 @@ const DropdownDivider = styled.div`
   background: ${({ theme }) => theme.colors.border};
 `;
 
-const HideMobile = styled.span`
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    display: none;
-  }
-`;
-
 export function Header() {
-  const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  const { isAuthenticated, user, logout, isAdmin } = useAuthStore();
+  const { isAuthenticated, user, logout, isAdmin } = useAuth();
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -286,14 +300,6 @@ export function Header() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -308,11 +314,16 @@ export function Header() {
   return (
     <HeaderWrapper>
       <HeaderContent>
-        
         <LeftSection>
           <Logo to="/">
+            <LogoIcon>B</LogoIcon>
             BlogHub
           </Logo>
+          
+          <SearchBar onClick={() => navigate('/search')}>
+            <Search />
+            <span>Search...</span>
+          </SearchBar>
         </LeftSection>
 
         <Actions>
@@ -320,10 +331,10 @@ export function Header() {
 
           {isAuthenticated ? (
             <>
-              <PrimaryButton as={Link} to="/write">
-                <Plus size={16} />
-                <HideMobile>Write</HideMobile>
-              </PrimaryButton>
+              <WriteButton to="/write">
+                <PenLine />
+                <span>Write</span>
+              </WriteButton>
 
               <DropdownWrapper ref={dropdownRef}>
                 <AvatarButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
@@ -340,7 +351,7 @@ export function Header() {
                     {isAdmin() && (
                       <>
                         <DropdownItem to="/admin" onClick={handleDropdownItemClick}>
-                          <LayoutDashboard /> Admin
+                          <LayoutDashboard /> Admin Dashboard
                         </DropdownItem>
                         <DropdownDivider />
                       </>
@@ -350,7 +361,7 @@ export function Header() {
                       <User /> Profile
                     </DropdownItem>
                     <DropdownItem to="/my-posts" onClick={handleDropdownItemClick}>
-                      <FileText /> My Posts
+                      <FileText /> My Stories
                     </DropdownItem>
                     <DropdownItem to="/analytics" onClick={handleDropdownItemClick}>
                       <BarChart3 /> Analytics
@@ -368,12 +379,8 @@ export function Header() {
             </>
           ) : (
             <>
-              <SecondaryButton as={Link} to="/login">
-                Sign In
-              </SecondaryButton>
-              <PrimaryButton as={Link} to="/register">
-                Sign Up
-              </PrimaryButton>
+              <SignInButton to="/login">Sign in</SignInButton>
+              <SignUpButton to="/register">Get started</SignUpButton>
             </>
           )}
         </Actions>

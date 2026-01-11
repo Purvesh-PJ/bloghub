@@ -18,13 +18,13 @@ import { FileTextIcon, HeartIcon, PersonIcon } from '@radix-ui/react-icons';
 import toast from 'react-hot-toast';
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
-import { useAuthStore } from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 import { PostCard } from '../components/common/PostCard';
 import { Loading } from '../components/common/Loading';
 
 export function UserProfile() {
   const { userId } = useParams();
-  const { isAuthenticated, user: currentUser } = useAuthStore();
+  const { isAuthenticated, user: currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [isFollowing, setIsFollowing] = useState(false);
 

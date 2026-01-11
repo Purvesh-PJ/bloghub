@@ -4,7 +4,7 @@ import { User, Lock, AlertCircle } from 'lucide-react';
 import styled from 'styled-components';
 import toast from 'react-hot-toast';
 import { authService } from '../services/authService';
-import { useAuthStore } from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 
 const PageWrapper = styled.div`
   display: flex;
@@ -162,7 +162,7 @@ export function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-  const { setAuth } = useAuthStore();
+  const { setAuth } = useAuth();
 
   const from = location.state?.from?.pathname || '/';
 
