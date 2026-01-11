@@ -1,84 +1,168 @@
-# BlogHub
+<p align="center">
+  <img src="client/public/screenshots/home.png" alt="BlogHub" width="100%" />
+</p>
 
-A full-stack blogging platform built with the MERN stack. Create, publish, and discover blog posts with a clean, enterprise-grade interface.
+<h1 align="center">BlogHub</h1>
 
-## Tech Stack
+<p align="center">
+  <strong>A modern, full-stack blogging platform built with the MERN stack</strong>
+</p>
 
-**Backend:**
-- Node.js + Express.js
-- MongoDB + Mongoose
-- JWT Authentication
-- Express Validator
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#screenshots">Screenshots</a> •
+  <a href="#tech-stack">Tech Stack</a> •
+  <a href="#getting-started">Getting Started</a> •
+  <a href="#api-reference">API Reference</a> •
+  <a href="#contributing">Contributing</a>
+</p>
 
-**Frontend:**
-- React 19 + Vite
-- Radix UI Themes
-- React Query (TanStack)
-- Zustand (State Management)
-- React Router v7
-- Lucide Icons
-- React Quill (Rich Text Editor)
+<p align="center">
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react" alt="React" />
+  <img src="https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js" alt="Node.js" />
+  <img src="https://img.shields.io/badge/MongoDB-6+-47A248?style=flat-square&logo=mongodb" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License" />
+</p>
 
-## Features
+---
 
-- User authentication (signup, signin, JWT refresh tokens)
-- Create, edit, and delete blog posts
-- Rich text editor with formatting options
-- Categories and post organization
-- Comments and replies
-- Like/unlike posts
-- User profiles with follow/unfollow
-- Search functionality
-- User analytics dashboard
-- Admin panel for content management
-- Responsive design
+## ✨ Features
 
-## Prerequisites
+**Content Creation**
+- 📝 MDX Editor with live preview and syntax highlighting
+- 🖼️ Cover image support for posts
+- 🏷️ Categories and tags organization
+- 📱 Fully responsive design
 
-- Node.js v18+
-- MongoDB (local or Atlas)
+**User Experience**
+- 🔐 Secure JWT authentication with refresh tokens
+- 👤 User profiles with bio and avatar
+- 👥 Follow/unfollow system
+- ❤️ Like and comment on posts
+- 💬 Nested comment replies
+- 🔍 Full-text search
+
+**Analytics & Admin**
+- 📊 Performance dashboard with views, likes, and engagement metrics
+- 👑 Admin panel for content management
+- 📈 Post analytics and insights
+
+**Developer Experience**
+- ⚡ Vite for lightning-fast development
+- 🎨 Styled Components with theme support
+- 🌙 Light/Dark mode
+- 🔄 React Query for efficient data fetching
+
+---
+
+## 📸 Screenshots
+
+<details>
+<summary><strong>View All Screenshots</strong></summary>
+
+### Home Page
+Category slideshow hero with featured topics and latest posts feed.
+![Home](client/public/screenshots/home.png)
+
+### Latest Posts
+Browse and filter posts by category with trending sidebar.
+![Latest Posts](client/public/screenshots/latest-posts.png)
+
+### Post Detail
+Clean, Medium-style reading experience with engagement features.
+![Post](client/public/screenshots/post.png)
+
+### Write Post
+MDX editor with live preview, categories, and publishing options.
+![Write Post](client/public/screenshots/write-post.png)
+
+### User Profile
+Profile page with user stats, bio, and published posts.
+![Profile](client/public/screenshots/profile.png)
+
+### Analytics Dashboard
+Track your content performance with detailed metrics.
+![Dashboard](client/public/screenshots/performance-dashboard.png)
+
+</details>
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+| Technology | Purpose |
+|------------|---------|
+| React 19 | UI Framework |
+| Vite | Build Tool |
+| React Router v7 | Routing |
+| TanStack Query | Data Fetching |
+| Styled Components | Styling |
+| MDX Editor | Rich Text Editing |
+| Lucide Icons | Icons |
+| React Hot Toast | Notifications |
+
+### Backend
+| Technology | Purpose |
+|------------|---------|
+| Node.js | Runtime |
+| Express.js | Web Framework |
+| MongoDB | Database |
+| Mongoose | ODM |
+| JWT | Authentication |
+| bcryptjs | Password Hashing |
+| Express Validator | Input Validation |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js v18 or higher
+- MongoDB (local installation or [MongoDB Atlas](https://www.mongodb.com/atlas))
 - npm or yarn
 
-## Installation
+### Installation
 
-### 1. Clone the repository
+**1. Clone the repository**
 
 ```bash
 git clone https://github.com/Purvesh-PJ/blogging_platform.git
 cd blogging_platform
 ```
 
-### 2. Setup Backend
+**2. Install dependencies**
 
 ```bash
+# Install backend dependencies
 cd backend
 npm install
+
+# Install frontend dependencies
+cd ../client
+npm install
 ```
+
+**3. Environment Setup**
 
 Create `.env` file in the `backend` directory:
 
 ```env
 DB_URI=mongodb://127.0.0.1:27017/bloghub
-PORT=4000
-JWT_SECRET=your_secure_jwt_secret_key_here
-```
-
-### 3. Setup Frontend
-
-```bash
-cd ../client
-npm install
+PORT=5000
+JWT_SECRET=your_super_secret_jwt_key_here
 ```
 
 Create `.env` file in the `client` directory:
 
 ```env
-VITE_API_URL=http://localhost:4000
+VITE_API_URL=http://localhost:5000
 ```
 
-### 4. Seed Database (Optional)
+**4. Seed Database (Recommended)**
 
-Populate the database with sample data:
+Populate the database with sample data for testing:
 
 ```bash
 cd backend
@@ -86,118 +170,172 @@ npm run seed
 ```
 
 This creates:
-- 10 sample users with posts
-- Categories, comments, likes, and followers
-- Test accounts:
-  - Regular user: `john@example.com` / `password123`
-  - Admin user: `admin@bloghub.com` / `admin123`
+- 15 users with profiles
+- 22 posts across 10 categories
+- 99 comments and 177 likes
+- Analytics data for dashboard
 
-## Running the Application
+**Test Accounts:**
+| Role | Email | Password |
+|------|-------|----------|
+| User | john@example.com | password123 |
+| Admin | admin@bloghub.com | admin123 |
 
-### Start Backend
+### Running the Application
+
+**Start the backend server:**
 
 ```bash
 cd backend
 npm run dev
 ```
+> Server runs on http://localhost:5000
 
-Backend runs on `http://localhost:4000`
-
-### Start Frontend
+**Start the frontend (new terminal):**
 
 ```bash
 cd client
 npm run dev
 ```
+> App runs on http://localhost:5173
 
-Frontend runs on `http://localhost:3000`
+---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 blogging_platform/
+│
 ├── backend/
-│   ├── config/          # Database configuration
-│   ├── controllers/     # Route controllers
-│   ├── middlewares/     # Auth and validation middleware
-│   ├── models/          # Mongoose models
-│   ├── routes/          # API routes
-│   ├── services/        # Business logic
-│   ├── index.js         # Entry point
-│   └── seed.js          # Database seeder
+│   ├── config/              # Database configuration
+│   ├── controllers/         # Request handlers
+│   ├── middlewares/         # Auth & validation middleware
+│   ├── models/              # Mongoose schemas
+│   ├── routes/              # API route definitions
+│   ├── services/            # Business logic layer
+│   ├── index.js             # Server entry point
+│   └── seed.js              # Database seeder
 │
 ├── client/
+│   ├── public/
+│   │   └── screenshots/     # App screenshots
 │   ├── src/
-│   │   ├── components/  # Reusable components
-│   │   ├── pages/       # Page components
-│   │   ├── services/    # API service functions
-│   │   ├── store/       # Zustand store
-│   │   ├── styles/      # Global styles
-│   │   ├── config/      # Axios configuration
-│   │   ├── App.jsx      # Main app component
-│   │   └── main.jsx     # Entry point
-│   └── index.html
+│   │   ├── components/      # Reusable UI components
+│   │   │   ├── common/      # Shared components
+│   │   │   └── layout/      # Layout components
+│   │   ├── config/          # API configuration
+│   │   ├── context/         # React Context providers
+│   │   ├── pages/           # Page components
+│   │   ├── services/        # API service functions
+│   │   ├── styles/          # Theme and global styles
+│   │   ├── App.jsx          # Root component
+│   │   └── main.jsx         # Entry point
+│   ├── index.html
+│   └── vite.config.js
 │
 └── README.md
 ```
 
-## API Endpoints
+---
+
+## 📡 API Reference
 
 ### Authentication
-- `POST /auth/signup` - Register new user
-- `POST /auth/signin` - Login user
-- `POST /auth/refreshToken` - Refresh access token
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/signup` | Register new user |
+| POST | `/api/auth/signin` | Login user |
+| POST | `/api/auth/refreshToken` | Refresh access token |
 
 ### Posts
-- `GET /posts` - Get all posts
-- `GET /posts/:id` - Get single post
-- `POST /posts` - Create post (auth required)
-- `PUT /posts/:id` - Update post (auth required)
-- `DELETE /posts/:id` - Delete post (auth required)
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/posts` | Get all posts | No |
+| GET | `/api/posts/:id` | Get single post | No |
+| POST | `/api/posts` | Create post | Yes |
+| PUT | `/api/posts/:id` | Update post | Yes |
+| DELETE | `/api/posts/:id` | Delete post | Yes |
 
 ### Users
-- `GET /users/getUser` - Get current user
-- `PUT /users/setUser` - Update user profile
-- `GET /users/getUserPosts` - Get user's posts
-- `POST /users/followUser` - Follow a user
-- `POST /users/unfollowUser` - Unfollow a user
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/users/getUser` | Get current user | Yes |
+| PUT | `/api/users/setUser` | Update profile | Yes |
+| GET | `/api/users/getUserPosts` | Get user's posts | Yes |
+| POST | `/api/users/followUser` | Follow user | Yes |
+| POST | `/api/users/unfollowUser` | Unfollow user | Yes |
 
 ### Categories
-- `GET /categories` - Get all categories
-- `POST /categories` - Create category (admin)
-- `POST /categories/attachCategories` - Attach categories to post
 
-### Comments
-- `POST /comments` - Create comment
-- `POST /comments/replies` - Reply to comment
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/categories` | Get all categories | No |
+| POST | `/api/categories` | Create category | Admin |
+| POST | `/api/categories/attachCategories` | Attach to post | Yes |
 
-### Likes
-- `POST /likes` - Like a post
-- `DELETE /likes/:postId` - Unlike a post
+### Interactions
 
-### Search
-- `GET /search/:query` - Search posts
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/comments` | Create comment | Yes |
+| POST | `/api/comments/replies` | Reply to comment | Yes |
+| POST | `/api/likes` | Like a post | Yes |
+| DELETE | `/api/likes/:postId` | Unlike a post | Yes |
 
-## Scripts
+### Search & Analytics
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/search/:query` | Search posts | No |
+| GET | `/api/analytics` | Get analytics | Yes |
+
+---
+
+## 📜 Available Scripts
 
 ### Backend
+
 ```bash
-npm start       # Start production server
-npm run dev     # Start development server with nodemon
-npm run seed    # Seed database with sample data
-npm run lint    # Run ESLint
-npm run format  # Format code with Prettier
+npm start        # Start production server
+npm run dev      # Start development server (nodemon)
+npm run seed     # Seed database with sample data
+npm run lint     # Run ESLint
+npm run format   # Format with Prettier
 ```
 
 ### Frontend
+
 ```bash
-npm run dev     # Start development server
-npm run build   # Build for production
-npm run preview # Preview production build
-npm run lint    # Run ESLint
-npm run format  # Format code with Prettier
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run preview  # Preview production build
+npm run lint     # Run ESLint
+npm run format   # Format with Prettier
 ```
 
-## License
+---
 
-MIT
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/Purvesh-PJ">Purvesh</a>
+</p>
