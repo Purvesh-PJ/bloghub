@@ -3,7 +3,7 @@ import { Eye, Heart, MessageCircle, FileText, TrendingUp, BarChart3 } from 'luci
 import styled from 'styled-components';
 import { userService } from '../services/userService';
 import { analyticsService } from '../services/analyticsService';
-import { useAuthStore } from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 import { Loading } from '../components/common/Loading';
 
 const PageWrapper = styled.div`
@@ -250,7 +250,7 @@ const EmptyText = styled.p`
 `;
 
 export function Analytics() {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
 
   const { data: userPosts, isLoading: postsLoading } = useQuery({
     queryKey: ['userPosts'],

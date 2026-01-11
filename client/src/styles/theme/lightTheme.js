@@ -1,44 +1,44 @@
-// Light theme - Clean, minimal, Notion-inspired
+// Light theme - Modern, warm, friendly
 export const lightTheme = {
   mode: 'light',
 
   colors: {
-    // Backgrounds - subtle hierarchy
+    // Backgrounds - warm and soft
     bgPrimary: '#ffffff',
-    bgSecondary: '#fafafa',
-    bgTertiary: '#f5f5f5',
+    bgSecondary: '#f9fafb',
+    bgTertiary: '#f3f4f6',
     bgElevated: '#ffffff',
-    bgHover: 'rgba(0, 0, 0, 0.03)',
-    bgActive: 'rgba(0, 0, 0, 0.05)',
-    bgOverlay: 'rgba(0, 0, 0, 0.4)',
+    bgHover: 'rgba(99, 102, 241, 0.04)',
+    bgActive: 'rgba(99, 102, 241, 0.08)',
+    bgOverlay: 'rgba(17, 24, 39, 0.5)',
 
-    // Text - high contrast, clear hierarchy
-    textPrimary: '#1a1a1a',
-    textSecondary: '#6b6b6b',
-    textMuted: '#9a9a9a',
-    textDisabled: '#c4c4c4',
+    // Text - warm grays, not pure black
+    textPrimary: '#111827',
+    textSecondary: '#4b5563',
+    textMuted: '#9ca3af',
+    textDisabled: '#d1d5db',
     textInverse: '#ffffff',
-    textLink: '#1a1a1a',
-    textLinkHover: '#6b6b6b',
+    textLink: '#6366f1',
+    textLinkHover: '#4f46e5',
 
-    // Borders - minimal, only when needed
-    border: 'rgba(0, 0, 0, 0.08)',
-    borderLight: 'rgba(0, 0, 0, 0.04)',
-    borderHover: 'rgba(0, 0, 0, 0.12)',
-    borderFocus: '#1a1a1a',
+    // Borders - soft
+    border: '#e5e7eb',
+    borderLight: '#f3f4f6',
+    borderHover: '#d1d5db',
+    borderFocus: '#6366f1',
 
-    // Brand/Accent - neutral black
-    accent: '#1a1a1a',
-    accentHover: '#333333',
-    accentActive: '#000000',
-    accentSubtle: 'rgba(0, 0, 0, 0.05)',
-    accentMuted: 'rgba(0, 0, 0, 0.1)',
+    // Brand/Accent - indigo/purple
+    accent: '#6366f1',
+    accentHover: '#4f46e5',
+    accentActive: '#4338ca',
+    accentSubtle: 'rgba(99, 102, 241, 0.08)',
+    accentMuted: 'rgba(99, 102, 241, 0.15)',
 
-    // Semantic - muted, professional
-    success: '#22c55e',
-    successHover: '#16a34a',
-    successBg: 'rgba(34, 197, 94, 0.1)',
-    successBorder: 'rgba(34, 197, 94, 0.2)',
+    // Semantic
+    success: '#10b981',
+    successHover: '#059669',
+    successBg: 'rgba(16, 185, 129, 0.1)',
+    successBorder: 'rgba(16, 185, 129, 0.2)',
 
     warning: '#f59e0b',
     warningHover: '#d97706',
@@ -50,63 +50,63 @@ export const lightTheme = {
     errorBg: 'rgba(239, 68, 68, 0.1)',
     errorBorder: 'rgba(239, 68, 68, 0.2)',
 
-    info: '#6b6b6b',
-    infoHover: '#525252',
-    infoBg: 'rgba(0, 0, 0, 0.05)',
-    infoBorder: 'rgba(0, 0, 0, 0.1)',
+    info: '#3b82f6',
+    infoHover: '#2563eb',
+    infoBg: 'rgba(59, 130, 246, 0.1)',
+    infoBorder: 'rgba(59, 130, 246, 0.2)',
 
-    // Buttons - clean, minimal
-    buttonPrimaryBg: '#1a1a1a',
+    // Buttons - colorful primary
+    buttonPrimaryBg: '#6366f1',
     buttonPrimaryText: '#ffffff',
-    buttonPrimaryHover: '#333333',
+    buttonPrimaryHover: '#4f46e5',
     buttonSecondaryBg: '#ffffff',
-    buttonSecondaryText: '#1a1a1a',
-    buttonSecondaryHover: '#f5f5f5',
-    buttonSecondaryBorder: 'rgba(0, 0, 0, 0.1)',
-    buttonGhostHover: 'rgba(0, 0, 0, 0.05)',
+    buttonSecondaryText: '#374151',
+    buttonSecondaryHover: '#f9fafb',
+    buttonSecondaryBorder: '#e5e7eb',
+    buttonGhostHover: 'rgba(99, 102, 241, 0.08)',
 
-    // Input - clean, subtle
+    // Input
     inputBg: '#ffffff',
-    inputBorder: 'rgba(0, 0, 0, 0.1)',
-    inputBorderHover: 'rgba(0, 0, 0, 0.2)',
-    inputBorderFocus: '#1a1a1a',
-    inputPlaceholder: '#9a9a9a',
+    inputBorder: '#e5e7eb',
+    inputBorderHover: '#d1d5db',
+    inputBorderFocus: '#6366f1',
+    inputPlaceholder: '#9ca3af',
 
-    // Card - elevation based, no borders
+    // Card
     cardBg: '#ffffff',
-    cardBorder: 'transparent',
-    cardHoverBg: '#ffffff',
+    cardBorder: '#e5e7eb',
+    cardHoverBg: '#f9fafb',
 
     // Scrollbar
-    scrollbarTrack: 'transparent',
-    scrollbarThumb: 'rgba(0, 0, 0, 0.15)',
-    scrollbarThumbHover: 'rgba(0, 0, 0, 0.25)',
+    scrollbarTrack: '#f3f4f6',
+    scrollbarThumb: '#d1d5db',
+    scrollbarThumbHover: '#9ca3af',
 
     // Selection
-    selection: 'rgba(0, 0, 0, 0.1)',
-    selectionText: '#1a1a1a',
+    selection: 'rgba(99, 102, 241, 0.2)',
+    selectionText: '#111827',
 
     // Code
-    codeBg: '#f5f5f5',
-    codeBorder: 'transparent',
+    codeBg: '#f3f4f6',
+    codeBorder: '#e5e7eb',
 
-    // Badge
-    badgeBg: 'rgba(0, 0, 0, 0.05)',
-    badgeText: '#6b6b6b',
-    badgeActiveBg: '#1a1a1a',
+    // Badge - colorful
+    badgeBg: '#ede9fe',
+    badgeText: '#6366f1',
+    badgeActiveBg: '#6366f1',
     badgeActiveText: '#ffffff',
   },
 
   shadows: {
     none: 'none',
-    xs: '0 1px 2px rgba(0, 0, 0, 0.04)',
-    sm: '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
-    md: '0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.03)',
-    lg: '0 10px 20px rgba(0, 0, 0, 0.06), 0 3px 6px rgba(0, 0, 0, 0.04)',
-    xl: '0 15px 40px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04)',
-    card: '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
-    cardHover: '0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)',
-    focus: '0 0 0 2px rgba(0, 0, 0, 0.1)',
-    focusRing: '0 0 0 2px #ffffff, 0 0 0 4px #1a1a1a',
+    xs: '0 1px 2px rgba(0, 0, 0, 0.05)',
+    sm: '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',
+    md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    card: '0 1px 3px rgba(0, 0, 0, 0.08)',
+    cardHover: '0 10px 20px rgba(0, 0, 0, 0.12)',
+    focus: '0 0 0 3px rgba(99, 102, 241, 0.2)',
+    focusRing: '0 0 0 2px #ffffff, 0 0 0 4px #6366f1',
   },
 };

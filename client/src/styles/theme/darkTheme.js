@@ -1,112 +1,112 @@
-// Dark theme - Clean, minimal, Notion-inspired
+// Dark theme - Modern, warm, friendly
 export const darkTheme = {
   mode: 'dark',
 
   colors: {
-    // Backgrounds - subtle hierarchy
-    bgPrimary: '#191919',
-    bgSecondary: '#121212',
-    bgTertiary: '#232323',
-    bgElevated: '#1e1e1e',
-    bgHover: 'rgba(255, 255, 255, 0.05)',
-    bgActive: 'rgba(255, 255, 255, 0.08)',
-    bgOverlay: 'rgba(0, 0, 0, 0.6)',
+    // Backgrounds - warm dark, not pure black
+    bgPrimary: '#18181b',
+    bgSecondary: '#09090b',
+    bgTertiary: '#27272a',
+    bgElevated: '#1f1f23',
+    bgHover: 'rgba(139, 92, 246, 0.08)',
+    bgActive: 'rgba(139, 92, 246, 0.12)',
+    bgOverlay: 'rgba(0, 0, 0, 0.7)',
 
-    // Text - high contrast, clear hierarchy
-    textPrimary: '#ebebeb',
-    textSecondary: '#a0a0a0',
-    textMuted: '#6b6b6b',
-    textDisabled: '#4a4a4a',
-    textInverse: '#121212',
-    textLink: '#ebebeb',
-    textLinkHover: '#a0a0a0',
+    // Text - warm whites
+    textPrimary: '#fafafa',
+    textSecondary: '#a1a1aa',
+    textMuted: '#71717a',
+    textDisabled: '#52525b',
+    textInverse: '#18181b',
+    textLink: '#a78bfa',
+    textLinkHover: '#c4b5fd',
 
-    // Borders - minimal, only when needed
-    border: 'rgba(255, 255, 255, 0.08)',
-    borderLight: 'rgba(255, 255, 255, 0.04)',
-    borderHover: 'rgba(255, 255, 255, 0.12)',
-    borderFocus: '#ebebeb',
+    // Borders
+    border: '#3f3f46',
+    borderLight: '#27272a',
+    borderHover: '#52525b',
+    borderFocus: '#8b5cf6',
 
-    // Brand/Accent - neutral white
-    accent: '#ebebeb',
-    accentHover: '#ffffff',
-    accentActive: '#ffffff',
-    accentSubtle: 'rgba(255, 255, 255, 0.05)',
-    accentMuted: 'rgba(255, 255, 255, 0.1)',
+    // Brand/Accent - purple/violet
+    accent: '#8b5cf6',
+    accentHover: '#a78bfa',
+    accentActive: '#7c3aed',
+    accentSubtle: 'rgba(139, 92, 246, 0.12)',
+    accentMuted: 'rgba(139, 92, 246, 0.2)',
 
-    // Semantic - muted, professional
-    success: '#22c55e',
-    successHover: '#4ade80',
-    successBg: 'rgba(34, 197, 94, 0.15)',
-    successBorder: 'rgba(34, 197, 94, 0.25)',
+    // Semantic
+    success: '#34d399',
+    successHover: '#6ee7b7',
+    successBg: 'rgba(52, 211, 153, 0.15)',
+    successBorder: 'rgba(52, 211, 153, 0.25)',
 
-    warning: '#f59e0b',
-    warningHover: '#fbbf24',
-    warningBg: 'rgba(245, 158, 11, 0.15)',
-    warningBorder: 'rgba(245, 158, 11, 0.25)',
+    warning: '#fbbf24',
+    warningHover: '#fcd34d',
+    warningBg: 'rgba(251, 191, 36, 0.15)',
+    warningBorder: 'rgba(251, 191, 36, 0.25)',
 
-    error: '#ef4444',
-    errorHover: '#f87171',
-    errorBg: 'rgba(239, 68, 68, 0.15)',
-    errorBorder: 'rgba(239, 68, 68, 0.25)',
+    error: '#f87171',
+    errorHover: '#fca5a5',
+    errorBg: 'rgba(248, 113, 113, 0.15)',
+    errorBorder: 'rgba(248, 113, 113, 0.25)',
 
-    info: '#a0a0a0',
-    infoHover: '#ebebeb',
-    infoBg: 'rgba(255, 255, 255, 0.05)',
-    infoBorder: 'rgba(255, 255, 255, 0.1)',
+    info: '#60a5fa',
+    infoHover: '#93c5fd',
+    infoBg: 'rgba(96, 165, 250, 0.15)',
+    infoBorder: 'rgba(96, 165, 250, 0.25)',
 
-    // Buttons - clean, minimal
-    buttonPrimaryBg: '#ebebeb',
-    buttonPrimaryText: '#121212',
-    buttonPrimaryHover: '#ffffff',
-    buttonSecondaryBg: '#232323',
-    buttonSecondaryText: '#ebebeb',
-    buttonSecondaryHover: '#2d2d2d',
-    buttonSecondaryBorder: 'rgba(255, 255, 255, 0.1)',
-    buttonGhostHover: 'rgba(255, 255, 255, 0.05)',
+    // Buttons - colorful primary
+    buttonPrimaryBg: '#8b5cf6',
+    buttonPrimaryText: '#ffffff',
+    buttonPrimaryHover: '#a78bfa',
+    buttonSecondaryBg: '#27272a',
+    buttonSecondaryText: '#fafafa',
+    buttonSecondaryHover: '#3f3f46',
+    buttonSecondaryBorder: '#3f3f46',
+    buttonGhostHover: 'rgba(139, 92, 246, 0.12)',
 
-    // Input - clean, subtle
-    inputBg: '#191919',
-    inputBorder: 'rgba(255, 255, 255, 0.1)',
-    inputBorderHover: 'rgba(255, 255, 255, 0.2)',
-    inputBorderFocus: '#ebebeb',
-    inputPlaceholder: '#6b6b6b',
+    // Input
+    inputBg: '#18181b',
+    inputBorder: '#3f3f46',
+    inputBorderHover: '#52525b',
+    inputBorderFocus: '#8b5cf6',
+    inputPlaceholder: '#71717a',
 
-    // Card - elevation based, no borders
-    cardBg: '#191919',
-    cardBorder: 'transparent',
-    cardHoverBg: '#1e1e1e',
+    // Card
+    cardBg: '#18181b',
+    cardBorder: '#27272a',
+    cardHoverBg: '#1f1f23',
 
     // Scrollbar
-    scrollbarTrack: 'transparent',
-    scrollbarThumb: 'rgba(255, 255, 255, 0.15)',
-    scrollbarThumbHover: 'rgba(255, 255, 255, 0.25)',
+    scrollbarTrack: '#27272a',
+    scrollbarThumb: '#52525b',
+    scrollbarThumbHover: '#71717a',
 
     // Selection
-    selection: 'rgba(255, 255, 255, 0.15)',
-    selectionText: '#ebebeb',
+    selection: 'rgba(139, 92, 246, 0.3)',
+    selectionText: '#fafafa',
 
     // Code
-    codeBg: '#232323',
-    codeBorder: 'transparent',
+    codeBg: '#27272a',
+    codeBorder: '#3f3f46',
 
-    // Badge
-    badgeBg: 'rgba(255, 255, 255, 0.08)',
-    badgeText: '#a0a0a0',
-    badgeActiveBg: '#ebebeb',
-    badgeActiveText: '#121212',
+    // Badge - colorful
+    badgeBg: 'rgba(139, 92, 246, 0.2)',
+    badgeText: '#c4b5fd',
+    badgeActiveBg: '#8b5cf6',
+    badgeActiveText: '#ffffff',
   },
 
   shadows: {
     none: 'none',
-    xs: '0 1px 2px rgba(0, 0, 0, 0.2)',
-    sm: '0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2)',
-    md: '0 4px 6px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15)',
-    lg: '0 10px 20px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(0, 0, 0, 0.2)',
-    xl: '0 15px 40px rgba(0, 0, 0, 0.4), 0 5px 15px rgba(0, 0, 0, 0.2)',
-    card: '0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1)',
-    cardHover: '0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2)',
-    focus: '0 0 0 2px rgba(255, 255, 255, 0.1)',
-    focusRing: '0 0 0 2px #191919, 0 0 0 4px #ebebeb',
+    xs: '0 1px 2px rgba(0, 0, 0, 0.3)',
+    sm: '0 1px 3px rgba(0, 0, 0, 0.4)',
+    md: '0 4px 6px rgba(0, 0, 0, 0.4)',
+    lg: '0 10px 15px rgba(0, 0, 0, 0.4)',
+    xl: '0 20px 25px rgba(0, 0, 0, 0.5)',
+    card: '0 1px 3px rgba(0, 0, 0, 0.3)',
+    cardHover: '0 10px 20px rgba(0, 0, 0, 0.4)',
+    focus: '0 0 0 3px rgba(139, 92, 246, 0.3)',
+    focusRing: '0 0 0 2px #18181b, 0 0 0 4px #8b5cf6',
   },
 };

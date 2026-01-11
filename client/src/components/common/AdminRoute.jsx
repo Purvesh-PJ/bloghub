@@ -1,8 +1,8 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../../store/authStore';
+import { useAuth } from '../../context/AuthContext';
 
 export function AdminRoute({ children }) {
-  const { isAuthenticated, isAdmin } = useAuthStore();
+  const { isAuthenticated, isAdmin } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {

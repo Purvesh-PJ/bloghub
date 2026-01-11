@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useAuthStore } from '../store/authStore';
+import { authState } from '../context/AuthContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
@@ -13,7 +13,7 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().accessToken;
+    const token = authState.accessToken;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -32,7 +32,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = useAuthStore.getState().refreshToken;
+        const refreshToken = authState.refreshToken;
         if (refreshToken) {
           const response = await axios.post(`${API_BASE_URL}/auth/refreshToken`, {
             refreshToken,
@@ -40,13 +40,13 @@ api.interceptors.response.use(
 
           if (response.data.success) {
             const { accessToken } = response.data.data;
-            useAuthStore.getState().setAccessToken(accessToken);
+            authState.setAccessToken(accessToken);
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
             return api(originalRequest);
           }
         }
       } catch (refreshError) {
-        useAuthStore.getState().logout();
+        authState.logout();
         window.location.href = '/login';
       }
     }
