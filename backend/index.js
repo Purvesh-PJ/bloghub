@@ -1,4 +1,5 @@
 const express = require('express');
+const { apiLimiter } = require('./middlewares/rateLimiter');
 require('dotenv').config();
 const app = express();
 
@@ -30,7 +31,7 @@ app.use(logger); // Use the logging middleware
 app.use(cors()); // for handling Cross-Origin Resource Sharing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
+app.use(apiLimiter);
 // ROUTES
 app.use('/posts', postRoutes);
 app.use('/users', userRoutes);
