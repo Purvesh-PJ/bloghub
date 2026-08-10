@@ -24,7 +24,7 @@ exports.getUserAnalytics = async (req, res) => {
     const { userId } = req.params;
 
     // Get user's posts
-    const userPosts = await Post.find({ author: userId });
+    const userPosts = await Post.find({ user: userId });
     const postIds = userPosts.map((post) => post._id);
 
     // Get views, reads, and other analytics for these posts
@@ -108,7 +108,7 @@ exports.getAdminAnalytics = async (req, res) => {
         $lookup: {
           from: 'posts',
           localField: '_id',
-          foreignField: 'author',
+          foreignField: 'user',
           as: 'posts',
         },
       },
@@ -160,7 +160,7 @@ exports.getAdminAnalytics = async (req, res) => {
 exports.trackPageView = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user ? req.user._id : null;
+    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
 
     const newView = new View({
       post: postId,
@@ -180,7 +180,7 @@ exports.trackPageView = async (req, res) => {
 exports.trackPostRead = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user ? req.user._id : null;
+    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
 
     const newRead = new Read({
       post: postId,

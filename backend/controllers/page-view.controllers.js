@@ -5,7 +5,7 @@ const Post = require('../models/post.model');
 exports.createPageView = async (req, res) => {
   try {
     const { postId } = req.body;
-    const userId = req.user ? req.user._id : null;
+    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
 
     // Check if post exists
     const post = await Post.findById(postId);

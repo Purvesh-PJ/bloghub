@@ -17,7 +17,7 @@ exports.getAllUserActivity = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(skip)
-      .populate('author', 'username email')
+      .populate('user', 'username email')
       .select('title createdAt updatedAt');
 
     // Get recent comments
@@ -27,7 +27,7 @@ exports.getAllUserActivity = async (req, res) => {
       .skip(skip)
       .populate('user', 'username email')
       .populate('post', 'title')
-      .select('content createdAt');
+      .select('message createdAt');
 
     // Get recent likes
     const recentLikes = await Like.find()
@@ -100,7 +100,7 @@ exports.getUserActivity = async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Get user's posts
-    const userPosts = await Post.find({ author: userId })
+    const userPosts = await Post.find({ user: userId })
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(skip)
@@ -112,7 +112,7 @@ exports.getUserActivity = async (req, res) => {
       .limit(limit)
       .skip(skip)
       .populate('post', 'title')
-      .select('content createdAt');
+      .select('message createdAt');
 
     // Get user's likes
     const userLikes = await Like.find({ user: userId })
@@ -129,7 +129,7 @@ exports.getUserActivity = async (req, res) => {
       .populate('post', 'title');
 
     // Get total counts for pagination
-    const totalPosts = await Post.countDocuments({ author: userId });
+    const totalPosts = await Post.countDocuments({ user: userId });
     const totalComments = await Comment.countDocuments({ user: userId });
     const totalLikes = await Like.countDocuments({ user: userId });
     const totalViews = await View.countDocuments({ user: userId });
@@ -176,7 +176,7 @@ exports.getUserTimeline = async (req, res) => {
     const { userId } = req.params;
 
     // Combine all user activity into a single timeline
-    const posts = await Post.find({ author: userId })
+    const posts = await Post.find({ user: userId })
       .sort({ createdAt: -1 })
       .limit(10)
       .select('title createdAt')
@@ -193,7 +193,7 @@ exports.getUserTimeline = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(10)
       .populate('post', 'title')
-      .select('content createdAt')
+      .select('message createdAt')
       .lean()
       .then((comments) =>
         comments.map((comment) => ({
@@ -242,7 +242,7 @@ exports.getModerationLog = async (req, res) => {
       .sort({ updatedAt: -1 })
       .limit(limit)
       .skip(skip)
-      .populate('author', 'username email')
+      .populate('user', 'username email')
       .select('title createdAt updatedAt')
       .lean()
       .then((posts) =>
