@@ -15,15 +15,16 @@ exports.getComments = async (req, res) => {
 };
 
 exports.postComments = async (req, res) => {
-  // console.log(req.body);
   try {
-    // Creating new comment
-    const Comment = await createComment(req.body);
+    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const { postId, message } = req.body;
+
+    const createdComment = await createComment({ userId, postId, message });
 
     res.status(200).json({
       success: true,
       message: 'Comment added successfully',
-      comment: Comment,
+      comment: createdComment,
     });
   } catch (error) {
     console.error('Error while posting comment:', error.message);
@@ -36,9 +37,9 @@ exports.postComments = async (req, res) => {
 };
 
 exports.postUserReplyComments = async (req, res) => {
-  console.log(req.body);
   try {
-    const { userId, repliedCommentId, message } = req.body;
+    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const { repliedCommentId, message } = req.body;
 
     const comment = new Comment({
       user: userId,
@@ -49,7 +50,7 @@ exports.postUserReplyComments = async (req, res) => {
 
     await Comment.findByIdAndUpdate(repliedCommentId, {
       $addToSet: { replies: comment._id },
-      $inc: { replyCount: 1 }, // Increment replyCount
+      $inc: { replyCount: 1 },
     });
 
     res.status(200).json({
