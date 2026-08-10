@@ -1,6 +1,4 @@
-// const { truncate } = require('fs');
 const Post = require('../models/post.model');
-const cheerio = require('cheerio');
 
 exports.getSearchQueries = async (req, res) => {
   const { query } = req.params;
@@ -22,8 +20,8 @@ exports.getSearchQueries = async (req, res) => {
     ]);
 
     results.forEach((element) => {
-      const $ = cheerio.load(element.truncatedContent || '');
-      element.truncatedContent = $.text() + '...';
+      const rawText = (element.truncatedContent || '').replace(/<[^>]*>?/gm, '');
+      element.truncatedContent = rawText + '...';
     });
 
     return res.status(200).json({
