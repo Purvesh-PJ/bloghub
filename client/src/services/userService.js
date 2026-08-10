@@ -37,4 +37,9 @@ export const userService = {
     const response = await api.get(`/users/isFollowing/${userId}`);
     return response.data;
   },
+
+  getAllUsers: async (page = 1) => {
+    const response = await api.get('/users', { params: { page } });
+    return response.data;
+  },
 };

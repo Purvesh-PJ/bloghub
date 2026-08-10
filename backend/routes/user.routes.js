@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// User Routes
+router.get('/', AuthUser.authenticateUser, AuthUser.authorizeAdmin, UserController.getAllUsers);
 router.get('/getUser', AuthUser.authenticateUser, UserController.getUser);
 router.put('/setUser', AuthUser.authenticateUser, upload.single('image'), UserController.setUser);
 router.get('/getUserPosts', AuthUser.authenticateUser, UserController.getUserSelfPosts);
