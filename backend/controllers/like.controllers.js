@@ -5,7 +5,7 @@ const Post = require('../models/post.model');
 exports.createLike = async (req, res) => {
   try {
     const { postId } = req.body;
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
 
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -79,7 +79,7 @@ exports.getPostLikes = async (req, res) => {
 exports.deleteLike = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
 
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });

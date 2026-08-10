@@ -6,7 +6,7 @@ const { ObjectId } = require('mongodb');
 
 exports.getUser = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
 
     if (!userId || !ObjectId.isValid(userId)) {
       return res.status(400).json({
@@ -68,7 +68,7 @@ exports.getUser = async (req, res) => {
 
 exports.setUser = async (req, res) => {
   const { file, body } = req;
-  const user_id = req.user ? (req.user.id || req.user._id || req.user) : null;
+  const user_id = req.user ? req.user.id || req.user._id || req.user : null;
   const { username, email, bio } = body;
 
   try {
@@ -154,7 +154,7 @@ async function filterPostsByUserId(postIds) {
 
 exports.getUserSelfPosts = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
     const user = await User.findById(userId);
 
     if (user) {
@@ -171,7 +171,7 @@ exports.getUserSelfPosts = async (req, res) => {
 };
 
 exports.getUserProfile = async (req, res) => {
-  const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+  const userId = req.user ? req.user.id || req.user._id || req.user : null;
   const user = await User.findById(userId);
 
   if (user) {
@@ -211,7 +211,7 @@ exports.getUserProfile = async (req, res) => {
 
 exports.postUserProfile = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
     const { file, body } = req;
 
     const newProfile = new Profile({
@@ -233,7 +233,7 @@ exports.postUserProfile = async (req, res) => {
 
 exports.followUser = async (req, res) => {
   const { toFollowId } = req.body;
-  const followerId = req.user ? (req.user.id || req.user._id || req.user) : null;
+  const followerId = req.user ? req.user.id || req.user._id || req.user : null;
 
   if (!toFollowId || !followerId) {
     return res.status(400).json({ success: false, message: 'Invalid follow parameters' });
@@ -278,7 +278,7 @@ exports.followUser = async (req, res) => {
 
 exports.unfollowUser = async (req, res) => {
   const toUnfollowId = req.body.toUnfollowId;
-  const followerId = req.user ? (req.user.id || req.user._id || req.user) : null;
+  const followerId = req.user ? req.user.id || req.user._id || req.user : null;
 
   if (!toUnfollowId || !followerId) {
     return res.status(400).json({ success: false, message: 'Invalid unfollow parameters' });
@@ -319,7 +319,7 @@ exports.unfollowUser = async (req, res) => {
 
 exports.isFollowing = async (req, res) => {
   const tofollowId = req.params.id;
-  const currentUser = req.user ? (req.user.id || req.user._id || req.user) : null;
+  const currentUser = req.user ? req.user.id || req.user._id || req.user : null;
 
   try {
     const userProfile = await Profile.findOne({ user: currentUser });

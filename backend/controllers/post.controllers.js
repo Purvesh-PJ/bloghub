@@ -56,7 +56,7 @@ exports.getSinglePost = async (req, res) => {
 };
 
 exports.postBlogs = async (req, res) => {
-  const user_id = req.user ? (req.user.id || req.user._id || req.user) : null;
+  const user_id = req.user ? req.user.id || req.user._id || req.user : null;
 
   try {
     const newPost = await createPost(user_id, req.body);
@@ -84,7 +84,7 @@ exports.postBlogs = async (req, res) => {
 
 exports.putBlogs = async (req, res) => {
   try {
-    const user_id = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const user_id = req.user ? req.user.id || req.user._id || req.user : null;
     const postData = req.body;
     const postId = req.params._id || req.params.id;
 
@@ -93,7 +93,11 @@ exports.putBlogs = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
 
-    if (existingPost.user && existingPost.user.toString() !== user_id.toString() && !req.user?.roles?.includes('admin')) {
+    if (
+      existingPost.user &&
+      existingPost.user.toString() !== user_id.toString() &&
+      !req.user?.roles?.includes('admin')
+    ) {
       return res.status(403).json({ success: false, message: 'Unauthorized to edit this post' });
     }
 
@@ -115,7 +119,7 @@ exports.putBlogs = async (req, res) => {
 };
 
 exports.deletePost = async (req, res) => {
-  const user_id = req.user ? (req.user.id || req.user._id || req.user) : null;
+  const user_id = req.user ? req.user.id || req.user._id || req.user : null;
   try {
     const post_id = req.params._id || req.params.id;
 
@@ -125,7 +129,11 @@ exports.deletePost = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
 
-    if (post.user && post.user.toString() !== user_id.toString() && !req.user?.roles?.includes('admin')) {
+    if (
+      post.user &&
+      post.user.toString() !== user_id.toString() &&
+      !req.user?.roles?.includes('admin')
+    ) {
       return res.status(403).json({ success: false, message: 'Unauthorized to delete this post' });
     }
 

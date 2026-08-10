@@ -115,9 +115,13 @@ exports.signIn = async (req, res) => {
     };
 
     // Access token
-    const accessToken = jwt.sign({ user: user.id, roles: user.roles }, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const accessToken = jwt.sign({ user: user.id, roles: user.roles }, process.env.JWT_SECRET, {
+      expiresIn: '15m',
+    });
     // Refresh token
-    const refreshToken = jwt.sign({ user: user.id, roles: user.roles }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const refreshToken = jwt.sign({ user: user.id, roles: user.roles }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
 
     // Sending payload to frontend
     res.status(200).json({
@@ -157,9 +161,13 @@ exports.refreshToken = async (req, res) => {
           message: 'Invalid or expired refresh token',
         });
       } else {
-        const accessToken = jwt.sign({ user: decode.user, roles: decode.roles }, process.env.JWT_SECRET, {
-          expiresIn: '15m',
-        });
+        const accessToken = jwt.sign(
+          { user: decode.user, roles: decode.roles },
+          process.env.JWT_SECRET,
+          {
+            expiresIn: '15m',
+          },
+        );
         res.status(200).json({
           success: true,
           message: 'Access token generated succesfully',

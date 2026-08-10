@@ -5,7 +5,7 @@ const UserProfile = require('../models/user-profile.model');
 // Get user settings
 exports.getUserSettings = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
 
     // Find user settings or create default if not exists
     let userSettings = await UserSettings.findOne({ user: userId });
@@ -33,7 +33,7 @@ exports.getUserSettings = async (req, res) => {
 // Update user settings
 exports.updateUserSettings = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
     const { theme, emailNotifications, privacySettings } = req.body;
 
     // Find and update user settings
@@ -58,7 +58,7 @@ exports.updateUserSettings = async (req, res) => {
 // Get user profile
 exports.getUserProfile = async (req, res) => {
   try {
-    const userId = req.params.userId || (req.user ? (req.user.id || req.user._id || req.user) : null);
+    const userId = req.params.userId || (req.user ? req.user.id || req.user._id || req.user : null);
 
     // Find user profile
     const userProfile = await UserProfile.findOne({ user: userId }).populate(
@@ -80,7 +80,7 @@ exports.getUserProfile = async (req, res) => {
 // Update user profile
 exports.updateUserProfile = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
     const { fullName, bio, location, website, socialLinks, profilePicture } = req.body;
 
     // Find and update user profile
@@ -108,7 +108,7 @@ exports.updateUserProfile = async (req, res) => {
 // Update security settings
 exports.updateSecuritySettings = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
     const { twoFactorEnabled, securityQuestions } = req.body;
 
     // Find user
@@ -137,7 +137,7 @@ exports.updateSecuritySettings = async (req, res) => {
 // Update privacy settings
 exports.updatePrivacySettings = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
     const { privacySettings } = req.body;
 
     // Find and update user settings
@@ -160,7 +160,7 @@ exports.updatePrivacySettings = async (req, res) => {
 // Update appearance settings
 exports.updateAppearanceSettings = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
     const { theme, fontSize, colorScheme } = req.body;
 
     // Find and update user settings
