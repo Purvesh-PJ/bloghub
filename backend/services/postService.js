@@ -43,28 +43,26 @@ exports.createPost = async (userId, postData) => {
 exports.updatePost = async (post, postId) => {
   const { imageURL, title, slug, content } = post;
 
-  // console.log(imageURL);
-  // console.log(title);
-  // console.log(slug);
-  // console.log(content);
-
   if (!imageURL || !title || !slug || !content) {
     throw new Error('All fields are required');
   }
 
   try {
-    // Creation of new post
-    const PostForUpdate = await Post.findByIdAndUpdate(postId, {
-      imageURL: imageURL,
-      title: title,
-      slug: slug,
-      content: content,
-    });
-    await PostForUpdate.save();
+    const targetId = typeof postId === 'object' ? postId._id || postId.id : postId;
+    const updatedPost = await Post.findByIdAndUpdate(
+      targetId,
+      {
+        imageURL,
+        title,
+        slug,
+        content,
+      },
+      { new: true, runValidators: true },
+    );
 
-    return PostForUpdate;
+    return updatedPost;
   } catch (error) {
-    console.error('Error creating post:', error);
-    throw new Error('Error creating post');
+    console.error('Error updating post:', error);
+    throw new Error('Error updating post');
   }
 };

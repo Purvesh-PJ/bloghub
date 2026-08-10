@@ -56,8 +56,7 @@ exports.getSinglePost = async (req, res) => {
 };
 
 exports.postBlogs = async (req, res) => {
-  const user_id = req.user;
-  // console.log(req);
+  const user_id = req.user ? (req.user.id || req.user._id || req.user) : null;
 
   try {
     const newPost = await createPost(user_id, req.body);
@@ -85,12 +84,22 @@ exports.postBlogs = async (req, res) => {
 
 exports.putBlogs = async (req, res) => {
   try {
-    const post = req.body;
-    const postId = req.params;
+    const user_id = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const postData = req.body;
+    const postId = req.params._id || req.params.id;
 
-    await updatePost(post, postId);
+    const existingPost = await Post.findById(postId);
+    if (!existingPost) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
 
-    res.status(200).json({
+    if (existingPost.user && existingPost.user.toString() !== user_id.toString() && !req.user?.roles?.includes('admin')) {
+      return res.status(403).json({ success: false, message: 'Unauthorized to edit this post' });
+    }
+
+    await updatePost(postData, postId);
+
+    return res.status(200).json({
       success: true,
       message: 'post updated successfully',
     });
@@ -98,7 +107,7 @@ exports.putBlogs = async (req, res) => {
     console.error(error.message);
     const statusCode =
       error.message === 'All fields are required' || error.message === 'User not found' ? 400 : 500;
-    res.status(statusCode).json({
+    return res.status(statusCode).json({
       success: false,
       message: error.message || 'An error occurred while updating the blog post',
     });
@@ -106,17 +115,18 @@ exports.putBlogs = async (req, res) => {
 };
 
 exports.deletePost = async (req, res) => {
-  // console.log(req.params);
-  const user_id = req.user;
+  const user_id = req.user ? (req.user.id || req.user._id || req.user) : null;
   try {
-    const post_id = req.params._id;
-    // console.log(post_id);
+    const post_id = req.params._id || req.params.id;
 
     const post = await Post.findById(post_id).populate('categories').populate('comments');
-    // console.log(post);
 
     if (!post) {
-      return new Error(`Post not found`);
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    if (post.user && post.user.toString() !== user_id.toString() && !req.user?.roles?.includes('admin')) {
+      return res.status(403).json({ success: false, message: 'Unauthorized to delete this post' });
     }
 
     const postAttachedCategoryIds = post.categories.map((catId) => catId._id);
