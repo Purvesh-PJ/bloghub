@@ -6,9 +6,9 @@ const { ObjectId } = require('mongodb');
 
 exports.getUser = async (req, res) => {
   try {
-    const { user } = req;
+    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
 
-    if (!user || !ObjectId.isValid(user)) {
+    if (!userId || !ObjectId.isValid(userId)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid user id',
@@ -16,7 +16,7 @@ exports.getUser = async (req, res) => {
       });
     }
 
-    const foundUser = await User.findById({ _id: user }).select('-password -posts').populate({
+    const foundUser = await User.findById(userId).select('-password -posts').populate({
       path: 'profile',
       select: '-followers -followings',
     });
@@ -28,16 +28,14 @@ exports.getUser = async (req, res) => {
         error: 'UserNotFoundException',
       });
     } else {
-      const userPlainObject = foundUser.toObject(); // convert to plain object
+      const userPlainObject = foundUser.toObject();
 
-      // Add null check for profile and image data
       let base64 = null;
       if (foundUser.profile && foundUser.profile.image && foundUser.profile.image.data) {
         const { contentType, data } = foundUser.profile.image;
         base64 = `data:${contentType};base64,${Buffer.from(data).toString('base64')}`;
       }
 
-      // Create response object with safe image handling
       const resposeUser = {
         ...userPlainObject,
         profile: {
@@ -69,9 +67,9 @@ exports.getUser = async (req, res) => {
 };
 
 exports.setUser = async (req, res) => {
-  const { file, user, body } = req;
+  const { file, body } = req;
+  const user_id = req.user ? (req.user.id || req.user._id || req.user) : null;
   const { username, email, bio } = body;
-  const user_id = user;
 
   try {
     const userData = {};
@@ -111,18 +109,18 @@ exports.setUser = async (req, res) => {
       );
 
       if (!updateProfile) {
-        res.status(404).json({
+        return res.status(404).json({
           success: false,
           message: 'profile not found',
         });
       }
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'profile updated successfully',
       });
     } else {
       const newProfile = new Profile({
-        user: user,
+        user: user_id,
         image: {
           data: file ? file.path : null,
           contentType: file ? file.mimetype : null,
@@ -131,15 +129,15 @@ exports.setUser = async (req, res) => {
       });
       await newProfile.save();
 
-      await User.findByIdAndUpdate(user_id, { $push: { profile: newProfile._id } }, { new: true });
-      res.status(201).json({
+      await User.findByIdAndUpdate(user_id, { $set: { profile: newProfile._id } }, { new: true });
+      return res.status(201).json({
         success: true,
         message: 'profile created succesfully',
       });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -156,32 +154,31 @@ async function filterPostsByUserId(postIds) {
 
 exports.getUserSelfPosts = async (req, res) => {
   try {
-    const userId = req.user;
+    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
     const user = await User.findById(userId);
 
     if (user) {
       const postIds = user.posts.map((post) => post.toString());
       const userFilteredPostsByIds = await filterPostsByUserId(postIds);
-      res.status(200).json(userFilteredPostsByIds);
+      return res.status(200).json(userFilteredPostsByIds);
     } else {
-      res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
 exports.getUserProfile = async (req, res) => {
-  const userId = req.user;
+  const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
   const user = await User.findById(userId);
 
   if (user) {
     try {
       const userProfile = await Profile.findOne({ user: user.id });
       if (userProfile) {
-        // console.log(UserProfileDataByUserId);
-        res.status(200).json({
+        return res.status(200).json({
           success: true,
           message: 'Profile found succesfully',
           data: {
@@ -189,7 +186,7 @@ exports.getUserProfile = async (req, res) => {
           },
         });
       } else {
-        res.status(404).json({
+        return res.status(404).json({
           success: false,
           message: 'Personal details not found',
           error: 'ProfileNotFound',
@@ -197,15 +194,15 @@ exports.getUserProfile = async (req, res) => {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal Server Error',
         error: 'ServerError',
       });
     }
   } else {
-    res.status(404).json({
-      success: true,
+    return res.status(404).json({
+      success: false,
       message: 'User not found',
       error: 'UserNotFound',
     });
@@ -214,119 +211,130 @@ exports.getUserProfile = async (req, res) => {
 
 exports.postUserProfile = async (req, res) => {
   try {
-    const { user, file, body } = req;
-
-    console.log(req);
+    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const { file, body } = req;
 
     const newProfile = new Profile({
-      user: user,
+      user: userId,
       image: {
-        data: file.path,
-        contentType: file.mimetype,
+        data: file ? file.path : null,
+        contentType: file ? file.mimetype : null,
       },
-      bio: body.bio,
+      bio: body ? body.bio : '',
     });
 
     await newProfile.save();
-    res.status(201).json({ message: 'Profile saved succesfully' });
-    console.log(body);
+    return res.status(201).json({ message: 'Profile saved succesfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
 exports.followUser = async (req, res) => {
   const { toFollowId } = req.body;
-  const followerId = req.user;
+  const followerId = req.user ? (req.user.id || req.user._id || req.user) : null;
+
+  if (!toFollowId || !followerId) {
+    return res.status(400).json({ success: false, message: 'Invalid follow parameters' });
+  }
 
   if (toFollowId.toString() === followerId.toString()) {
-    res.status(409).json({ message: 'Cannot follow yourself ' });
-    return;
+    return res.status(409).json({ success: false, message: 'Cannot follow yourself' });
   }
 
   try {
-    const addFollower = await Profile.findOneAndUpdate(
+    const targetProfile = await Profile.findOne({ user: toFollowId });
+    if (!targetProfile) {
+      return res.status(404).json({ success: false, message: 'Target profile not found' });
+    }
+
+    const isAlreadyFollowing = targetProfile.followers.some(
+      (id) => id.toString() === followerId.toString(),
+    );
+
+    if (isAlreadyFollowing) {
+      return res.status(200).json({ success: true, message: 'Already following user' });
+    }
+
+    await Profile.findOneAndUpdate(
       { user: toFollowId },
-      { $addToSet: { followers: followerId } },
+      { $addToSet: { followers: followerId }, $inc: { followersCount: 1 } },
     );
-
-    const addFollowing = await Profile.findOneAndUpdate(
+    await Profile.findOneAndUpdate(
       { user: followerId },
-      { $addToSet: { followings: toFollowId } },
+      { $addToSet: { followings: toFollowId }, $inc: { followingsCount: 1 } },
     );
 
-    const addFollowerCount = await Profile.findOneAndUpdate(
-      { user: toFollowId },
-      { $inc: { followersCount: 1 } },
-    );
-
-    const addFollowingCount = await Profile.findOneAndUpdate(
-      { user: followerId },
-      { $inc: { followingsCount: 1 } },
-    );
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'followed succesfully',
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
 exports.unfollowUser = async (req, res) => {
   const toUnfollowId = req.body.toUnfollowId;
-  const followerId = req.user;
+  const followerId = req.user ? (req.user.id || req.user._id || req.user) : null;
+
+  if (!toUnfollowId || !followerId) {
+    return res.status(400).json({ success: false, message: 'Invalid unfollow parameters' });
+  }
 
   try {
-    const removeFollower = await Profile.findOneAndUpdate(
+    const targetProfile = await Profile.findOne({ user: toUnfollowId });
+    if (!targetProfile) {
+      return res.status(404).json({ success: false, message: 'Target profile not found' });
+    }
+
+    const isFollowing = targetProfile.followers.some(
+      (id) => id.toString() === followerId.toString(),
+    );
+
+    if (!isFollowing) {
+      return res.status(200).json({ success: true, message: 'Not following user' });
+    }
+
+    await Profile.findOneAndUpdate(
       { user: toUnfollowId },
-      { $pull: { followers: followerId } },
+      { $pull: { followers: followerId }, $inc: { followersCount: -1 } },
     );
-
-    const removeFollowing = await Profile.findOneAndUpdate(
+    await Profile.findOneAndUpdate(
       { user: followerId },
-      { $pull: { followings: toUnfollowId } },
+      { $pull: { followings: toUnfollowId }, $inc: { followingsCount: -1 } },
     );
 
-    const removeFollowerCount = await Profile.findOneAndUpdate(
-      { user: toUnfollowId },
-      { $inc: { followersCount: -1 } },
-    );
-
-    const removeFollowingCount = await Profile.findOneAndUpdate(
-      { user: followerId },
-      { $inc: { followingsCount: -1 } },
-    );
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'unfollowed succesfully',
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
 exports.isFollowing = async (req, res) => {
   const tofollowId = req.params.id;
-  const currentUser = req.user;
+  const currentUser = req.user ? (req.user.id || req.user._id || req.user) : null;
 
   try {
-    const toFollowUser = await Profile.findOne({ user: currentUser });
+    const userProfile = await Profile.findOne({ user: currentUser });
 
-    if (!toFollowUser) {
-      return res.status(404).json({ message: 'Profile not found to unfollow' });
+    if (!userProfile) {
+      return res.status(404).json({ message: 'Profile not found' });
     }
 
-    const isFollowing = toFollowUser.followings.includes(tofollowId);
-    res.status(200).json({ isFollowing });
+    const isFollowing = userProfile.followings.some(
+      (id) => id.toString() === tofollowId.toString(),
+    );
+    return res.status(200).json({ isFollowing });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
