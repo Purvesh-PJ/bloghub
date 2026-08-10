@@ -1,115 +1,123 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { AdminRoute } from './components/common/AdminRoute';
+import { Loading } from './components/common/Loading';
+
+// Helper for lazy loading named exports
+const lazyPage = (importFn, name) =>
+  lazy(() => importFn().then((module) => ({ default: module[name] })));
 
 // Public Pages
-import { Home } from './pages/Home';
-import { Login } from './pages/Login';
-import { Register } from './pages/Register';
-import { PostDetail } from './pages/PostDetail';
-import { Search } from './pages/Search';
-import { NotFound } from './pages/NotFound';
-import { UserProfile } from './pages/UserProfile';
+const Home = lazyPage(() => import('./pages/Home'), 'Home');
+const Login = lazyPage(() => import('./pages/Login'), 'Login');
+const Register = lazyPage(() => import('./pages/Register'), 'Register');
+const PostDetail = lazyPage(() => import('./pages/PostDetail'), 'PostDetail');
+const Search = lazyPage(() => import('./pages/Search'), 'Search');
+const NotFound = lazyPage(() => import('./pages/NotFound'), 'NotFound');
+const UserProfile = lazyPage(() => import('./pages/UserProfile'), 'UserProfile');
 
 // User Pages (Protected)
-import { WritePost } from './pages/WritePost';
-import { Profile } from './pages/Profile';
-import { Settings } from './pages/Settings';
-import { MyPosts } from './pages/MyPosts';
-import { Analytics } from './pages/Analytics';
+const WritePost = lazyPage(() => import('./pages/WritePost'), 'WritePost');
+const Profile = lazyPage(() => import('./pages/Profile'), 'Profile');
+const Settings = lazyPage(() => import('./pages/Settings'), 'Settings');
+const MyPosts = lazyPage(() => import('./pages/MyPosts'), 'MyPosts');
+const Analytics = lazyPage(() => import('./pages/Analytics'), 'Analytics');
 
 // Admin Pages
-import { AdminDashboard } from './pages/admin/Dashboard';
-import { AdminPosts } from './pages/admin/Posts';
-import { AdminCategories } from './pages/admin/Categories';
-import { AdminUsers } from './pages/admin/Users';
-import { AdminSettings } from './pages/admin/Settings';
+const AdminDashboard = lazyPage(() => import('./pages/admin/Dashboard'), 'AdminDashboard');
+const AdminPosts = lazyPage(() => import('./pages/admin/Posts'), 'AdminPosts');
+const AdminCategories = lazyPage(() => import('./pages/admin/Categories'), 'AdminCategories');
+const AdminUsers = lazyPage(() => import('./pages/admin/Users'), 'AdminUsers');
+const AdminSettings = lazyPage(() => import('./pages/admin/Settings'), 'AdminSettings');
 
 function App() {
   return (
-    <Routes>
-      {/* Public and User Routes */}
-      <Route path="/" element={<Layout />}>
-        {/* Public Routes */}
-        <Route index element={<Home />} />
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="post/:id" element={<PostDetail />} />
-        <Route path="user/:userId" element={<UserProfile />} />
-        <Route path="search" element={<Search />} />
+    <Suspense fallback={<Loading text="Loading page..." />}>
+      <Routes>
+        {/* Public and User Routes */}
+        <Route path="/" element={<Layout />}>
+          {/* Public Routes */}
+          <Route index element={<Home />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="post/:id" element={<PostDetail />} />
+          <Route path="user/:userId" element={<UserProfile />} />
+          <Route path="search" element={<Search />} />
 
-        {/* Protected User Routes */}
-        <Route
-          path="write"
-          element={
-            <ProtectedRoute>
-              <WritePost />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="edit/:id"
-          element={
-            <ProtectedRoute>
-              <WritePost />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="my-posts"
-          element={
-            <ProtectedRoute>
-              <MyPosts />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="analytics"
-          element={
-            <ProtectedRoute>
-              <Analytics />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected User Routes */}
+          <Route
+            path="write"
+            element={
+              <ProtectedRoute>
+                <WritePost />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="edit/:id"
+            element={
+              <ProtectedRoute>
+                <WritePost />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="my-posts"
+            element={
+              <ProtectedRoute>
+                <MyPosts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="analytics"
+            element={
+              <ProtectedRoute>
+                <Analytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Route>
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
+        </Route>
 
-      {/* Admin Routes */}
-      <Route
-        path="/admin"
-        element={
-          <AdminRoute>
-            <AdminLayout />
-          </AdminRoute>
-        }
-      >
-        <Route index element={<AdminDashboard />} />
-        <Route path="posts" element={<AdminPosts />} />
-        <Route path="categories" element={<AdminCategories />} />
-        <Route path="users" element={<AdminUsers />} />
-        <Route path="settings" element={<AdminSettings />} />
-      </Route>
-    </Routes>
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="posts" element={<AdminPosts />} />
+          <Route path="categories" element={<AdminCategories />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }
 
