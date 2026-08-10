@@ -347,3 +347,33 @@ exports.postUserSettings = (req, res) => {
   try {
   } catch (error) {}
 };
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const users = await User.find()
+      .select('-password')
+      .populate('profile')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalUsers = await User.countDocuments();
+
+    return res.status(200).json({
+      success: true,
+      data: users,
+      pagination: {
+        total: totalUsers,
+        page,
+        pages: Math.ceil(totalUsers / limit),
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
