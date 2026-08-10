@@ -1,32 +1,34 @@
-const Post = require('../models/post.model');
 const Tag = require('../models/tag.model');
 
 exports.getTags = async (req, res) => {
   try {
-    const tags = Tag.find();
-    if (tags) {
-      return res.status(202).json({
-        success: 'true',
-        message: 'tags found succesfully',
-        data: tags,
-      });
-    } else {
-      return res.status(404).json({
-        success: 'false',
-        message: 'tags not found',
-        data: tags,
-      });
-    }
+    const tags = await Tag.find();
+    return res.status(200).json({
+      success: true,
+      message: 'Tags found successfully',
+      data: tags,
+    });
   } catch (error) {
-    return res.status(401).json({
+    return res.status(500).json({
       success: false,
-      message: 'Error : ',
-      error,
+      message: 'Error fetching tags',
+      error: error.message,
     });
   }
 };
 
 exports.postTags = async (req, res) => {
   try {
-  } catch (error) {}
+    const { name } = req.body;
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Tag name required' });
+    }
+    const tag = new Tag({ name });
+    await tag.save();
+    return res.status(201).json({ success: true, message: 'Tag created', data: tag });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: 'Error creating tag', error: error.message });
+  }
 };

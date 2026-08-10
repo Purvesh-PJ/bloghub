@@ -338,16 +338,6 @@ exports.isFollowing = async (req, res) => {
   }
 };
 
-exports.getUserSettings = (req, res) => {
-  try {
-  } catch (error) {}
-};
-
-exports.postUserSettings = (req, res) => {
-  try {
-  } catch (error) {}
-};
-
 exports.getAllUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
