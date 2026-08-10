@@ -14,7 +14,7 @@ const ViewSchema = new mongoose.Schema(
   },
 
   {
-    timeStamps: true,
+    timestamps: true,
   },
 );
 

@@ -7,14 +7,14 @@ const LikeSchema = new mongoose.Schema(
       ref: 'User',
     },
 
-    posts: {
+    post: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Post',
     },
   },
 
   {
-    timeStamps: true,
+    timestamps: true,
   },
 );
 

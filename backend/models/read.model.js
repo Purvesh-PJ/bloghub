@@ -4,7 +4,7 @@ const ReadSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Read',
+      ref: 'User',
     },
     post: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,7 +12,7 @@ const ReadSchema = mongoose.Schema(
     },
   },
   {
-    timeStams: true,
+    timestamps: true,
   },
 );
 
