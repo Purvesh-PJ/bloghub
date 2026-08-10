@@ -19,7 +19,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           radix: ['@radix-ui/themes', '@radix-ui/react-icons'],
-          editor: ['react-quill'],
+          editor: ['@uiw/react-md-editor'],
         },
       },
     },
