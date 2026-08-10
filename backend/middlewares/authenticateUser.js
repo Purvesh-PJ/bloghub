@@ -11,7 +11,10 @@ exports.authenticateUser = (req, res, next) => {
 
   try {
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = typeof decodedToken.user === 'object' ? decodedToken.user.id || decodedToken.user._id : decodedToken.user;
+    const userId =
+      typeof decodedToken.user === 'object'
+        ? decodedToken.user.id || decodedToken.user._id
+        : decodedToken.user;
     req.user = {
       id: userId,
       _id: userId,
@@ -31,7 +34,9 @@ exports.authorizeAdmin = (req, res, next) => {
 
   const userRoles = req.user.roles || [];
   if (!userRoles.includes('admin')) {
-    return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required' });
+    return res
+      .status(403)
+      .json({ success: false, message: 'Access denied. Admin privileges required' });
   }
 
   next();

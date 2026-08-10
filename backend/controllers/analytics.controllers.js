@@ -160,7 +160,7 @@ exports.getAdminAnalytics = async (req, res) => {
 exports.trackPageView = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
 
     const newView = new View({
       post: postId,
@@ -180,7 +180,7 @@ exports.trackPageView = async (req, res) => {
 exports.trackPostRead = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
 
     const newRead = new Read({
       post: postId,

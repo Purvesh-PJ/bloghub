@@ -16,7 +16,7 @@ exports.getComments = async (req, res) => {
 
 exports.postComments = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
     const { postId, message } = req.body;
 
     const createdComment = await createComment({ userId, postId, message });
@@ -38,7 +38,7 @@ exports.postComments = async (req, res) => {
 
 exports.postUserReplyComments = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user._id || req.user) : null;
+    const userId = req.user ? req.user.id || req.user._id || req.user : null;
     const { repliedCommentId, message } = req.body;
 
     const comment = new Comment({
