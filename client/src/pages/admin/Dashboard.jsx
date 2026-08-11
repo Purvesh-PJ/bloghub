@@ -5,7 +5,7 @@ import { FileText, Users, Eye, Heart, MessageCircle, ArrowRight } from 'lucide-r
 import { formatDistanceToNow } from 'date-fns';
 import { postService } from '../../services/postService';
 import { analyticsService } from '../../services/analyticsService';
-import { Loading } from '../../components/common/Loading';
+import { Loading } from '../../components/ui';
 
 export function AdminDashboard() {
   const { data: posts, isLoading: postsLoading } = useQuery({

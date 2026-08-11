@@ -26,7 +26,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 import { postService } from '../../services/postService';
-import { Loading } from '../../components/common/Loading';
+import { Loading } from '../../components/ui';
 
 export function AdminPosts() {
   const queryClient = useQueryClient();

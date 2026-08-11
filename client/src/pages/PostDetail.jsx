@@ -12,7 +12,7 @@ import { likeService } from '../services/likeService';
 import { analyticsService } from '../services/analyticsService';
 import { userService } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
-import { Loading } from '../components/common/Loading';
+import { Loading } from '../components/ui';
 import { Button } from '../components/ui';
 
 const PageWrapper = styled.div`

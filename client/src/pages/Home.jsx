@@ -9,8 +9,8 @@ import {
 import styled from 'styled-components';
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
-import { PostCard } from '../components/common/PostCard';
-import { Loading } from '../components/common/Loading';
+import { PostCard } from '../components/posts/PostCard';
+import { Loading } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 

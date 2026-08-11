@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { userService } from '../services/userService';
 import { analyticsService } from '../services/analyticsService';
 import { useAuth } from '../context/AuthContext';
-import { Loading } from '../components/common/Loading';
+import { Loading } from '../components/ui';
 
 const PageWrapper = styled.div`
   max-width: 1000px;

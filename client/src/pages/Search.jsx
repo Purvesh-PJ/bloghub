@@ -2,7 +2,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
 import { searchService } from '../services/searchService';
-import { Loading } from '../components/common/Loading';
+import { Loading } from '../components/ui';
 
 const PageWrapper = styled.div`
   max-width: 700px;

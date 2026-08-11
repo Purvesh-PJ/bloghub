@@ -4,7 +4,7 @@ import { User, Bell, Palette, Shield, Sun, Moon, Monitor, Camera, Check } from '
 import styled from 'styled-components';
 import toast from 'react-hot-toast';
 import { userService } from '../services/userService';
-import { Loading } from '../components/common/Loading';
+import { Loading } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../styles/ThemeProvider';
 import { Button } from '../components/ui';
