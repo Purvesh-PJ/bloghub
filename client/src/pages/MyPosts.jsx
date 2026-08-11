@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
 import { Loading } from '../components/common/Loading';
+import { Modal, Button } from '../components/ui';
 
 const PageWrapper = styled.div`
   max-width: 1000px;
@@ -677,26 +678,28 @@ export function MyPosts() {
         )}
       </PostsCard>
 
-      {/* Delete Confirmation Modal */}
-      {deleteId && (
-        <ModalOverlay onClick={() => setDeleteId(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalTitle>Delete Post</ModalTitle>
-            <ModalDescription>
-              Are you sure you want to delete this post? This action cannot be undone.
-            </ModalDescription>
-            <ModalActions>
-              <SecondaryButton onClick={() => setDeleteId(null)}>Cancel</SecondaryButton>
-              <DangerButton
-                onClick={() => deleteMutation.mutate(deleteId)}
-                disabled={deleteMutation.isPending}
-              >
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-              </DangerButton>
-            </ModalActions>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+      {/* Delete Confirmation Modal using Radix Modal primitive */}
+      <Modal
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        title="Delete Post"
+      >
+        <p style={{ marginBottom: '20px', color: '#6b7280', fontSize: '14px' }}>
+          Are you sure you want to delete this post? This action cannot be undone.
+        </p>
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+          <Button variant="outline" onClick={() => setDeleteId(null)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => deleteMutation.mutate(deleteId)}
+            isLoading={deleteMutation.isPending}
+          >
+            Delete
+          </Button>
+        </div>
+      </Modal>
     </PageWrapper>
   );
 }
