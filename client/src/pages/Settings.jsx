@@ -7,6 +7,7 @@ import { userService } from '../services/userService';
 import { Loading } from '../components/common/Loading';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../styles/ThemeProvider';
+import { Button } from '../components/ui';
 
 const PageWrapper = styled.div`
   max-width: 900px;
@@ -248,39 +249,7 @@ const Actions = styled.div`
   margin-top: ${({ theme }) => theme.spacing.lg};
 `;
 
-const Button = styled.button`
-  padding: 10px 20px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
 
-const PrimaryBtn = styled(Button)`
-  background: ${({ theme }) => theme.colors.accent};
-  color: white;
-  border: none;
-  
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.accentHover};
-  }
-`;
-
-const SecondaryBtn = styled(Button)`
-  background: transparent;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  
-  &:hover {
-    background: ${({ theme }) => theme.colors.bgHover};
-  }
-`;
 
 const SettingItem = styled.div`
   display: flex;
@@ -406,15 +375,7 @@ const DangerText = styled.p`
   margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
 
-const DangerBtn = styled(Button)`
-  background: ${({ theme }) => theme.colors.error};
-  color: white;
-  border: none;
-  
-  &:hover {
-    background: ${({ theme }) => theme.colors.errorHover};
-  }
-`;
+
 
 export function Settings() {
   const queryClient = useQueryClient();
@@ -548,10 +509,10 @@ export function Settings() {
                   </FormGrid>
 
                   <Actions>
-                    <SecondaryBtn type="button">Cancel</SecondaryBtn>
-                    <PrimaryBtn type="submit" disabled={updateMutation.isPending}>
-                      {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-                    </PrimaryBtn>
+                    <Button variant="outline" type="button">Cancel</Button>
+                    <Button variant="primary" type="submit" isLoading={updateMutation.isPending}>
+                      Save Changes
+                    </Button>
                   </Actions>
                 </form>
               </SectionBody>
@@ -650,7 +611,7 @@ export function Settings() {
                     </FormGroup>
                   </FormGrid>
                   <Actions>
-                    <PrimaryBtn type="button">Update Password</PrimaryBtn>
+                    <Button variant="primary" type="button">Update Password</Button>
                   </Actions>
                 </SectionBody>
               </Section>
@@ -660,7 +621,7 @@ export function Settings() {
                 <DangerText>
                   Once you delete your account, all your data will be permanently removed. This action cannot be undone.
                 </DangerText>
-                <DangerBtn>Delete My Account</DangerBtn>
+                <Button variant="danger">Delete My Account</Button>
               </DangerZone>
             </>
           )}
