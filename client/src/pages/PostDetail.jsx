@@ -10,8 +10,10 @@ import { postService } from '../services/postService';
 import { commentService } from '../services/commentService';
 import { likeService } from '../services/likeService';
 import { analyticsService } from '../services/analyticsService';
+import { userService } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
 import { Loading } from '../components/common/Loading';
+import { Button } from '../components/ui';
 
 const PageWrapper = styled.div`
   background: ${({ theme }) => theme.colors.bgPrimary};
@@ -307,25 +309,7 @@ const CommentActions = styled.div`
   margin-top: ${({ theme }) => theme.spacing.sm};
 `;
 
-const SubmitBtn = styled.button`
-  padding: 10px 24px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: white;
-  background: ${({ theme }) => theme.colors.accent};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.full};
-  cursor: pointer;
-  
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.accentHover};
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+
 
 const LoginPrompt = styled.p`
   padding: ${({ theme }) => theme.spacing.lg};
@@ -572,9 +556,9 @@ export function PostDetail() {
                 onChange={(e) => setComment(e.target.value)}
               />
               <CommentActions>
-                <SubmitBtn type="submit" disabled={!comment.trim() || commentMutation.isPending}>
+                <Button type="submit" isLoading={commentMutation.isPending} disabled={!comment.trim()}>
                   Post Comment
-                </SubmitBtn>
+                </Button>
               </CommentActions>
             </CommentForm>
           ) : (
@@ -612,7 +596,7 @@ export function PostDetail() {
                           style={{ minHeight: 80 }}
                         />
                         <CommentActions>
-                          <SubmitBtn type="submit" disabled={!replyText.trim()}>Reply</SubmitBtn>
+                          <Button type="submit" disabled={!replyText.trim()}>Reply</Button>
                         </CommentActions>
                       </form>
                     )}
