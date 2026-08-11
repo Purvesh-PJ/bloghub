@@ -34,7 +34,7 @@ const Layout = styled.div`
   display: grid;
   grid-template-columns: 220px 1fr;
   gap: ${({ theme }) => theme.spacing.xl};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     grid-template-columns: 1fr;
   }
@@ -44,7 +44,7 @@ const Sidebar = styled.nav`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     flex-direction: row;
     overflow-x: auto;
@@ -61,19 +61,20 @@ const NavItem = styled.button`
   padding: 12px 16px;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.textSecondary};
-  background: ${({ $active, theme }) => $active ? theme.colors.accentSubtle : 'transparent'};
+  color: ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.textSecondary)};
+  background: ${({ $active, theme }) => ($active ? theme.colors.accentSubtle : 'transparent')};
   border: none;
   border-radius: ${({ theme }) => theme.radii.lg};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
   white-space: nowrap;
-  
+
   &:hover {
-    background: ${({ $active, theme }) => $active ? theme.colors.accentSubtle : theme.colors.bgHover};
-    color: ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.textPrimary};
+    background: ${({ $active, theme }) =>
+      $active ? theme.colors.accentSubtle : theme.colors.bgHover};
+    color: ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.textPrimary)};
   }
-  
+
   svg {
     width: 18px;
     height: 18px;
@@ -146,13 +147,13 @@ const AvatarUpload = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.accent};
     border-color: ${({ theme }) => theme.colors.accent};
     color: white;
   }
-  
+
   svg {
     width: 14px;
     height: 14px;
@@ -177,7 +178,7 @@ const FormGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: ${({ theme }) => theme.spacing.lg};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     grid-template-columns: 1fr;
   }
@@ -206,11 +207,11 @@ const Input = styled.input`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.lg};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &::placeholder {
     color: ${({ theme }) => theme.colors.textMuted};
   }
-  
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.accent};
@@ -229,11 +230,11 @@ const TextArea = styled.textarea`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.lg};
   resize: vertical;
-  
+
   &::placeholder {
     color: ${({ theme }) => theme.colors.textMuted};
   }
-  
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.accent};
@@ -249,14 +250,12 @@ const Actions = styled.div`
   margin-top: ${({ theme }) => theme.spacing.lg};
 `;
 
-
-
 const SettingItem = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: ${({ theme }) => theme.spacing.md} 0;
-  
+
   &:not(:last-child) {
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   }
@@ -280,22 +279,22 @@ const Toggle = styled.button`
   width: 48px;
   height: 28px;
   border-radius: 14px;
-  background: ${({ $on, theme }) => $on ? theme.colors.accent : theme.colors.bgTertiary};
+  background: ${({ $on, theme }) => ($on ? theme.colors.accent : theme.colors.bgTertiary)};
   border: none;
   cursor: pointer;
   position: relative;
   transition: background ${({ theme }) => theme.transitions.fast};
-  
+
   &::after {
     content: '';
     position: absolute;
     top: 3px;
-    left: ${({ $on }) => $on ? '23px' : '3px'};
+    left: ${({ $on }) => ($on ? '23px' : '3px')};
     width: 22px;
     height: 22px;
     border-radius: 50%;
     background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     transition: left ${({ theme }) => theme.transitions.fast};
   }
 `;
@@ -312,21 +311,22 @@ const ThemeCard = styled.button`
   align-items: center;
   gap: 12px;
   padding: ${({ theme }) => theme.spacing.lg};
-  background: ${({ $active, theme }) => $active ? theme.colors.accentSubtle : theme.colors.bgSecondary};
-  border: 2px solid ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.border};
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.accentSubtle : theme.colors.bgSecondary};
+  border: 2px solid ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.border)};
   border-radius: ${({ theme }) => theme.radii.xl};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
   position: relative;
-  
+
   &:hover {
     border-color: ${({ theme }) => theme.colors.accent};
   }
-  
+
   svg {
     width: 28px;
     height: 28px;
-    color: ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.textMuted};
+    color: ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.textMuted)};
   }
 `;
 
@@ -347,7 +347,7 @@ const CheckBadge = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   svg {
     width: 12px;
     height: 12px;
@@ -374,8 +374,6 @@ const DangerText = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
-
-
 
 export function Settings() {
   const queryClient = useQueryClient();
@@ -509,7 +507,9 @@ export function Settings() {
                   </FormGrid>
 
                   <Actions>
-                    <Button variant="outline" type="button">Cancel</Button>
+                    <Button variant="outline" type="button">
+                      Cancel
+                    </Button>
                     <Button variant="primary" type="submit" isLoading={updateMutation.isPending}>
                       Save Changes
                     </Button>
@@ -533,7 +533,9 @@ export function Settings() {
                   </SettingInfo>
                   <Toggle
                     $on={notifications.email}
-                    onClick={() => setNotifications({ ...notifications, email: !notifications.email })}
+                    onClick={() =>
+                      setNotifications({ ...notifications, email: !notifications.email })
+                    }
                   />
                 </SettingItem>
                 <SettingItem>
@@ -543,7 +545,9 @@ export function Settings() {
                   </SettingInfo>
                   <Toggle
                     $on={notifications.push}
-                    onClick={() => setNotifications({ ...notifications, push: !notifications.push })}
+                    onClick={() =>
+                      setNotifications({ ...notifications, push: !notifications.push })
+                    }
                   />
                 </SettingItem>
                 <SettingItem>
@@ -553,7 +557,9 @@ export function Settings() {
                   </SettingInfo>
                   <Toggle
                     $on={notifications.weekly}
-                    onClick={() => setNotifications({ ...notifications, weekly: !notifications.weekly })}
+                    onClick={() =>
+                      setNotifications({ ...notifications, weekly: !notifications.weekly })
+                    }
                   />
                 </SettingItem>
               </SectionBody>
@@ -570,12 +576,20 @@ export function Settings() {
                 <Label style={{ marginBottom: 16 }}>Theme</Label>
                 <ThemeGrid>
                   <ThemeCard $active={mode === 'light'} onClick={() => setTheme('light')}>
-                    {mode === 'light' && <CheckBadge><Check /></CheckBadge>}
+                    {mode === 'light' && (
+                      <CheckBadge>
+                        <Check />
+                      </CheckBadge>
+                    )}
                     <Sun />
                     <ThemeName>Light</ThemeName>
                   </ThemeCard>
                   <ThemeCard $active={mode === 'dark'} onClick={() => setTheme('dark')}>
-                    {mode === 'dark' && <CheckBadge><Check /></CheckBadge>}
+                    {mode === 'dark' && (
+                      <CheckBadge>
+                        <Check />
+                      </CheckBadge>
+                    )}
                     <Moon />
                     <ThemeName>Dark</ThemeName>
                   </ThemeCard>
@@ -611,7 +625,9 @@ export function Settings() {
                     </FormGroup>
                   </FormGrid>
                   <Actions>
-                    <Button variant="primary" type="button">Update Password</Button>
+                    <Button variant="primary" type="button">
+                      Update Password
+                    </Button>
                   </Actions>
                 </SectionBody>
               </Section>
@@ -619,7 +635,8 @@ export function Settings() {
               <DangerZone>
                 <DangerTitle>Delete Account</DangerTitle>
                 <DangerText>
-                  Once you delete your account, all your data will be permanently removed. This action cannot be undone.
+                  Once you delete your account, all your data will be permanently removed. This
+                  action cannot be undone.
                 </DangerText>
                 <Button variant="danger">Delete My Account</Button>
               </DangerZone>

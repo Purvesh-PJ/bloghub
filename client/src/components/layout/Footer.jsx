@@ -19,12 +19,12 @@ const TopSection = styled.div`
   grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: ${({ theme }) => theme.spacing.xxl};
   margin-bottom: ${({ theme }) => theme.spacing.xxl};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     grid-template-columns: 1fr 1fr;
     gap: ${({ theme }) => theme.spacing.xl};
   }
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     grid-template-columns: 1fr;
   }
@@ -79,14 +79,14 @@ const SocialLink = styled.a`
   justify-content: center;
   color: ${({ theme }) => theme.colors.textMuted};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.accent};
     border-color: ${({ theme }) => theme.colors.accent};
     color: white;
     transform: translateY(-2px);
   }
-  
+
   svg {
     width: 16px;
     height: 16px;
@@ -115,7 +115,7 @@ const FooterLink = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textMuted};
   transition: color ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.accent};
   }
@@ -125,7 +125,7 @@ const ExternalLink = styled.a`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textMuted};
   transition: color ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.accent};
   }
@@ -151,7 +151,7 @@ const Copyright = styled.p`
   display: flex;
   align-items: center;
   gap: 4px;
-  
+
   svg {
     width: 14px;
     height: 14px;
@@ -167,7 +167,7 @@ const LegalLinks = styled.div`
 const LegalLink = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textMuted};
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.accent};
   }
@@ -186,7 +186,8 @@ export function Footer() {
               BlogHub
             </Logo>
             <Tagline>
-              A modern platform for writers and readers. Share your stories, discover new ideas, and connect with a community of thinkers.
+              A modern platform for writers and readers. Share your stories, discover new ideas, and
+              connect with a community of thinkers.
             </Tagline>
             <SocialLinks>
               <SocialLink href="https://twitter.com" target="_blank" rel="noopener noreferrer">
@@ -204,29 +205,51 @@ export function Footer() {
           <LinkSection>
             <LinkTitle>Platform</LinkTitle>
             <LinkList>
-              <li><FooterLink to="/">Home</FooterLink></li>
-              <li><FooterLink to="/search">Explore</FooterLink></li>
-              <li><FooterLink to="/write">Write</FooterLink></li>
+              <li>
+                <FooterLink to="/">Home</FooterLink>
+              </li>
+              <li>
+                <FooterLink to="/search">Explore</FooterLink>
+              </li>
+              <li>
+                <FooterLink to="/write">Write</FooterLink>
+              </li>
             </LinkList>
           </LinkSection>
 
           <LinkSection>
             <LinkTitle>Account</LinkTitle>
             <LinkList>
-              <li><FooterLink to="/profile">Profile</FooterLink></li>
-              <li><FooterLink to="/settings">Settings</FooterLink></li>
-              <li><FooterLink to="/my-posts">My Stories</FooterLink></li>
-              <li><FooterLink to="/analytics">Analytics</FooterLink></li>
+              <li>
+                <FooterLink to="/profile">Profile</FooterLink>
+              </li>
+              <li>
+                <FooterLink to="/settings">Settings</FooterLink>
+              </li>
+              <li>
+                <FooterLink to="/my-posts">My Stories</FooterLink>
+              </li>
+              <li>
+                <FooterLink to="/analytics">Analytics</FooterLink>
+              </li>
             </LinkList>
           </LinkSection>
 
           <LinkSection>
             <LinkTitle>Resources</LinkTitle>
             <LinkList>
-              <li><ExternalLink href="#">Help Center</ExternalLink></li>
-              <li><ExternalLink href="#">Writing Guide</ExternalLink></li>
-              <li><ExternalLink href="#">API Docs</ExternalLink></li>
-              <li><ExternalLink href="#">Status</ExternalLink></li>
+              <li>
+                <ExternalLink href="#">Help Center</ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href="#">Writing Guide</ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href="#">API Docs</ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href="#">Status</ExternalLink>
+              </li>
             </LinkList>
           </LinkSection>
         </TopSection>

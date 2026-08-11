@@ -14,9 +14,9 @@ const PageWrapper = styled.div`
   max-width: 1000px;
   margin: 20px auto;
   padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
-  background : ${({theme}) => theme.colors.bgPrimary};
-  border-radius: ${({theme}) => theme.radii.lg};
-  box-shadow: ${({theme}) => theme.shadows.card}
+  background: ${({ theme }) => theme.colors.bgPrimary};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.card};
 `;
 
 const PageHeader = styled.div`
@@ -24,7 +24,7 @@ const PageHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${({ theme }) => theme.spacing.xl};
-  padding : ${({theme}) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacing.lg};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;
@@ -189,7 +189,7 @@ const PostsCard = styled.div`
 const PostsTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background: ${({theme}) => theme.colors.bgSecondary};
+  background: ${({ theme }) => theme.colors.bgSecondary};
 `;
 
 const TableHeader = styled.thead`
@@ -679,11 +679,7 @@ export function MyPosts() {
       </PostsCard>
 
       {/* Delete Confirmation Modal using Radix Modal primitive */}
-      <Modal
-        isOpen={!!deleteId}
-        onClose={() => setDeleteId(null)}
-        title="Delete Post"
-      >
+      <Modal isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="Delete Post">
         <p style={{ marginBottom: '20px', color: '#6b7280', fontSize: '14px' }}>
           Are you sure you want to delete this post? This action cannot be undone.
         </p>
