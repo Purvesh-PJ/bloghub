@@ -114,13 +114,17 @@ exports.signIn = async (req, res) => {
       roles: user.roles,
     };
 
+    // Access & Refresh token expiration
+    const accessExpiresIn = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
+    const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+
     // Access token
     const accessToken = jwt.sign({ user: user.id, roles: user.roles }, process.env.JWT_SECRET, {
-      expiresIn: '15m',
+      expiresIn: accessExpiresIn,
     });
     // Refresh token
     const refreshToken = jwt.sign({ user: user.id, roles: user.roles }, process.env.JWT_SECRET, {
-      expiresIn: '7d',
+      expiresIn: refreshExpiresIn,
     });
 
     // Sending payload to frontend
@@ -165,7 +169,7 @@ exports.refreshToken = async (req, res) => {
           { user: decode.user, roles: decode.roles },
           process.env.JWT_SECRET,
           {
-            expiresIn: '15m',
+            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
           },
         );
         res.status(200).json({
