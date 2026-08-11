@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  TrendingUp, Sparkles, ArrowRight,
-  Code, Palette, Briefcase, Heart,
-  Cpu, Plane
+import {
+  TrendingUp,
+  Sparkles,
+  ArrowRight,
+  Code,
+  Palette,
+  Briefcase,
+  Heart,
+  Cpu,
+  Plane,
 } from 'lucide-react';
 import styled from 'styled-components';
 import { postService } from '../services/postService';
@@ -45,10 +51,12 @@ const SlideCard = styled.div`
   display: grid;
   grid-template-columns: 1fr 1.4fr;
   min-height: 420px;
-  opacity: ${({ $visible }) => $visible ? 1 : 0};
-  transform: ${({ $visible }) => $visible ? 'scale(1)' : 'scale(0.98)'};
-  transition: opacity 0.5s ease, transform 0.5s ease;
-  
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transform: ${({ $visible }) => ($visible ? 'scale(1)' : 'scale(0.98)')};
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     grid-template-columns: 1fr;
     min-height: auto;
@@ -63,7 +71,7 @@ const SlideVisual = styled.div`
   padding: ${({ theme }) => theme.spacing.xxl};
   position: relative;
   overflow: hidden;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -71,9 +79,9 @@ const SlideVisual = styled.div`
     right: -50%;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
   }
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     padding: ${({ theme }) => theme.spacing.xl};
     min-height: 220px;
@@ -89,18 +97,18 @@ const IconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   svg {
     width: 80px;
     height: 80px;
     color: white;
     stroke-width: 1.5;
   }
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     width: 120px;
     height: 120px;
-    
+
     svg {
       width: 60px;
       height: 60px;
@@ -113,7 +121,7 @@ const SlideContent = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     padding: ${({ theme }) => theme.spacing.xl};
   }
@@ -137,7 +145,7 @@ const SlideTitle = styled.h2`
   color: ${({ theme }) => theme.colors.textPrimary};
   line-height: 1.1;
   margin-bottom: ${({ theme }) => theme.spacing.md};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 2rem;
   }
@@ -180,7 +188,7 @@ const ExploreButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   align-self: flex-start;
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.accentHover};
     gap: 14px;
@@ -196,16 +204,16 @@ const SlideControls = styled.div`
 `;
 
 const SlideDot = styled.button`
-  width: ${({ $active }) => $active ? '32px' : '10px'};
+  width: ${({ $active }) => ($active ? '32px' : '10px')};
   height: 10px;
   border-radius: 5px;
-  background: ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.border};
+  background: ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.border)};
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  
+
   &:hover {
-    background: ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.textMuted};
+    background: ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.textMuted)};
   }
 `;
 
@@ -215,7 +223,7 @@ const MainSection = styled.section`
   grid-template-columns: 1fr 340px;
   gap: ${({ theme }) => theme.spacing.xl};
   padding: ${({ theme }) => theme.spacing.xl} 0;
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
     grid-template-columns: 1fr;
   }
@@ -258,16 +266,18 @@ const FilterTab = styled.button`
   padding: 8px 16px;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ $active, theme }) => $active ? theme.colors.buttonPrimaryText : theme.colors.textSecondary};
-  background: ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.bgPrimary};
-  border: 1px solid ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.border};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.buttonPrimaryText : theme.colors.textSecondary};
+  background: ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.bgPrimary)};
+  border: 1px solid ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.border)};
   border-radius: ${({ theme }) => theme.radii.full};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     border-color: ${({ theme }) => theme.colors.accent};
-    color: ${({ $active, theme }) => $active ? theme.colors.buttonPrimaryText : theme.colors.accent};
+    color: ${({ $active, theme }) =>
+      $active ? theme.colors.buttonPrimaryText : theme.colors.accent};
   }
 `;
 
@@ -299,7 +309,7 @@ const SidebarTitle = styled.h3`
   font-weight: ${({ theme }) => theme.fontWeights.semibold};
   color: ${({ theme }) => theme.colors.textPrimary};
   margin-bottom: ${({ theme }) => theme.spacing.md};
-  
+
   svg {
     color: ${({ theme }) => theme.colors.accent};
   }
@@ -318,7 +328,7 @@ const TrendingItem = styled(Link)`
   margin: 0 -${({ theme }) => theme.spacing.sm};
   border-radius: ${({ theme }) => theme.radii.md};
   transition: background ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.bgHover};
   }
@@ -388,15 +398,18 @@ const TopicTag = styled.button`
   padding: 8px 14px;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ $active, theme }) => $active ? theme.colors.badgeActiveText : theme.colors.badgeText};
-  background: ${({ $active, theme }) => $active ? theme.colors.badgeActiveBg : theme.colors.badgeBg};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.badgeActiveText : theme.colors.badgeText};
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.badgeActiveBg : theme.colors.badgeBg};
   border: none;
   border-radius: ${({ theme }) => theme.radii.full};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
-    background: ${({ $active, theme }) => $active ? theme.colors.accentHover : theme.colors.accentMuted};
+    background: ${({ $active, theme }) =>
+      $active ? theme.colors.accentHover : theme.colors.accentMuted};
   }
 `;
 
@@ -432,7 +445,7 @@ const WriteButton = styled(Link)`
   font-weight: ${({ theme }) => theme.fontWeights.semibold};
   border-radius: ${({ theme }) => theme.radii.md};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -465,44 +478,50 @@ const categorySlides = [
     name: 'Technology',
     icon: Code,
     gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-    description: 'Explore the latest in software development, AI, web technologies, and digital innovation. Stay ahead with cutting-edge tech insights.',
-    topics: ['Programming', 'AI & ML', 'Web Dev', 'Cloud', 'DevOps']
+    description:
+      'Explore the latest in software development, AI, web technologies, and digital innovation. Stay ahead with cutting-edge tech insights.',
+    topics: ['Programming', 'AI & ML', 'Web Dev', 'Cloud', 'DevOps'],
   },
   {
     name: 'Design',
     icon: Palette,
     gradient: 'linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)',
-    description: 'Discover creative inspiration, UI/UX trends, graphic design tips, and visual storytelling techniques from talented designers.',
-    topics: ['UI/UX', 'Graphic Design', 'Typography', 'Branding', 'Motion']
+    description:
+      'Discover creative inspiration, UI/UX trends, graphic design tips, and visual storytelling techniques from talented designers.',
+    topics: ['UI/UX', 'Graphic Design', 'Typography', 'Branding', 'Motion'],
   },
   {
     name: 'Business',
     icon: Briefcase,
     gradient: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
-    description: 'Insights on entrepreneurship, startups, marketing strategies, and business growth. Learn from industry leaders and innovators.',
-    topics: ['Startups', 'Marketing', 'Leadership', 'Finance', 'Strategy']
+    description:
+      'Insights on entrepreneurship, startups, marketing strategies, and business growth. Learn from industry leaders and innovators.',
+    topics: ['Startups', 'Marketing', 'Leadership', 'Finance', 'Strategy'],
   },
   {
     name: 'Lifestyle',
     icon: Heart,
     gradient: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-    description: 'Stories about wellness, personal growth, relationships, and living your best life. Find inspiration for everyday moments.',
-    topics: ['Wellness', 'Fitness', 'Mindfulness', 'Productivity', 'Self-care']
+    description:
+      'Stories about wellness, personal growth, relationships, and living your best life. Find inspiration for everyday moments.',
+    topics: ['Wellness', 'Fitness', 'Mindfulness', 'Productivity', 'Self-care'],
   },
   {
     name: 'Science',
     icon: Cpu,
     gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-    description: 'Fascinating discoveries, research breakthroughs, and scientific explanations that make complex topics accessible to everyone.',
-    topics: ['Physics', 'Biology', 'Space', 'Research', 'Innovation']
+    description:
+      'Fascinating discoveries, research breakthroughs, and scientific explanations that make complex topics accessible to everyone.',
+    topics: ['Physics', 'Biology', 'Space', 'Research', 'Innovation'],
   },
   {
     name: 'Travel',
     icon: Plane,
     gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-    description: 'Adventure awaits! Explore travel guides, destination reviews, cultural experiences, and tips for your next journey.',
-    topics: ['Destinations', 'Culture', 'Adventure', 'Food', 'Tips']
-  }
+    description:
+      'Adventure awaits! Explore travel guides, destination reviews, cultural experiences, and tips for your next journey.',
+    topics: ['Destinations', 'Culture', 'Adventure', 'Food', 'Tips'],
+  },
 ];
 
 export function Home() {
@@ -582,7 +601,7 @@ export function Home() {
               </ExploreButton>
             </SlideContent>
           </SlideCard>
-          
+
           <SlideControls>
             {categorySlides.map((_, index) => (
               <SlideDot
@@ -629,7 +648,7 @@ export function Home() {
               <EmptyState>
                 <EmptyTitle>No stories yet</EmptyTitle>
                 <EmptyText>
-                  {selectedCategory === 'all' 
+                  {selectedCategory === 'all'
                     ? 'Be the first to share something amazing.'
                     : `No stories in ${selectedCategory} yet. Try another category!`}
                 </EmptyText>

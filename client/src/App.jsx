@@ -35,7 +35,13 @@ const AdminSettings = lazyPage(() => import('./pages/admin/Settings'), 'AdminSet
 
 function App() {
   return (
-    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}><Spinner size="40px" /></div>}>
+    <Suspense
+      fallback={
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+          <Spinner size="40px" />
+        </div>
+      }
+    >
       <Routes>
         {/* Public and User Routes */}
         <Route path="/" element={<Layout />}>

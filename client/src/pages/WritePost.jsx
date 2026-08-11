@@ -183,8 +183,6 @@ const ButtonGroup = styled.div`
   gap: 8px;
 `;
 
-
-
 const SidebarTitle = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
@@ -270,61 +268,63 @@ const EditorWrapper = styled.div`
     border-radius: ${({ theme }) => theme.radii.lg};
     box-shadow: none;
   }
-  
+
   .w-md-editor-toolbar {
     background: ${({ theme }) => theme.colors.bgSecondary};
     border-bottom: 1px solid ${({ theme }) => theme.colors.inputBorder};
     border-radius: ${({ theme }) => theme.radii.lg} ${({ theme }) => theme.radii.lg} 0 0;
     padding: 8px;
   }
-  
+
   .w-md-editor-toolbar ul > li > button {
     color: ${({ theme }) => theme.colors.textSecondary};
   }
-  
+
   .w-md-editor-toolbar ul > li > button:hover {
     color: ${({ theme }) => theme.colors.textPrimary};
     background: ${({ theme }) => theme.colors.bgHover};
   }
-  
+
   .w-md-editor-content {
     background: ${({ theme }) => theme.colors.inputBg};
   }
-  
+
   .w-md-editor-text-pre > code,
   .w-md-editor-text-input {
     font-size: 15px !important;
     line-height: 1.7 !important;
     color: ${({ theme }) => theme.colors.textPrimary} !important;
   }
-  
+
   .w-md-editor-preview {
     background: ${({ theme }) => theme.colors.inputBg};
     padding: 16px;
   }
-  
+
   .wmde-markdown {
     background: transparent;
     color: ${({ theme }) => theme.colors.textPrimary};
     font-size: 15px;
     line-height: 1.7;
   }
-  
-  .wmde-markdown h1, .wmde-markdown h2, .wmde-markdown h3 {
+
+  .wmde-markdown h1,
+  .wmde-markdown h2,
+  .wmde-markdown h3 {
     color: ${({ theme }) => theme.colors.textPrimary};
     border-bottom: none;
   }
-  
+
   .wmde-markdown code {
     background: ${({ theme }) => theme.colors.bgSecondary};
     color: ${({ theme }) => theme.colors.accent};
   }
-  
+
   .wmde-markdown pre {
     background: ${({ theme }) => theme.colors.bgSecondary};
     border: 1px solid ${({ theme }) => theme.colors.border};
   }
-  
+
   .wmde-markdown blockquote {
     border-left: 3px solid ${({ theme }) => theme.colors.accent};
     color: ${({ theme }) => theme.colors.textSecondary};

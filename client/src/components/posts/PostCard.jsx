@@ -11,7 +11,7 @@ const Card = styled.article`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.xl};
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     border-color: ${({ theme }) => theme.colors.borderHover};
     box-shadow: ${({ theme }) => theme.shadows.card};
@@ -49,7 +49,7 @@ const AuthorName = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textPrimary};
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.accent};
   }
@@ -77,7 +77,7 @@ const Title = styled(Link)`
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin-bottom: ${({ theme }) => theme.spacing.xs};
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.accent};
   }
@@ -143,7 +143,7 @@ const ImageWrapper = styled(Link)`
     object-fit: cover;
     transition: transform ${({ theme }) => theme.transitions.normal};
   }
-  
+
   &:hover img {
     transform: scale(1.05);
   }
@@ -180,11 +180,7 @@ export function PostCard({ post }) {
         <Excerpt>{stripHtml(post.content)}</Excerpt>
 
         <MetaRow>
-          {category ? (
-            <CategoryBadge>{category.name || category}</CategoryBadge>
-          ) : (
-            <span />
-          )}
+          {category ? <CategoryBadge>{category.name || category}</CategoryBadge> : <span />}
           <Stats>
             <StatItem>
               <Heart />

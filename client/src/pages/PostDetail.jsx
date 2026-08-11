@@ -24,7 +24,7 @@ const HeroImage = styled.div`
   width: 100%;
   max-height: 480px;
   overflow: hidden;
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -44,7 +44,7 @@ const Category = styled(Link)`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.accent};
   margin-bottom: ${({ theme }) => theme.spacing.md};
-  
+
   &:hover {
     text-decoration: underline;
   }
@@ -57,7 +57,7 @@ const Title = styled.h1`
   line-height: 1.2;
   letter-spacing: -0.02em;
   margin-bottom: ${({ theme }) => theme.spacing.lg};
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 1.875rem;
   }
@@ -125,59 +125,85 @@ const ActionBtn = styled.button`
   border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     border-color: ${({ theme }) => theme.colors.accent};
     color: ${({ theme }) => theme.colors.accent};
   }
-  
-  &[data-danger="true"]:hover {
+
+  &[data-danger='true']:hover {
     border-color: ${({ theme }) => theme.colors.error};
     color: ${({ theme }) => theme.colors.error};
   }
-  
-  svg { width: 16px; height: 16px; }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const Content = styled.article`
   font-size: 1.125rem;
   line-height: 1.8;
   color: ${({ theme }) => theme.colors.textPrimary};
-  
+
   .wmde-markdown {
     background: transparent !important;
     font-size: 1.125rem;
     line-height: 1.8;
     color: ${({ theme }) => theme.colors.textSecondary};
   }
-  
-  h1, h2, h3, h4,
-  .wmde-markdown h1, .wmde-markdown h2, .wmde-markdown h3, .wmde-markdown h4 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .wmde-markdown h1,
+  .wmde-markdown h2,
+  .wmde-markdown h3,
+  .wmde-markdown h4 {
     font-weight: ${({ theme }) => theme.fontWeights.bold};
     color: ${({ theme }) => theme.colors.textPrimary};
     margin: 2em 0 0.5em;
     line-height: 1.3;
     border-bottom: none;
   }
-  
-  h1, .wmde-markdown h1 { font-size: 1.75rem; }
-  h2, .wmde-markdown h2 { font-size: 1.5rem; }
-  h3, .wmde-markdown h3 { font-size: 1.25rem; }
-  
-  p, .wmde-markdown p {
+
+  h1,
+  .wmde-markdown h1 {
+    font-size: 1.75rem;
+  }
+  h2,
+  .wmde-markdown h2 {
+    font-size: 1.5rem;
+  }
+  h3,
+  .wmde-markdown h3 {
+    font-size: 1.25rem;
+  }
+
+  p,
+  .wmde-markdown p {
     margin-bottom: 1.5em;
     color: ${({ theme }) => theme.colors.textSecondary};
   }
-  
-  ul, ol, .wmde-markdown ul, .wmde-markdown ol {
+
+  ul,
+  ol,
+  .wmde-markdown ul,
+  .wmde-markdown ol {
     margin-bottom: 1.5em;
     padding-left: 1.5em;
     color: ${({ theme }) => theme.colors.textSecondary};
   }
-  
-  li, .wmde-markdown li { margin-bottom: 0.5em; }
-  
-  blockquote, .wmde-markdown blockquote {
+
+  li,
+  .wmde-markdown li {
+    margin-bottom: 0.5em;
+  }
+
+  blockquote,
+  .wmde-markdown blockquote {
     border-left: 3px solid ${({ theme }) => theme.colors.accent};
     padding: 0.5em 0 0.5em 1.5em;
     margin: 2em 0;
@@ -186,8 +212,9 @@ const Content = styled.article`
     color: ${({ theme }) => theme.colors.textSecondary};
     background: transparent;
   }
-  
-  pre, .wmde-markdown pre {
+
+  pre,
+  .wmde-markdown pre {
     background: ${({ theme }) => theme.colors.bgSecondary};
     border: 1px solid ${({ theme }) => theme.colors.border};
     padding: 1.25em;
@@ -196,28 +223,31 @@ const Content = styled.article`
     margin: 2em 0;
     font-size: 0.9rem;
   }
-  
-  code, .wmde-markdown code {
+
+  code,
+  .wmde-markdown code {
     background: ${({ theme }) => theme.colors.bgSecondary};
     padding: 0.2em 0.5em;
     border-radius: 4px;
     font-size: 0.9em;
     color: ${({ theme }) => theme.colors.accent};
   }
-  
+
   .wmde-markdown pre code {
     background: transparent;
     padding: 0;
     color: inherit;
   }
-  
-  img, .wmde-markdown img {
+
+  img,
+  .wmde-markdown img {
     max-width: 100%;
     border-radius: ${({ theme }) => theme.radii.lg};
     margin: 2em 0;
   }
-  
-  a, .wmde-markdown a {
+
+  a,
+  .wmde-markdown a {
     color: ${({ theme }) => theme.colors.accent};
     text-decoration: underline;
     text-underline-offset: 2px;
@@ -240,21 +270,22 @@ const EngageBtn = styled.button`
   padding: 10px 18px;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ $active, theme }) => $active ? '#fff' : theme.colors.textSecondary};
-  background: ${({ $active, theme }) => $active ? theme.colors.error : theme.colors.bgSecondary};
-  border: 1px solid ${({ $active, theme }) => $active ? theme.colors.error : theme.colors.border};
+  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
+  background: ${({ $active, theme }) => ($active ? theme.colors.error : theme.colors.bgSecondary)};
+  border: 1px solid ${({ $active, theme }) => ($active ? theme.colors.error : theme.colors.border)};
   border-radius: ${({ theme }) => theme.radii.full};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
-    border-color: ${({ $active, theme }) => $active ? theme.colors.error : theme.colors.textMuted};
+    border-color: ${({ $active, theme }) =>
+      $active ? theme.colors.error : theme.colors.textMuted};
   }
-  
+
   svg {
     width: 18px;
     height: 18px;
-    fill: ${({ $active }) => $active ? 'currentColor' : 'none'};
+    fill: ${({ $active }) => ($active ? 'currentColor' : 'none')};
   }
 `;
 
@@ -292,11 +323,11 @@ const CommentInput = styled.textarea`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.lg};
   resize: none;
-  
+
   &::placeholder {
     color: ${({ theme }) => theme.colors.textMuted};
   }
-  
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.accent};
@@ -309,15 +340,13 @@ const CommentActions = styled.div`
   margin-top: ${({ theme }) => theme.spacing.sm};
 `;
 
-
-
 const LoginPrompt = styled.p`
   padding: ${({ theme }) => theme.spacing.lg};
   text-align: center;
   color: ${({ theme }) => theme.colors.textMuted};
   background: ${({ theme }) => theme.colors.bgSecondary};
   border-radius: ${({ theme }) => theme.radii.lg};
-  
+
   a {
     color: ${({ theme }) => theme.colors.accent};
     font-weight: ${({ theme }) => theme.fontWeights.medium};
@@ -383,7 +412,7 @@ const ReplyBtn = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.accent};
   }
@@ -407,13 +436,13 @@ const NoComments = styled.p`
 const ErrorPage = styled.div`
   text-align: center;
   padding: 100px ${({ theme }) => theme.spacing.lg};
-  
+
   h2 {
     font-size: ${({ theme }) => theme.fontSizes['2xl']};
     color: ${({ theme }) => theme.colors.textPrimary};
     margin-bottom: ${({ theme }) => theme.spacing.sm};
   }
-  
+
   p {
     color: ${({ theme }) => theme.colors.textMuted};
     margin-bottom: ${({ theme }) => theme.spacing.lg};
@@ -447,34 +476,49 @@ export function PostDetail() {
 
   const deleteMutation = useMutation({
     mutationFn: () => postService.deletePost(id),
-    onSuccess: () => { toast.success('Deleted'); navigate('/'); },
+    onSuccess: () => {
+      toast.success('Deleted');
+      navigate('/');
+    },
   });
 
   const commentMutation = useMutation({
     mutationFn: (d) => commentService.createComment(d),
-    onSuccess: () => { setComment(''); queryClient.invalidateQueries(['post', id]); },
+    onSuccess: () => {
+      setComment('');
+      queryClient.invalidateQueries(['post', id]);
+    },
   });
 
   const replyMutation = useMutation({
-    mutationFn: ({ userId, repliedCommentId, message }) => 
+    mutationFn: ({ userId, repliedCommentId, message }) =>
       commentService.replyToComment(userId, repliedCommentId, message),
-    onSuccess: () => { setReplyTo(null); setReplyText(''); queryClient.invalidateQueries(['post', id]); },
+    onSuccess: () => {
+      setReplyTo(null);
+      setReplyText('');
+      queryClient.invalidateQueries(['post', id]);
+    },
   });
 
   const likeMutation = useMutation({
     mutationFn: () => (liked ? likeService.unlikePost(id) : likeService.likePost(id)),
-    onSuccess: () => { setLiked(!liked); queryClient.invalidateQueries(['post', id]); },
+    onSuccess: () => {
+      setLiked(!liked);
+      queryClient.invalidateQueries(['post', id]);
+    },
   });
 
   if (isLoading) return <Loading text="Loading..." />;
-  
+
   if (error || !data?.success) {
     return (
       <PageWrapper>
         <ErrorPage>
           <h2>Post not found</h2>
           <p>The post you're looking for doesn't exist or has been removed.</p>
-          <SubmitBtn as={Link} to="/">Back to Home</SubmitBtn>
+          <SubmitBtn as={Link} to="/">
+            Back to Home
+          </SubmitBtn>
         </ErrorPage>
       </PageWrapper>
     );
@@ -491,12 +535,12 @@ export function PostDetail() {
           <img src={post.imageURL} alt={post.title} />
         </HeroImage>
       )}
-      
+
       <Container>
         {category && <Category to={`/?category=${category.name}`}>{category.name}</Category>}
-        
+
         <Title>{post.title}</Title>
-        
+
         <AuthorSection>
           <AuthorInfo to={post.user?._id ? `/user/${post.user._id}` : '#'}>
             <AuthorAvatar>{post.user?.username?.[0]?.toUpperCase() || 'U'}</AuthorAvatar>
@@ -507,13 +551,16 @@ export function PostDetail() {
               </PostMeta>
             </AuthorDetails>
           </AuthorInfo>
-          
+
           {isAuthor && (
             <AuthorActions>
               <ActionBtn as={Link} to={`/edit/${post._id}`}>
                 <Pencil /> Edit
               </ActionBtn>
-              <ActionBtn data-danger="true" onClick={() => window.confirm('Delete this post?') && deleteMutation.mutate()}>
+              <ActionBtn
+                data-danger="true"
+                onClick={() => window.confirm('Delete this post?') && deleteMutation.mutate()}
+              >
                 <Trash2 /> Delete
               </ActionBtn>
             </AuthorActions>
@@ -529,16 +576,23 @@ export function PostDetail() {
         </Content>
 
         <Engagement>
-          <EngageBtn 
-            $active={liked} 
-            onClick={() => isAuthenticated ? likeMutation.mutate() : toast.error('Please sign in')}
+          <EngageBtn
+            $active={liked}
+            onClick={() =>
+              isAuthenticated ? likeMutation.mutate() : toast.error('Please sign in')
+            }
           >
             <Heart /> {post.likes?.length || 0} Likes
           </EngageBtn>
           <EngageBtn as="a" href="#comments">
             <MessageCircle /> {post.comments?.length || 0} Comments
           </EngageBtn>
-          <ShareBtn onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!'); }}>
+          <ShareBtn
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast.success('Link copied!');
+            }}
+          >
             <Share2 /> Share
           </ShareBtn>
         </Engagement>
@@ -549,14 +603,24 @@ export function PostDetail() {
           <CommentsHeader>Comments ({post.comments?.length || 0})</CommentsHeader>
 
           {isAuthenticated ? (
-            <CommentForm onSubmit={(e) => { e.preventDefault(); comment.trim() && commentMutation.mutate({ userId: user.user_id, postId: id, message: comment }); }}>
+            <CommentForm
+              onSubmit={(e) => {
+                e.preventDefault();
+                comment.trim() &&
+                  commentMutation.mutate({ userId: user.user_id, postId: id, message: comment });
+              }}
+            >
               <CommentInput
                 placeholder="Share your thoughts..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
               />
               <CommentActions>
-                <Button type="submit" isLoading={commentMutation.isPending} disabled={!comment.trim()}>
+                <Button
+                  type="submit"
+                  isLoading={commentMutation.isPending}
+                  disabled={!comment.trim()}
+                >
                   Post Comment
                 </Button>
               </CommentActions>
@@ -577,18 +641,31 @@ export function PostDetail() {
                   <CommentBody>
                     <CommentMeta>
                       <CommentAuthor>{c.user?.username || 'Anonymous'}</CommentAuthor>
-                      <CommentDate>{formatDistanceToNow(new Date(c.date), { addSuffix: true })}</CommentDate>
+                      <CommentDate>
+                        {formatDistanceToNow(new Date(c.date), { addSuffix: true })}
+                      </CommentDate>
                     </CommentMeta>
                     <CommentText>{c.message}</CommentText>
-                    
+
                     {isAuthenticated && (
                       <ReplyBtn onClick={() => setReplyTo(replyTo === c._id ? null : c._id)}>
                         Reply
                       </ReplyBtn>
                     )}
-                    
+
                     {replyTo === c._id && (
-                      <form onSubmit={(e) => { e.preventDefault(); replyText.trim() && replyMutation.mutate({ userId: user.user_id, repliedCommentId: c._id, message: replyText }); }} style={{ marginTop: 12 }}>
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          replyText.trim() &&
+                            replyMutation.mutate({
+                              userId: user.user_id,
+                              repliedCommentId: c._id,
+                              message: replyText,
+                            });
+                        }}
+                        style={{ marginTop: 12 }}
+                      >
                         <CommentInput
                           placeholder="Write a reply..."
                           value={replyText}
@@ -596,20 +673,26 @@ export function PostDetail() {
                           style={{ minHeight: 80 }}
                         />
                         <CommentActions>
-                          <Button type="submit" disabled={!replyText.trim()}>Reply</Button>
+                          <Button type="submit" disabled={!replyText.trim()}>
+                            Reply
+                          </Button>
                         </CommentActions>
                       </form>
                     )}
-                    
+
                     {c.replies?.length > 0 && (
                       <Replies>
                         {c.replies.map((r) => (
                           <Comment key={r._id}>
-                            <CommentAvatar>{r.user?.username?.[0]?.toUpperCase() || 'U'}</CommentAvatar>
+                            <CommentAvatar>
+                              {r.user?.username?.[0]?.toUpperCase() || 'U'}
+                            </CommentAvatar>
                             <CommentBody>
                               <CommentMeta>
                                 <CommentAuthor>{r.user?.username || 'Anonymous'}</CommentAuthor>
-                                <CommentDate>{formatDistanceToNow(new Date(r.date), { addSuffix: true })}</CommentDate>
+                                <CommentDate>
+                                  {formatDistanceToNow(new Date(r.date), { addSuffix: true })}
+                                </CommentDate>
                               </CommentMeta>
                               <CommentText>{r.message}</CommentText>
                             </CommentBody>

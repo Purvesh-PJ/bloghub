@@ -74,22 +74,22 @@ const SearchBar = styled.div`
   border-radius: ${({ theme }) => theme.radii.full};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  
+
   &:hover {
     border-color: ${({ theme }) => theme.colors.borderHover};
   }
-  
+
   svg {
     color: ${({ theme }) => theme.colors.textMuted};
     width: 16px;
     height: 16px;
   }
-  
+
   span {
     color: ${({ theme }) => theme.colors.textMuted};
     font-size: ${({ theme }) => theme.fontSizes.sm};
   }
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     span {
       display: none;
@@ -146,7 +146,7 @@ const WriteButton = styled(Link)`
     width: 16px;
     height: 16px;
   }
-  
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     span {
       display: none;
@@ -165,7 +165,7 @@ const AuthButton = styled(Link)`
 
 const SignInButton = styled(AuthButton)`
   color: ${({ theme }) => theme.colors.textSecondary};
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.textPrimary};
   }
@@ -174,7 +174,7 @@ const SignInButton = styled(AuthButton)`
 const SignUpButton = styled(AuthButton)`
   background: ${({ theme }) => theme.colors.accent};
   color: ${({ theme }) => theme.colors.buttonPrimaryText};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.accentHover};
   }
@@ -319,7 +319,7 @@ export function Header() {
             <LogoIcon>B</LogoIcon>
             BlogHub
           </Logo>
-          
+
           <SearchBar onClick={() => navigate('/search')}>
             <Search />
             <span>Search...</span>
