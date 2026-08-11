@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import MDEditor from '@uiw/react-md-editor';
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
-import { Loading } from '../components/common/Loading';
+import { Loading } from '../components/ui';
 import { Button } from '../components/ui';
 
 const PageWrapper = styled.div`

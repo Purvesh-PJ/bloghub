@@ -5,8 +5,8 @@ import { Settings, FileText, Heart, MessageCircle, Users, UserPlus } from 'lucid
 import styled from 'styled-components';
 import { userService } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
-import { PostCard } from '../components/common/PostCard';
-import { Loading } from '../components/common/Loading';
+import { PostCard } from '../components/posts/PostCard';
+import { Loading } from '../components/ui';
 
 const PageWrapper = styled.div`
   max-width: 900px;

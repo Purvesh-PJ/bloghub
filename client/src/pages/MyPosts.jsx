@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import styled from 'styled-components';
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
-import { Loading } from '../components/common/Loading';
+import { Loading } from '../components/ui';
 import { Modal, Button } from '../components/ui';
 
 const PageWrapper = styled.div`

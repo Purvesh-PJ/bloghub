@@ -2,9 +2,9 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { AdminLayout } from './components/layout/AdminLayout';
-import { ProtectedRoute } from './components/common/ProtectedRoute';
-import { AdminRoute } from './components/common/AdminRoute';
-import { Loading } from './components/common/Loading';
+import { ProtectedRoute } from './guards/ProtectedRoute';
+import { AdminRoute } from './guards/AdminRoute';
+import { Spinner } from './components/ui/Spinner';
 
 // Helper for lazy loading named exports
 const lazyPage = (importFn, name) =>
@@ -35,7 +35,7 @@ const AdminSettings = lazyPage(() => import('./pages/admin/Settings'), 'AdminSet
 
 function App() {
   return (
-    <Suspense fallback={<Loading text="Loading page..." />}>
+    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}><Spinner size="40px" /></div>}>
       <Routes>
         {/* Public and User Routes */}
         <Route path="/" element={<Layout />}>

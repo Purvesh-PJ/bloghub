@@ -3,7 +3,7 @@ import { Avatar } from '@radix-ui/themes';
 import { LayoutDashboard, FileText, Users, FolderOpen, Settings, LogOut, Home } from 'lucide-react';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
-import { ThemeToggle } from '../common/ThemeToggle';
+import { ThemeToggle } from './ThemeToggle';
 
 const navItems = [
   { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },

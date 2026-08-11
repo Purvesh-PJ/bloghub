@@ -4,7 +4,7 @@ import { Box, Flex, Heading, Text, Card, Table, Button, TextField, Dialog } from
 import { PlusIcon } from '@radix-ui/react-icons';
 import toast from 'react-hot-toast';
 import { categoryService } from '../../services/categoryService';
-import { Loading } from '../../components/common/Loading';
+import { Loading } from '../../components/ui';
 
 export function AdminCategories() {
   const queryClient = useQueryClient();

@@ -19,8 +19,8 @@ import toast from 'react-hot-toast';
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
 import { useAuth } from '../context/AuthContext';
-import { PostCard } from '../components/common/PostCard';
-import { Loading } from '../components/common/Loading';
+import { PostCard } from '../components/posts/PostCard';
+import { Loading } from '../components/ui';
 
 export function UserProfile() {
   const { userId } = useParams();

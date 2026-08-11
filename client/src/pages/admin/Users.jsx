@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Box, Heading, Text, Card, Table, Avatar, Badge, Flex, Button } from '@radix-ui/themes';
 import { Users as UsersIcon, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
 import { userService } from '../../services/userService';
-import { Loading } from '../../components/common/Loading';
+import { Loading } from '../../components/ui';
 
 export function AdminUsers() {
   const [page, setPage] = useState(1);

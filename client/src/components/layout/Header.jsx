@@ -13,7 +13,7 @@ import {
 import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
-import { ThemeToggle } from '../common/ThemeToggle';
+import { ThemeToggle } from './ThemeToggle';
 
 const HeaderWrapper = styled.header`
   position: fixed;
