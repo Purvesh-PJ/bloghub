@@ -8,6 +8,7 @@ import MDEditor from '@uiw/react-md-editor';
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
 import { Loading } from '../components/common/Loading';
+import { Button } from '../components/ui';
 
 const PageWrapper = styled.div`
   max-width: 1100px;
@@ -182,67 +183,7 @@ const ButtonGroup = styled.div`
   gap: 8px;
 `;
 
-const PrimaryButton = styled.button`
-  width: 100%;
-  padding: 10px 16px;
-  background: ${({ theme }) => theme.colors.buttonPrimaryBg};
-  color: ${({ theme }) => theme.colors.buttonPrimaryText};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
 
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.buttonPrimaryHover};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const SecondaryButton = styled.button`
-  width: 100%;
-  padding: 10px 16px;
-  background: ${({ theme }) => theme.colors.buttonSecondaryBg};
-  color: ${({ theme }) => theme.colors.buttonSecondaryText};
-  border: 1px solid ${({ theme }) => theme.colors.buttonSecondaryBorder};
-  border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.buttonSecondaryHover};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const GhostButton = styled.button`
-  width: 100%;
-  padding: 10px 16px;
-  background: transparent;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.bgHover};
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-`;
 
 const SidebarTitle = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.sm};
@@ -637,13 +578,25 @@ export function WritePost() {
             <Divider />
 
             <ButtonGroup>
-              <PrimaryButton onClick={(e) => handleSubmit(e, 'public')} disabled={isPending}>
-                {isPending ? 'Saving...' : isEditing ? 'Update' : 'Publish'}
-              </PrimaryButton>
-              <SecondaryButton onClick={(e) => handleSubmit(e, 'draft')} disabled={isPending}>
+              <Button
+                variant="primary"
+                fullWidth
+                onClick={(e) => handleSubmit(e, 'public')}
+                isLoading={isPending}
+              >
+                {isEditing ? 'Update' : 'Publish'}
+              </Button>
+              <Button
+                variant="secondary"
+                fullWidth
+                onClick={(e) => handleSubmit(e, 'draft')}
+                disabled={isPending}
+              >
                 Save Draft
-              </SecondaryButton>
-              <GhostButton onClick={() => navigate(-1)}>Cancel</GhostButton>
+              </Button>
+              <Button variant="ghost" fullWidth onClick={() => navigate(-1)}>
+                Cancel
+              </Button>
             </ButtonGroup>
           </Card>
 
