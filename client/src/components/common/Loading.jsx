@@ -1,8 +1,5 @@
-import styled, { keyframes } from 'styled-components';
-
-const spin = keyframes`
-  to { transform: rotate(360deg); }
-`;
+import styled from 'styled-components';
+import { Spinner } from '../ui/Spinner';
 
 const LoadingWrapper = styled.div`
   display: flex;
@@ -14,15 +11,6 @@ const LoadingWrapper = styled.div`
   min-height: 300px;
 `;
 
-const Spinner = styled.div`
-  width: 32px;
-  height: 32px;
-  border: 2px solid ${({ theme }) => theme.colors.border};
-  border-top-color: ${({ theme }) => theme.colors.textPrimary};
-  border-radius: 50%;
-  animation: ${spin} 0.7s linear infinite;
-`;
-
 const LoadingText = styled.span`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textMuted};
@@ -31,7 +19,7 @@ const LoadingText = styled.span`
 export function Loading({ text = 'Loading...' }) {
   return (
     <LoadingWrapper>
-      <Spinner />
+      <Spinner size="32px" />
       <LoadingText>{text}</LoadingText>
     </LoadingWrapper>
   );
