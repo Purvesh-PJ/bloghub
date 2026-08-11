@@ -55,17 +55,9 @@ Welcome to the BlogHub documentation! This folder contains comprehensive technic
    - Query patterns
    - Performance considerations
 
-### Interview & Planning
+### Planning & Enhancements
 
-7. **[interview-notes.md](./interview-notes.md)** - Interview Preparation
-   - 30/60/120 second project explanations
-   - Technical deep-dive answers
-   - Common interview questions
-   - Challenges and solutions
-   - What you learned
-   - Quick revision sheet
-
-8. **[improvements.md](./improvements.md)** - Future Enhancements
+7. **[improvements.md](./improvements.md)** - Future Enhancements
    - High priority improvements
    - Medium priority features
    - Technical debt
@@ -92,11 +84,6 @@ Start here to understand the project:
 2. [database-schema.md](./database-schema.md) - Data models and relationships
 3. [modules.md](./modules.md) - Backend module structure
 
-### For Interview Preparation
-1. [interview-notes.md](./interview-notes.md) - Complete interview guide
-2. [architecture.md](./architecture.md) - Technical decisions and rationale
-3. [improvements.md](./improvements.md) - What you'd improve
-
 ### For Project Planning
 1. [improvements.md](./improvements.md) - Feature roadmap
 2. [architecture.md](./architecture.md) - Scalability considerations
@@ -112,7 +99,6 @@ This documentation follows these principles:
 2. **Specific over Generic** - Actual implementation details, not boilerplate
 3. **Visual over Text** - Diagrams and flow charts where helpful
 4. **Honest over Perfect** - Acknowledges limitations and areas for improvement
-5. **Interview-Ready** - Structured to help explain the project confidently
 
 ---
 
@@ -125,11 +111,9 @@ Read in this order:
 3. working-flow.md (45 min)
 4. Layer-specific docs as needed (30 min each)
 
-### Before an Interview
-1. Review interview-notes.md (1 hour)
-2. Skim architecture.md for key decisions
-3. Practice explaining 2-3 specific challenges
-4. Review improvements.md for "what would you change" questions
+### Reviewing Architecture
+1. Skim architecture.md for key decisions
+2. Review improvements.md for future roadmap items
 
 ### Before Making Changes
 1. Check modules.md to understand affected areas
