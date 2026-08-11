@@ -1,5 +1,6 @@
 const morgan = require('morgan');
 
-const logger = morgan('combined');
+const logFormat = process.env.NODE_ENV === 'development' ? 'dev' : 'combined';
+const logger = morgan(logFormat);
 
 module.exports = logger;
