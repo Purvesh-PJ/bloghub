@@ -25,10 +25,10 @@ const settingsRoutes = require('./routes/settings.routes');
 
 const logger = require('./middlewares/logger'); // Import logging middleware
 
-// REQUIRED SERVER
 const cors = require('cors');
+const clientUrl = process.env.CLIENT_URL || '*';
 app.use(logger); // Use the logging middleware
-app.use(cors()); // for handling Cross-Origin Resource Sharing
+app.use(cors({ origin: clientUrl, credentials: true })); // for handling Cross-Origin Resource Sharing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
