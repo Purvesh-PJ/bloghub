@@ -1,31 +1,14 @@
-import { useEffect } from 'react';
+import { Dialog as RadixDialog } from '@radix-ui/themes';
 import styled from 'styled-components';
 import { X } from 'lucide-react';
 
-const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-  backdrop-filter: blur(4px);
-`;
-
-const ModalContainer = styled.div`
-  background: ${({ theme }) => theme.colors?.bgSecondary || '#ffffff'};
-  border-radius: ${({ theme }) => theme.radii?.lg || '12px'};
-  border: 1px solid ${({ theme }) => theme.colors?.border || '#e5e7eb'};
-  width: 100%;
-  max-width: ${({ $maxWidth }) => $maxWidth || '500px'};
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+const StyledContent = styled(RadixDialog.Content)`
+  background: ${({ theme }) => theme.colors?.bgSecondary || '#ffffff'} !important;
+  border-radius: ${({ theme }) => theme.radii?.lg || '12px'} !important;
+  border: 1px solid ${({ theme }) => theme.colors?.border || '#e5e7eb'} !important;
+  max-width: ${({ $maxWidth }) => $maxWidth || '500px'} !important;
+  padding: 0 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
 `;
 
 const Header = styled.div`
@@ -36,11 +19,11 @@ const Header = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.colors?.border || '#e5e7eb'};
 `;
 
-const Title = styled.h3`
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors?.textPrimary || '#111827'};
+const StyledTitle = styled(RadixDialog.Title)`
+  margin: 0 !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: ${({ theme }) => theme.colors?.textPrimary || '#111827'} !important;
 `;
 
 const CloseButton = styled.button`
@@ -60,34 +43,26 @@ const CloseButton = styled.button`
   }
 `;
 
-const Content = styled.div`
+const Body = styled.div`
   padding: 20px;
 `;
 
 export function Modal({ isOpen, onClose, title, children, maxWidth = '500px' }) {
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen) onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
   return (
-    <Overlay onClick={onClose}>
-      <ModalContainer $maxWidth={maxWidth} onClick={(e) => e.stopPropagation()}>
+    <RadixDialog.Root open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
+      <StyledContent $maxWidth={maxWidth}>
         {title && (
           <Header>
-            <Title>{title}</Title>
-            <CloseButton onClick={onClose} aria-label="Close modal">
-              <X size={18} />
-            </CloseButton>
+            <StyledTitle>{title}</StyledTitle>
+            <RadixDialog.Close>
+              <CloseButton aria-label="Close modal">
+                <X size={18} />
+              </CloseButton>
+            </RadixDialog.Close>
           </Header>
         )}
-        <Content>{children}</Content>
-      </ModalContainer>
-    </Overlay>
+        <Body>{children}</Body>
+      </StyledContent>
+    </RadixDialog.Root>
   );
 }
