@@ -5,3 +5,8 @@ export { Card } from './Card';
 export { Badge } from './Badge';
 export { Container, Box, Flex } from './Container';
 export { Modal } from './Modal';
+export { Select } from './Select';
+export { Avatar } from './Avatar';
+export { Spinner } from './Spinner';
+export { Tabs } from './Tabs';
+export { Alert } from './Alert';
