@@ -33,24 +33,32 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // ROUTES
-app.use('/posts', postRoutes);
-app.use('/users', userRoutes);
-app.use('/categories', categoryRoutes);
-app.use('/tags', tagRoutes);
-app.use('/comments', commentRoutes);
-app.use('/search', searchRoutes);
-app.use('/auth', authRoutes);
-app.use('/analytics', analyticsRoutes);
-app.use('/likes', likesRoutes);
-app.use('/page-views', pageViewsRoutes);
-app.use('/user-activity', userActivityRoutes);
-app.use('/settings', settingsRoutes);
+const router = express.Router();
+router.use('/posts', postRoutes);
+router.use('/users', userRoutes);
+router.use('/categories', categoryRoutes);
+router.use('/tags', tagRoutes);
+router.use('/comments', commentRoutes);
+router.use('/search', searchRoutes);
+router.use('/auth', authRoutes);
+router.use('/analytics', analyticsRoutes);
+router.use('/likes', likesRoutes);
+router.use('/page-views', pageViewsRoutes);
+router.use('/user-activity', userActivityRoutes);
+router.use('/settings', settingsRoutes);
+
+app.use('/api', router);
+app.use('/', router);
 
 // Error handling middleware MUST be after routes
 app.use(errorHandler);
 
 // SERVER LISTENING
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
