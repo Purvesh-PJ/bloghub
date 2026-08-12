@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 async function connectDB() {
-  const uri = process.env.DB_URI;
+  const uri = process.env.MONGODB_URI || process.env.MONGO_DB_URI || process.env.DB_URI;
   if (!uri) {
-    console.error('[DB] Missing DB_URI environment variable');
+    console.error('[DB] Missing MONGODB_URI / DB_URI environment variable');
     process.exit(1);
   }
 
