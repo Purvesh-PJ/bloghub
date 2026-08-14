@@ -14,6 +14,7 @@ exports.getAnalytics = async (req, res) => {
     }
     res.json(analytics);
   } catch (error) {
+    console.error('[getAnalytics]', error);
     res.status(500).json({ error: 'An error occurred' });
   }
 };
