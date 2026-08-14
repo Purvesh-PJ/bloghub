@@ -27,12 +27,19 @@ exports.createLike = async (req, res) => {
     const newLike = new Like({
       post: postId,
       user: userId,
-      timestamp: new Date(),
     });
 
     await newLike.save();
 
-    res.status(201).json({ message: 'Post liked successfully', like: newLike });
+    // Keep the denormalised array on the post in step, so a reader's like state can be
+    // restored on reload without a second query.
+    await Post.updateOne({ _id: postId }, { $addToSet: { likes: newLike._id } });
+
+    res.status(201).json({
+      success: true,
+      message: 'Post liked successfully',
+      data: newLike,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'An error occurred while liking the post' });
@@ -44,9 +51,7 @@ exports.getLike = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const like = await Like.findById(id)
-      .populate('user', 'username email')
-      .populate('post', 'title');
+    const like = await Like.findById(id).populate('user', 'username').populate('post', 'title');
 
     if (!like) {
       return res.status(404).json({ error: 'Like not found' });
@@ -65,7 +70,7 @@ exports.getPostLikes = async (req, res) => {
     const { postId } = req.params;
 
     const likes = await Like.find({ post: postId })
-      .populate('user', 'username email')
+      .populate('user', 'username')
       .sort({ timestamp: -1 });
 
     res.json(likes);
@@ -92,7 +97,9 @@ exports.deleteLike = async (req, res) => {
       return res.status(404).json({ error: 'Like not found' });
     }
 
-    res.json({ message: 'Post unliked successfully' });
+    await Post.updateOne({ _id: postId }, { $pull: { likes: deletedLike._id } });
+
+    res.json({ success: true, message: 'Post unliked successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'An error occurred while unliking the post' });
