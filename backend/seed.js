@@ -1,6 +1,8 @@
-const mongoose = require('mongoose');
+const path = require('path');
 const bcrypt = require('bcryptjs');
-require('dotenv').config();
+// Both workspaces read the single .env at the repository root; a bare dotenv.config()
+// resolves against backend/ and finds nothing.
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const User = require('./models/user.model');
 const Post = require('./models/post.model');
@@ -474,7 +476,9 @@ async function seed() {
       const shuffledUsers = [...createdUsers].sort(() => Math.random() - 0.5);
 
       for (let i = 0; i < Math.min(numLikes, shuffledUsers.length); i++) {
-        const like = new Like({ user: shuffledUsers[i]._id, posts: post._id });
+        // Field is `post`, not `posts` — the plural silently wrote null and made every
+        // seeded like unqueryable by post.
+        const like = new Like({ user: shuffledUsers[i]._id, post: post._id });
         await like.save();
         post.likes.push(like._id);
         likeCount++;
