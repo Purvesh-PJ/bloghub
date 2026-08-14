@@ -9,11 +9,18 @@ exports.getSearchQueries = async (req, res) => {
 
   try {
     const sanitizedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
 
     const results = await Post.aggregate([
       {
-        $match: { title: { $regex: sanitizedQuery, $options: 'i' } },
+        // Search never reaches drafts or private posts.
+        $match: {
+          visibility: 'public',
+          title: { $regex: sanitizedQuery, $options: 'i' },
+        },
       },
+      { $sort: { createdAt: -1 } },
+      { $limit: limit },
       {
         $project: { title: 1, truncatedContent: { $substr: ['$content', 0, 200] } },
       },

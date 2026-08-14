@@ -5,23 +5,53 @@ const User = require('../models/user.model');
 const Profile = require('../models/user-profile.model');
 const { createPost, updatePost } = require('../services/postService');
 
+const MAX_PAGE_SIZE = 50;
+
 exports.getBlogs = async (req, res) => {
   try {
-    const Posts = await Post.find().populate('comments');
-    res.status(200).send(Posts);
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), MAX_PAGE_SIZE);
+    const skip = (page - 1) * limit;
+
+    // Public listing: only published posts. Drafts and private posts are reachable
+    // through the owner-scoped endpoints, never from here.
+    //
+    // Administrators may opt into the unfiltered list with ?all=true, which is what the
+    // moderation console needs. The flag is ignored for everyone else.
+    const wantsAll = req.query.all === 'true';
+    const isAdmin = req.user?.roles?.includes('admin');
+    const filter = wantsAll && isAdmin ? {} : { visibility: 'public' };
+
+    const [posts, total] = await Promise.all([
+      Post.find(filter)
+        .populate('user', 'username')
+        .populate('categories')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Post.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: 'Posts found successfully',
+      data: posts,
+      pagination: { total, page, limit, pages: Math.ceil(total / limit) },
+    });
   } catch (err) {
+    console.error('[getBlogs]', err);
     res.status(500).json({
       success: false,
-      message: 'Model doesnt exists',
+      message: 'An error occurred while fetching posts',
     });
   }
 };
 
 exports.getSinglePost = async (req, res) => {
-  // console.log(req.body);
   try {
     const singlePost = await Post.findById(req.params.id)
       .populate('user', 'username')
+      .populate('likes', 'user')
       .populate({
         path: 'comments',
         populate: [
@@ -42,15 +72,40 @@ exports.getSinglePost = async (req, res) => {
       })
       .populate('categories');
 
+    if (!singlePost) {
+      return res.status(404).json({
+        success: false,
+        message: 'Post not found',
+        error: 'NotFound',
+      });
+    }
+
+    // A non-public post is only visible to its author and to administrators. 404 rather
+    // than 403 so the response never confirms that an unpublished post exists.
+    if (singlePost.visibility !== 'public') {
+      const viewerId = req.user ? req.user.id || req.user._id : null;
+      const isOwner = viewerId && singlePost.user?._id?.toString() === viewerId.toString();
+      const isAdmin = req.user?.roles?.includes('admin');
+
+      if (!isOwner && !isAdmin) {
+        return res.status(404).json({
+          success: false,
+          message: 'Post not found',
+          error: 'NotFound',
+        });
+      }
+    }
+
     return res.status(200).json({
       success: true,
       message: 'post found succesfully',
       data: singlePost,
     });
   } catch (error) {
+    console.error('[getSinglePost]', error);
     res.status(500).json({
       success: false,
-      message: 'post not found',
+      message: 'An error occurred while fetching the post',
     });
   }
 };
@@ -147,12 +202,16 @@ exports.deletePost = async (req, res) => {
 
     await Comment.deleteMany({ _id: { $in: postAttachedCommentIds } });
 
-    await User.updateOne({ _id: { $in: user_id } }, { $pull: { posts: post_id } });
+    // Counters belong to the post's author, not to whoever issued the delete — an
+    // administrator moderating someone else's post must not lose their own post count.
+    const authorId = post.user || user_id;
+
+    await User.updateOne({ _id: authorId }, { $pull: { posts: post_id } });
 
     await Post.findByIdAndDelete(post_id);
 
     await Profile.findOneAndUpdate(
-      { user: user_id },
+      { user: authorId },
       { $inc: { postCount: -1 } },
       { new: true, runValidators: true },
     );
