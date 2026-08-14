@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const SettingsController = require('../controllers/settings.controllers');
 const AuthUser = require('../middlewares/authenticateUser');
+const authorizeSelfOrAdmin = require('../middlewares/authorizeSelfOrAdmin');
 
 // All routes require authentication
 router.use(AuthUser.authenticateUser);
@@ -10,8 +11,8 @@ router.use(AuthUser.authenticateUser);
 router.get('/user', SettingsController.getUserSettings);
 router.put('/user', SettingsController.updateUserSettings);
 
-// User profile routes
-router.get('/profile/:userId?', SettingsController.getUserProfile);
+// User profile routes — the optional parameter is scoped to the caller
+router.get('/profile/:userId?', authorizeSelfOrAdmin('userId'), SettingsController.getUserProfile);
 router.put('/profile', SettingsController.updateUserProfile);
 
 // Security settings
