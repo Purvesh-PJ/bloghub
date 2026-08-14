@@ -16,4 +16,7 @@ const ReadSchema = mongoose.Schema(
   },
 );
 
+ReadSchema.index({ post: 1, createdAt: -1 });
+ReadSchema.index({ user: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Read', ReadSchema);
