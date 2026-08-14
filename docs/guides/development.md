@@ -1,0 +1,438 @@
+# Conventions
+
+> **Scope:** where a new file belongs, how to write the code inside it, and how it gets
+> reviewed. Merges what were separate folder-structure, coding-standards and code-review
+> documents, because a review checklist that restates the standards is duplication.
+> **Excludes:** the repository tree
+> ([architecture/overview.md](../architecture/overview.md)), tool configuration
+> ([code-quality.md](code-quality.md)), API contract rules
+> ([reference/api.md](../reference/api.md)).
+
+Formatting is not a matter of opinion here — Prettier decides it, and it is never a review
+comment.
+
+---
+
+# Part 1 — Where files go
+
+## Backend
+
+| You are adding | Location | File name | Export |
+|----------------|----------|-----------|--------|
+| A collection | `backend/models/` | `<resource>.model.js` | `mongoose.model('Name', Schema)` |
+| Handlers for a resource | `backend/controllers/` | `<resource>.controllers.js` | Named `exports.<action>` |
+| Paths for a resource | `backend/routes/` | `<resource>.routes.js` | The `router` |
+| Multi-step or reused persistence | `backend/services/` | `<resource>Service.js` | Named async functions |
+| Something on every request | `backend/middlewares/` | `<concern>.js` | The middleware function |
+| A validation rule set | `backend/middlewares/` | `<Resource>Validation.js` | Array of `express-validator` chains |
+| Infrastructure wiring | `backend/config/` | `<concern>.js` | Named setup functions |
+| A one-off script | `backend/` | `<verb>.js` + a package script | — |
+
+New resources are registered in `index.js`:
+
+```js
+router.use('/widgets', widgetRoutes);
+```
+
+**Naming:** models, controllers and routes are singular (`post.model.js`,
+`post.controllers.js`, `post.routes.js`); multi-word resources are kebab-case
+(`page-view.controllers.js`); services are camelCase (`postService.js`); model names are
+singular PascalCase.
+
+> Existing exceptions: `likes.routes.js` is plural, and `commentServices.js` is plural while
+> `postService.js` is singular. Follow the convention for new files; do not propagate the
+> exceptions.
+
+## Frontend
+
+| You are adding | Location | File name | Export |
+|----------------|----------|-----------|--------|
+| A route-level screen | `client/src/pages/` | `<Name>.jsx` | Named |
+| An admin screen | `client/src/pages/admin/` | `<Name>.jsx` | Named, `Admin` prefix |
+| A generic primitive | `client/src/components/ui/` | `<Name>.jsx` | Named + add to `index.js` |
+| A domain component | `client/src/components/<domain>/` | `<Name>.jsx` | Named |
+| Page chrome or a shell | `client/src/components/layout/` | `<Name>.jsx` | Named |
+| A route access rule | `client/src/guards/` | `<Name>Route.jsx` | Named |
+| Calls to a backend resource | `client/src/services/` | `<resource>Service.js` | Named object of async functions |
+| Global client state | `client/src/context/` | `<Name>Context.jsx` | Provider + `use<Name>` hook |
+| A design token | `client/src/styles/theme/` | existing files | Named |
+| A reusable hook | `client/src/hooks/` *(create it)* | `use<Name>.js` | Named |
+| A pure helper | `client/src/utils/` *(create it)* | `<domain>.js` | Named |
+
+`hooks/` and `utils/` do not exist yet. Create them at the **second** consumer, not the first.
+
+**Naming:** components are PascalCase `.jsx` with named exports; non-component modules are
+camelCase `.js`; hooks take a `use` prefix; boolean props take `is`/`has`; styling props take
+a `$` prefix. `App.jsx` is the only default export, because `React.lazy` requires one.
+
+## Which component tier?
+
+```
+Is it a whole screen behind a route?      → pages/
+Does it wrap the page (header, sidebar)?  → components/layout/
+Does it know a domain concept?            → components/<domain>/
+Generic, styling-only, reusable anywhere? → components/ui/ + export from index.js
+```
+
+The tier determines what the file may import:
+
+| Tier | May import | Must never import |
+|------|-----------|-------------------|
+| `ui/` | styled-components, other primitives | services, context, router |
+| `<domain>/` | `ui/`, router links, formatting | services — data arrives as props |
+| `layout/` | `ui/`, `context/`, router | page components |
+| `pages/` | everything above, plus `services/` | another page |
+
+A primitive that needs to fetch is not a primitive.
+
+## Where things must not go
+
+| Temptation | Why not | Instead |
+|-----------|---------|---------|
+| Logic in `routes/` | Routes are a wiring table; logic there is untestable | `controllers/` or `services/` |
+| `req`/`res` in `services/` | Couples persistence to HTTP | Plain values in and out; throw on failure |
+| A direct `axios` call in a component | Bypasses the auth and refresh interceptors | Add a service function |
+| A raw hex or px value in a page | Breaks theming and both-mode support | A theme token |
+| A shared component in `pages/` | Nothing but `App.jsx` may import a page | `components/` at the right tier |
+| A `.env` inside a workspace | Both read the root `.env` | Add the key to the root file and `.env.example` |
+| A second Axios instance | Two auth paths, two refresh behaviours | `client/src/config/api.js` |
+
+## Import order
+
+Separate groups with a blank line:
+
+```js
+// 1. external packages
+// 2. internal modules — services, context, config
+// 3. components
+// 4. styles and assets
+```
+
+Backend files follow the same idea with `require`: packages, models, services, middleware.
+
+---
+
+# Part 2 — How to write it
+
+## JavaScript
+
+| Rule | Detail |
+|------|--------|
+| Module system | CommonJS in `backend/`, ES modules in `client/`. Never mix within a workspace |
+| Declarations | `const` by default, `let` when reassignment is real, never `var` |
+| Async | `async`/`await`; no raw `.then()` chains in new code |
+| Equality | `===` and `!==` always |
+| Strings | Single quotes; template literals for interpolation |
+
+### Preferred idioms
+
+```js
+const { postId, message } = req.body;                      // destructure at the top
+const username = post.user?.username ?? 'Anonymous';       // optional chaining
+if (!post) return res.status(404).json({ ... });           // early return
+const [posts, total] = await Promise.all([...]);           // parallelise
+```
+
+### Avoid
+
+```js
+// ✗ an unawaited async map — the handler returns before the writes land
+categories.map(async (cat) => { await Category.findOne({ name: cat }); });
+// ✓
+await Promise.all(categories.map(async (cat) => { … }));
+
+// ✗ a defensive chain that hides a real contract
+const userId = req.user ? req.user.id || req.user._id || req.user : null;
+// ✓ authenticateUser guarantees the shape
+const userId = req.user.id;
+
+// ✗ writing a field the schema does not declare — Mongoose discards it silently
+await UserSettings.updateOne({ user }, { theme: 'dark' });   // if theme is undeclared
+```
+
+The first two shipped as real defects ([BUG-11](../product/roadmap.md#bug-11)); the third was
+the root cause of [BUG-05](../product/roadmap.md#bug-05).
+
+## Backend shapes
+
+### Controller
+
+```js
+exports.getPost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id).populate('user', 'username');
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found', error: 'NotFound' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Post found', data: post });
+  } catch (error) {
+    console.error('[getPost]', error);
+    return res.status(500).json({ success: false, message: 'An internal error occurred' });
+  }
+};
+```
+
+One exported function per endpoint. Always `return` the response call. Identity is
+`req.user.id`. Choose the specific status code. Never leak an internal message. Prefix the
+log with the handler name.
+
+### Service
+
+```js
+exports.createPost = async (userId, { title, slug, content, imageURL, visibility }) => {
+  if (!userId) throw new Error('userId is required');
+  const post = await Post.create({ user: userId, title, slug, content, imageURL, visibility });
+  await User.updateOne({ _id: userId }, { $push: { posts: post._id } });
+  return post;
+};
+```
+
+Plain values in and out; never touch `req` or `res`; throw on failure.
+
+### Model
+
+```js
+const PostSchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    title: { type: String, required: true, trim: true },
+    visibility: { type: String, enum: ['draft', 'private', 'public'], default: 'draft' },
+  },
+  { timestamps: true },
+);
+
+PostSchema.index({ visibility: 1, createdAt: -1 });
+```
+
+Always `timestamps`. Constraints in the schema, not only the controller. **Declare every
+field the application writes.** Declare every index the queries need.
+
+## Frontend shapes
+
+```jsx
+export function PostList() {
+  const [filter, setFilter] = useState('all');
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['posts'],
+    queryFn: () => postService.getPosts(),
+  });
+
+  if (isLoading) return <Loading text="Loading posts…" />;
+  if (error) return <Card>Could not load posts.</Card>;
+
+  const posts = data?.data ?? [];
+  if (posts.length === 0) return <Card>No posts yet.</Card>;
+
+  return <PageWrapper>{/* … */}</PageWrapper>;
+}
+```
+
+Order: hooks → derived values → handlers → early returns → JSX.
+
+Rules: function components with hooks (`ErrorBoundary` is the only class, and that is a React
+constraint); named exports; loading, error and empty handled explicitly in that order; styled
+components at module scope, never inside the component; transient `$` props; stable list keys;
+clean up every subscription and timer.
+
+### Data fetching
+
+```jsx
+const mutation = useMutation({
+  mutationFn: postService.createPost,
+  onSuccess: () => {
+    toast.success('Post created');
+    queryClient.invalidateQueries({ queryKey: ['posts'] });
+  },
+  onError: (error) => toast.error(error.response?.data?.message ?? 'Something went wrong'),
+});
+```
+
+Never `useEffect` + `useState` for server data. Key by resource then identifier. Guard
+dependent queries with `enabled`. Always define `onError`.
+
+## Naming
+
+| Kind | Convention | Example |
+|------|-----------|---------|
+| Variable, function | camelCase | `postCount`, `createPost` |
+| Component, model | PascalCase | `PostCard`, `UserProfile` |
+| Constant | SCREAMING_SNAKE_CASE | `AUTH_STORAGE_KEY` |
+| Boolean | `is` / `has` / `should` | `isLoading` |
+| Handler | `handle` prefix | `handleSubmit` |
+| Handler prop | `on` prefix | `onToggle` |
+| Environment variable | SCREAMING_SNAKE_CASE | `JWT_SECRET` |
+
+Say what a thing is. `data`, `info`, `obj`, `temp` are not names.
+
+## Comments
+
+Comment the **why**, never the **what**.
+
+```js
+// ✓
+// Escape regex metacharacters — an unescaped query lets a user build a catastrophically
+// backtracking pattern and stall the event loop.
+const sanitized = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+```
+
+Delete commented-out code. Tag deliberate temporary work as `// TODO(BUG-01): …`.
+
+## Security practice
+
+- The acting user comes from the verified token, never from the request.
+- Authorise the resource, not just the request.
+- Validate and constrain every input reaching a query.
+- Project queries — no password hash, no private email in a public payload.
+- No secret in source, logs or the client bundle. `VITE_`-prefixed values ship to the browser.
+- Escape anything interpolated into a regex.
+
+---
+
+# Part 3 — Review
+
+## Author responsibilities
+
+1. Self-review the diff in the pull request view.
+2. Run the checks:
+   ```bash
+   cd backend && npm run lint && npm run format:check
+   cd ../client && npm run lint && npm run format:check && npm run build
+   ```
+3. Keep it focused — one concern per pull request; formatting-only changes go separately.
+4. Say **how you verified it**. "Should work" is not verification.
+5. Update the owning document — see the [SSOT map](../README.md#single-source-of-truth).
+
+| Lines changed | Expectation |
+|---------------|-------------|
+| < 100 | Ideal |
+| 100–400 | Fine with a clear description |
+| > 400 | Split it, unless it is a move or a reformat — say so in the title |
+
+## Reviewer responsibilities
+
+Turnaround within one working day. Prefix every comment by severity:
+
+| Prefix | Meaning | Blocks |
+|--------|---------|--------|
+| `blocking:` | Must change before merge | Yes |
+| `question:` | Needs clarification | Until answered |
+| `suggestion:` | Better, but your call | No |
+| `nit:` | Trivial preference | No |
+| `praise:` | This is good — say so | No |
+
+Approving with outstanding `suggestion:` and `nit:` comments is normal.
+
+## Checklist
+
+Correctness first — style is already automated.
+
+**Correctness**
+- [ ] Does it do what the description says?
+- [ ] Are not-found, unauthorised, empty and network-error paths handled?
+- [ ] Is every async operation awaited? Any unawaited `map(async …)`?
+
+**Security** — anything here is `blocking:` by default
+- [ ] Acting user from `req.user`, never from the body or a path parameter?
+- [ ] Should the route be authenticated?
+- [ ] Is resource **ownership** checked, not just authentication?
+- [ ] Is a `:userId` parameter scoped with `authorizeSelfOrAdmin`?
+- [ ] Are queries projected — no hash, no private email?
+- [ ] Is anything interpolated into a regex escaped?
+
+**Data**
+- [ ] Does a new query path have an index?
+- [ ] Are new schema fields **declared**? Mongoose drops undeclared fields silently
+- [ ] Are list endpoints paginated with a capped limit?
+- [ ] Do denormalised fields stay consistent, and what if one write fails?
+- [ ] Any N+1 queries in a loop?
+
+**API contract**
+- [ ] Correct status code — 404 missing, 403 forbidden, 409 conflict, 501 unimplemented?
+- [ ] Does the response use the envelope?
+- [ ] Is [reference/api.md](../reference/api.md) updated?
+
+**Frontend**
+- [ ] Loading, error and empty states handled?
+- [ ] Server state in React Query rather than `useState` + `useEffect`?
+- [ ] Do mutations invalidate what they changed?
+- [ ] All values from theme tokens?
+- [ ] Works in both themes and at 375px?
+- [ ] Keyboard operable with a visible focus ring?
+- [ ] Stable list keys?
+
+**Architecture**
+- [ ] Right layer — see [dependency rules](../architecture/overview.md#dependency-rules)
+- [ ] Does a service touch `req`/`res`? Does a `ui/` primitive fetch?
+- [ ] Is duplicated logic on its *second* occurrence, not a speculative first?
+
+**Maintainability**
+- [ ] Do names say what things are?
+- [ ] Comments explain *why*?
+- [ ] No commented-out code, no stray `console.log`, no dead exports?
+- [ ] TODOs tagged with a tracking ID?
+
+## What blocks a merge
+
+**Always** — a security defect; silent data loss; a breaking API change with no migration
+path; committed secrets; failing lint, format or build; the acting user read from
+client-supplied input.
+
+**By default, negotiable with a written reason** — no index on a new query path; an
+unpaginated list endpoint; a missing UI error state; documentation not updated.
+
+**Never** — naming preferences; formatting; alternative approaches of equal merit; work
+explicitly deferred and tracked with an ID.
+
+## Special cases
+
+| Change | Extra scrutiny |
+|--------|----------------|
+| Authentication or authorisation | Two reviewers; trace every attacker path |
+| Schema change | Migration for existing documents; index implications. **Adding a unique index to a collection with duplicates fails** |
+| Dependency addition | Needed? Maintained? Bundle cost? Duplicates something installed? |
+| Deployment or `vercel.json` | Rollback plan; verify on a preview deployment |
+| Reformat | Verify the diff is *only* formatting; add the SHA to `.git-blame-ignore-revs` |
+| Documentation | Check the [SSOT map](../README.md#single-source-of-truth) for duplication |
+
+---
+
+## Git
+
+### Commit messages
+
+```
+<type>(<scope>): <subject>
+```
+
+`feat` · `fix` · `refactor` · `perf` · `style` · `docs` · `test` · `build` · `chore`
+
+Imperative, lowercase, no trailing period, reference the tracking ID:
+
+```
+fix(posts): persist visibility on create and update (BUG-01)
+feat(auth): add password reset flow (GAP-01)
+```
+
+### Branches
+
+```
+feature/<short-description>
+fix/<short-description>
+docs/<short-description>
+```
+
+---
+
+## Definition of done
+
+- [ ] Behaves as specified, including failure paths
+- [ ] Loading, empty and error states handled (UI)
+- [ ] Correct status codes and the response envelope (API)
+- [ ] Indexes added for any new query path
+- [ ] No new lint errors; formatting clean
+- [ ] No secrets, no stray `console.log`, no commented-out code
+- [ ] The owning document updated
+- [ ] Self-reviewed against the checklist above
