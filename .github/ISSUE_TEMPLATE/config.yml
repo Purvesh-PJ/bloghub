@@ -1,0 +1,22 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: 🔒 Report a security vulnerability
+    url: https://github.com/Purvesh-PJ/blogging_platform/security/advisories/new
+    about: Do not open a public issue. Report privately through a security advisory — see SECURITY.md.
+
+  - name: 📋 Known defects and planned work
+    url: https://github.com/Purvesh-PJ/blogging_platform/blob/main/docs/product/roadmap.md
+    about: Check the backlog first — your issue may already be tracked with a BUG-xx or GAP-xx identifier.
+
+  - name: 🛠 Troubleshooting runbook
+    url: https://github.com/Purvesh-PJ/blogging_platform/blob/main/docs/operations/runbook.md
+    about: Symptom-to-fix guide for setup, runtime and production problems.
+
+  - name: 📖 Documentation
+    url: https://github.com/Purvesh-PJ/blogging_platform/blob/main/docs/README.md
+    about: Architecture, API reference, setup and contribution standards.
+
+  - name: 💬 Questions and discussion
+    url: https://github.com/Purvesh-PJ/blogging_platform/discussions
+    about: Ask a question or discuss an idea before opening an issue.

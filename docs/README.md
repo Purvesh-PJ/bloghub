@@ -1,228 +1,164 @@
-# Documentation Index
+# BlogHub Documentation
 
-Welcome to the BlogHub documentation! This folder contains comprehensive technical documentation for understanding, maintaining, and extending the project.
+Technical documentation for BlogHub — a MERN blogging platform with authoring, social
+interaction, analytics and an admin console.
 
-## 📚 Documentation Files
-
-### Core Documentation
-
-1. **[architecture.md](./architecture.md)** - System Architecture Overview
-   - High-level architecture diagram
-   - Layer breakdown (frontend, backend, database)
-   - Architectural patterns and decisions
-   - Security architecture
-   - Scalability considerations
-
-2. **[working-flow.md](./working-flow.md)** - End-to-End Flows
-   - User registration and login flow
-   - Post creation and management flow
-   - Comment and like interactions
-   - Search and discovery flow
-   - Analytics dashboard flow
-   - Request-response patterns
-
-3. **[modules.md](./modules.md)** - Module Documentation
-   - Backend modules (controllers, services, models, routes)
-   - Frontend modules (pages, components, services, context)
-   - Module responsibilities and relationships
-   - Key integration points
-
-### Layer-Specific Documentation
-
-4. **[frontend-flow.md](./frontend-flow.md)** - Frontend Deep Dive
-   - Component architecture
-   - Routing structure
-   - State management (Context, TanStack Query)
-   - Data fetching patterns
-   - Form handling
-   - Styling with Styled Components
-   - Performance optimization
-
-5. **[backend-flow.md](./backend-flow.md)** - Backend Deep Dive
-   - Request lifecycle
-   - Layer breakdown (routes, middleware, controllers, services, models)
-   - Authentication and authorization
-   - Database operations
-   - Error handling
-   - Validation patterns
-   - Security practices
-
-6. **[database-schema.md](./database-schema.md)** - Database Design
-   - Collection schemas
-   - Relationships and references
-   - Indexes and constraints
-   - Data integrity patterns
-   - Query patterns
-   - Performance considerations
-
-### Planning & Enhancements
-
-7. **[improvements.md](./improvements.md)** - Future Enhancements
-   - High priority improvements
-   - Medium priority features
-   - Technical debt
-   - Architecture improvements
-   - Implementation roadmap
+Every document below owns exactly one subject and cross-references rather than repeats.
 
 ---
 
-## 🎯 Quick Navigation
+## Layout
 
-### For New Developers
-Start here to understand the project:
-1. Read [architecture.md](./architecture.md) for the big picture
-2. Read [modules.md](./modules.md) to understand code organization
-3. Read [working-flow.md](./working-flow.md) to see how features work
+```
+docs/
+├── guides/          "I need to do something"
+├── reference/       "I need to look something up"
+├── architecture/    "why is it built this way"
+├── operations/      "it's running / it broke"
+├── product/         what it does, what's planned
+└── security/        identity, permissions, findings
+```
 
-### For Frontend Developers
-1. [frontend-flow.md](./frontend-flow.md) - Component patterns and state management
-2. [modules.md](./modules.md) - Frontend module structure
-3. [working-flow.md](./working-flow.md) - User interaction flows
-
-### For Backend Developers
-1. [backend-flow.md](./backend-flow.md) - API architecture and patterns
-2. [database-schema.md](./database-schema.md) - Data models and relationships
-3. [modules.md](./modules.md) - Backend module structure
-
-### For Project Planning
-1. [improvements.md](./improvements.md) - Feature roadmap
-2. [architecture.md](./architecture.md) - Scalability considerations
-3. [database-schema.md](./database-schema.md) - Schema evolution
+How this structure is chosen and when to grow it:
+[documentation-guide.md](documentation-guide.md).
 
 ---
 
-## 🔍 Documentation Philosophy
+## Index
 
-This documentation follows these principles:
+### guides/ — how to do things
 
-1. **Practical over Theoretical** - Real code examples, not abstract concepts
-2. **Specific over Generic** - Actual implementation details, not boilerplate
-3. **Visual over Text** - Diagrams and flow charts where helpful
-4. **Honest over Perfect** - Acknowledges limitations and areas for improvement
+| Document | Contents |
+|----------|----------|
+| [getting-started.md](guides/getting-started.md) | Prerequisites, install, run, seed, verify |
+| [development.md](guides/development.md) | Where files go, how to write them, how they are reviewed |
+| [code-quality.md](guides/code-quality.md) | ESLint, Prettier, the TypeScript position, dependency health |
+| [testing.md](guides/testing.md) | Strategy, tooling and conventions for every level |
 
----
+### reference/ — look things up
 
-## 📖 How to Use This Documentation
+| Document | Contents |
+|----------|----------|
+| [api.md](reference/api.md) | Complete endpoint catalogue and API design rules |
+| [configuration.md](reference/configuration.md) | Complete environment variable reference |
+| [database.md](reference/database.md) | Collections, relationships, indexes, integrity |
+| [design-system.md](reference/design-system.md) | Tokens, themes, primitives, layout, accessibility |
 
-### Learning the Project
-Read in this order:
-1. architecture.md (30 min)
-2. modules.md (45 min)
-3. working-flow.md (45 min)
-4. Layer-specific docs as needed (30 min each)
+### architecture/ — why it is built this way
 
-### Reviewing Architecture
-1. Skim architecture.md for key decisions
-2. Review improvements.md for future roadmap items
+| Document | Contents |
+|----------|----------|
+| [overview.md](architecture/overview.md) | System shape, annotated tree, dependency rules |
+| [frontend.md](architecture/frontend.md) | Providers, routing, state ownership, data flow |
+| [backend.md](architecture/backend.md) | Request lifecycle, layering, error handling |
 
-### Before Making Changes
-1. Check modules.md to understand affected areas
-2. Review working-flow.md for related flows
-3. Check improvements.md for planned changes
-4. Update documentation after changes
+### operations/ — running it
 
-### Onboarding New Team Members
-Day 1: architecture.md + modules.md  
-Day 2: working-flow.md + layer-specific docs  
-Day 3: Code walkthrough with documentation  
-Day 4: Small feature implementation
+| Document | Contents |
+|----------|----------|
+| [deployment.md](operations/deployment.md) | Vercel topology, release, rollback, CI/CD |
+| [runbook.md](operations/runbook.md) | Monitoring, logging, troubleshooting |
 
----
+### product/ — what it does
 
-## 🛠️ Maintaining This Documentation
+| Document | Contents |
+|----------|----------|
+| [features.md](product/features.md) | Capability catalogue with per-feature status |
+| [user-flows.md](product/user-flows.md) | Step-by-step journeys, including failure branches |
+| [roadmap.md](product/roadmap.md) | Defect and gap backlog (`BUG-xx`, `GAP-xx`), phased plan |
 
-### When to Update
+### security/
 
-**Always update when:**
-- Adding new features
-- Changing architecture
-- Modifying data models
-- Fixing significant bugs
-- Making technical decisions
-
-**Update these files:**
-- New feature → working-flow.md, modules.md
-- Architecture change → architecture.md
-- New model → database-schema.md
-- New pattern → layer-specific docs
-
-### Documentation Standards
-
-- Use clear, concise language
-- Include code examples
-- Add diagrams for complex flows
-- Mark assumptions clearly
-- Keep examples up-to-date
-- Link between related sections
+| Document | Contents |
+|----------|----------|
+| [auth.md](security/auth.md) | Token lifecycle, roles, permission matrix |
+| [checklist.md](security/checklist.md) | Findings (`SEC-xx`), hardening and review checklists |
 
 ---
 
-## 📝 Contributing to Documentation
+## Single source of truth
 
-If you find errors or want to improve documentation:
+Each subject has one owning document. To write about one of these, edit the owner and link to
+it — do not restate it.
 
-1. Check if information is outdated
-2. Verify against actual code
-3. Update relevant sections
-4. Add examples if helpful
-5. Keep consistent formatting
-6. Update this index if adding new files
+| Subject | Owner |
+|---------|-------|
+| Feature catalogue and status | [product/features.md](product/features.md) |
+| Product journeys | [product/user-flows.md](product/user-flows.md) |
+| Defect and gap backlog | [product/roadmap.md](product/roadmap.md) |
+| Repository tree and dependency rules | [architecture/overview.md](architecture/overview.md) |
+| Data model and indexes | [reference/database.md](reference/database.md) |
+| Endpoint reference | [reference/api.md](reference/api.md) |
+| Design tokens and UI rules | [reference/design-system.md](reference/design-system.md) |
+| File placement and code conventions | [guides/development.md](guides/development.md) |
+| Install and run instructions | [guides/getting-started.md](guides/getting-started.md) |
+| Environment variables | [reference/configuration.md](reference/configuration.md) |
+| Deployment and CI | [operations/deployment.md](operations/deployment.md) |
+| Token lifecycle and permissions | [security/auth.md](security/auth.md) |
+| Security findings | [security/checklist.md](security/checklist.md) |
 
----
+## Issue identifiers
 
-## 🎓 Additional Resources
+Findings carry stable IDs so documents reference them precisely instead of duplicating the
+description. Use them in commit messages and pull request titles.
 
-### External Documentation
-- [React Documentation](https://react.dev/)
-- [Express.js Guide](https://expressjs.com/)
-- [MongoDB Manual](https://docs.mongodb.com/)
-- [Mongoose Docs](https://mongoosejs.com/docs/)
-- [TanStack Query](https://tanstack.com/query/latest)
-- [Styled Components](https://styled-components.com/)
-
-### Related Files in Project
-- `README.md` - Project overview and setup
-- `backend/package.json` - Backend dependencies
-- `client/package.json` - Frontend dependencies
-- `.env.example` - Environment variables
-
----
-
-## 💡 Tips for Using This Documentation
-
-1. **Don't read everything at once** - Use as reference
-2. **Start with architecture** - Understand the big picture first
-3. **Follow the flows** - Trace actual user actions through code
-4. **Use search** - Find specific topics quickly
-5. **Keep it open** - Reference while coding
-6. **Update as you learn** - Add notes and examples
+| Prefix | Meaning | Owner |
+|--------|---------|-------|
+| `BUG-xx` | Implemented behaviour is incorrect | [product/roadmap.md](product/roadmap.md) |
+| `GAP-xx` | Capability is absent | [product/roadmap.md](product/roadmap.md) |
+| `SEC-xx` | Security weakness | [security/checklist.md](security/checklist.md) |
 
 ---
 
-## 🚀 Next Steps
+## Current state
 
-After reading the documentation:
+An end-to-end audit in August 2026 found 18 functional defects, 18 capability gaps and 12
+security findings. Remediation closed **14 defects and 8 security findings**, each verified
+against a running server.
 
-1. **Run the project locally** - See it in action
-2. **Trace a flow** - Follow a user action through the code
-3. **Make a small change** - Add a feature or fix a bug
-4. **Update documentation** - Document what you learned
-5. **Share knowledge** - Help others understand the project
+| Area | Status |
+|------|--------|
+| Core journeys — publish, read, edit, engage, configure | ✅ Working |
+| Critical and High security findings | ✅ 6 of 8 closed |
+| Database indexes | ✅ 13 across 8 collections |
+| Health endpoints, security headers, rate limiting | ✅ In place |
+| **Automated tests** | ❌ **None — the largest remaining risk** |
+| **CI pipeline** | ❌ **None** |
+| Avatar upload, view deduplication, session revocation | ❌ Open |
+
+Read [product/roadmap.md](product/roadmap.md) and
+[security/checklist.md](security/checklist.md) before deploying. Phase 2 — tests and CI — is
+the next work, and nothing else should ship before it.
 
 ---
 
-## 📞 Questions?
+## Reading paths
 
-If something is unclear:
-1. Check if it's documented elsewhere
-2. Look at the actual code
-3. Ask the team
-4. Update documentation with the answer
+**New contributor** → [getting started](guides/getting-started.md) →
+[architecture overview](architecture/overview.md) →
+[development](guides/development.md)
+
+**Working on the API** → [backend](architecture/backend.md) →
+[api](reference/api.md) → [database](reference/database.md)
+
+**Working on the UI** → [frontend](architecture/frontend.md) →
+[design system](reference/design-system.md)
+
+**Shipping a release** → [configuration](reference/configuration.md) →
+[deployment](operations/deployment.md) → [security checklist](security/checklist.md)
+
+**Triaging production** → [runbook](operations/runbook.md)
+
+**Deciding what to work on** → [roadmap](product/roadmap.md)
 
 ---
 
-**Last Updated:** March 2026  
-**Maintained By:** Project Team  
-**Version:** 1.0
+## Conventions
 
-Happy coding! 🎉
+- Every document opens with a **Scope** line stating what it owns and excludes.
+- Statements describe the code as it exists today. Unbuilt work is labelled and carries a
+  `GAP-xx` reference.
+- Code paths are relative to the repository root (`backend/index.js`).
+- Endpoints omit the mount prefix; see
+  [reference/api.md](reference/api.md#base-url).
+- When behaviour changes, update the owning document in the same pull request.
