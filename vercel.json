@@ -19,15 +19,11 @@
       "dest": "backend/index.js"
     },
     {
-      "src": "/uploads/(.*)",
-      "dest": "backend/uploads/$1"
-    },
-    {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "client/$1"
+      "dest": "/index.html"
     }
   ]
 }
