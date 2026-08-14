@@ -41,8 +41,25 @@ exports.postUserReplyComments = async (req, res) => {
     const userId = req.user ? req.user.id || req.user._id || req.user : null;
     const { repliedCommentId, message } = req.body;
 
+    if (!repliedCommentId || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'repliedCommentId and message are required',
+      });
+    }
+
+    const parent = await Comment.findById(repliedCommentId);
+    if (!parent) {
+      return res.status(404).json({
+        success: false,
+        message: 'Comment not found',
+      });
+    }
+
+    // Carry the parent's post onto the reply, otherwise every post-scoped query misses it.
     const comment = new Comment({
       user: userId,
+      post: parent.post,
       message: message,
     });
 
@@ -53,9 +70,10 @@ exports.postUserReplyComments = async (req, res) => {
       $inc: { replyCount: 1 },
     });
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       message: 'replied succesfully',
+      comment,
     });
   } catch (error) {
     res.status(500).json({
