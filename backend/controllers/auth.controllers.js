@@ -4,6 +4,22 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 
+// Refresh tokens are signed with their own secret so that a refresh token can never be
+// presented as an access token. The `type` claim makes the same intent explicit in the
+// payload and is checked again on verification.
+const refreshSecret = () => process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
+
+const issueTokens = (user) => ({
+  accessToken: jwt.sign(
+    { user: user.id, roles: user.roles, type: 'access' },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' },
+  ),
+  refreshToken: jwt.sign({ user: user.id, roles: user.roles, type: 'refresh' }, refreshSecret(), {
+    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+  }),
+});
+
 exports.signUp = async (req, res) => {
   const errors = validationResult(req);
 
@@ -61,6 +77,18 @@ exports.signUp = async (req, res) => {
       message: 'User Registered Succesfully',
     });
   } catch (error) {
+    // A duplicate key here means two concurrent signups raced past the findOne check;
+    // the unique indexes on email and username are the real guard.
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern ?? {})[0] === 'username' ? 'Username' : 'Email';
+      return res.status(409).json({
+        success: false,
+        message: `${field} already exists`,
+        error: 'UserExists',
+      });
+    }
+
+    console.error('[signUp]', error);
     res.status(500).json({
       success: false,
       message: 'An error occurred',
@@ -114,18 +142,7 @@ exports.signIn = async (req, res) => {
       roles: user.roles,
     };
 
-    // Access & Refresh token expiration
-    const accessExpiresIn = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
-    const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
-
-    // Access token
-    const accessToken = jwt.sign({ user: user.id, roles: user.roles }, process.env.JWT_SECRET, {
-      expiresIn: accessExpiresIn,
-    });
-    // Refresh token
-    const refreshToken = jwt.sign({ user: user.id, roles: user.roles }, process.env.JWT_SECRET, {
-      expiresIn: refreshExpiresIn,
-    });
+    const { accessToken, refreshToken } = issueTokens(user);
 
     // Sending payload to frontend
     res.status(200).json({
@@ -138,6 +155,7 @@ exports.signIn = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('[signIn]', error);
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -158,30 +176,34 @@ exports.refreshToken = async (req, res) => {
   }
 
   try {
-    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decode) => {
-      if (err) {
-        res.status(401).json({
-          success: false,
-          message: 'Invalid or expired refresh token',
-        });
-      } else {
-        const accessToken = jwt.sign(
-          { user: decode.user, roles: decode.roles },
-          process.env.JWT_SECRET,
-          {
-            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
-          },
-        );
-        res.status(200).json({
-          success: true,
-          message: 'Access token generated succesfully',
-          data: {
-            accessToken,
-          },
-        });
-      }
+    const decoded = jwt.verify(refreshToken, refreshSecret());
+
+    // Reject an access token presented here, mirroring the check in authenticateUser.
+    if (decoded.type && decoded.type !== 'refresh') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token type',
+      });
+    }
+
+    const accessToken = jwt.sign(
+      { user: decoded.user, roles: decoded.roles, type: 'access' },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' },
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Access token generated succesfully',
+      data: { accessToken },
     });
   } catch (error) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired refresh token',
+      });
+    }
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
