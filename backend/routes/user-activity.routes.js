@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const UserActivityController = require('../controllers/user-activity.controllers');
 const AuthUser = require('../middlewares/authenticateUser');
+const authorizeSelfOrAdmin = require('../middlewares/authorizeSelfOrAdmin');
 
 // Get all user activity (admin only)
 router.get(
@@ -11,11 +12,21 @@ router.get(
   UserActivityController.getAllUserActivity,
 );
 
-// Get activity for a specific user
-router.get('/user/:userId', AuthUser.authenticateUser, UserActivityController.getUserActivity);
+// Get activity for a specific user — readable only by that user or an administrator
+router.get(
+  '/user/:userId',
+  AuthUser.authenticateUser,
+  authorizeSelfOrAdmin('userId'),
+  UserActivityController.getUserActivity,
+);
 
-// Get timeline for a specific user
-router.get('/timeline/:userId', AuthUser.authenticateUser, UserActivityController.getUserTimeline);
+// Get timeline for a specific user — same scoping
+router.get(
+  '/timeline/:userId',
+  AuthUser.authenticateUser,
+  authorizeSelfOrAdmin('userId'),
+  UserActivityController.getUserTimeline,
+);
 
 // Get moderation log (admin only)
 router.get(

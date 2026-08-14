@@ -1,6 +1,5 @@
 const Category = require('../models/category.model');
 const Post = require('../models/post.model');
-// const { createCategory } = require('../services/categoryServices');
 
 exports.getCategories = async (req, res) => {
   try {
@@ -21,50 +20,70 @@ exports.getCategories = async (req, res) => {
 };
 
 exports.postCategoryCollection = async (req, res) => {
-  // console.log(req)
   try {
     const { categories, postId } = req.body;
 
-    categories.map(async (cat) => {
-      console.log(cat);
+    if (!Array.isArray(categories) || !postId) {
+      return res.status(400).json({
+        success: false,
+        message: 'categories (array) and postId are required',
+      });
+    }
 
-      const category = await Category.findOne({ name: cat });
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
 
-      if (category && !category.posts.includes(postId)) {
-        category.posts.push(postId);
-      }
-      await category.save();
+    // Only the author (or an administrator) may re-categorise a post.
+    const userId = req.user.id;
+    const isOwner = post.user && post.user.toString() === userId.toString();
+    if (!isOwner && !req.user.roles?.includes('admin')) {
+      return res.status(403).json({ success: false, message: 'Unauthorized to modify this post' });
+    }
 
-      const post = await Post.findById(postId);
+    const found = await Category.find({ name: { $in: categories } });
+    const foundNames = found.map((cat) => cat.name);
+    const unknown = categories.filter((name) => !foundNames.includes(name));
 
-      if (post && !post.categories.includes(category._id)) {
-        post.categories.push(category._id);
-      }
-      await post.save();
-    });
+    const categoryIds = found.map((cat) => cat._id);
+
+    // Await both writes so the response reflects work that actually completed.
+    await Promise.all([
+      Category.updateMany({ _id: { $in: categoryIds } }, { $addToSet: { posts: postId } }),
+      Post.updateOne({ _id: postId }, { $addToSet: { categories: { $each: categoryIds } } }),
+    ]);
 
     return res.status(200).json({
       success: true,
-      message: 'Category created succesfully',
-      // data : newCategory
+      message: 'Categories attached successfully',
+      data: { attached: foundNames, unknown },
     });
   } catch (error) {
+    console.error('[postCategoryCollection]', error);
     return res.status(500).json({
       success: false,
       message: 'An error occurred',
-      error: error.message,
     });
   }
 };
 
 exports.updateCategoryCollection = async (req, res) => {
-  // console.log(req.body);
-  // console.log(req.params);
   try {
     const { selectedCategories, removedCategories } = req.body;
     const post_id = req.params.id;
 
     const post = await Post.findById(post_id).populate('categories');
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const userId = req.user.id;
+    const isOwner = post.user && post.user.toString() === userId.toString();
+    if (!isOwner && !req.user.roles?.includes('admin')) {
+      return res.status(403).json({ success: false, message: 'Unauthorized to modify this post' });
+    }
 
     const categoriesToAdd = await Category.find({ name: { $in: selectedCategories } });
     const categoriesToRemove = await Category.find({ name: { $in: removedCategories } });
@@ -125,25 +144,32 @@ exports.updateCategoryCollection = async (req, res) => {
 };
 
 exports.postCats = async (req, res) => {
-  // console.log(req.body);
   try {
     const { category } = req.body;
 
-    const cat = new Category({
-      name: category,
-    });
-    await cat.save();
+    if (!category || !String(category).trim()) {
+      return res.status(400).json({ success: false, message: 'Category name is required' });
+    }
 
-    res.status(200).json({
+    const name = String(category).trim();
+
+    const existing = await Category.findOne({ name });
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'Category already exists' });
+    }
+
+    const cat = await Category.create({ name });
+
+    res.status(201).json({
       success: true,
       message: 'Category created',
       data: cat,
     });
   } catch (error) {
-    console.log(error);
+    console.error('[postCats]', error);
     res.status(500).json({
       success: false,
-      error: `${error.message || error.response}`,
+      message: 'An error occurred while creating the category',
     });
   }
 };
