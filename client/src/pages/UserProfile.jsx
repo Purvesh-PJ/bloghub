@@ -28,10 +28,10 @@ export function UserProfile() {
   const queryClient = useQueryClient();
   const [isFollowing, setIsFollowing] = useState(false);
 
-  // Get all posts and filter by user
-  const { data: allPosts, isLoading: postsLoading } = useQuery({
+  // Get published posts and filter by user
+  const { data: postsResponse, isLoading: postsLoading } = useQuery({
     queryKey: ['posts'],
-    queryFn: postService.getPosts,
+    queryFn: () => postService.getPosts(),
   });
 
   // Check if following
@@ -71,9 +71,8 @@ export function UserProfile() {
     return <Loading text="Loading profile..." />;
   }
 
-  // Filter posts by this user
-  const userPosts =
-    allPosts?.filter((post) => post.user?._id === userId && post.visibility === 'public') || [];
+  // The endpoint already returns only published posts.
+  const userPosts = (postsResponse?.data || []).filter((post) => post.user?._id === userId);
 
   const totalLikes = userPosts.reduce((acc, p) => acc + (p.likes?.length || 0), 0);
   const authorName = userPosts[0]?.user?.username || 'User';

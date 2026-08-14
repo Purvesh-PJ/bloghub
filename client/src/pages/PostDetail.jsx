@@ -470,7 +470,14 @@ export function PostDetail() {
 
   useEffect(() => {
     if (data?.data?.likes && user?.user_id) {
-      setLiked(data.data.likes.some((like) => like.user === user.user_id || like === user.user_id));
+      // likes are populated with their user reference; fall back to a bare id in case the
+      // payload is not populated.
+      setLiked(
+        data.data.likes.some((like) => {
+          const likeUserId = like?.user ?? like;
+          return String(likeUserId) === String(user.user_id);
+        })
+      );
     }
   }, [data, user]);
 
@@ -516,9 +523,9 @@ export function PostDetail() {
         <ErrorPage>
           <h2>Post not found</h2>
           <p>The post you're looking for doesn't exist or has been removed.</p>
-          <SubmitBtn as={Link} to="/">
+          <Button as={Link} to="/">
             Back to Home
-          </SubmitBtn>
+          </Button>
         </ErrorPage>
       </PageWrapper>
     );

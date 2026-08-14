@@ -8,9 +8,10 @@ import { analyticsService } from '../../services/analyticsService';
 import { Loading } from '../../components/ui';
 
 export function AdminDashboard() {
-  const { data: posts, isLoading: postsLoading } = useQuery({
+  // Moderation view — includes drafts and private posts, unlike the public ['posts'] key.
+  const { data: postsResponse, isLoading: postsLoading } = useQuery({
     queryKey: ['allPosts'],
-    queryFn: postService.getPosts,
+    queryFn: () => postService.getAllPosts({ limit: 50 }),
   });
 
   const { data: adminAnalytics } = useQuery({
@@ -21,11 +22,13 @@ export function AdminDashboard() {
 
   if (postsLoading) return <Loading text="Loading..." />;
 
-  const totalPosts = posts?.length || 0;
-  const publicPosts = posts?.filter((p) => p.visibility === 'public').length || 0;
-  const draftPosts = posts?.filter((p) => p.visibility === 'draft').length || 0;
-  const totalLikes = posts?.reduce((acc, p) => acc + (p.likes?.length || 0), 0) || 0;
-  const totalComments = posts?.reduce((acc, p) => acc + (p.comments?.length || 0), 0) || 0;
+  const posts = postsResponse?.data || [];
+
+  const totalPosts = postsResponse?.pagination?.total ?? posts.length;
+  const publicPosts = posts.filter((p) => p.visibility === 'public').length;
+  const draftPosts = posts.filter((p) => p.visibility === 'draft').length;
+  const totalLikes = posts.reduce((acc, p) => acc + (p.likes?.length || 0), 0);
+  const totalComments = posts.reduce((acc, p) => acc + (p.comments?.length || 0), 0);
 
   const stats = [
     { label: 'Total Posts', value: totalPosts, icon: FileText },
@@ -36,7 +39,7 @@ export function AdminDashboard() {
     { label: 'Users', value: adminAnalytics?.totalUsers || '-', icon: Users },
   ];
 
-  const recentPosts = posts?.slice(0, 5) || [];
+  const recentPosts = posts.slice(0, 5);
 
   return (
     <Box>

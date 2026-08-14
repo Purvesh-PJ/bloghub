@@ -1,8 +1,16 @@
 import api from '../config/api';
 
 export const postService = {
-  getPosts: async () => {
-    const response = await api.get('/posts');
+  // Returns the envelope { success, message, data, pagination }.
+  getPosts: async (params = {}) => {
+    const response = await api.get('/posts', { params });
+    return response.data;
+  },
+
+  // Moderation view: includes drafts and private posts. Requires an admin token; the
+  // server ignores the flag for anyone else.
+  getAllPosts: async (params = {}) => {
+    const response = await api.get('/posts', { params: { ...params, all: 'true' } });
     return response.data;
   },
 

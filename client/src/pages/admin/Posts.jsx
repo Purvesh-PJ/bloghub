@@ -34,9 +34,10 @@ export function AdminPosts() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  const { data: posts, isLoading } = useQuery({
+  // Moderation view — includes drafts and private posts, unlike the public ['posts'] key.
+  const { data: postsResponse, isLoading } = useQuery({
     queryKey: ['allPosts'],
-    queryFn: postService.getPosts,
+    queryFn: () => postService.getAllPosts({ limit: 50 }),
   });
 
   const deleteMutation = useMutation({
@@ -62,8 +63,10 @@ export function AdminPosts() {
     }
   };
 
+  const posts = postsResponse?.data || [];
+
   // Filter posts
-  let filteredPosts = posts || [];
+  let filteredPosts = posts;
 
   if (searchQuery) {
     filteredPosts = filteredPosts.filter(
