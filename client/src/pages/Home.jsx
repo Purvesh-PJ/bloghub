@@ -735,9 +735,9 @@ export function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const { data: posts, isLoading } = useQuery({
+  const { data: postsResponse, isLoading } = useQuery({
     queryKey: ['posts'],
-    queryFn: postService.getPosts,
+    queryFn: () => postService.getPosts(),
   });
 
   const { data: categoriesData } = useQuery({
@@ -754,7 +754,11 @@ export function Home() {
   }, []);
 
   const categories = categoriesData?.data || [];
-  let publicPosts = posts?.filter((post) => post.visibility === 'public') || [];
+
+  // The API already restricts this endpoint to published posts, so no visibility filter
+  // is needed here.
+  const posts = postsResponse?.data || [];
+  let publicPosts = posts;
 
   if (selectedCategory !== 'all') {
     publicPosts = publicPosts.filter((post) =>
@@ -762,7 +766,7 @@ export function Home() {
     );
   }
 
-  const trendingPosts = [...(posts?.filter((p) => p.visibility === 'public') || [])]
+  const trendingPosts = [...posts]
     .sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0))
     .slice(0, 5);
 
