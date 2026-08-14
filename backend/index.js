@@ -1,11 +1,20 @@
 const express = require('express');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
+// Validate configuration before anything else, so a misconfigured deployment fails at
+// boot rather than on a user's first request.
+const { assertEnv } = require('./config/env');
+assertEnv();
+
 const app = express();
 
 // IMPORT DATABASE CONNECTION
 const { connectDB } = require('./config/db');
-connectDB();
+// The test harness owns the connection when running under Jest.
+if (process.env.NODE_ENV !== 'test') {
+  connectDB();
+}
 
 const errorHandler = require('./middlewares/errorHandler'); // Import error handling middleware
 
@@ -26,14 +35,66 @@ const settingsRoutes = require('./routes/settings.routes');
 const logger = require('./middlewares/logger'); // Import logging middleware
 
 const cors = require('cors');
-const clientUrl = process.env.CLIENT_URL || '*';
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
+const clientUrl = process.env.CLIENT_URL;
+
 app.use(logger); // Use the logging middleware
-app.use(cors({ origin: clientUrl, credentials: true })); // for handling Cross-Origin Resource Sharing
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(helmet()); // Baseline security headers
+
+// Credentialed CORS cannot use a wildcard origin. Authentication is bearer-token based, so
+// when no CLIENT_URL is configured (development only — production requires it) fall back to
+// an open origin without credentials rather than an invalid combination.
+app.use(clientUrl ? cors({ origin: clientUrl, credentials: true }) : cors({ origin: '*' }));
+
+// Bound request bodies so a single request cannot exhaust memory.
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.json({ limit: '1mb' }));
+
+// Rate limits. Note: the default store is per-instance, so on a serverless platform these
+// are approximate across cold starts. A shared store would make them exact.
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests, please try again later' },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true, // only failed attempts count towards the limit
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many attempts, please try again later' },
+});
+
+// HEALTH — mounted directly on the app so monitoring probes bypass the rate limiter.
+// Deliberately reveals nothing beyond liveness and readiness.
+const mongoose = require('mongoose');
+
+app.get(['/health', '/api/health'], (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
+
+app.get(['/ready', '/api/ready'], async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ status: 'unavailable' });
+  }
+  try {
+    await mongoose.connection.db.admin().ping();
+    return res.status(200).json({ status: 'ready' });
+  } catch {
+    return res.status(503).json({ status: 'unavailable' });
+  }
+});
 
 // ROUTES
 const router = express.Router();
+router.use(generalLimiter);
+router.use('/auth', authLimiter);
 router.use('/posts', postRoutes);
 router.use('/users', userRoutes);
 router.use('/categories', categoryRoutes);
