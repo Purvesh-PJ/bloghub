@@ -1,10 +1,13 @@
 const Post = require('../models/post.model');
 const User = require('../models/user.model');
 
-exports.createPost = async (userId, postData) => {
-  // console.log(userId);
-  // console.log(postData);
+const VISIBILITIES = ['draft', 'private', 'public'];
 
+// Falls back to 'draft' for anything the client did not send or that is not a known value,
+// so an unexpected payload can never accidentally publish a post.
+const normalizeVisibility = (value) => (VISIBILITIES.includes(value) ? value : 'draft');
+
+exports.createPost = async (userId, postData) => {
   if (!userId || !postData) {
     throw new Error('Something missing to create new post');
   }
@@ -17,6 +20,7 @@ exports.createPost = async (userId, postData) => {
       title: postData.title,
       slug: postData.slug,
       content: postData.content,
+      visibility: normalizeVisibility(postData.visibility),
     });
 
     await newPost.save();
@@ -41,24 +45,27 @@ exports.createPost = async (userId, postData) => {
 };
 
 exports.updatePost = async (post, postId) => {
-  const { imageURL, title, slug, content } = post;
+  const { imageURL, title, slug, content, visibility } = post;
 
-  if (!imageURL || !title || !slug || !content) {
-    throw new Error('All fields are required');
+  // imageURL is an optional cover image, so it is deliberately not required here.
+  if (!title || !slug || !content) {
+    throw new Error('Title, slug and content are required');
   }
 
   try {
     const targetId = typeof postId === 'object' ? postId._id || postId.id : postId;
-    const updatedPost = await Post.findByIdAndUpdate(
-      targetId,
-      {
-        imageURL,
-        title,
-        slug,
-        content,
-      },
-      { new: true, runValidators: true },
-    );
+
+    const update = { imageURL: imageURL || '', title, slug, content };
+    // Only touch visibility when the caller actually sent one, so a partial update
+    // cannot silently unpublish a live post.
+    if (visibility !== undefined) {
+      update.visibility = normalizeVisibility(visibility);
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(targetId, update, {
+      new: true,
+      runValidators: true,
+    });
 
     return updatedPost;
   } catch (error) {
