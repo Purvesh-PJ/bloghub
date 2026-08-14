@@ -34,9 +34,7 @@ exports.getPageView = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const view = await View.findById(id)
-      .populate('user', 'username email')
-      .populate('post', 'title');
+    const view = await View.findById(id).populate('user', 'username').populate('post', 'title');
 
     if (!view) {
       return res.status(404).json({ error: 'Page view not found' });
@@ -55,7 +53,7 @@ exports.getPostPageViews = async (req, res) => {
     const { postId } = req.params;
 
     const views = await View.find({ post: postId })
-      .populate('user', 'username email')
+      .populate('user', 'username')
       .sort({ timestamp: -1 });
 
     res.json(views);
