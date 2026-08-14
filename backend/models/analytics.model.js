@@ -3,8 +3,9 @@ const mongoose = require('mongoose');
 const analyticsSchema = new mongoose.Schema({
   blogPost: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Blog',
+    ref: 'Post',
     required: true,
+    index: true,
   },
   totalPageViews: {
     type: Number,

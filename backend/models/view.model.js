@@ -18,4 +18,7 @@ const ViewSchema = new mongoose.Schema(
   },
 );
 
+ViewSchema.index({ post: 1, createdAt: -1 });
+ViewSchema.index({ user: 1, createdAt: -1 });
+
 module.exports = mongoose.model('View', ViewSchema);

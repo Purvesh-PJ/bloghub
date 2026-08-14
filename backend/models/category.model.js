@@ -20,4 +20,7 @@ const CategorySchema = new mongoose.Schema(
   },
 );
 
+// Categories are looked up by name, and duplicates are meaningless.
+CategorySchema.index({ name: 1 }, { unique: true });
+
 module.exports = mongoose.model('Category', CategorySchema);

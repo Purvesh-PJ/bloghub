@@ -70,4 +70,11 @@ const PostSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// Public feed: filter by visibility, sort by recency.
+PostSchema.index({ visibility: 1, createdAt: -1 });
+// Author feeds and "my posts".
+PostSchema.index({ user: 1, createdAt: -1 });
+// Slug lookups.
+PostSchema.index({ slug: 1 });
+
 module.exports = mongoose.model('Post', PostSchema);
