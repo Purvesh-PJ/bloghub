@@ -1,82 +1,186 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Avatar } from '@radix-ui/themes';
-import { LayoutDashboard, FileText, Users, FolderOpen, Settings, LogOut, Home } from 'lucide-react';
 import styled from 'styled-components';
+import {
+  LayoutDashboard,
+  FileText,
+  Users,
+  FolderOpen,
+  Settings,
+  LogOut,
+  ArrowLeft,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
+import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
+import { initial } from '../../utils/text';
 
-const navItems = [
-  { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-  { path: '/admin/posts', icon: FileText, label: 'Posts' },
-  { path: '/admin/categories', icon: FolderOpen, label: 'Categories' },
-  { path: '/admin/users', icon: Users, label: 'Users' },
-  { path: '/admin/settings', icon: Settings, label: 'Settings' },
-];
+/**
+ * Admin shell.
+ *
+ * The console is a different job from the reading side — it is a workspace, so it keeps a
+ * persistent sidebar rather than the site header. What it should not be is a different
+ * *product*, which is how it read before: it used @radix-ui/themes with no stylesheet and
+ * no provider, so the pages inside rendered essentially unstyled.
+ */
 
-const LayoutWrapper = styled.div`
+const Shell = styled.div`
   display: flex;
   min-height: 100vh;
+  background: ${({ theme }) => theme.colors.surfacePage};
 `;
 
 const Sidebar = styled.aside`
-  width: 240px;
-  background-color: ${({ theme }) => theme.colors.bgPrimary};
-  border-right: 1px solid ${({ theme }) => theme.colors.border};
+  width: ${({ theme }) => theme.layout.sidebarWidth};
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  transition:
-    background-color ${({ theme }) => theme.transitions.normal},
-    border-color ${({ theme }) => theme.transitions.normal};
+  gap: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacing.xl};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+
+  position: sticky;
+  top: 0;
+  height: 100vh;
+
+  ${media.down('md')`
+    position: static;
+    height: auto;
+    width: 100%;
+  `}
 `;
 
-const LogoSection = styled.div`
-  padding: ${({ theme }) => theme.spacing.md};
+/* Below md the shell stacks, so the sidebar becomes a bar across the top. */
+const Frame = styled.div`
+  display: flex;
+  flex: 1;
+  min-width: 0;
+
+  ${media.down('md')`flex-direction: column;`}
+`;
+
+const Brand = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  ${text('lg', 'semibold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+const Mark = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  background: ${({ theme }) => theme.colors.accentSolid};
+  color: ${({ theme }) => theme.colors.textOnAccent};
+  font-size: 15px;
+  font-weight: ${({ theme }) => theme.weights.bold};
+`;
+
+const BrandRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-const Logo = styled(Link)`
-  font-size: ${({ theme }) => theme.fontSizes.xl};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-`;
-
-const Divider = styled.hr`
-  border: none;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  margin: 0;
-`;
-
-const Navigation = styled.nav`
+const Nav = styled.nav`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xs};
-  padding: ${({ theme }) => theme.spacing.md};
   flex: 1;
+
+  ${media.down('md')`
+    flex-direction: row;
+    overflow-x: auto;
+    flex: none;
+  `}
 `;
 
 const NavItem = styled(Link)`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  font-weight: ${({ $active, theme }) =>
-    $active ? theme.fontWeights.medium : theme.fontWeights.normal};
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.textPrimary : theme.colors.textSecondary};
-  background: ${({ $active, theme }) => ($active ? theme.colors.bgTertiary : 'transparent')};
-  border-radius: ${({ theme }) => theme.radii.md};
-  transition: all ${({ theme }) => theme.transitions.fast};
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.full};
+  white-space: nowrap;
+  ${text('sm', 'medium')}
+  ${interactive}
+
+  background: ${({ theme, $active }) => ($active ? theme.colors.accentContainer : 'transparent')};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.accentText : theme.colors.textSecondary};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.bgHover};
-    color: ${({ theme }) => theme.colors.textPrimary};
+    background: ${({ theme, $active }) =>
+      $active ? theme.colors.accentContainer : theme.colors.surfaceContainer};
+    color: ${({ theme, $active }) =>
+      $active ? theme.colors.accentText : theme.colors.textPrimary};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+`;
+
+const Foot = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding-top: ${({ theme }) => theme.spacing.lg};
+  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+
+  ${media.down('md')`display: none;`}
+`;
+
+const Who = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  min-width: 0;
+`;
+
+const Portrait = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentSolid};
+  color: ${({ theme }) => theme.colors.textOnAccent};
+  ${text('sm', 'semibold')}
+`;
+
+const WhoName = styled.span`
+  ${text('sm', 'medium')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  display: block;
+`;
+
+const WhoRole = styled.span`
+  ${labelStyle('sm')}
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const SignOut = styled.button`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.full};
+  ${text('sm', 'medium')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  ${interactive}
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.dangerContainer};
+    color: ${({ theme }) => theme.colors.dangerText};
   }
 
   svg {
@@ -85,148 +189,91 @@ const NavItem = styled(Link)`
   }
 `;
 
-const NavDivider = styled(Divider)`
-  margin: ${({ theme }) => theme.spacing.md} 0;
+const Main = styled.main`
+  flex: 1;
+  min-width: 0;
+  padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing['2xl']}
+    ${({ theme }) => theme.spacing['5xl']};
+
+  ${media.down('md')`
+    padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
+  `}
 `;
 
-const UserSection = styled.div`
-  padding: ${({ theme }) => theme.spacing.md};
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-`;
-
-const UserDetails = styled.div`
+const Inner = styled.div`
+  max-width: 1100px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
+  gap: ${({ theme }) => theme.spacing['2xl']};
 `;
 
-const UserName = styled.span`
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const UserRole = styled.span`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const LogoutButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  width: 100%;
-  padding: ${({ theme }) => theme.spacing.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.error};
-  background: ${({ theme }) => theme.colors.errorBg};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.md};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.errorBorder};
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const MainContent = styled.main`
-  flex: 1;
-  background-color: ${({ theme }) => theme.colors.bgSecondary};
-  overflow: auto;
-  transition: background-color ${({ theme }) => theme.transitions.normal};
-`;
-
-const ContentWrapper = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl};
-`;
+const NAV = [
+  { path: '/admin', icon: LayoutDashboard, label: 'Overview', exact: true },
+  { path: '/admin/posts', icon: FileText, label: 'Posts' },
+  { path: '/admin/categories', icon: FolderOpen, label: 'Topics' },
+  { path: '/admin/users', icon: Users, label: 'People' },
+  { path: '/admin/settings', icon: Settings, label: 'Settings' },
+];
 
 export function AdminLayout() {
-  const location = useLocation();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const { logout, user } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
-  const isActive = (item) => {
-    if (item.exact) {
-      return location.pathname === item.path;
-    }
-    return location.pathname.startsWith(item.path);
-  };
+  const isActive = (item) => (item.exact ? pathname === item.path : pathname.startsWith(item.path));
 
   return (
-    <LayoutWrapper>
-      <Sidebar>
-        <LogoSection>
-          <Logo to="/admin">Admin</Logo>
-          <ThemeToggle />
-        </LogoSection>
+    <Shell>
+      <Frame>
+        <Sidebar>
+          <BrandRow>
+            <Brand to="/admin">
+              <Mark>B</Mark>
+              Admin
+            </Brand>
+            <ThemeToggle />
+          </BrandRow>
 
-        <Divider />
-
-        <Navigation>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item);
-            return (
-              <NavItem key={item.path} to={item.path} $active={active}>
-                <Icon />
+          <Nav>
+            {NAV.map((item) => (
+              <NavItem key={item.path} to={item.path} $active={isActive(item)}>
+                <item.icon />
                 {item.label}
               </NavItem>
-            );
-          })}
+            ))}
 
-          <NavDivider />
+            <NavItem to="/" $active={false}>
+              <ArrowLeft />
+              Back to site
+            </NavItem>
+          </Nav>
 
-          <NavItem to="/" $active={false}>
-            <Home />
-            Back to Site
-          </NavItem>
-        </Navigation>
+          <Foot>
+            <Who>
+              <Portrait>{initial(user?.username)}</Portrait>
+              <div style={{ minWidth: 0 }}>
+                <WhoName>{user?.username}</WhoName>
+                <WhoRole>Administrator</WhoRole>
+              </div>
+            </Who>
+            <SignOut
+              onClick={() => {
+                logout();
+                navigate('/');
+              }}
+            >
+              <LogOut /> Sign out
+            </SignOut>
+          </Foot>
+        </Sidebar>
 
-        <UserSection>
-          <UserInfo>
-            <Avatar
-              size="1"
-              fallback={user?.username?.[0]?.toUpperCase() || 'A'}
-              radius="full"
-              color="gray"
-            />
-            <UserDetails>
-              <UserName>{user?.username}</UserName>
-              <UserRole>Admin</UserRole>
-            </UserDetails>
-          </UserInfo>
-          <LogoutButton onClick={handleLogout}>
-            <LogOut /> Logout
-          </LogoutButton>
-        </UserSection>
-      </Sidebar>
-
-      <MainContent>
-        <ContentWrapper>
-          <Outlet />
-        </ContentWrapper>
-      </MainContent>
-    </LayoutWrapper>
+        <Main>
+          <Inner>
+            <Outlet />
+          </Inner>
+        </Main>
+      </Frame>
+    </Shell>
   );
 }

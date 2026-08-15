@@ -1,38 +1,106 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Box,
-  Flex,
-  Heading,
-  Text,
-  Card,
-  Table,
-  Button,
-  Badge,
-  AlertDialog,
-  TextField,
-  Select,
-  DropdownMenu,
-} from '@radix-ui/themes';
-import {
-  Pencil1Icon,
-  TrashIcon,
-  PlusIcon,
-  MagnifyingGlassIcon,
-  DotsHorizontalIcon,
-  EyeOpenIcon,
-} from '@radix-ui/react-icons';
+import styled from 'styled-components';
 import { formatDistanceToNow } from 'date-fns';
+import {
+  PenLine,
+  Search as SearchIcon,
+  MoreHorizontal,
+  Eye,
+  Pencil,
+  Trash2,
+  FileText,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
+
 import { postService } from '../../services/postService';
-import { Loading } from '../../components/ui';
+import { PageHeader, Section } from '../../components/layout/PageShell';
+import {
+  Button,
+  Card,
+  Input,
+  Chip,
+  Badge,
+  Modal,
+  Table,
+  Loading,
+  EmptyState,
+  DropdownMenu,
+} from '../../components/ui';
+import { text, clamp } from '../../styles/theme/mixins';
+
+/**
+ * Post moderation.
+ *
+ * Same listing as before, rebuilt on the shared primitives. The four stat cards became
+ * counts on the filter chips: they showed the same four numbers the filter row already
+ * implied, and a row of cards that only restates the control beneath it is decoration.
+ */
+
+const Toolbar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+`;
+
+/* Pushed to the end of the toolbar so the filters stay left-aligned with the table. */
+const SearchField = styled.div`
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+  margin-left: auto;
+`;
+
+const CellTitle = styled(Link)`
+  ${text('sm', 'semibold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  ${clamp(1)}
+  max-width: 320px;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.accentText};
+  }
+`;
+
+const MenuTrigger = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  color: ${({ theme }) => theme.colors.textMuted};
+  transition: background ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const TONE = { public: 'success', draft: 'warning', private: 'neutral' };
+const LABEL = { public: 'Published', draft: 'Draft', private: 'Private' };
+
+const FILTERS = [
+  { id: 'all', label: 'All' },
+  { id: 'public', label: 'Published' },
+  { id: 'draft', label: 'Drafts' },
+  { id: 'private', label: 'Private' },
+];
 
 export function AdminPosts() {
   const queryClient = useQueryClient();
-  const [deleteId, setDeleteId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const navigate = useNavigate();
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState('all');
 
   // Moderation view — includes drafts and private posts, unlike the public ['posts'] key.
   const { data: postsResponse, isLoading } = useQuery({
@@ -43,236 +111,164 @@ export function AdminPosts() {
   const deleteMutation = useMutation({
     mutationFn: postService.deletePost,
     onSuccess: () => {
-      queryClient.invalidateQueries(['allPosts']);
+      queryClient.invalidateQueries({ queryKey: ['allPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['adminAnalytics'] });
+      setPendingDelete(null);
       toast.success('Post deleted');
-      setDeleteId(null);
     },
-    onError: () => toast.error('Failed to delete post'),
+    onError: () => toast.error('Could not delete the post'),
   });
 
-  if (isLoading) return <Loading text="Loading posts..." />;
+  const posts = useMemo(() => postsResponse?.data || [], [postsResponse]);
 
-  const getVisibilityColor = (visibility) => {
-    switch (visibility) {
-      case 'public':
-        return 'green';
-      case 'private':
-        return 'orange';
-      default:
-        return 'gray';
+  const counts = useMemo(
+    () => ({
+      all: posts.length,
+      public: posts.filter((post) => post.visibility === 'public').length,
+      draft: posts.filter((post) => post.visibility === 'draft').length,
+      private: posts.filter((post) => post.visibility === 'private').length,
+    }),
+    [posts]
+  );
+
+  const visible = useMemo(() => {
+    let list = posts;
+    if (filter !== 'all') list = list.filter((post) => post.visibility === filter);
+    if (query.trim()) {
+      const needle = query.trim().toLowerCase();
+      list = list.filter(
+        (post) =>
+          post.title?.toLowerCase().includes(needle) ||
+          post.user?.username?.toLowerCase().includes(needle)
+      );
     }
-  };
+    return list;
+  }, [posts, filter, query]);
 
-  const posts = postsResponse?.data || [];
-
-  // Filter posts
-  let filteredPosts = posts;
-
-  if (searchQuery) {
-    filteredPosts = filteredPosts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.user?.username?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }
-
-  if (filterStatus !== 'all') {
-    filteredPosts = filteredPosts.filter((post) => post.visibility === filterStatus);
-  }
+  if (isLoading) return <Loading text="Loading posts…" />;
 
   return (
-    <Box>
-      <Flex justify="between" align="center" mb="6">
-        <Box>
-          <Heading size="7">Posts</Heading>
-          <Text size="2" color="gray">
-            Manage all blog posts
-          </Text>
-        </Box>
-        <Button asChild>
-          <Link to="/write">
-            <PlusIcon /> New Post
-          </Link>
-        </Button>
-      </Flex>
+    <>
+      <PageHeader
+        title="Posts"
+        subtitle={`${counts.all} loaded, including drafts and private posts.`}
+        actions={
+          <Button as={Link} to="/write">
+            <PenLine /> New post
+          </Button>
+        }
+      />
 
-      {/* Filters */}
-      <Card mb="4">
-        <Flex gap="4" p="4" align="center">
-          <Box style={{ flex: 1 }}>
-            <TextField.Root
-              placeholder="Search by title or author..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+      <Section>
+        <Toolbar>
+          {FILTERS.map((option) => (
+            <Chip
+              key={option.id}
+              selected={filter === option.id}
+              onClick={() => setFilter(option.id)}
             >
-              <TextField.Slot>
-                <MagnifyingGlassIcon height="16" width="16" />
-              </TextField.Slot>
-            </TextField.Root>
-          </Box>
-          <Select.Root value={filterStatus} onValueChange={setFilterStatus}>
-            <Select.Trigger placeholder="Filter by status" style={{ width: '150px' }} />
-            <Select.Content>
-              <Select.Item value="all">All Status</Select.Item>
-              <Select.Item value="public">Published</Select.Item>
-              <Select.Item value="draft">Draft</Select.Item>
-              <Select.Item value="private">Private</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Flex>
-      </Card>
+              {option.label}
+              {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
+            </Chip>
+          ))}
 
-      {/* Stats */}
-      <Flex gap="4" mb="4">
-        <Card style={{ flex: 1 }}>
-          <Flex direction="column" p="3">
-            <Text size="1" color="gray">
-              Total
-            </Text>
-            <Text size="5" weight="bold">
-              {posts?.length || 0}
-            </Text>
-          </Flex>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Flex direction="column" p="3">
-            <Text size="1" color="gray">
-              Published
-            </Text>
-            <Text size="5" weight="bold" color="green">
-              {posts?.filter((p) => p.visibility === 'public').length || 0}
-            </Text>
-          </Flex>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Flex direction="column" p="3">
-            <Text size="1" color="gray">
-              Drafts
-            </Text>
-            <Text size="5" weight="bold" color="orange">
-              {posts?.filter((p) => p.visibility === 'draft').length || 0}
-            </Text>
-          </Flex>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Flex direction="column" p="3">
-            <Text size="1" color="gray">
-              Private
-            </Text>
-            <Text size="5" weight="bold" color="gray">
-              {posts?.filter((p) => p.visibility === 'private').length || 0}
-            </Text>
-          </Flex>
-        </Card>
-      </Flex>
+          <SearchField>
+            <Input
+              icon={<SearchIcon />}
+              placeholder="Search title or author"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              aria-label="Search posts by title or author"
+            />
+          </SearchField>
+        </Toolbar>
 
-      {/* Posts Table */}
-      <Card>
-        {filteredPosts.length === 0 ? (
-          <Flex direction="column" align="center" py="9">
-            <Text color="gray">
-              {searchQuery || filterStatus !== 'all'
-                ? 'No posts match your filters'
-                : 'No posts yet'}
-            </Text>
-          </Flex>
+        {visible.length === 0 ? (
+          <EmptyState icon={FileText} title="Nothing here">
+            {query || filter !== 'all'
+              ? 'No posts match that filter. Try another one, or clear the search.'
+              : 'Nobody has written anything yet.'}
+          </EmptyState>
         ) : (
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Title</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Author</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Engagement</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Created</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="80px">Actions</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {filteredPosts.map((post) => (
-                <Table.Row key={post._id}>
-                  <Table.Cell>
-                    <Link to={`/post/${post._id}`}>
-                      <Text
-                        weight="medium"
-                        className="text-truncate"
-                        style={{ maxWidth: '250px', display: 'block' }}
+          <Card tone="low" radius="xl" padding="sm">
+            <Table>
+              <Table.Head>
+                <tr>
+                  <th>Title</th>
+                  <th>Author</th>
+                  <th>Status</th>
+                  <th>Engagement</th>
+                  <th>Created</th>
+                  <th aria-label="Actions" />
+                </tr>
+              </Table.Head>
+              <Table.Body>
+                {visible.map((post) => (
+                  <tr key={post._id}>
+                    <td>
+                      <CellTitle to={`/post/${post._id}`}>{post.title}</CellTitle>
+                    </td>
+                    <td>{post.user?.username || 'Unknown'}</td>
+                    <td>
+                      <Badge variant={TONE[post.visibility] || 'neutral'}>
+                        {LABEL[post.visibility] || post.visibility}
+                      </Badge>
+                    </td>
+                    <td>
+                      {post.likes?.length || 0} likes · {post.comments?.length || 0} replies
+                    </td>
+                    <td>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <DropdownMenu
+                        trigger={
+                          <MenuTrigger aria-label={`Actions for ${post.title}`}>
+                            <MoreHorizontal />
+                          </MenuTrigger>
+                        }
                       >
-                        {post.title}
-                      </Text>
-                    </Link>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Text size="2">{post.user?.username || 'Unknown'}</Text>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Badge color={getVisibilityColor(post.visibility)} size="1">
-                      {post.visibility}
-                    </Badge>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Text size="2" color="gray">
-                      {post.likes?.length || 0} likes • {post.comments?.length || 0} comments
-                    </Text>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Text size="2" color="gray">
-                      {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                    </Text>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <DropdownMenu.Root>
-                      <DropdownMenu.Trigger>
-                        <Button variant="ghost" size="1">
-                          <DotsHorizontalIcon />
-                        </Button>
-                      </DropdownMenu.Trigger>
-                      <DropdownMenu.Content>
-                        <DropdownMenu.Item asChild>
-                          <Link to={`/post/${post._id}`}>
-                            <EyeOpenIcon /> View
-                          </Link>
+                        <DropdownMenu.Item onSelect={() => navigate(`/post/${post._id}`)}>
+                          <Eye /> View
                         </DropdownMenu.Item>
-                        <DropdownMenu.Item asChild>
-                          <Link to={`/edit/${post._id}`}>
-                            <Pencil1Icon /> Edit
-                          </Link>
+                        <DropdownMenu.Item onSelect={() => navigate(`/edit/${post._id}`)}>
+                          <Pencil /> Edit
                         </DropdownMenu.Item>
                         <DropdownMenu.Separator />
-                        <DropdownMenu.Item color="red" onClick={() => setDeleteId(post._id)}>
-                          <TrashIcon /> Delete
+                        <DropdownMenu.Item $tone="danger" onSelect={() => setPendingDelete(post)}>
+                          <Trash2 /> Delete
                         </DropdownMenu.Item>
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Root>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </Table.Body>
+            </Table>
+          </Card>
         )}
-      </Card>
+      </Section>
 
-      {/* Delete Dialog */}
-      <AlertDialog.Root open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialog.Content>
-          <AlertDialog.Title>Delete Post</AlertDialog.Title>
-          <AlertDialog.Description>
-            Are you sure you want to delete this post? This action cannot be undone.
-          </AlertDialog.Description>
-          <Flex gap="3" mt="4" justify="end">
-            <AlertDialog.Cancel>
-              <Button variant="soft" color="gray">
-                Cancel
-              </Button>
-            </AlertDialog.Cancel>
-            <AlertDialog.Action>
-              <Button color="red" onClick={() => deleteMutation.mutate(deleteId)}>
-                Delete
-              </Button>
-            </AlertDialog.Action>
-          </Flex>
-        </AlertDialog.Content>
-      </AlertDialog.Root>
-    </Box>
+      <Modal
+        open={!!pendingDelete}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        title="Delete this post?"
+        description={
+          pendingDelete
+            ? `"${pendingDelete.title}" by ${pendingDelete.user?.username || 'an unknown author'} and its comments will be removed. This cannot be undone.`
+            : ''
+        }
+      >
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="secondary" onClick={() => setPendingDelete(null)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => deleteMutation.mutate(pendingDelete._id)}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+          </Button>
+        </div>
+      </Modal>
+    </>
   );
 }

@@ -1,26 +1,34 @@
-import { Box, Heading, Text, Card, Flex, Button } from '@radix-ui/themes';
+import { Link } from 'react-router-dom';
+import { Settings as SettingsIcon } from 'lucide-react';
+
+import { PageHeader, Section } from '../../components/layout/PageShell';
+import { Button, EmptyState } from '../../components/ui';
+
+/**
+ * Site settings are not built. There is no site-settings model and no endpoint behind this
+ * page, so it says so and points at the settings that do exist, rather than rendering a
+ * card captioned "coming soon" that looks like a panel someone forgot to fill in.
+ */
 
 export function AdminSettings() {
   return (
-    <Box>
-      <Heading size="7" mb="6">
-        Admin Settings
-      </Heading>
-      <Card>
-        <Flex direction="column" gap="4">
-          <Box>
-            <Text weight="medium" mb="2">
-              Site Settings
-            </Text>
-            <Text size="2" color="gray">
-              Configure site-wide settings and preferences.
-            </Text>
-          </Box>
-          <Text color="gray" size="2">
-            Admin settings functionality coming soon.
-          </Text>
-        </Flex>
-      </Card>
-    </Box>
+    <>
+      <PageHeader title="Settings" subtitle="Site-wide configuration." />
+
+      <Section>
+        <EmptyState
+          icon={SettingsIcon}
+          title="Nothing to configure yet"
+          actions={
+            <Button as={Link} to="/settings" variant="secondary">
+              Your account settings
+            </Button>
+          }
+        >
+          Site-wide settings have no model or endpoint behind them yet. When there is something an
+          administrator can actually change, it will appear here.
+        </EmptyState>
+      </Section>
+    </>
   );
 }
