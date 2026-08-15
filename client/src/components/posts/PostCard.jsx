@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { display, text, clamp, media, interactive } from '../../styles/theme/mixins';
 import { excerpt, readingTime, initial } from '../../utils/text';
 import { Chip } from '../ui/Chip';
@@ -15,9 +15,15 @@ import { Chip } from '../ui/Chip';
  * a post row.
  */
 
+/*
+  Two arrangements of the same card.
+
+  `row` is the feed: text on the left, a fixed 200px cover on the right. `stacked` is for
+  grids of cards, where a row layout squeezes the text into whatever the column has left —
+  in a 300px grid track that left the title clamped after two words.
+*/
 const Card = styled(Link)`
   display: grid;
-  grid-template-columns: 1fr auto;
   gap: ${({ theme }) => theme.spacing['2xl']};
   align-items: start;
 
@@ -30,10 +36,20 @@ const Card = styled(Link)`
     background: ${({ theme }) => theme.colors.surfaceContainerLow};
   }
 
-  ${media.down('sm')`
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing.lg};
-  `}
+  ${({ $layout }) =>
+    $layout === 'stacked'
+      ? css`
+          grid-template-columns: 1fr;
+          gap: ${({ theme }) => theme.spacing.lg};
+        `
+      : css`
+          grid-template-columns: 1fr auto;
+
+          ${media.down('sm')`
+            grid-template-columns: 1fr;
+            gap: ${({ theme }) => theme.spacing.lg};
+          `}
+        `}
 `;
 
 const Body = styled.div`
@@ -101,8 +117,6 @@ const Stat = styled.span`
 `;
 
 const Thumb = styled.div`
-  width: 200px;
-  aspect-ratio: 4 / 3;
   border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
   background: ${({ theme }) => theme.colors.surfaceContainer};
@@ -114,14 +128,26 @@ const Thumb = styled.div`
     object-fit: cover;
   }
 
-  ${media.down('sm')`
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    order: -1;
-  `}
+  ${({ $layout }) =>
+    $layout === 'stacked'
+      ? css`
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          order: -1;
+        `
+      : css`
+          width: 200px;
+          aspect-ratio: 4 / 3;
+
+          ${media.down('sm')`
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            order: -1;
+          `}
+        `}
 `;
 
-export function PostCard({ post }) {
+export function PostCard({ post, layout = 'row' }) {
   /* A cover image that 404s should collapse the column, not leave an empty grey box. */
   const [imageFailed, setImageFailed] = useState(false);
 
@@ -133,7 +159,7 @@ export function PostCard({ post }) {
   const showThumb = Boolean(post.imageURL) && !imageFailed;
 
   return (
-    <Card to={`/post/${post._id}`}>
+    <Card to={`/post/${post._id}`} $layout={layout}>
       <Body>
         <Meta>
           <AuthorDot>{initial(author)}</AuthorDot>
@@ -163,7 +189,7 @@ export function PostCard({ post }) {
       </Body>
 
       {showThumb && (
-        <Thumb>
+        <Thumb $layout={layout}>
           <img src={post.imageURL} alt="" loading="lazy" onError={() => setImageFailed(true)} />
         </Thumb>
       )}
