@@ -11,9 +11,13 @@ const AppLayout = styled.div`
   transition: background-color ${({ theme }) => theme.transitions.normal};
 `;
 
+/*
+  No padding-top on the main region. The header is position:sticky, so it still occupies
+  its own row in the flow — offsetting for its height a second time left a dead 64px band
+  under the bar on every page. The padding was a leftover from when the header was fixed.
+*/
 const MainContent = styled.main`
   flex: 1;
-  padding-top: ${({ theme }) => theme.layout.headerHeight};
 `;
 
 export function Layout() {

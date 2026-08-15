@@ -15,3 +15,4 @@ export { Tabs } from './Tabs';
 export { DropdownMenu } from './DropdownMenu';
 export { Alert } from './Alert';
 export { Loading } from './Loading';
+export { EmptyState } from './EmptyState';
