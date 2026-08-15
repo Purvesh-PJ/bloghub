@@ -59,10 +59,12 @@ const Toolbar = styled.div`
   flex-wrap: wrap;
 `;
 
+/* Pushed to the end of the toolbar so the filters stay left-aligned with the list. */
 const SearchField = styled.div`
   flex: 1;
   min-width: 200px;
-  max-width: 320px;
+  max-width: 300px;
+  margin-left: auto;
 `;
 
 const Rows = styled.div`
@@ -447,22 +449,7 @@ export function Dashboard() {
           )}
 
           <Split>
-            <Section
-              title="Your posts"
-              aside={
-                <Toolbar>
-                  <SearchField>
-                    <Input
-                      icon={<SearchIcon />}
-                      placeholder="Search titles"
-                      value={query}
-                      onChange={(event) => setQuery(event.target.value)}
-                      aria-label="Search your posts by title"
-                    />
-                  </SearchField>
-                </Toolbar>
-              }
-            >
+            <Section title="Your posts">
               <Toolbar>
                 {FILTERS.map((option) => (
                   <Chip
@@ -474,6 +461,16 @@ export function Dashboard() {
                     {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
                   </Chip>
                 ))}
+
+                <SearchField>
+                  <Input
+                    icon={<SearchIcon />}
+                    placeholder="Search titles"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    aria-label="Search your posts by title"
+                  />
+                </SearchField>
               </Toolbar>
 
               {visible.length === 0 ? (
