@@ -1,73 +1,82 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { ArrowLeft } from 'lucide-react';
+import { Compass, Home } from 'lucide-react';
 
-const PageWrapper = styled.div`
+import { PageShell } from '../components/layout/PageShell';
+import { Button } from '../components/ui';
+import { display, text } from '../styles/theme/mixins';
+
+/**
+ * 404. Says which address failed, which is the one piece of information the reader has that
+ * nobody else does — usually enough to spot a truncated or mistyped link.
+ */
+
+const Centre = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - ${({ theme }) => theme.layout.headerHeight} - 100px);
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.lg};
   text-align: center;
+  gap: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacing['5xl']} 0;
 `;
 
-const ErrorCode = styled.h1`
-  font-size: 120px;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.textMuted};
-  line-height: 1;
-  letter-spacing: ${({ theme }) => theme.letterSpacing.tighter};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    font-size: 80px;
-  }
+const Code = styled.p`
+  ${display('lg')}
+  color: ${({ theme }) => theme.colors.accentText};
 `;
 
-const Title = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes['2xl']};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+const Title = styled.h1`
+  ${display('sm')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
 `;
 
-const Description = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.md};
+const Body = styled.p`
+  ${text('lg')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  max-width: 44ch;
+`;
+
+const Path = styled.code`
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+  ${text('sm')}
   color: ${({ theme }) => theme.colors.textMuted};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  max-width: 400px;
 `;
 
-const HomeButton = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+const Actions = styled.div`
+  display: flex;
   gap: ${({ theme }) => theme.spacing.sm};
-  height: 44px;
-  padding: 0 ${({ theme }) => theme.spacing.lg};
-  background: ${({ theme }) => theme.colors.buttonPrimaryBg};
-  color: ${({ theme }) => theme.colors.buttonPrimaryText};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  border-radius: ${({ theme }) => theme.radii.md};
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.buttonPrimaryHover};
-    color: ${({ theme }) => theme.colors.buttonPrimaryText};
-  }
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: ${({ theme }) => theme.spacing.sm};
 `;
 
 export function NotFound() {
+  const { pathname } = useLocation();
+
   return (
-    <PageWrapper>
-      <ErrorCode>404</ErrorCode>
-      <Title>Page not found</Title>
-      <Description>The page you're looking for doesn't exist or has been moved.</Description>
-      <HomeButton to="/">
-        <ArrowLeft size={16} /> Back to Home
-      </HomeButton>
-    </PageWrapper>
+    <PageShell $width="narrow">
+      <Centre>
+        <Code>404</Code>
+        <Title>There is nothing at this address</Title>
+        <Body>
+          The page may have been moved or deleted, or the link that brought you here may be
+          incomplete.
+        </Body>
+        <Path>{pathname}</Path>
+        <Actions>
+          <Button as={Link} to="/">
+            <Home /> Home
+          </Button>
+          <Button as={Link} to="/search" variant="secondary">
+            <Compass /> Explore
+          </Button>
+        </Actions>
+      </Centre>
+    </PageShell>
   );
 }
