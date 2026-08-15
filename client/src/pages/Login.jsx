@@ -2,57 +2,14 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import toast from 'react-hot-toast';
+import { AtSign, Lock } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
-import { Button, Input, Card, Alert } from '../components/ui';
+import { Button, Input, Alert } from '../components/ui';
+import { display, text, media } from '../styles/theme/mixins';
 
-const PageWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - ${({ theme }) => theme.layout.headerHeight});
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
-`;
-
-const Header = styled.div`
-  text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-`;
-
-const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes['3xl']};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const Subtitle = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const Footer = styled.div`
-  text-align: center;
-  margin-top: ${({ theme }) => theme.spacing.xl};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
-
-  a {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-weight: ${({ theme }) => theme.fontWeights.medium};
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
+/* Auth pages share this shell — see AuthShell.jsx. Only the form differs. */
+import { AuthShell, AuthHeading, AuthSubheading, AuthForm, AuthFooter } from './auth/AuthShell';
 
 export function Login() {
   const [credential, setCredential] = useState('');
@@ -79,7 +36,7 @@ export function Login() {
       const response = await authService.signIn(credential, password);
       if (response.success) {
         setAuth(response.data);
-        toast.success('Welcome back!');
+        toast.success('Welcome back');
         navigate(from, { replace: true });
       } else {
         setError(response.message || 'Login failed');
@@ -92,47 +49,43 @@ export function Login() {
   };
 
   return (
-    <PageWrapper>
-      <Card style={{ maxWidth: '400px', width: '100%' }}>
-        <Header>
-          <Title>Welcome back</Title>
-          <Subtitle>Sign in to your account</Subtitle>
-        </Header>
+    <AuthShell>
+      <AuthHeading>Welcome back</AuthHeading>
+      <AuthSubheading>Sign in to keep writing.</AuthSubheading>
 
-        {error && (
-          <div style={{ marginBottom: '16px' }}>
-            <Alert variant="error">{error}</Alert>
-          </div>
-        )}
+      {error && <Alert variant="error">{error}</Alert>}
 
-        <Form onSubmit={handleSubmit}>
-          <Input
-            label="Email or Username"
-            type="text"
-            placeholder="Enter email or username"
-            value={credential}
-            onChange={(e) => setCredential(e.target.value)}
-            autoComplete="username"
-          />
+      <AuthForm onSubmit={handleSubmit}>
+        <Input
+          name="credential"
+          label="Email or username"
+          type="text"
+          placeholder="you@example.com"
+          icon={<AtSign />}
+          value={credential}
+          onChange={(e) => setCredential(e.target.value)}
+          autoComplete="username"
+        />
 
-          <Input
-            label="Password"
-            type="password"
-            placeholder="Enter password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-          />
+        <Input
+          name="password"
+          label="Password"
+          type="password"
+          placeholder="••••••••"
+          icon={<Lock />}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+        />
 
-          <Button type="submit" isLoading={loading} fullWidth size="lg">
-            Sign In
-          </Button>
-        </Form>
+        <Button type="submit" isLoading={loading} fullWidth size="lg">
+          Sign in
+        </Button>
+      </AuthForm>
 
-        <Footer>
-          Don't have an account? <Link to="/register">Sign up</Link>
-        </Footer>
-      </Card>
-    </PageWrapper>
+      <AuthFooter>
+        New to BlogHub? <Link to="/register">Create an account</Link>
+      </AuthFooter>
+    </AuthShell>
   );
 }

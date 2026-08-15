@@ -1,57 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 import toast from 'react-hot-toast';
+import { AtSign, Lock, User } from 'lucide-react';
 import { authService } from '../services/authService';
-import { Button, Input, Card, Alert } from '../components/ui';
-
-const PageWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - ${({ theme }) => theme.layout.headerHeight});
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
-`;
-
-const Header = styled.div`
-  text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-`;
-
-const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes['3xl']};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const Subtitle = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const Footer = styled.div`
-  text-align: center;
-  margin-top: ${({ theme }) => theme.spacing.xl};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
-
-  a {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-weight: ${({ theme }) => theme.fontWeights.medium};
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
+import { Button, Input, Alert } from '../components/ui';
+import { AuthShell, AuthHeading, AuthSubheading, AuthForm, AuthFooter } from './auth/AuthShell';
 
 export function Register() {
   const [username, setUsername] = useState('');
@@ -96,7 +49,7 @@ export function Register() {
     try {
       const response = await authService.signUp(username, email, password, confirmPassword);
       if (response.success) {
-        toast.success('Account created successfully!');
+        toast.success('Account created');
         navigate('/login');
       } else {
         setError(response.message || 'Registration failed');
@@ -114,65 +67,64 @@ export function Register() {
   };
 
   return (
-    <PageWrapper>
-      <Card style={{ maxWidth: '400px', width: '100%' }}>
-        <Header>
-          <Title>Create account</Title>
-          <Subtitle>Join the community today</Subtitle>
-        </Header>
+    <AuthShell>
+      <AuthHeading>Create your account</AuthHeading>
+      <AuthSubheading>Start publishing in a couple of minutes.</AuthSubheading>
 
-        {error && (
-          <div style={{ marginBottom: '16px' }}>
-            <Alert variant="error">{error}</Alert>
-          </div>
-        )}
+      {error && <Alert variant="error">{error}</Alert>}
 
-        <Form onSubmit={handleSubmit}>
-          <Input
-            label="Username"
-            type="text"
-            placeholder="Choose a username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
-          />
+      <AuthForm onSubmit={handleSubmit}>
+        <Input
+          name="username"
+          label="Username"
+          placeholder="yourname"
+          icon={<User />}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
+        />
 
-          <Input
-            label="Email"
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-          />
+        <Input
+          name="email"
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          icon={<AtSign />}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+        />
 
-          <Input
-            label="Password"
-            type="password"
-            placeholder="Min 6 characters"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="new-password"
-          />
+        <Input
+          name="password"
+          label="Password"
+          type="password"
+          placeholder="At least 6 characters"
+          icon={<Lock />}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
+        />
 
-          <Input
-            label="Confirm Password"
-            type="password"
-            placeholder="Confirm password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            autoComplete="new-password"
-          />
+        <Input
+          name="confirmPassword"
+          label="Confirm password"
+          type="password"
+          placeholder="Repeat your password"
+          icon={<Lock />}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          autoComplete="new-password"
+        />
 
-          <Button type="submit" isLoading={loading} fullWidth size="lg">
-            Create Account
-          </Button>
-        </Form>
+        <Button type="submit" isLoading={loading} fullWidth size="lg">
+          Create account
+        </Button>
+      </AuthForm>
 
-        <Footer>
-          Already have an account? <Link to="/login">Sign in</Link>
-        </Footer>
-      </Card>
-    </PageWrapper>
+      <AuthFooter>
+        Already have an account? <Link to="/login">Sign in</Link>
+      </AuthFooter>
+    </AuthShell>
   );
 }
