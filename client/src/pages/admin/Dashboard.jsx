@@ -1,223 +1,278 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Box, Flex, Heading, Text, Card, Grid, Badge, Button } from '@radix-ui/themes';
-import { FileText, Users, Eye, Heart, MessageCircle, ArrowRight } from 'lucide-react';
+import styled from 'styled-components';
 import { formatDistanceToNow } from 'date-fns';
+import { FileText, Users, FolderOpen, PenLine, ArrowRight } from 'lucide-react';
+
 import { postService } from '../../services/postService';
 import { analyticsService } from '../../services/analyticsService';
-import { Loading } from '../../components/ui';
+import { PageHeader, Section } from '../../components/layout/PageShell';
+import { ReadRateHeadline } from '../../components/stats/ReadRateBar';
+import { Button, Card, Surface, Badge, Loading, EmptyState } from '../../components/ui';
+import { text, label as labelStyle, media, clamp } from '../../styles/theme/mixins';
+
+/**
+ * Admin overview.
+ *
+ * Had the same defect as the author analytics page: it fetched getAdminAnalytics — which
+ * returns site-wide views, reads, read rate, top posts and top writers — and used exactly
+ * one field from it, totalUsers. Everything else was recomputed from the first fifty posts,
+ * so "Total Likes" silently meant "likes on the fifty most recent posts".
+ *
+ * Its "Top Posts" panel was also mislabelled: it rendered `recentPosts.slice(0, 4)`, which
+ * is the four newest, not the four best.
+ */
+
+const Stats = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: ${({ theme }) => theme.spacing.md};
+
+  ${media.down('md')`grid-template-columns: repeat(2, 1fr);`}
+`;
+
+const Stat = styled(Surface).attrs({ $tone: 'low', $radius: 'lg', $padding: 'xl' })`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const StatValue = styled.span`
+  ${text('xl', 'semibold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-variant-numeric: tabular-nums;
+`;
+
+const StatLabel = styled.span`
+  ${labelStyle('sm')}
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const Columns = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing.xl};
+  align-items: start;
+
+  ${media.down('lg')`grid-template-columns: 1fr;`}
+`;
+
+const List = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const Item = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacing.md} 0;
+
+  & + & {
+    box-shadow: inset 0 1px 0 ${({ theme }) => theme.colors.lineSubtle};
+  }
+`;
+
+const ItemTitle = styled(Link)`
+  ${text('sm', 'medium')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  ${clamp(1)}
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.accentText};
+  }
+`;
+
+const ItemMeta = styled.span`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+`;
+
+const CardTitle = styled.h2`
+  ${text('md', 'semibold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const Actions = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const format = (n) => new Intl.NumberFormat().format(n ?? 0);
 
 export function AdminDashboard() {
   // Moderation view — includes drafts and private posts, unlike the public ['posts'] key.
-  const { data: postsResponse, isLoading: postsLoading } = useQuery({
+  const { data: postsResponse, isLoading } = useQuery({
     queryKey: ['allPosts'],
     queryFn: () => postService.getAllPosts({ limit: 50 }),
   });
 
-  const { data: adminAnalytics } = useQuery({
+  const { data: analytics } = useQuery({
     queryKey: ['adminAnalytics'],
     queryFn: analyticsService.getAdminAnalytics,
     retry: false,
   });
 
-  if (postsLoading) return <Loading text="Loading..." />;
+  if (isLoading) return <Loading text="Loading the console…" />;
 
   const posts = postsResponse?.data || [];
+  const recent = posts.slice(0, 6);
 
-  const totalPosts = postsResponse?.pagination?.total ?? posts.length;
-  const publicPosts = posts.filter((p) => p.visibility === 'public').length;
-  const draftPosts = posts.filter((p) => p.visibility === 'draft').length;
-  const totalLikes = posts.reduce((acc, p) => acc + (p.likes?.length || 0), 0);
-  const totalComments = posts.reduce((acc, p) => acc + (p.comments?.length || 0), 0);
-
+  /*
+    Totals come from the analytics endpoint, which counts the whole site. The visibility
+    split is derived from the loaded page and labelled as such, because the endpoint does
+    not break its post count down by visibility.
+  */
   const stats = [
-    { label: 'Total Posts', value: totalPosts, icon: FileText },
-    { label: 'Published', value: publicPosts, icon: Eye },
-    { label: 'Drafts', value: draftPosts, icon: FileText },
-    { label: 'Total Likes', value: totalLikes, icon: Heart },
-    { label: 'Comments', value: totalComments, icon: MessageCircle },
-    { label: 'Users', value: adminAnalytics?.totalUsers || '-', icon: Users },
+    { label: 'Posts', value: format(analytics?.totalPosts ?? posts.length), icon: FileText },
+    { label: 'People', value: format(analytics?.totalUsers), icon: Users },
+    { label: 'Opened', value: format(analytics?.totalViews), icon: FileText },
+    { label: 'Finished', value: format(analytics?.totalReads), icon: FileText },
   ];
 
-  const recentPosts = posts.slice(0, 5);
+  const topPosts = (analytics?.topPosts || []).filter((entry) => entry.viewCount > 0);
+  const topUsers = (analytics?.topUsers || []).filter((entry) => entry.postCount > 0);
 
   return (
-    <Box>
-      <Flex justify="between" align="center" mb="5">
-        <Box>
-          <Heading size="5">Dashboard</Heading>
-          <Text size="2" color="gray">
-            Overview of your platform
-          </Text>
-        </Box>
-        <Button size="2" asChild>
-          <Link to="/write">New Post</Link>
-        </Button>
-      </Flex>
+    <>
+      <PageHeader
+        title="Overview"
+        subtitle="How much is being published, and how much of it is being read."
+        actions={
+          <Button as={Link} to="/write">
+            <PenLine /> New post
+          </Button>
+        }
+      />
 
-      {/* Stats */}
-      <Grid columns={{ initial: '2', sm: '3', md: '6' }} gap="3" mb="5">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.label}>
-              <Box p="3">
-                <Flex justify="between" align="start" mb="2">
-                  <Icon size={16} color="var(--text-muted)" />
-                </Flex>
-                <Text size="5" weight="bold">
-                  {stat.value}
-                </Text>
-                <Text size="1" color="gray">
-                  {stat.label}
-                </Text>
-              </Box>
-            </Card>
-          );
-        })}
-      </Grid>
+      <Stats>
+        {stats.map((stat) => (
+          <Stat key={stat.label}>
+            <StatValue>{stat.value}</StatValue>
+            <StatLabel>{stat.label}</StatLabel>
+          </Stat>
+        ))}
+      </Stats>
 
-      <Grid columns={{ initial: '1', md: '2' }} gap="4">
-        {/* Recent Posts */}
-        <Card>
-          <Box p="4">
-            <Flex justify="between" align="center" mb="3">
-              <Text size="3" weight="medium">
-                Recent Posts
-              </Text>
-              <Button variant="ghost" size="1" asChild>
-                <Link to="/admin/posts">
-                  View All <ArrowRight size={12} />
-                </Link>
-              </Button>
-            </Flex>
-            <Flex direction="column" gap="2">
-              {recentPosts.length === 0 ? (
-                <Text color="gray" size="2">
-                  No posts yet
-                </Text>
-              ) : (
-                recentPosts.map((post) => (
-                  <Flex key={post._id} justify="between" align="center" py="2">
-                    <Box style={{ flex: 1, minWidth: 0 }}>
-                      <Link to={`/post/${post._id}`}>
-                        <Text
-                          size="2"
-                          weight="medium"
-                          className="text-truncate"
-                          style={{ display: 'block' }}
-                        >
-                          {post.title}
-                        </Text>
-                      </Link>
-                      <Text size="1" color="gray">
+      <Card tone="low" padding="2xl" radius="xl">
+        <ReadRateHeadline
+          views={analytics?.totalViews}
+          reads={analytics?.totalReads}
+          rate={analytics?.readRate}
+        />
+      </Card>
+
+      <Columns>
+        <Section
+          title="Most opened"
+          aside={
+            <Button as={Link} to="/admin/posts" variant="ghost" size="sm">
+              All posts <ArrowRight />
+            </Button>
+          }
+        >
+          <Card tone="low" radius="xl">
+            {topPosts.length === 0 ? (
+              <ItemMeta>Nothing has been opened yet.</ItemMeta>
+            ) : (
+              <List>
+                {topPosts.map((entry) => (
+                  <Item key={entry._id}>
+                    <ItemTitle to={`/post/${entry._id}`}>{entry.title}</ItemTitle>
+                    <ItemMeta>{format(entry.viewCount)} opened</ItemMeta>
+                  </Item>
+                ))}
+              </List>
+            )}
+          </Card>
+        </Section>
+
+        <Section
+          title="Most published"
+          aside={
+            <Button as={Link} to="/admin/users" variant="ghost" size="sm">
+              All people <ArrowRight />
+            </Button>
+          }
+        >
+          <Card tone="low" radius="xl">
+            {topUsers.length === 0 ? (
+              <ItemMeta>Nobody has published yet.</ItemMeta>
+            ) : (
+              <List>
+                {topUsers.map((entry) => (
+                  <Item key={entry._id}>
+                    <ItemTitle to={`/user/${entry._id}`}>{entry.username}</ItemTitle>
+                    <ItemMeta>
+                      {entry.postCount} {entry.postCount === 1 ? 'story' : 'stories'}
+                    </ItemMeta>
+                  </Item>
+                ))}
+              </List>
+            )}
+          </Card>
+        </Section>
+
+        <Section title="Latest">
+          <Card tone="low" radius="xl">
+            {recent.length === 0 ? (
+              <EmptyState icon={FileText} title="Nothing published yet" tone="transparent">
+                Posts will appear here as people write them.
+              </EmptyState>
+            ) : (
+              <List>
+                {recent.map((post) => (
+                  <Item key={post._id}>
+                    <div style={{ minWidth: 0 }}>
+                      <ItemTitle to={`/post/${post._id}`}>{post.title}</ItemTitle>
+                      <ItemMeta style={{ display: 'block' }}>
+                        {post.user?.username ?? 'Unknown'} ·{' '}
                         {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                      </Text>
-                    </Box>
-                    <Badge color="gray" size="1">
+                      </ItemMeta>
+                    </div>
+                    <Badge
+                      variant={
+                        post.visibility === 'public'
+                          ? 'success'
+                          : post.visibility === 'draft'
+                            ? 'warning'
+                            : 'neutral'
+                      }
+                    >
                       {post.visibility}
                     </Badge>
-                  </Flex>
-                ))
-              )}
-            </Flex>
-          </Box>
-        </Card>
+                  </Item>
+                ))}
+              </List>
+            )}
+          </Card>
+        </Section>
 
-        {/* Quick Actions */}
-        <Card>
-          <Box p="4">
-            <Text size="3" weight="medium" mb="3">
-              Quick Actions
-            </Text>
-            <Grid columns="2" gap="2">
-              <Button variant="soft" size="2" asChild>
-                <Link to="/write">New Post</Link>
+        <Section title="Jump to">
+          <Card tone="low" radius="xl">
+            <CardTitle>Common tasks</CardTitle>
+            <Actions>
+              <Button as={Link} to="/write" variant="tonal">
+                <PenLine /> Write
               </Button>
-              <Button variant="soft" size="2" asChild>
-                <Link to="/admin/categories">Categories</Link>
+              <Button as={Link} to="/admin/categories" variant="tonal">
+                <FolderOpen /> Topics
               </Button>
-              <Button variant="soft" size="2" asChild>
-                <Link to="/admin/posts">All Posts</Link>
+              <Button as={Link} to="/admin/posts" variant="tonal">
+                <FileText /> Posts
               </Button>
-              <Button variant="soft" size="2" asChild>
-                <Link to="/admin/users">Users</Link>
+              <Button as={Link} to="/admin/users" variant="tonal">
+                <Users /> People
               </Button>
-            </Grid>
-          </Box>
-        </Card>
-
-        {/* Content Summary */}
-        <Card>
-          <Box p="4">
-            <Text size="3" weight="medium" mb="3">
-              Content Summary
-            </Text>
-            <Flex direction="column" gap="2">
-              <Flex justify="between">
-                <Text size="2" color="gray">
-                  Public Posts
-                </Text>
-                <Text size="2" weight="medium">
-                  {publicPosts}
-                </Text>
-              </Flex>
-              <Flex justify="between">
-                <Text size="2" color="gray">
-                  Draft Posts
-                </Text>
-                <Text size="2" weight="medium">
-                  {draftPosts}
-                </Text>
-              </Flex>
-              <Flex justify="between">
-                <Text size="2" color="gray">
-                  Private Posts
-                </Text>
-                <Text size="2" weight="medium">
-                  {posts?.filter((p) => p.visibility === 'private').length || 0}
-                </Text>
-              </Flex>
-              <Flex justify="between">
-                <Text size="2" color="gray">
-                  Total Engagement
-                </Text>
-                <Text size="2" weight="medium">
-                  {totalLikes + totalComments}
-                </Text>
-              </Flex>
-            </Flex>
-          </Box>
-        </Card>
-
-        {/* Performance */}
-        <Card>
-          <Box p="4">
-            <Text size="3" weight="medium" mb="3">
-              Top Posts
-            </Text>
-            <Flex direction="column" gap="2">
-              {recentPosts.slice(0, 4).map((post) => (
-                <Flex key={post._id} justify="between" align="center">
-                  <Text size="2" className="text-truncate" style={{ maxWidth: '180px' }}>
-                    {post.title}
-                  </Text>
-                  <Flex gap="2">
-                    <Flex align="center" gap="1">
-                      <Heart size={12} />
-                      <Text size="1">{post.likes?.length || 0}</Text>
-                    </Flex>
-                    <Flex align="center" gap="1">
-                      <MessageCircle size={12} />
-                      <Text size="1">{post.comments?.length || 0}</Text>
-                    </Flex>
-                  </Flex>
-                </Flex>
-              ))}
-            </Flex>
-          </Box>
-        </Card>
-      </Grid>
-    </Box>
+            </Actions>
+          </Card>
+        </Section>
+      </Columns>
+    </>
   );
 }
