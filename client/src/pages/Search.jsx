@@ -1,120 +1,235 @@
-import { useSearchParams, Link } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
+import { Search as SearchIcon, Compass } from 'lucide-react';
+
 import { searchService } from '../services/searchService';
-import { Loading } from '../components/ui';
+import { postService } from '../services/postService';
+import { categoryService } from '../services/categoryService';
+import { PageShell, PageHeader, Section } from '../components/layout/PageShell';
+import { PostCard } from '../components/posts/PostCard';
+import { topicIcon } from '../components/marketing/Topics';
+import { Input, Chip, Loading, EmptyState, Card } from '../components/ui';
+import { text, clamp, media } from '../styles/theme/mixins';
+import { excerpt } from '../utils/text';
+import { Link } from 'react-router-dom';
 
-const PageWrapper = styled.div`
-  max-width: 700px;
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
+/**
+ * Explore.
+ *
+ * The header's Explore link and its search button both pointed here, and the page had no
+ * search field on it — it only read ?q= from the URL. Arriving from either control landed
+ * you on a page that said "Enter a search term to find posts" and gave you nowhere to type
+ * one. It is now a page you can actually browse from: a field, the topic list, and recent
+ * work when you have not asked for anything specific.
+ */
+
+const Field = styled.div`
+  max-width: 520px;
 `;
 
-const Header = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+const Topics = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
 `;
 
-const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes['2xl']};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const Subtitle = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const ResultsList = styled.div`
+const Feed = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const ResultCard = styled(Link)`
-  display: block;
-  background: ${({ theme }) => theme.colors.cardBg};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.card};
+const Results = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const Result = styled(Link)`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
   padding: ${({ theme }) => theme.spacing.lg};
-  transition: all ${({ theme }) => theme.transitions.fast};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  transition: background ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    box-shadow: ${({ theme }) => theme.shadows.cardHover};
-    transform: translateY(-1px);
+    background: ${({ theme }) => theme.colors.surfaceContainer};
+  }
+
+  & + & {
+    box-shadow: inset 0 1px 0 ${({ theme }) => theme.colors.lineSubtle};
   }
 `;
 
-const ResultTitle = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
+const ResultTitle = styled.span`
+  ${text('lg', 'semibold')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  ${clamp(1)}
 `;
 
-const ResultExcerpt = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
-  line-height: ${({ theme }) => theme.lineHeights.relaxed};
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+const ResultText = styled.span`
+  ${text('sm')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  ${clamp(2)}
 `;
 
-const EmptyState = styled.div`
-  text-align: center;
-  padding: ${({ theme }) => theme.spacing.xxl};
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-size: ${({ theme }) => theme.fontSizes.md};
+const Columns = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: ${({ theme }) => theme.spacing['2xl']};
+  align-items: start;
+
+  ${media.down('lg')`grid-template-columns: 1fr;`}
 `;
 
 export function Search() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  const topic = searchParams.get('topic') || '';
 
-  const { data, isLoading } = useQuery({
+  const [draft, setDraft] = useState(query);
+
+  useEffect(() => setDraft(query), [query]);
+
+  // Debounced, so the URL and the request follow typing without a round trip per keystroke.
+  useEffect(() => {
+    if (draft === query) return undefined;
+    const timer = setTimeout(() => {
+      const next = new URLSearchParams(searchParams);
+      if (draft.trim()) next.set('q', draft.trim());
+      else next.delete('q');
+      setSearchParams(next, { replace: true });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [draft, query, searchParams, setSearchParams]);
+
+  const { data: searchData, isLoading: searching } = useQuery({
     queryKey: ['search', query],
     queryFn: () => searchService.search(query),
     enabled: Boolean(query),
   });
 
-  if (!query) {
-    return (
-      <PageWrapper>
-        <EmptyState>Enter a search term to find posts</EmptyState>
-      </PageWrapper>
+  const { data: postsData, isLoading: loadingPosts } = useQuery({
+    queryKey: ['posts'],
+    queryFn: () => postService.getPosts(),
+    enabled: !query,
+  });
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: categoryService.getCategories,
+  });
+
+  const categories = categoriesData?.data || [];
+  const results = searchData?.data || [];
+
+  const browsePosts = useMemo(() => {
+    const posts = postsData?.data || [];
+    if (!topic) return posts;
+    return posts.filter((post) =>
+      (post.categories || []).some((category) => (category?.name ?? category) === topic)
     );
-  }
+  }, [postsData, topic]);
 
-  if (isLoading) {
-    return <Loading text="Searching..." />;
-  }
-
-  const results = data?.data || [];
+  const setTopic = (name) => {
+    const next = new URLSearchParams(searchParams);
+    if (name && name !== topic) next.set('topic', name);
+    else next.delete('topic');
+    setSearchParams(next, { replace: true });
+  };
 
   return (
-    <PageWrapper>
-      <Header>
-        <Title>Search Results</Title>
-        <Subtitle>
-          {results.length} results for "{query}"
-        </Subtitle>
-      </Header>
+    <PageShell>
+      <PageHeader
+        title="Explore"
+        subtitle="Search for something specific, or browse by topic."
+        actions={
+          <Field>
+            <Input
+              icon={<SearchIcon />}
+              placeholder="Search posts"
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              aria-label="Search posts"
+            />
+          </Field>
+        }
+      />
 
-      {results.length === 0 ? (
-        <EmptyState>No posts found matching your search</EmptyState>
+      {query ? (
+        <Section
+          title={`Results for “${query}”`}
+          note={
+            searching ? undefined : `${results.length} ${results.length === 1 ? 'post' : 'posts'}`
+          }
+        >
+          {searching ? (
+            <Loading text="Searching…" />
+          ) : results.length === 0 ? (
+            <EmptyState icon={SearchIcon} title="Nothing found">
+              No post matches “{query}”. Try a shorter phrase, or browse the topics instead.
+            </EmptyState>
+          ) : (
+            <Card tone="low" radius="xl" padding="sm">
+              <Results>
+                {results.map((result) => (
+                  <Result key={result._id} to={`/post/${result._id}`}>
+                    <ResultTitle>{result.title}</ResultTitle>
+                    <ResultText>
+                      {result.truncatedContent
+                        ? excerpt(result.truncatedContent, 200)
+                        : excerpt(result.content, 200)}
+                    </ResultText>
+                  </Result>
+                ))}
+              </Results>
+            </Card>
+          )}
+        </Section>
       ) : (
-        <ResultsList>
-          {results.map((result) => (
-            <ResultCard key={result._id} to={`/post/${result._id}`}>
-              <ResultTitle>{result.title}</ResultTitle>
-              <ResultExcerpt>{result.truncatedContent}</ResultExcerpt>
-            </ResultCard>
-          ))}
-        </ResultsList>
+        <Columns>
+          <Section title={topic || 'Recent work'}>
+            {loadingPosts ? (
+              <Loading text="Loading posts…" />
+            ) : browsePosts.length === 0 ? (
+              <EmptyState
+                icon={Compass}
+                title={topic ? `Nothing filed under ${topic} yet` : 'Nothing published yet'}
+              >
+                {topic
+                  ? 'Pick another topic, or clear the filter to see everything.'
+                  : 'Posts will appear here as people publish them.'}
+              </EmptyState>
+            ) : (
+              <Feed>
+                {browsePosts.map((post) => (
+                  <PostCard key={post._id} post={post} />
+                ))}
+              </Feed>
+            )}
+          </Section>
+
+          <Section title="Topics">
+            <Topics>
+              {categories.map((category) => {
+                const Icon = topicIcon(category.name);
+                return (
+                  <Chip
+                    key={category._id}
+                    size="sm"
+                    selected={topic === category.name}
+                    onClick={() => setTopic(category.name)}
+                  >
+                    <Icon />
+                    {category.name}
+                  </Chip>
+                );
+              })}
+            </Topics>
+          </Section>
+        </Columns>
       )}
-    </PageWrapper>
+    </PageShell>
   );
 }
