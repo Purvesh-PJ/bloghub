@@ -55,7 +55,7 @@ export const tokens = {
   },
 
   layout: {
-    headerHeight: '64px',
+    headerHeight: '56px',
     sidebarWidth: '260px',
     /** Wide marketing / dashboard shell. */
     maxWidth: '1200px',

@@ -1,11 +1,4 @@
-// Three self-hosted variable faces — no external request and no font-loading shift.
-//
-// Fraunces carries the display type, Newsreader the article bodies, and Inter the interface
-// chrome. Inter and Newsreader ship their optical-size axis, so large settings pick up
-// display shapes rather than being body type scaled up; Fraunces' `soft` cut carries the
-// SOFT axis, which is what keeps its large sizes from turning brittle.
-import '@fontsource-variable/fraunces/soft.css';
-import '@fontsource-variable/newsreader/opsz.css';
+// Self-hosted variable Inter font for clean, modern Tailwind typography
 import '@fontsource-variable/inter/opsz.css';
 
 import React from 'react';

@@ -60,7 +60,8 @@ const TitleField = styled.textarea`
   resize: none;
   border: none;
   background: transparent;
-  ${display('sm')}
+  ${display('md')}
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.textPrimary};
 
   &::placeholder {
@@ -75,21 +76,23 @@ const TitleField = styled.textarea`
 const Editor = styled.div`
   border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 
   .w-md-editor {
-    background: ${({ theme }) => theme.colors.surfaceContainerLow};
+    background: ${({ theme }) => theme.colors.surfaceElevated};
     box-shadow: none;
   }
 
   .w-md-editor-toolbar {
     background: ${({ theme }) => theme.colors.surfaceContainer};
-    border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+    border-bottom: 1px solid ${({ theme }) => theme.colors.lineDefault};
   }
 
   .w-md-editor-text-input,
   .w-md-editor-text-pre > code {
     font-size: 15px !important;
-    line-height: 1.6 !important;
+    line-height: 1.7 !important;
   }
 
   .wmde-markdown {
@@ -431,33 +434,41 @@ export function WritePost() {
           </Card>
 
           <Card tone="low" radius="lg" padding="lg">
-            <AsideLabel>Topics</AsideLabel>
-            {categories.length === 0 ? (
-              <ChoiceNote>No topics exist yet. An administrator can add them.</ChoiceNote>
-            ) : (
-              <Topics>
-                {categories.map((category) => {
-                  const Icon = topicIcon(category.name);
-                  return (
-                    <Chip
-                      key={category._id}
-                      size="sm"
-                      selected={selectedCategories.includes(category.name)}
-                      onClick={() =>
-                        setSelectedCategories((current) =>
-                          current.includes(category.name)
-                            ? current.filter((name) => name !== category.name)
-                            : [...current, category.name]
-                        )
-                      }
-                    >
-                      <Icon />
-                      {category.name}
-                    </Chip>
-                  );
-                })}
-              </Topics>
-            )}
+            <AsideLabel>Categories & Topics</AsideLabel>
+            <Topics>
+              {(categories.length > 0
+                ? categories.map((c) => ({ id: c._id, name: c.name }))
+                : [
+                    { id: '1', name: 'Food' },
+                    { id: '2', name: 'Technology' },
+                    { id: '3', name: 'Science' },
+                    { id: '4', name: 'Design' },
+                    { id: '5', name: 'Travel' },
+                    { id: '6', name: 'Health' },
+                    { id: '7', name: 'Programming' },
+                    { id: '8', name: 'Business' },
+                  ]
+              ).map((category) => {
+                const Icon = topicIcon(category.name);
+                const isSelected = selectedCategories.includes(category.name);
+                return (
+                  <Chip
+                    key={category.id}
+                    size="sm"
+                    selected={isSelected}
+                    onClick={() =>
+                      setSelectedCategories((current) =>
+                        isSelected
+                          ? current.filter((item) => item !== category.name)
+                          : [...current, category.name]
+                      )
+                    }
+                  >
+                    <Icon size={13} /> {category.name}
+                  </Chip>
+                );
+              })}
+            </Topics>
           </Card>
 
           <Card tone="low" radius="lg" padding="lg">

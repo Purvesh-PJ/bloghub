@@ -1,6 +1,6 @@
 import {
-  sandDark,
-  tomatoDark,
+  slateDark,
+  skyDark,
   grassDark,
   amberDark,
   redDark,
@@ -10,16 +10,12 @@ import {
 import { createTheme } from './createTheme';
 
 /**
- * Dark mode — the same semantic mapping as light, fed the dark ramps.
- *
- * Radix dark ramps keep the 12-step semantics and the same key names, so every token
- * defined in light is necessarily defined here too. Tonal layering does most of the work in
- * dark, where shadows barely register.
+ * Dark mode — Obsidian & Slate Dark with vibrant Sky Blue accents.
  */
 export const darkTheme = createTheme(
   {
-    neutral: sandDark,
-    accent: tomatoDark,
+    neutral: slateDark,
+    accent: skyDark,
     success: grassDark,
     warning: amberDark,
     danger: redDark,
@@ -28,3 +24,4 @@ export const darkTheme = createTheme(
   },
   'dark'
 );
+

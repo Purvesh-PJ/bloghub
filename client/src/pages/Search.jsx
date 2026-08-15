@@ -1,8 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
-import { Search as SearchIcon, Compass } from 'lucide-react';
+import {
+  Search as SearchIcon,
+  Compass,
+  TrendingUp,
+  X,
+  Clock,
+  Sparkles,
+  Layers,
+  ArrowRight,
+  BookOpen,
+} from 'lucide-react';
 
 import { searchService } from '../services/searchService';
 import { postService } from '../services/postService';
@@ -10,78 +20,194 @@ import { categoryService } from '../services/categoryService';
 import { PageShell, PageHeader, Section } from '../components/layout/PageShell';
 import { PostCard } from '../components/posts/PostCard';
 import { topicIcon } from '../components/marketing/Topics';
-import { Input, Chip, Loading, EmptyState, Card } from '../components/ui';
-import { text, clamp, media } from '../styles/theme/mixins';
-import { excerpt } from '../utils/text';
-import { Link } from 'react-router-dom';
+import { Input, Chip, Loading, EmptyState, Card, Button } from '../components/ui';
+import { text, display, clamp, media, interactive } from '../styles/theme/mixins';
+import { excerpt, readingTime } from '../utils/text';
+import { CURATED_POSTS } from '../data/curatedPosts';
 
-/**
- * Explore.
- *
- * The header's Explore link and its search button both pointed here, and the page had no
- * search field on it — it only read ?q= from the URL. Arriving from either control landed
- * you on a page that said "Enter a search term to find posts" and gave you nowhere to type
- * one. It is now a page you can actually browse from: a field, the topic list, and recent
- * work when you have not asked for anything specific.
- */
+/* ── Styled Components ───────────────────────────────────────────────────── */
 
-const Field = styled.div`
-  max-width: 520px;
+const SearchHero = styled.div`
+  background: linear-gradient(180deg, ${({ theme }) => theme.colors.surfaceContainerLow} 0%, transparent 100%);
+  border-radius: ${({ theme }) => theme.radii['2xl']};
+  padding: ${({ theme }) => theme.spacing['2xl']};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
 `;
 
-const Topics = styled.div`
+const SearchInputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+
+  input {
+    height: 52px;
+    font-size: 16px;
+    padding-left: 48px;
+    padding-right: 40px;
+    border-radius: ${({ theme }) => theme.radii.full};
+    border: 1.5px solid ${({ theme }) => theme.colors.lineDefault};
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+
+    &:focus {
+      border-color: ${({ theme }) => theme.colors.accentSolid};
+      box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.18);
+    }
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: ${({ theme }) => theme.colors.accentSolid};
+    pointer-events: none;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: ${({ theme }) => theme.colors.textMuted};
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 50%;
+
+    &:hover {
+      background: ${({ theme }) => theme.colors.surfaceContainer};
+      color: ${({ theme }) => theme.colors.textPrimary};
+    }
+  }
+`;
+
+const QuickFilterRow = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
   flex-wrap: wrap;
+`;
+
+const QuickFilterLabel = styled.span`
+  ${text('xs', 'semibold')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-right: 4px;
+`;
+
+const Columns = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: ${({ theme }) => theme.spacing['3xl']};
+  align-items: start;
+
+  ${media.down('lg')`grid-template-columns: 1fr;`}
 `;
 
 const Feed = styled.div`
   display: flex;
   flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
 `;
 
-const Results = styled.div`
+const ResultsGrid = styled.div`
   display: flex;
   flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const Result = styled(Link)`
+const ResultCard = styled(Link)`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-  padding: ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  transition: background ${({ theme }) => theme.transitions.fast};
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.xl};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-  }
-
-  & + & {
-    box-shadow: inset 0 1px 0 ${({ theme }) => theme.colors.lineSubtle};
+    border-color: ${({ theme }) => theme.colors.accentLine};
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 0 10px -2px rgba(14, 165, 233, 0.1);
   }
 `;
 
-const ResultTitle = styled.span`
-  ${text('lg', 'semibold')}
+const ResultTitle = styled.h3`
+  ${text('lg', 'bold')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  ${clamp(1)}
+  ${clamp(2)}
+  transition: color ${({ theme }) => theme.transitions.fast};
+
+  ${ResultCard}:hover & {
+    color: ${({ theme }) => theme.colors.accentText};
+  }
 `;
 
-const ResultText = styled.span`
+const ResultExcerpt = styled.p`
   ${text('sm')}
   color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: 1.6;
   ${clamp(2)}
 `;
 
-const Columns = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: ${({ theme }) => theme.spacing['2xl']};
-  align-items: start;
+const ResultMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  padding-top: ${({ theme }) => theme.spacing.xs};
 
-  ${media.down('lg')`grid-template-columns: 1fr;`}
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
 `;
+
+const TopicSection = styled.div`
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  padding: ${({ theme }) => theme.spacing.xl};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+`;
+
+const TopicTitle = styled.h4`
+  ${text('sm', 'bold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: ${({ theme }) => theme.colors.accentSolid};
+  }
+`;
+
+const TopicChipList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+/* ── Main Component ──────────────────────────────────────────────────────── */
 
 export function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -92,7 +218,7 @@ export function Search() {
 
   useEffect(() => setDraft(query), [query]);
 
-  // Debounced, so the URL and the request follow typing without a round trip per keystroke.
+  // Debounced typing
   useEffect(() => {
     if (draft === query) return undefined;
     const timer = setTimeout(() => {
@@ -112,7 +238,7 @@ export function Search() {
 
   const { data: postsData, isLoading: loadingPosts } = useQuery({
     queryKey: ['posts'],
-    queryFn: () => postService.getPosts(),
+    queryFn: () => postService.getPosts({ limit: 20 }),
     enabled: !query,
   });
 
@@ -122,15 +248,35 @@ export function Search() {
   });
 
   const categories = categoriesData?.data || [];
-  const results = searchData?.data || [];
+  
+  const allStories = useMemo(() => {
+    const dbPosts = postsData?.data || [];
+    const dbIds = new Set(dbPosts.map((p) => String(p._id)));
+    const additional = CURATED_POSTS.filter((p) => !dbIds.has(String(p._id)));
+    return [...dbPosts, ...additional];
+  }, [postsData]);
+
+  const results = useMemo(() => {
+    const dbResults = searchData?.data || [];
+    if (!query) return dbResults;
+    const dbIds = new Set(dbResults.map((r) => String(r._id)));
+    const qLower = query.toLowerCase();
+    const curatedMatches = CURATED_POSTS.filter(
+      (p) =>
+        !dbIds.has(String(p._id)) &&
+        (p.title.toLowerCase().includes(qLower) || p.content.toLowerCase().includes(qLower))
+    );
+    return [...dbResults, ...curatedMatches];
+  }, [searchData, query]);
 
   const browsePosts = useMemo(() => {
-    const posts = postsData?.data || [];
-    if (!topic) return posts;
-    return posts.filter((post) =>
-      (post.categories || []).some((category) => (category?.name ?? category) === topic)
+    if (!topic) return allStories;
+    return allStories.filter((post) =>
+      (post.categories || []).some(
+        (category) => (category?.name ?? category).toLowerCase() === topic.toLowerCase()
+      )
     );
-  }, [postsData, topic]);
+  }, [allStories, topic]);
 
   const setTopic = (name) => {
     const next = new URLSearchParams(searchParams);
@@ -139,67 +285,113 @@ export function Search() {
     setSearchParams(next, { replace: true });
   };
 
+  const clearSearch = () => {
+    setDraft('');
+    const next = new URLSearchParams(searchParams);
+    next.delete('q');
+    setSearchParams(next, { replace: true });
+  };
+
   return (
     <PageShell>
-      <PageHeader
-        title="Explore"
-        subtitle="Search for something specific, or browse by topic."
-        actions={
-          <Field>
-            <Input
-              icon={<SearchIcon />}
-              placeholder="Search posts"
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              aria-label="Search posts"
-            />
-          </Field>
-        }
-      />
+      {/* ── Search Hero ──────────────────────────────────────────────────── */}
+      <SearchHero>
+        <div>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>
+            Explore Stories & Topics
+          </h1>
+          <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+            Discover top-read articles, engineering insights, and tech tutorials from writers worldwide.
+          </p>
+        </div>
 
+        <SearchInputWrapper>
+          <SearchIcon className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search by keywords, tags, or story titles…"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            aria-label="Search stories"
+          />
+          {draft && (
+            <button className="clear-btn" onClick={clearSearch} title="Clear search">
+              <X size={16} />
+            </button>
+          )}
+        </SearchInputWrapper>
+
+        <QuickFilterRow>
+          <QuickFilterLabel>Popular:</QuickFilterLabel>
+          {['Technology', 'Design', 'Programming', 'Science', 'Food'].map((name) => (
+            <Chip
+              key={name}
+              size="sm"
+              selected={topic.toLowerCase() === name.toLowerCase()}
+              onClick={() => setTopic(name)}
+            >
+              {name}
+            </Chip>
+          ))}
+          {topic && (
+            <Chip size="sm" onClick={() => setTopic('')}>
+              ✕ Clear Filter
+            </Chip>
+          )}
+        </QuickFilterRow>
+      </SearchHero>
+
+      {/* ── Results / Content Section ────────────────────────────────────── */}
       {query ? (
         <Section
-          title={`Results for “${query}”`}
-          note={
-            searching ? undefined : `${results.length} ${results.length === 1 ? 'post' : 'posts'}`
-          }
+          title={`Search Results for “${query}”`}
+          note={searching ? 'Searching…' : `${results.length} ${results.length === 1 ? 'result' : 'results'}`}
         >
           {searching ? (
-            <Loading text="Searching…" />
+            <Loading text="Searching BlogHub…" />
           ) : results.length === 0 ? (
-            <EmptyState icon={SearchIcon} title="Nothing found">
-              No post matches “{query}”. Try a shorter phrase, or browse the topics instead.
+            <EmptyState icon={SearchIcon} title="No matching stories">
+              We couldn't find any stories matching “{query}”. Try searching for different keywords or explore the topics below.
             </EmptyState>
           ) : (
-            <Card tone="low" radius="xl" padding="sm">
-              <Results>
-                {results.map((result) => (
-                  <Result key={result._id} to={`/post/${result._id}`}>
-                    <ResultTitle>{result.title}</ResultTitle>
-                    <ResultText>
-                      {result.truncatedContent
-                        ? excerpt(result.truncatedContent, 200)
-                        : excerpt(result.content, 200)}
-                    </ResultText>
-                  </Result>
-                ))}
-              </Results>
-            </Card>
+            <ResultsGrid>
+              {results.map((result) => (
+                <ResultCard key={result._id} to={`/post/${result._id}`}>
+                  <ResultTitle>{result.title}</ResultTitle>
+                  <ResultExcerpt>
+                    {result.truncatedContent
+                      ? excerpt(result.truncatedContent, 220)
+                      : excerpt(result.content, 220)}
+                  </ResultExcerpt>
+                  <ResultMeta>
+                    <span>
+                      <Clock size={13} /> {readingTime(result.content || '')}
+                    </span>
+                    <span>
+                      <BookOpen size={13} /> Read story
+                    </span>
+                  </ResultMeta>
+                </ResultCard>
+              ))}
+            </ResultsGrid>
           )}
         </Section>
       ) : (
         <Columns>
-          <Section title={topic || 'Recent work'}>
+          <Section
+            title={topic ? `Stories in ${topic}` : 'Featured & Recent Stories'}
+            note={`${browsePosts.length} stories`}
+          >
             {loadingPosts ? (
-              <Loading text="Loading posts…" />
+              <Loading text="Loading stories…" />
             ) : browsePosts.length === 0 ? (
               <EmptyState
                 icon={Compass}
-                title={topic ? `Nothing filed under ${topic} yet` : 'Nothing published yet'}
+                title={topic ? `Nothing published in ${topic} yet` : 'No stories found'}
               >
                 {topic
-                  ? 'Pick another topic, or clear the filter to see everything.'
-                  : 'Posts will appear here as people publish them.'}
+                  ? 'Be the first to publish a story in this topic!'
+                  : 'Stories will show up here as creators write them.'}
               </EmptyState>
             ) : (
               <Feed>
@@ -210,24 +402,30 @@ export function Search() {
             )}
           </Section>
 
-          <Section title="Topics">
-            <Topics>
-              {categories.map((category) => {
-                const Icon = topicIcon(category.name);
-                return (
-                  <Chip
-                    key={category._id}
-                    size="sm"
-                    selected={topic === category.name}
-                    onClick={() => setTopic(category.name)}
-                  >
-                    <Icon />
-                    {category.name}
-                  </Chip>
-                );
-              })}
-            </Topics>
-          </Section>
+          <aside style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <TopicSection>
+              <TopicTitle>
+                <TrendingUp /> Browse All Categories
+              </TopicTitle>
+              <TopicChipList>
+                {categories.map((category) => {
+                  const Icon = topicIcon(category.name);
+                  const isSelected = topic.toLowerCase() === category.name.toLowerCase();
+                  return (
+                    <Chip
+                      key={category._id}
+                      size="sm"
+                      selected={isSelected}
+                      onClick={() => setTopic(category.name)}
+                    >
+                      <Icon size={13} />
+                      {category.name}
+                    </Chip>
+                  );
+                })}
+              </TopicChipList>
+            </TopicSection>
+          </aside>
         </Columns>
       )}
     </PageShell>

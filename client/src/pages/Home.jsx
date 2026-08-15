@@ -1,80 +1,129 @@
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
-import { ArrowRight, PenLine, BookOpen } from 'lucide-react';
+import styled, { keyframes } from 'styled-components';
+import {
+  ArrowRight,
+  PenLine,
+  BookOpen,
+  Sparkles,
+  Compass,
+  TrendingUp,
+  Flame,
+  CheckCircle2,
+  Heart,
+  MessageCircle,
+  BarChart2,
+  Layers,
+  Zap,
+  Users,
+  Clock,
+  Bookmark,
+  ShieldCheck,
+  Globe2,
+  Coffee,
+  Cpu,
+  Palette,
+  Plane,
+  Activity,
+  Atom,
+} from 'lucide-react';
+import toast from 'react-hot-toast';
 
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
 import { useAuth } from '../context/AuthContext';
-import { Button, Chip, Loading } from '../components/ui';
+import { Button, Chip, Loading, Input } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
-import { VisibilityFlow, CommentThread } from '../components/marketing/Illustrations';
-import { AnalyticsMockup } from '../components/marketing/Mockups';
-import { FeatureGrid } from '../components/marketing/FeatureGrid';
-import { TopicMarquee, TopicGrid } from '../components/marketing/Topics';
-import {
-  FullBleed,
-  Inverted,
-  Column,
-  Numbered,
-  Kicker,
-  Headline,
-  Body,
-  Split,
-} from '../components/layout/Editorial';
-import { display, text, label as labelStyle, media } from '../styles/theme/mixins';
+import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
+import { topicIcon } from '../components/marketing/Topics';
+import { initial } from '../utils/text';
+import { CURATED_POSTS } from '../data/curatedPosts';
 
-/**
- * Landing page.
- *
- * Built as an argument rather than a feature list: the platform's one genuine difference is
- * that it separates a view from a read, so the page opens with that gap and everything else
- * follows from it.
- *
- * The composition matters as much as the copy. The previous version put every section in
- * the same centred 1200px column with the same heading-then-content shape, which reads as
- * monotonous however good each section is on its own. This one changes ground as you scroll
- * — the gap and the closing call are full-width inverted bands, the topic marquee runs edge
- * to edge, the three product sections are numbered and alternate sides, and the feed leads
- * with one large story rather than a uniform grid.
- */
+/* ── Keyframe Animations ─────────────────────────────────────────────────── */
 
-/* ── Page ────────────────────────────────────────────────────────────────── */
+const floatAnimation = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+`;
+
+/* ── Page Shell ──────────────────────────────────────────────────────────── */
 
 const Page = styled.div`
-  /* Full-bleed bands are 100vw wide; clip stops that becoming a horizontal scrollbar. */
   overflow-x: clip;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing['6xl']};
-  padding-bottom: ${({ theme }) => theme.spacing['5xl']};
-
-  ${media.down('md')`gap: ${({ theme }) => theme.spacing['4xl']};`}
+  gap: ${({ theme }) => theme.spacing['5xl']};
+  padding-bottom: ${({ theme }) => theme.spacing['4xl']};
 `;
 
-/* ── Hero ────────────────────────────────────────────────────────────────── */
-
-const Hero = styled.header`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: min(78vh, 720px);
-  padding: ${({ theme }) => theme.spacing['4xl']} 0 ${({ theme }) => theme.spacing['2xl']};
+const Container = styled.div`
+  max-width: ${({ theme }) => theme.layout.maxWidth};
+  margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacing.xl};
+  width: 100%;
 
   ${media.down('md')`
-    min-height: 0;
-    padding: ${({ theme }) => theme.spacing['3xl']} 0;
+    padding: 0 ${({ theme }) => theme.spacing.lg};
   `}
+`;
+
+/* ── Hero Section ────────────────────────────────────────────────────────── */
+
+const HeroSection = styled.header`
+  padding: ${({ theme }) => theme.spacing['3xl']} 0 ${({ theme }) => theme.spacing['2xl']};
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: ${({ theme }) => theme.spacing['3xl']};
+  align-items: center;
+  min-height: min(72vh, 620px);
+
+  ${media.down('lg')`
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding: ${({ theme }) => theme.spacing.xl} 0;
+  `}
+`;
+
+const HeroContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xl};
+  max-width: 620px;
+`;
+
+const HeroBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: 6px 14px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentText};
+  ${text('xs', 'semibold')}
+  width: fit-content;
+  border: 1px solid ${({ theme }) => theme.colors.accentLine};
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: ${({ theme }) => theme.colors.accentSolid};
+  }
 `;
 
 const HeroTitle = styled.h1`
   ${display('2xl')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  max-width: 13ch;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  font-weight: 800;
 
-  em {
-    font-style: normal;
-    color: ${({ theme }) => theme.colors.accentText};
+  .gradient-text {
+    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
   }
 
   ${media.down('lg')`font-size: ${({ theme }) => theme.display.xl[0]};`}
@@ -82,236 +131,521 @@ const HeroTitle = styled.h1`
   ${media.down('sm')`font-size: ${({ theme }) => theme.display.md[0]};`}
 `;
 
-/*
-  The lead and the actions sit in the right half, below the headline's baseline rather than
-  beside it. It reads as a caption to the headline instead of a second column competing with
-  it, and it leaves the left side genuinely empty — which is what makes the type feel large.
-*/
-const HeroFoot = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: ${({ theme }) => theme.spacing['2xl']};
-  align-items: end;
-  margin-top: ${({ theme }) => theme.spacing['2xl']};
-
-  ${media.down('md')`grid-template-columns: 1fr;`}
-`;
-
-const HeroLead = styled.p`
-  ${text('xl')}
+const HeroSubtitle = styled.p`
+  ${text('lg')}
+  line-height: 1.7;
   color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 42ch;
-  grid-column: 2;
-
-  ${media.down('md')`grid-column: 1;`}
+  max-width: 540px;
 `;
 
-const Actions = styled.div`
+const HeroActions = styled.div`
   display: flex;
+  align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
   flex-wrap: wrap;
-  grid-column: 2;
-
-  ${media.down('md')`grid-column: 1;`}
 `;
 
-const HeroBottom = styled.div`
-  grid-column: 2;
+const HeroSocialProof = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-
-  ${media.down('md')`grid-column: 1;`}
-`;
-
-/* ── The gap — an inverted band ──────────────────────────────────────────── */
-
-const GapGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: ${({ theme }) => theme.spacing['4xl']};
   align-items: center;
-
-  ${media.down('md')`grid-template-columns: 1fr;`}
+  gap: ${({ theme }) => theme.spacing.lg};
+  padding-top: ${({ theme }) => theme.spacing.md};
+  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  flex-wrap: wrap;
 `;
 
-const Figures = styled.div`
+const CategoryPillsRow = styled.div`
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+`;
+
+const MiniPill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 11px;
+  font-weight: 600;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    color: ${({ theme }) => theme.colors.accentSolid};
+  }
+`;
+
+/* ── Hero Showcase Card ──────────────────────────────────────────────────── */
+
+const HeroVisual = styled.div`
+  position: relative;
+  display: flex;
+  justify-content: center;
+
+  ${media.down('lg')`
+    margin-top: ${({ theme }) => theme.spacing.xl};
+  `}
+`;
+
+const ShowcaseCard = styled.div`
+  width: 100%;
+  max-width: 440px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  border-radius: ${({ theme }) => theme.radii['2xl']};
+  padding: ${({ theme }) => theme.spacing.xl};
+  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 0 25px -5px rgba(14, 165, 233, 0.15);
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-`;
-
-const Figure = styled.div`
-  display: flex;
-  align-items: baseline;
   gap: ${({ theme }) => theme.spacing.lg};
+  position: relative;
+  z-index: 2;
+  animation: ${floatAnimation} 6s ease-in-out infinite;
 `;
 
-const FigureValue = styled.span`
-  ${display('xl')}
-  color: ${({ theme, $accent }) => ($accent ? theme.colors.accentSolid : 'inherit')};
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-
-  ${media.down('md')`font-size: ${({ theme }) => theme.display.lg[0]};`}
+const CardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const FigureLabel = styled.span`
-  ${labelStyle('md')}
-  opacity: 0.6;
+const AuthorInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-/* A bar drawn on the inverted ground, so it needs its own track colour. */
-const GapBar = styled.div`
-  height: 8px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.alphaSoft};
+const AuthorAvatar = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.3);
+`;
+
+const AuthorMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const AuthorName = styled.span`
+  ${text('sm', 'bold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  svg {
+    width: 13px;
+    height: 13px;
+    color: ${({ theme }) => theme.colors.accentSolid};
+  }
+`;
+
+const AuthorHandle = styled.span`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const CardImageMock = styled.div`
+  width: 100%;
+  height: 160px;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background-image: url('https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80');
+  background-size: cover;
+  background-position: center;
+  position: relative;
   overflow: hidden;
-  margin-top: ${({ theme }) => theme.spacing.sm};
+  display: flex;
+  align-items: flex-end;
+  padding: ${({ theme }) => theme.spacing.md};
 
-  span {
-    display: block;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(15, 23, 42, 0.85) 100%);
+  }
+`;
+
+const ImageBadge = styled.span`
+  position: relative;
+  z-index: 1;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+`;
+
+const CardTitle = styled.h3`
+  ${display('xs')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: 1.15rem;
+  line-height: 1.35;
+`;
+
+const ReadRateWidget = styled.div`
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: ${({ theme }) => theme.spacing.md};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ReadRateHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  ${text('xs', 'semibold')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+
+  span.percent {
+    color: ${({ theme }) => theme.colors.accentText};
+    font-weight: 700;
+  }
+`;
+
+const ProgressBar = styled.div`
+  height: 6px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.surfaceContainerHigh};
+  overflow: hidden;
+
+  div {
     height: 100%;
-    width: ${({ $percent }) => $percent}%;
-    background: ${({ theme }) => theme.colors.accentSolid};
+    width: 92%;
+    background: linear-gradient(90deg, #0284c7, #38bdf8);
     border-radius: inherit;
   }
 `;
 
-const GapNote = styled.p`
-  ${text('lg')}
-  opacity: 0.75;
-  max-width: 46ch;
-`;
-
-/* ── Sections ────────────────────────────────────────────────────────────── */
-
-const Shell = styled.div`
-  max-width: ${({ theme }) => theme.layout.maxWidth};
-  margin: 0 auto;
-  padding: 0 ${({ theme }) => theme.spacing.xl};
+const CardFooterStats = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing['5xl']};
-
-  ${media.down('md')`
-    padding: 0 ${({ theme }) => theme.spacing.lg};
-    gap: ${({ theme }) => theme.spacing['3xl']};
-  `}
+  align-items: center;
+  justify-content: space-between;
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  padding-top: ${({ theme }) => theme.spacing.xs};
 `;
 
-const Visual = styled.div`
-  border-radius: ${({ theme }) => theme.radii.xl};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  padding: ${({ theme }) => theme.spacing['2xl']};
+const StatItem = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: ${({ $heart, theme }) => ($heart ? '#ef4444' : theme.colors.textMuted)};
+    fill: ${({ $heart }) => ($heart ? '#ef4444' : 'none')};
+  }
 `;
 
-/* ── Feed — one lead story, then the rest ────────────────────────────────── */
+/* ── Topic Filter Slider ─────────────────────────────────────────────────── */
 
-const FeedHead = styled.div`
+const TopicBar = styled.section`
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  overflow-x: auto;
+  padding: ${({ theme }) => theme.spacing.sm} 0;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+/* ── Section Headers ─────────────────────────────────────────────────────── */
+
+const SectionHead = styled.div`
+  display: flex;
+  align-items: flex-end;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
   flex-wrap: wrap;
-  padding-bottom: ${({ theme }) => theme.spacing.lg};
-  border-bottom: 2px solid ${({ theme }) => theme.colors.textPrimary};
 `;
 
-const Rest = styled.div`
+const SectionLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const SectionKicker = styled.span`
+  ${labelStyle('sm')}
+  color: ${({ theme }) => theme.colors.accentText};
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const SectionTitle = styled.h2`
+  ${display('md')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-weight: 800;
+  letter-spacing: -0.025em;
+
+  ${media.down('sm')`font-size: ${({ theme }) => theme.display.sm[0]};`}
+`;
+
+const SectionSubtitle = styled.p`
+  ${text('md')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  max-width: 520px;
+`;
+
+/* ── Bento Grid ──────────────────────────────────────────────────────────── */
+
+const BentoGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: ${({ theme }) => theme.spacing.xl};
 
-  ${media.down('lg')`grid-template-columns: repeat(2, 1fr);`}
+  ${media.down('lg')`grid-template-columns: 1fr 1fr;`}
   ${media.down('sm')`grid-template-columns: 1fr;`}
 `;
 
-const Topics = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-  flex-wrap: wrap;
-`;
-
-/* ── Audiences — two columns divided by a rule, not two cards ────────────── */
-
-const Audiences = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: ${({ theme }) => theme.spacing['3xl']};
-
-  ${media.down('md')`grid-template-columns: 1fr;`}
-`;
-
-const Audience = styled.div`
+const BentoCard = styled.div`
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  padding: ${({ theme }) => theme.spacing['2xl']};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.lg};
-  align-items: flex-start;
-  padding-top: ${({ theme }) => theme.spacing.xl};
-  border-top: 2px solid ${({ theme }) => theme.colors.textPrimary};
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  ${interactive}
+
+  ${({ $span }) =>
+    $span === '2' &&
+    `
+    grid-column: span 2;
+  `}
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.accentLine};
+    box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.08), 0 0 15px -3px rgba(14, 165, 233, 0.12);
+    transform: translateY(-3px);
+  }
+
+  ${media.down('lg')`
+    grid-column: span 1;
+  `}
+`;
+
+const BentoIcon = styled.div`
+  width: 44px;
+  height: 44px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentSolid};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
 
   svg {
     width: 22px;
     height: 22px;
-    color: ${({ theme }) => theme.colors.accentText};
   }
 `;
 
-const AudienceTitle = styled.h3`
-  ${display('sm')}
+const BentoTitle = styled.h3`
+  ${display('xs')}
   color: ${({ theme }) => theme.colors.textPrimary};
+  font-weight: 700;
 `;
 
-const List = styled.ul`
-  list-style: none;
+const BentoDescription = styled.p`
+  ${text('sm')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: 1.6;
+`;
+
+/* ── Feed Grid ───────────────────────────────────────────────────────────── */
+
+const FeedGrid = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: ${({ theme }) => theme.spacing['3xl']};
+  align-items: start;
+
+  ${media.down('lg')`grid-template-columns: 1fr;`}
+`;
+
+const PostList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing.xl};
+`;
 
-  li {
-    ${text('md')}
-    color: ${({ theme }) => theme.colors.textSecondary};
-    padding-left: ${({ theme }) => theme.spacing.lg};
-    position: relative;
+const Sidebar = styled.aside`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing['2xl']};
 
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0.62em;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: ${({ theme }) => theme.colors.accentSolid};
-    }
+  ${media.up('lg')`
+    position: sticky;
+    top: calc(${({ theme }) => theme.layout.headerHeight} + ${({ theme }) => theme.spacing.xl});
+  `}
+`;
+
+const SidebarCard = styled.div`
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  padding: ${({ theme }) => theme.spacing.xl};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+`;
+
+const SidebarTitle = styled.h4`
+  ${text('md', 'bold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: ${({ theme }) => theme.colors.accentSolid};
   }
 `;
 
-/* ── Closing band ────────────────────────────────────────────────────────── */
+const WriterRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+
+  & + & {
+    padding-top: ${({ theme }) => theme.spacing.md};
+    border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  }
+`;
+
+const WriterLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  min-width: 0;
+`;
+
+const WriterAvatar = styled.div`
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+`;
+
+const WriterMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+`;
+
+const WriterName = styled.span`
+  ${text('sm', 'semibold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const WriterFollowers = styled.span`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+/* ── CTA Banner ──────────────────────────────────────────────────── */
+
+const CtaSection = styled.div`
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  border-radius: ${({ theme }) => theme.radii['2xl']};
+  padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing['2xl']};
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: ${({ theme }) => theme.spacing.xl};
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px -10px rgba(2, 132, 199, 0.4);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -20%;
+    width: 60%;
+    height: 150%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+`;
 
 const CtaTitle = styled.h2`
-  ${display('lg')}
-  max-width: 16ch;
+  ${display('xl')}
+  color: #ffffff;
+  font-weight: 800;
+  max-width: 22ch;
 
   ${media.down('md')`font-size: ${({ theme }) => theme.display.md[0]};`}
 `;
 
-const CtaRow = styled.div`
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing['2xl']};
-  flex-wrap: wrap;
+const CtaSubtitle = styled.p`
+  ${text('lg')}
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 560px;
+  line-height: 1.6;
 `;
+
+/* ── Component ───────────────────────────────────────────────────────────── */
 
 export function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [selectedTopic, setSelectedTopic] = useState('All');
+  const [newsletterEmail, setNewsletterEmail] = useState('');
 
   const { data: postsResponse, isLoading } = useQuery({
     queryKey: ['posts'],
-    queryFn: () => postService.getPosts({ limit: 7 }),
+    queryFn: () => postService.getPosts({ limit: 12 }),
   });
 
   const { data: categoriesData } = useQuery({
@@ -319,226 +653,351 @@ export function Home() {
     queryFn: categoryService.getCategories,
   });
 
-  if (isLoading) return <Loading text="Loading…" />;
-
-  const posts = postsResponse?.data ?? [];
+  const rawPosts = postsResponse?.data ?? [];
   const categories = categoriesData?.data ?? [];
-  const totalPosts = postsResponse?.pagination?.total ?? posts.length;
 
-  const [lead, ...rest] = posts;
+  // Combine DB posts with rich curated stories so the portfolio is never empty
+  const allPosts = useMemo(() => {
+    if (rawPosts.length === 0) return CURATED_POSTS;
+    const dbIds = new Set(rawPosts.map((p) => String(p._id)));
+    const additional = CURATED_POSTS.filter((p) => !dbIds.has(String(p._id)));
+    return [...rawPosts, ...additional];
+  }, [rawPosts]);
+
   const startHref = isAuthenticated ? '/write' : '/register';
-  const startLabel = isAuthenticated ? 'Open the editor' : 'Start writing';
+  const startLabel = isAuthenticated ? 'Open Creator Studio' : 'Start Publishing Free';
+
+  const filteredPosts = useMemo(() => {
+    if (selectedTopic === 'All') return allPosts;
+    return allPosts.filter((post) =>
+      (post.categories || []).some(
+        (cat) => (cat?.name ?? cat).toLowerCase() === selectedTopic.toLowerCase()
+      )
+    );
+  }, [allPosts, selectedTopic]);
+
+  const handleNewsletter = (e) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    toast.success('Subscribed! Welcome to the BlogHub weekly digest.');
+    setNewsletterEmail('');
+  };
+
+  const DEFAULT_TOPICS = [
+    { name: 'Food', icon: Coffee },
+    { name: 'Technology', icon: Cpu },
+    { name: 'Science', icon: Atom },
+    { name: 'Design', icon: Palette },
+    { name: 'Travel', icon: Plane },
+    { name: 'Health', icon: Activity },
+  ];
+
+  if (isLoading && rawPosts.length === 0) return <Loading text="Loading stories…" />;
 
   return (
     <Page>
-      <Shell>
-        <Hero>
-          <HeroTitle>
-            Publish your writing. <em>Find out if it landed.</em>
-          </HeroTitle>
+      {/* ── 1. Hero Section ──────────────────────────────────────────────── */}
+      <Container>
+        <HeroSection>
+          <HeroContent>
+            <HeroBadge>
+              <Sparkles /> The Universal Publishing Platform for Writers & Readers
+            </HeroBadge>
 
-          <HeroFoot>
-            <HeroBottom>
-              <HeroLead>
-                An editor that keeps out of your way, and the one number most platforms will not
-                show you: how many people actually reached the end.
-              </HeroLead>
-              <Actions>
-                <Button size="lg" onClick={() => navigate(startHref)}>
-                  {startLabel} <ArrowRight />
-                </Button>
-                <Button size="lg" variant="secondary" onClick={() => navigate('/search')}>
-                  Browse stories
-                </Button>
-              </Actions>
-            </HeroBottom>
-          </HeroFoot>
-        </Hero>
-      </Shell>
+            <HeroTitle>
+              Where ideas in food, tech, science & culture <span className="gradient-text">come to life.</span>
+            </HeroTitle>
 
-      <FullBleed>
-        <TopicMarquee topics={categories.map((category) => category.name)} />
-      </FullBleed>
+            <HeroSubtitle>
+              A clean, distraction-free reading and publishing platform. Explore diverse stories, follow passionate creators, and publish your own perspective.
+            </HeroSubtitle>
 
-      {/* The argument, on inverted ground */}
-      <Inverted id="read">
-        <Column>
-          <GapGrid>
-            <div>
-              <Kicker>The number nobody shows you</Kicker>
-              <Figures style={{ marginTop: 24 }}>
-                <div>
-                  <Figure>
-                    <FigureValue>1,240</FigureValue>
-                    <FigureLabel>opened it</FigureLabel>
-                  </Figure>
-                  <GapBar $percent={100} aria-hidden="true">
-                    <span />
-                  </GapBar>
-                </div>
-                <div>
-                  <Figure>
-                    <FigureValue $accent>180</FigureValue>
-                    <FigureLabel>finished it</FigureLabel>
-                  </Figure>
-                  <GapBar $percent={14.5} aria-hidden="true">
-                    <span />
-                  </GapBar>
-                </div>
-              </Figures>
-            </div>
+            <HeroActions>
+              <Button size="lg" onClick={() => navigate(startHref)}>
+                <PenLine /> {startLabel}
+              </Button>
+              <Button size="lg" variant="secondary" onClick={() => navigate('/search')}>
+                <Compass /> Explore all stories
+              </Button>
+            </HeroActions>
 
-            <GapNote>
-              A view only means the page loaded. It says nothing about whether anyone stayed to the
-              end. BlogHub records both, so you can tell the difference between someone glancing at
-              your work and someone actually reading it.
-            </GapNote>
-          </GapGrid>
-        </Column>
-      </Inverted>
+            <HeroSocialProof>
+              <CategoryPillsRow>
+                <MiniPill><Coffee /> Culinary & Food</MiniPill>
+                <MiniPill><Cpu /> Tech & AI</MiniPill>
+                <MiniPill><Atom /> Space & Science</MiniPill>
+                <MiniPill><Palette /> UI/UX Design</MiniPill>
+                <MiniPill><Plane /> Travel</MiniPill>
+              </CategoryPillsRow>
+            </HeroSocialProof>
+          </HeroContent>
 
-      <Shell>
-        {/* Product, as a numbered sequence */}
-        <Numbered n={1} rule={false}>
-          <Kicker>Analytics</Kicker>
-          <Headline>Numbers that mean something</Headline>
-          <Split>
-            <Body>
-              Every post gets its own views, reads and read-through rate, plus a ranking of which
-              pieces did best. If you run the site, you get the same picture across every author.
-            </Body>
-            <Visual>
-              <AnalyticsMockup />
-            </Visual>
-          </Split>
-        </Numbered>
+          <HeroVisual>
+            <ShowcaseCard>
+              <CardHeader>
+                <AuthorInfo>
+                  <AuthorAvatar>CR</AuthorAvatar>
+                  <AuthorMeta>
+                    <AuthorName>
+                      Camilla Rossi <CheckCircle2 />
+                    </AuthorName>
+                    <AuthorHandle>@camilla · Culinary Science</AuthorHandle>
+                  </AuthorMeta>
+                </AuthorInfo>
+                <Chip size="sm" selected>
+                  Food & Science
+                </Chip>
+              </CardHeader>
 
-        <Numbered n={2}>
-          <Kicker>Control</Kicker>
-          <Headline>Publish on your terms</Headline>
-          <Split $flip>
-            <Visual>
-              <VisibilityFlow />
-            </Visual>
-            <Body>
-              Keep a piece to yourself while you work on it, share it as an unlisted link, or put it
-              on the public feed. You can move between the three whenever you want, and nothing is
-              one-way.
-            </Body>
-          </Split>
-        </Numbered>
+              <CardImageMock>
+                <ImageBadge>🥗 Culinary Chemistry</ImageBadge>
+              </CardImageMock>
 
-        <Numbered n={3}>
-          <Kicker>Community</Kicker>
-          <Headline>Replies that go somewhere</Headline>
-          <Split>
-            <Body>
-              Replies nest under the comment they answer, so a conversation actually reads like one.
-              Readers can follow the writers they like and come back for the next piece.
-            </Body>
-            <Visual>
-              <CommentThread />
-            </Visual>
-          </Split>
-        </Numbered>
-      </Shell>
+              <CardTitle>
+                The Chemistry of Sourdough: Why Temperature and Hydration Rule the Crumb
+              </CardTitle>
 
-      {/* Breadth — full width, because the point is how much there is */}
-      <FullBleed style={{ background: 'transparent' }}>
-        <Column>
-          <Kicker>Every subject</Kicker>
-          <Headline style={{ marginTop: 8, marginBottom: 24 }}>One platform, any topic</Headline>
-          <TopicGrid categories={categories} onSelect={() => navigate('/search')} />
-        </Column>
-      </FullBleed>
+              <ReadRateWidget>
+                <ReadRateHeader>
+                  <span>Reader Completion Rate</span>
+                  <span className="percent">91.8%</span>
+                </ReadRateHeader>
+                <ProgressBar>
+                  <div />
+                </ProgressBar>
+              </ReadRateWidget>
 
-      <Shell>
-        {/* The feed, led by one story */}
-        <section>
-          <FeedHead>
-            <Headline as="h2" style={{ maxWidth: 'none' }}>
-              Recent work
-            </Headline>
-            <Button variant="ghost" onClick={() => navigate('/search')}>
-              All {totalPosts} stories <ArrowRight />
-            </Button>
-          </FeedHead>
+              <CardFooterStats>
+                <StatItem $heart>
+                  <Heart /> 142 likes
+                </StatItem>
+                <StatItem>
+                  <MessageCircle /> 28 replies
+                </StatItem>
+                <StatItem>
+                  <Clock /> 4 min read
+                </StatItem>
+              </CardFooterStats>
+            </ShowcaseCard>
+          </HeroVisual>
+        </HeroSection>
+      </Container>
 
-          <Topics style={{ margin: '24px 0 32px' }}>
-            {categories.slice(0, 8).map((category) => (
-              <Chip key={category._id} size="sm" onClick={() => navigate('/search')}>
-                {category.name}
+      {/* ── 2. Topic Filter Carousel ─────────────────────────────────────── */}
+      <Container>
+        <TopicBar>
+          <Chip
+            size="md"
+            selected={selectedTopic === 'All'}
+            onClick={() => setSelectedTopic('All')}
+          >
+            🔥 All Categories
+          </Chip>
+          {DEFAULT_TOPICS.map((topic) => {
+            const Icon = topic.icon;
+            return (
+              <Chip
+                key={topic.name}
+                size="md"
+                selected={selectedTopic.toLowerCase() === topic.name.toLowerCase()}
+                onClick={() => setSelectedTopic(topic.name)}
+              >
+                <Icon size={15} />
+                {topic.name}
               </Chip>
-            ))}
-          </Topics>
+            );
+          })}
+        </TopicBar>
+      </Container>
 
-          {lead && <PostCard post={lead} />}
+      {/* ── 3. Main Feed & Sidebar ───────────────────────────────────────── */}
+      <Container>
+        <FeedGrid>
+          <section>
+            <SectionHead>
+              <SectionLeft>
+                <SectionKicker>
+                  <Flame /> Curated Discoveries
+                </SectionKicker>
+                <SectionTitle>
+                  {selectedTopic === 'All' ? 'Trending Across All Categories' : `${selectedTopic} Stories`}
+                </SectionTitle>
+                <SectionSubtitle>
+                  {filteredPosts.length} {filteredPosts.length === 1 ? 'article' : 'articles'} exploring ideas, techniques, and insights.
+                </SectionSubtitle>
+              </SectionLeft>
+            </SectionHead>
 
-          <Rest style={{ marginTop: 32 }}>
-            {rest.map((post) => (
-              <PostCard key={post._id} post={post} layout="stacked" />
-            ))}
-          </Rest>
-        </section>
+            <PostList>
+              {filteredPosts.map((post) => (
+                <PostCard key={post._id} post={post} />
+              ))}
+            </PostList>
+          </section>
 
-        {/* Everything it does */}
-        <section>
-          <Kicker>Everything in the box</Kicker>
-          <Headline style={{ margin: '8px 0 16px' }}>The whole platform</Headline>
-          <Body style={{ marginBottom: 40 }}>
-            Here is everything the platform does today. A few things are still being built, and
-            those are marked so you know what you are getting.
-          </Body>
-          <FeatureGrid />
-        </section>
+          <Sidebar>
+            {/* Trending Topics Widget */}
+            <SidebarCard>
+              <SidebarTitle>
+                <TrendingUp /> Explore Topics
+              </SidebarTitle>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {['Food', 'Technology', 'Science', 'Design', 'Travel', 'Health', 'Programming', 'Architecture'].map((name) => (
+                  <Chip
+                    key={name}
+                    size="sm"
+                    selected={selectedTopic.toLowerCase() === name.toLowerCase()}
+                    onClick={() => {
+                      setSelectedTopic(name);
+                      window.scrollTo({ top: 460, behavior: 'smooth' });
+                    }}
+                  >
+                    {name}
+                  </Chip>
+                ))}
+              </div>
+            </SidebarCard>
 
-        {/* Two audiences, divided by rules rather than boxed */}
-        <section>
-          <Kicker>Who it&apos;s for</Kicker>
-          <Headline style={{ margin: '8px 0 40px' }}>Two ways to use BlogHub</Headline>
+            {/* Featured Writers Widget */}
+            <SidebarCard>
+              <SidebarTitle>
+                <Users /> Featured Creators
+              </SidebarTitle>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[
+                  { name: 'Camilla Rossi', topic: 'Food & Culinary', stories: '18 stories' },
+                  { name: 'Purvesh Joshi', topic: 'Cloud & Tech', stories: '24 stories' },
+                  { name: 'Dr. Evelyn Vance', topic: 'Astrophysics', stories: '12 stories' },
+                  { name: 'Maya Lin', topic: 'Travel & Culture', stories: '15 stories' },
+                ].map((writer) => (
+                  <WriterRow key={writer.name}>
+                    <WriterLeft>
+                      <WriterAvatar>{initial(writer.name)}</WriterAvatar>
+                      <WriterMeta>
+                        <WriterName>{writer.name}</WriterName>
+                        <WriterFollowers>{writer.topic} · {writer.stories}</WriterFollowers>
+                      </WriterMeta>
+                    </WriterLeft>
+                    <Button size="sm" variant="tonal" onClick={() => navigate('/search')}>
+                      Follow
+                    </Button>
+                  </WriterRow>
+                ))}
+              </div>
+            </SidebarCard>
 
-          <Audiences>
-            <Audience>
-              <PenLine />
-              <AudienceTitle>If you write</AudienceTitle>
-              <List>
-                <li>Draft in Markdown with a live preview</li>
-                <li>Publish, unlist or keep private</li>
-                <li>See views, reads and read-through rate per post</li>
-                <li>Build a following and reply in threads</li>
-              </List>
-              <Button variant="secondary" onClick={() => navigate(startHref)}>
-                {startLabel}
-              </Button>
-            </Audience>
+            {/* Newsletter Sidebar Widget */}
+            <SidebarCard style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', borderColor: '#bae6fd' }}>
+              <SidebarTitle style={{ color: '#0369a1' }}>
+                <Zap /> BlogHub Weekly
+              </SidebarTitle>
+              <p style={{ fontSize: 13, color: '#0369a1', lineHeight: 1.5 }}>
+                A handpicked selection of top culinary essays, scientific breakdowns, tech deep-dives, and design insights.
+              </p>
+              <form onSubmit={handleNewsletter} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Input
+                  placeholder="your.email@example.com"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  required
+                />
+                <Button size="sm" type="submit">
+                  Join Newsletter
+                </Button>
+              </form>
+            </SidebarCard>
+          </Sidebar>
+        </FeedGrid>
+      </Container>
 
-            <Audience>
-              <BookOpen />
-              <AudienceTitle>If you read</AudienceTitle>
-              <List>
-                <li>A feed of long-form work, filtered by topic</li>
-                <li>Follow the writers worth following</li>
-                <li>Reply in threads, not a flat comment box</li>
-                <li>No algorithm deciding what you see</li>
-              </List>
-              <Button variant="secondary" onClick={() => navigate('/search')}>
-                Browse stories
-              </Button>
-            </Audience>
-          </Audiences>
-        </section>
-      </Shell>
+      {/* ── 4. "Why BlogHub?" Bento Section ──────────────────────────────── */}
+      <Container>
+        <SectionHead style={{ textAlign: 'center', justifyContent: 'center' }}>
+          <SectionLeft style={{ alignItems: 'center' }}>
+            <SectionKicker>
+              <Layers /> Universal Publishing Engine
+            </SectionKicker>
+            <SectionTitle>Designed For Every Storyteller</SectionTitle>
+            <SectionSubtitle style={{ textAlign: 'center' }}>
+              Whether you're sharing a signature recipe, an engineering breakthrough, or a travel journal — BlogHub gives your words the stage they deserve.
+            </SectionSubtitle>
+          </SectionLeft>
+        </SectionHead>
 
-      <Inverted>
-        <Column>
-          <CtaRow>
-            <CtaTitle>Write something worth finishing.</CtaTitle>
-            <Button size="lg" variant="secondary" onClick={() => navigate(startHref)}>
-              {startLabel} <ArrowRight />
-            </Button>
-          </CtaRow>
-        </Column>
-      </Inverted>
+        <BentoGrid>
+          <BentoCard>
+            <BentoIcon>
+              <Globe2 />
+            </BentoIcon>
+            <BentoTitle>Universal Multi-Category Hub</BentoTitle>
+            <BentoDescription>
+              Publish across Food, Technology, Science, Travel, Design, and Health with rich tags and instant cross-category discoverability.
+            </BentoDescription>
+          </BentoCard>
+
+          <BentoCard>
+            <BentoIcon>
+              <BarChart2 />
+            </BentoIcon>
+            <BentoTitle>Read-Through Completion Analytics</BentoTitle>
+            <BentoDescription>
+              Go beyond simple click counts. Understand true reader engagement with live scroll-depth and completion percentage metrics.
+            </BentoDescription>
+          </BentoCard>
+
+          <BentoCard>
+            <BentoIcon>
+              <MessageCircle />
+            </BentoIcon>
+            <BentoTitle>Engaged Reader Community</BentoTitle>
+            <BentoDescription>
+              Receive constructive feedback, threaded discussions, likes, bookmarks, and direct subscriber notifications.
+            </BentoDescription>
+          </BentoCard>
+
+          <BentoCard $span="2">
+            <BentoIcon>
+              <ShieldCheck />
+            </BentoIcon>
+            <BentoTitle>Seamless Draft, Unlisted & Public Workspaces</BentoTitle>
+            <BentoDescription>
+              Keep works-in-progress private in your creator workspace, share unlisted peer-review links, or publish globally with one click.
+            </BentoDescription>
+          </BentoCard>
+
+          <BentoCard>
+            <BentoIcon>
+              <Sparkles />
+            </BentoIcon>
+            <BentoTitle>Clean & Clutter-Free</BentoTitle>
+            <BentoDescription>
+              No popups, zero intrusive ads, and responsive typography tuned for maximum reading comfort across all devices.
+            </BentoDescription>
+          </BentoCard>
+        </BentoGrid>
+      </Container>
+
+      {/* ── 5. Closing CTA Section ───────────────────────────────────────── */}
+      <Container>
+        <CtaSection>
+          <CtaTitle>Have an idea or story to share with the world?</CtaTitle>
+          <CtaSubtitle>
+            Create your account in seconds. Publish food recipes, tech tutorials, science essays, or personal stories for a global audience.
+          </CtaSubtitle>
+          <Button
+            size="lg"
+            style={{
+              background: '#ffffff',
+              color: '#0284c7',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+              fontWeight: 700,
+            }}
+            onClick={() => navigate(startHref)}
+          >
+            <PenLine /> {startLabel} <ArrowRight />
+          </Button>
+        </CtaSection>
+      </Container>
     </Page>
   );
 }

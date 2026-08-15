@@ -32,14 +32,18 @@ export const FullBleed = styled.div`
  * spacing, because the eye registers the change of ground before it reads a word.
  */
 export const Inverted = styled(FullBleed)`
-  background: ${({ theme }) => theme.colors.inkSolid};
-  color: ${({ theme }) => theme.colors.textOnInk};
+  background: ${({ theme }) =>
+    theme.mode === 'light'
+      ? 'linear-gradient(135deg, #0369a1 0%, #0284c7 100%)'
+      : 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'};
+  color: #ffffff;
   padding: ${({ theme }) => theme.spacing['6xl']} 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
   h1,
   h2,
   h3 {
-    color: ${({ theme }) => theme.colors.textOnInk};
+    color: #ffffff;
   }
 
   ${media.down('md')`

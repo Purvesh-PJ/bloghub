@@ -89,13 +89,14 @@ const Bloom = styled.div`
   position: absolute;
   top: -25%;
   right: -20%;
-  width: 70%;
+  width: 80%;
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    ${({ theme }) => theme.colors.accentContainer} 0%,
-    transparent 65%
+    rgba(14, 165, 233, 0.22) 0%,
+    rgba(56, 189, 248, 0.08) 45%,
+    transparent 70%
   );
   pointer-events: none;
 `;
@@ -141,8 +142,9 @@ const PointIcon = styled.span`
   height: 38px;
   flex-shrink: 0;
   border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentText};
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
 
   svg {
     width: 18px;

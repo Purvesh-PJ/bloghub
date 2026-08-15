@@ -29,23 +29,22 @@ const controlBase = css`
   ${text('md')}
   ${interactive}
 
-  /* The ring lives in box-shadow so it never shifts layout. */
-  box-shadow: inset 0 0 0 1px transparent;
+  /* Crisp border and smooth transition */
+  box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.lineDefault};
 
   &::placeholder {
     color: ${({ theme }) => theme.colors.textMuted};
   }
 
   &:hover:not(:disabled):not(:focus) {
-    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
+    background: ${({ theme }) => theme.colors.surfaceContainerLow};
+    box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.lineStrong};
   }
 
-  /* Focus steps the field *up* a tone rather than down, so it never sinks into the card
-     it sits on. */
   &:focus {
     outline: none;
-    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-    box-shadow: inset 0 0 0 2px ${({ theme }) => theme.colors.accentSolid};
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    box-shadow: inset 0 0 0 1.5px ${({ theme }) => theme.colors.accentSolid}, 0 0 0 3px rgba(14, 165, 233, 0.2);
   }
 
   &:disabled {
@@ -56,10 +55,10 @@ const controlBase = css`
   ${({ $error, theme }) =>
     $error &&
     css`
-      box-shadow: inset 0 0 0 1px ${theme.colors.dangerLine};
+      box-shadow: inset 0 0 0 1.5px ${theme.colors.dangerLine};
 
       &:focus {
-        box-shadow: inset 0 0 0 2px ${theme.colors.dangerSolid};
+        box-shadow: inset 0 0 0 1.5px ${theme.colors.dangerSolid}, 0 0 0 3px rgba(239, 68, 68, 0.2);
       }
     `}
 `;

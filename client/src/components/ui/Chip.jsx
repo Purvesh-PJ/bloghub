@@ -24,21 +24,21 @@ const StyledChip = styled.button`
   ${({ $selected, $interactive: clickable, theme }) =>
     $selected
       ? css`
-          /* Ink, not the accent — same reasoning as the primary button. The accent is
-             reserved for data and links, so a row of filters does not shout over the
-             read-rate bars sitting next to it. */
-          background: ${theme.colors.inkSolid};
-          color: ${theme.colors.textOnInk};
+          background: ${theme.colors.accentSolid};
+          color: ${theme.colors.textOnAccent};
+          box-shadow: 0 2px 8px -2px rgba(14, 165, 233, 0.35);
         `
       : css`
           background: ${theme.colors.surfaceContainer};
           color: ${theme.colors.textSecondary};
+          box-shadow: inset 0 0 0 1px ${theme.colors.lineDefault};
 
           ${clickable &&
           css`
             &:hover {
-              background: ${theme.colors.surfaceContainerHigh};
-              color: ${theme.colors.textPrimary};
+              background: ${theme.colors.accentContainer};
+              color: ${theme.colors.accentText};
+              box-shadow: inset 0 0 0 1px ${theme.colors.accentLine};
             }
           `}
         `}
