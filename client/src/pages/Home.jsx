@@ -1,257 +1,261 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
-import { ArrowRight, PenLine, BarChart3 } from 'lucide-react';
+import { ArrowRight, PenLine, BookOpen } from 'lucide-react';
+
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
 import { useAuth } from '../context/AuthContext';
-import { Button, Chip, Surface, Loading } from '../components/ui';
+import { Button, Chip, Loading } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
-import {
-  ReadGapIllustration,
-  VisibilityFlow,
-  CommentThread,
-} from '../components/marketing/Illustrations';
+import { VisibilityFlow, CommentThread } from '../components/marketing/Illustrations';
 import { AnalyticsMockup } from '../components/marketing/Mockups';
 import { FeatureGrid } from '../components/marketing/FeatureGrid';
 import { TopicMarquee, TopicGrid } from '../components/marketing/Topics';
-import { display, text, label, media } from '../styles/theme/mixins';
+import {
+  FullBleed,
+  Inverted,
+  Column,
+  Numbered,
+  Kicker,
+  Headline,
+  Body,
+  Split,
+} from '../components/layout/Editorial';
+import { display, text, label as labelStyle, media } from '../styles/theme/mixins';
 
 /**
  * Landing page.
  *
- * Built as an argument rather than a feature list. The platform's one genuine difference is
- * that it separates a view from a read, so the page opens with that gap, explains it, and
- * only then shows the rest of the product. Every illustration teaches the point beside it.
+ * Built as an argument rather than a feature list: the platform's one genuine difference is
+ * that it separates a view from a read, so the page opens with that gap and everything else
+ * follows from it.
+ *
+ * The composition matters as much as the copy. The previous version put every section in
+ * the same centred 1200px column with the same heading-then-content shape, which reads as
+ * monotonous however good each section is on its own. This one changes ground as you scroll
+ * — the gap and the closing call are full-width inverted bands, the topic marquee runs edge
+ * to edge, the three product sections are numbered and alternate sides, and the feed leads
+ * with one large story rather than a uniform grid.
  */
 
-/* ── Shell ───────────────────────────────────────────────────────────────────── */
+/* ── Page ────────────────────────────────────────────────────────────────── */
 
 const Page = styled.div`
+  /* Full-bleed bands are 100vw wide; clip stops that becoming a horizontal scrollbar. */
   overflow-x: clip;
-`;
-
-const Shell = styled.div`
-  max-width: ${({ theme }) => theme.layout.maxWidth};
-  margin: 0 auto;
-  padding: 0 ${({ theme }) => theme.spacing.xl};
-`;
-
-const Section = styled.section`
-  padding: ${({ theme }) => theme.spacing['3xl']} 0;
-
-  ${media.down('md')`padding: ${({ theme }) => theme.spacing['2xl']} 0;`}
-`;
-
-const Eyebrow = styled.p`
-  ${label('md')}
-  color: ${({ theme }) => theme.colors.accentText};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const H2 = styled.h2`
-  ${display('lg')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-
-  ${media.down('md')`font-size: ${({ theme }) => theme.display.md[0]};`}
-`;
-
-const Lead = styled.p`
-  ${text('xl')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  max-width: 620px;
-`;
-
-/* ── Hero ────────────────────────────────────────────────────────────────────── */
-
-const Hero = styled.header`
-  position: relative;
-  padding: ${({ theme }) => theme.spacing['4xl']} 0 ${({ theme }) => theme.spacing['2xl']};
-`;
-
-/* Asymmetric rather than centred. A centred column of text with buttons under it is the
-   default every template ships with; an off-centre split gives the eye somewhere to go. */
-const HeroGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: ${({ theme }) => theme.spacing['4xl']};
-  align-items: end;
-
-  ${media.down('lg')`
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing['2xl']};
-  `}
-`;
-
-const HeroAside = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-  padding-bottom: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing['6xl']};
+  padding-bottom: ${({ theme }) => theme.spacing['5xl']};
+
+  ${media.down('md')`gap: ${({ theme }) => theme.spacing['4xl']};`}
 `;
 
-const AsideStat = styled.div`
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+
+const Hero = styled.header`
   display: flex;
-  align-items: baseline;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding-bottom: ${({ theme }) => theme.spacing.lg};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  flex-direction: column;
+  justify-content: center;
+  min-height: min(78vh, 720px);
+  padding: ${({ theme }) => theme.spacing['4xl']} 0 ${({ theme }) => theme.spacing['2xl']};
 
-  b {
-    ${display('md')}
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-variant-numeric: tabular-nums;
-  }
-
-  span {
-    ${text('sm')}
-    color: ${({ theme }) => theme.colors.textMuted};
-  }
-`;
-
-const Glow = styled.div`
-  position: absolute;
-  inset: -40% 0 auto 50%;
-  transform: translateX(-50%);
-  width: min(1200px, 140vw);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    ${({ theme }) => theme.colors.accentContainer} 0%,
-    transparent 58%
-  );
-  pointer-events: none;
-  z-index: -1;
+  ${media.down('md')`
+    min-height: 0;
+    padding: ${({ theme }) => theme.spacing['3xl']} 0;
+  `}
 `;
 
 const HeroTitle = styled.h1`
   ${display('2xl')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  max-width: 14ch;
+  max-width: 13ch;
 
-  span {
+  em {
+    font-style: normal;
     color: ${({ theme }) => theme.colors.accentText};
   }
 
   ${media.down('lg')`font-size: ${({ theme }) => theme.display.xl[0]};`}
   ${media.down('md')`font-size: ${({ theme }) => theme.display.lg[0]};`}
+  ${media.down('sm')`font-size: ${({ theme }) => theme.display.md[0]};`}
+`;
+
+/*
+  The lead and the actions sit in the right half, below the headline's baseline rather than
+  beside it. It reads as a caption to the headline instead of a second column competing with
+  it, and it leaves the left side genuinely empty — which is what makes the type feel large.
+*/
+const HeroFoot = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing['2xl']};
+  align-items: end;
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+
+  ${media.down('md')`grid-template-columns: 1fr;`}
 `;
 
 const HeroLead = styled.p`
   ${text('xl')}
   color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 50ch;
-  margin-top: ${({ theme }) => theme.spacing.xl};
-`;
+  max-width: 42ch;
+  grid-column: 2;
 
-/* The topic band doubles as the hero visual: it shows the platform's breadth in the same
-   glance as the headline, which a picture of an editor never did. */
-const HeroTopics = styled.div`
-  margin-top: ${({ theme }) => theme.spacing['3xl']};
-  /* Break out of the shell padding so the band runs to the viewport edges. */
-  margin-inline: calc(-50vw + 50%);
-  padding-inline: 0;
-`;
-
-const HeroMeta = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: ${({ theme }) => theme.spacing.xl};
-
-  strong {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-weight: ${({ theme }) => theme.weights.semibold};
-  }
+  ${media.down('md')`grid-column: 1;`}
 `;
 
 const Actions = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.md};
   flex-wrap: wrap;
-  margin-top: ${({ theme }) => theme.spacing['2xl']};
+  grid-column: 2;
+
+  ${media.down('md')`grid-column: 1;`}
 `;
 
-const CentredActions = styled(Actions)`
-  justify-content: center;
-`;
-
-const HeroVisual = styled.div`
-  max-width: 900px;
-  margin: ${({ theme }) => theme.spacing['4xl']} auto 0;
-`;
-
-/* ── Statement section ───────────────────────────────────────────────────────── */
-
-const Statement = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: ${({ theme }) => theme.spacing['4xl']};
-  align-items: center;
-
-  ${media.down('lg')`
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing['2xl']};
-  `}
-`;
-
-const BigStatement = styled.h2`
-  ${display('xl')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-
-  ${media.down('md')`font-size: ${({ theme }) => theme.display.lg[0]};`}
-`;
-
-/* ── Split rows ──────────────────────────────────────────────────────────────── */
-
-const Row = styled.div`
-  display: grid;
-  grid-template-columns: 0.85fr 1.15fr;
-  gap: ${({ theme }) => theme.spacing['4xl']};
-  align-items: center;
-
-  & + & {
-    margin-top: ${({ theme }) => theme.spacing['4xl']};
-  }
-
-  &:nth-of-type(even) > *:first-child {
-    order: 2;
-  }
-
-  ${media.down('lg')`
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing['2xl']};
-    &:nth-of-type(even) > *:first-child { order: 0; }
-  `}
-`;
-
-const RowTitle = styled.h3`
-  ${display('md')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const RowText = styled.p`
-  ${text('lg')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-top: ${({ theme }) => theme.spacing.lg};
-`;
-
-/* ── Audience split ──────────────────────────────────────────────────────────── */
-
-const Two = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+const HeroBottom = styled.div`
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xl};
+
+  ${media.down('md')`grid-column: 1;`}
+`;
+
+/* ── The gap — an inverted band ──────────────────────────────────────────── */
+
+const GapGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing['4xl']};
+  align-items: center;
 
   ${media.down('md')`grid-template-columns: 1fr;`}
 `;
 
-const AudiencePanel = styled(Surface)`
+const Figures = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xl};
+`;
+
+const Figure = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+const FigureValue = styled.span`
+  ${display('xl')}
+  color: ${({ theme, $accent }) => ($accent ? theme.colors.accentSolid : 'inherit')};
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+
+  ${media.down('md')`font-size: ${({ theme }) => theme.display.lg[0]};`}
+`;
+
+const FigureLabel = styled.span`
+  ${labelStyle('md')}
+  opacity: 0.6;
+`;
+
+/* A bar drawn on the inverted ground, so it needs its own track colour. */
+const GapBar = styled.div`
+  height: 8px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.alphaSoft};
+  overflow: hidden;
+  margin-top: ${({ theme }) => theme.spacing.sm};
+
+  span {
+    display: block;
+    height: 100%;
+    width: ${({ $percent }) => $percent}%;
+    background: ${({ theme }) => theme.colors.accentSolid};
+    border-radius: inherit;
+  }
+`;
+
+const GapNote = styled.p`
+  ${text('lg')}
+  opacity: 0.75;
+  max-width: 46ch;
+`;
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+
+const Shell = styled.div`
+  max-width: ${({ theme }) => theme.layout.maxWidth};
+  margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacing.xl};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing['5xl']};
+
+  ${media.down('md')`
+    padding: 0 ${({ theme }) => theme.spacing.lg};
+    gap: ${({ theme }) => theme.spacing['3xl']};
+  `}
+`;
+
+const Visual = styled.div`
+  border-radius: ${({ theme }) => theme.radii.xl};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  padding: ${({ theme }) => theme.spacing['2xl']};
+`;
+
+/* ── Feed — one lead story, then the rest ────────────────────────────────── */
+
+const FeedHead = styled.div`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.lg};
+  flex-wrap: wrap;
+  padding-bottom: ${({ theme }) => theme.spacing.lg};
+  border-bottom: 2px solid ${({ theme }) => theme.colors.textPrimary};
+`;
+
+const Rest = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: ${({ theme }) => theme.spacing.xl};
+
+  ${media.down('lg')`grid-template-columns: repeat(2, 1fr);`}
+  ${media.down('sm')`grid-template-columns: 1fr;`}
+`;
+
+const Topics = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+`;
+
+/* ── Audiences — two columns divided by a rule, not two cards ────────────── */
+
+const Audiences = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing['3xl']};
+
+  ${media.down('md')`grid-template-columns: 1fr;`}
+`;
+
+const Audience = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.lg};
   align-items: flex-start;
+  padding-top: ${({ theme }) => theme.spacing.xl};
+  border-top: 2px solid ${({ theme }) => theme.colors.textPrimary};
+
+  svg {
+    width: 22px;
+    height: 22px;
+    color: ${({ theme }) => theme.colors.accentText};
+  }
 `;
 
 const AudienceTitle = styled.h3`
@@ -263,76 +267,43 @@ const List = styled.ul`
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-  ${text('md')}
-  color: ${({ theme }) => theme.colors.textSecondary};
+  gap: ${({ theme }) => theme.spacing.sm};
 
   li {
-    display: flex;
-    gap: ${({ theme }) => theme.spacing.md};
-  }
+    ${text('md')}
+    color: ${({ theme }) => theme.colors.textSecondary};
+    padding-left: ${({ theme }) => theme.spacing.lg};
+    position: relative;
 
-  li::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    margin-top: 9px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: ${({ theme }) => theme.colors.accentSolid};
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: ${({ theme }) => theme.colors.accentSolid};
+    }
   }
 `;
 
-/* ── Feed ────────────────────────────────────────────────────────────────────── */
+/* ── Closing band ────────────────────────────────────────────────────────── */
 
-const FeedHead = styled.div`
+const CtaTitle = styled.h2`
+  ${display('lg')}
+  max-width: 16ch;
+
+  ${media.down('md')`font-size: ${({ theme }) => theme.display.md[0]};`}
+`;
+
+const CtaRow = styled.div`
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacing['2xl']};
   flex-wrap: wrap;
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
-
-const Topics = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-  flex-wrap: wrap;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const Feed = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  > * + * {
-    border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  }
-`;
-
-const Centre = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: ${({ theme }) => theme.spacing['2xl']};
-`;
-
-/* ── Closing ─────────────────────────────────────────────────────────────────── */
-
-const Cta = styled(Surface)`
-  text-align: center;
-  padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing.xl};
-`;
-
-const CtaTitle = styled.h2`
-  ${display('xl')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  max-width: 18ch;
-  margin: 0 auto;
-
-  ${media.down('md')`font-size: ${({ theme }) => theme.display.lg[0]};`}
-`;
-
-/* ── Page ────────────────────────────────────────────────────────────────────── */
 
 export function Home() {
   const { isAuthenticated } = useAuth();
@@ -340,7 +311,7 @@ export function Home() {
 
   const { data: postsResponse, isLoading } = useQuery({
     queryKey: ['posts'],
-    queryFn: () => postService.getPosts({ limit: 5 }),
+    queryFn: () => postService.getPosts({ limit: 7 }),
   });
 
   const { data: categoriesData } = useQuery({
@@ -354,6 +325,7 @@ export function Home() {
   const categories = categoriesData?.data ?? [];
   const totalPosts = postsResponse?.pagination?.total ?? posts.length;
 
+  const [lead, ...rest] = posts;
   const startHref = isAuthenticated ? '/write' : '/register';
   const startLabel = isAuthenticated ? 'Open the editor' : 'Start writing';
 
@@ -361,21 +333,16 @@ export function Home() {
     <Page>
       <Shell>
         <Hero>
-          <Glow aria-hidden="true" />
+          <HeroTitle>
+            Publish your writing. <em>Find out if it landed.</em>
+          </HeroTitle>
 
-          <HeroGrid>
-            <div>
-              <HeroTitle>
-                Publish your writing.
-                <br />
-                <span>Find out if it landed.</span>
-              </HeroTitle>
-
+          <HeroFoot>
+            <HeroBottom>
               <HeroLead>
-                BlogHub is a blogging platform with an editor that keeps out of your way. It also
-                tells you how many people finished what you wrote, not just how many clicked on it.
+                An editor that keeps out of your way, and the one number most platforms will not
+                show you: how many people actually reached the end.
               </HeroLead>
-
               <Actions>
                 <Button size="lg" onClick={() => navigate(startHref)}>
                   {startLabel} <ArrowRight />
@@ -384,176 +351,120 @@ export function Home() {
                   Browse stories
                 </Button>
               </Actions>
-            </div>
-
-            <HeroAside>
-              <AsideStat>
-                <b>{totalPosts}</b>
-                <span>stories published so far</span>
-              </AsideStat>
-              <AsideStat>
-                <b>{categories.length}</b>
-                <span>topics, from code to cooking</span>
-              </AsideStat>
-              <AsideStat style={{ borderBottom: 'none' }}>
-                <b>Free</b>
-                <span>no card, nothing to set up</span>
-              </AsideStat>
-            </HeroAside>
-          </HeroGrid>
-
-          <HeroTopics>
-            <TopicMarquee topics={categories.map((category) => category.name)} />
-          </HeroTopics>
+            </HeroBottom>
+          </HeroFoot>
         </Hero>
       </Shell>
 
+      <FullBleed>
+        <TopicMarquee topics={categories.map((category) => category.name)} />
+      </FullBleed>
+
+      {/* The argument, on inverted ground */}
+      <Inverted id="read">
+        <Column>
+          <GapGrid>
+            <div>
+              <Kicker>The number nobody shows you</Kicker>
+              <Figures style={{ marginTop: 24 }}>
+                <div>
+                  <Figure>
+                    <FigureValue>1,240</FigureValue>
+                    <FigureLabel>opened it</FigureLabel>
+                  </Figure>
+                  <GapBar $percent={100} aria-hidden="true">
+                    <span />
+                  </GapBar>
+                </div>
+                <div>
+                  <Figure>
+                    <FigureValue $accent>180</FigureValue>
+                    <FigureLabel>finished it</FigureLabel>
+                  </Figure>
+                  <GapBar $percent={14.5} aria-hidden="true">
+                    <span />
+                  </GapBar>
+                </div>
+              </Figures>
+            </div>
+
+            <GapNote>
+              A view only means the page loaded. It says nothing about whether anyone stayed to the
+              end. BlogHub records both, so you can tell the difference between someone glancing at
+              your work and someone actually reading it.
+            </GapNote>
+          </GapGrid>
+        </Column>
+      </Inverted>
+
       <Shell>
-        {/* The argument */}
-        <Section id="read">
-          <Statement>
-            <div>
-              <Eyebrow>The number nobody shows you</Eyebrow>
-              <BigStatement>
-                1,240 opened it.
-                <br />
-                180 finished.
-              </BigStatement>
-              <Lead>
-                A view only means the page loaded. It says nothing about whether anyone stayed to
-                the end. BlogHub records both, so you can tell the difference between someone
-                glancing at your work and someone actually reading it.
-              </Lead>
-            </div>
-            <ReadGapIllustration />
-          </Statement>
-        </Section>
+        {/* Product, as a numbered sequence */}
+        <Numbered n={1} rule={false}>
+          <Kicker>Analytics</Kicker>
+          <Headline>Numbers that mean something</Headline>
+          <Split>
+            <Body>
+              Every post gets its own views, reads and read-through rate, plus a ranking of which
+              pieces did best. If you run the site, you get the same picture across every author.
+            </Body>
+            <Visual>
+              <AnalyticsMockup />
+            </Visual>
+          </Split>
+        </Numbered>
 
-        {/* Breadth — the thing a first-time visitor most needs to grasp */}
-        <Section>
-          <Eyebrow>Every subject</Eyebrow>
-          <H2>One platform, any topic</H2>
-          <Lead>
-            Someone writing about databases and someone writing about cooking both belong here. You
-            can write across as many topics as you like, and a single post can sit in more than one
-            of them.
-          </Lead>
-
-          <div style={{ marginTop: 32 }}>
-            <TopicGrid categories={categories} onSelect={() => navigate('/search')} />
-          </div>
-        </Section>
-
-        {/* Product depth */}
-        <Section>
-          <Row>
-            <div>
-              <Eyebrow>Analytics</Eyebrow>
-              <RowTitle>Numbers that mean something</RowTitle>
-              <RowText>
-                Every post gets its own views, reads and read-through rate, plus a ranking of which
-                pieces did best. If you run the site, you get the same picture across every author.
-              </RowText>
-            </div>
-            <AnalyticsMockup />
-          </Row>
-
-          <Row>
-            <div>
-              <Eyebrow>Control</Eyebrow>
-              <RowTitle>Publish on your terms</RowTitle>
-              <RowText>
-                Keep a piece to yourself while you work on it, share it as an unlisted link, or put
-                it on the public feed. You can move between the three whenever you want, and nothing
-                is one-way.
-              </RowText>
-            </div>
-            <Surface $tone="low" $radius="xl" $padding="2xl">
+        <Numbered n={2}>
+          <Kicker>Control</Kicker>
+          <Headline>Publish on your terms</Headline>
+          <Split $flip>
+            <Visual>
               <VisibilityFlow />
-            </Surface>
-          </Row>
+            </Visual>
+            <Body>
+              Keep a piece to yourself while you work on it, share it as an unlisted link, or put it
+              on the public feed. You can move between the three whenever you want, and nothing is
+              one-way.
+            </Body>
+          </Split>
+        </Numbered>
 
-          <Row>
-            <div>
-              <Eyebrow>Community</Eyebrow>
-              <RowTitle>Replies that go somewhere</RowTitle>
-              <RowText>
-                Replies nest under the comment they answer, so a conversation actually reads like
-                one. Readers can follow the writers they like and come back for the next piece.
-              </RowText>
-            </div>
-            <Surface $tone="low" $radius="xl" $padding="2xl">
+        <Numbered n={3}>
+          <Kicker>Community</Kicker>
+          <Headline>Replies that go somewhere</Headline>
+          <Split>
+            <Body>
+              Replies nest under the comment they answer, so a conversation actually reads like one.
+              Readers can follow the writers they like and come back for the next piece.
+            </Body>
+            <Visual>
               <CommentThread />
-            </Surface>
-          </Row>
-        </Section>
+            </Visual>
+          </Split>
+        </Numbered>
+      </Shell>
 
-        {/* Everything, in one place */}
-        <Section>
-          <Eyebrow>Everything in the box</Eyebrow>
-          <H2>The whole platform</H2>
-          <Lead>
-            Here is everything the platform does today. A few things are still being built, and
-            those are marked so you know what you are getting.
-          </Lead>
+      {/* Breadth — full width, because the point is how much there is */}
+      <FullBleed style={{ background: 'transparent' }}>
+        <Column>
+          <Kicker>Every subject</Kicker>
+          <Headline style={{ marginTop: 8, marginBottom: 24 }}>One platform, any topic</Headline>
+          <TopicGrid categories={categories} onSelect={() => navigate('/search')} />
+        </Column>
+      </FullBleed>
 
-          <div style={{ marginTop: 32 }}>
-            <FeatureGrid />
-          </div>
-        </Section>
-
-        {/* Who it is for */}
-        <Section>
-          <Eyebrow>Who it&apos;s for</Eyebrow>
-          <H2>Two ways to use BlogHub</H2>
-          <Lead>Most people end up doing a bit of both.</Lead>
-
-          <div style={{ marginTop: 32 }}>
-            <Two>
-              <AudiencePanel $tone="low" $radius="xl" $padding="2xl">
-                <PenLine size={22} />
-                <AudienceTitle>If you write</AudienceTitle>
-                <List>
-                  <li>Draft in Markdown with a live preview</li>
-                  <li>Publish, unlist or keep private</li>
-                  <li>See views, reads and read-through rate per post</li>
-                  <li>Build a following and reply in threads</li>
-                </List>
-                <Button variant="tonal" onClick={() => navigate(startHref)}>
-                  {startLabel}
-                </Button>
-              </AudiencePanel>
-
-              <AudiencePanel $tone="low" $radius="xl" $padding="2xl">
-                <BarChart3 size={22} />
-                <AudienceTitle>If you read</AudienceTitle>
-                <List>
-                  <li>A feed of long-form work, filtered by topic</li>
-                  <li>Follow the writers worth following</li>
-                  <li>Reply in threads, not a flat comment box</li>
-                  <li>No algorithm deciding what you see</li>
-                </List>
-                <Button variant="tonal" onClick={() => navigate('/search')}>
-                  Browse stories
-                </Button>
-              </AudiencePanel>
-            </Two>
-          </div>
-        </Section>
-
-        {/* Proof */}
-        <Section>
+      <Shell>
+        {/* The feed, led by one story */}
+        <section>
           <FeedHead>
-            <div>
-              <Eyebrow>Published on BlogHub</Eyebrow>
-              <H2>Recent work</H2>
-            </div>
+            <Headline as="h2" style={{ maxWidth: 'none' }}>
+              Recent work
+            </Headline>
             <Button variant="ghost" onClick={() => navigate('/search')}>
-              Browse all <ArrowRight />
+              All {totalPosts} stories <ArrowRight />
             </Button>
           </FeedHead>
 
-          <Topics>
+          <Topics style={{ margin: '24px 0 32px' }}>
             {categories.slice(0, 8).map((category) => (
               <Chip key={category._id} size="sm" onClick={() => navigate('/search')}>
                 {category.name}
@@ -561,33 +472,73 @@ export function Home() {
             ))}
           </Topics>
 
-          <Feed>
-            {posts.map((post) => (
-              <PostCard key={post._id} post={post} />
+          {lead && <PostCard post={lead} />}
+
+          <Rest style={{ marginTop: 32 }}>
+            {rest.map((post) => (
+              <PostCard key={post._id} post={post} layout="stacked" />
             ))}
-          </Feed>
+          </Rest>
+        </section>
 
-          <Centre>
-            <Button variant="secondary" onClick={() => navigate('/search')}>
-              See all {totalPosts} stories
-            </Button>
-          </Centre>
-        </Section>
+        {/* Everything it does */}
+        <section>
+          <Kicker>Everything in the box</Kicker>
+          <Headline style={{ margin: '8px 0 16px' }}>The whole platform</Headline>
+          <Body style={{ marginBottom: 40 }}>
+            Here is everything the platform does today. A few things are still being built, and
+            those are marked so you know what you are getting.
+          </Body>
+          <FeatureGrid />
+        </section>
 
-        <Section>
-          <Cta $tone="accent" $radius="3xl" $padding="none">
-            <CtaTitle>Write something worth finishing</CtaTitle>
-            <Lead style={{ margin: '24px auto 0' }}>
-              Make an account, open the editor and publish. You can work out the rest later.
-            </Lead>
-            <CentredActions>
-              <Button size="lg" onClick={() => navigate(startHref)}>
-                {startLabel} <ArrowRight />
+        {/* Two audiences, divided by rules rather than boxed */}
+        <section>
+          <Kicker>Who it&apos;s for</Kicker>
+          <Headline style={{ margin: '8px 0 40px' }}>Two ways to use BlogHub</Headline>
+
+          <Audiences>
+            <Audience>
+              <PenLine />
+              <AudienceTitle>If you write</AudienceTitle>
+              <List>
+                <li>Draft in Markdown with a live preview</li>
+                <li>Publish, unlist or keep private</li>
+                <li>See views, reads and read-through rate per post</li>
+                <li>Build a following and reply in threads</li>
+              </List>
+              <Button variant="secondary" onClick={() => navigate(startHref)}>
+                {startLabel}
               </Button>
-            </CentredActions>
-          </Cta>
-        </Section>
+            </Audience>
+
+            <Audience>
+              <BookOpen />
+              <AudienceTitle>If you read</AudienceTitle>
+              <List>
+                <li>A feed of long-form work, filtered by topic</li>
+                <li>Follow the writers worth following</li>
+                <li>Reply in threads, not a flat comment box</li>
+                <li>No algorithm deciding what you see</li>
+              </List>
+              <Button variant="secondary" onClick={() => navigate('/search')}>
+                Browse stories
+              </Button>
+            </Audience>
+          </Audiences>
+        </section>
       </Shell>
+
+      <Inverted>
+        <Column>
+          <CtaRow>
+            <CtaTitle>Write something worth finishing.</CtaTitle>
+            <Button size="lg" variant="secondary" onClick={() => navigate(startHref)}>
+              {startLabel} <ArrowRight />
+            </Button>
+          </CtaRow>
+        </Column>
+      </Inverted>
     </Page>
   );
 }
