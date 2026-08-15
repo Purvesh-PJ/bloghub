@@ -13,231 +13,206 @@ export const GlobalStyles = createGlobalStyle`
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+    /* Let Inter's opsz axis pick display shapes at large sizes automatically. */
+    font-optical-sizing: auto;
+    /* Inter's own contextual alternates — notably a better single-storey 'a' at display
+       sizes and improved figure spacing. */
+    font-feature-settings: 'cv11', 'ss01';
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(${({ theme }) => theme.layout.headerHeight} + 24px);
   }
 
   body {
-    font-family: ${({ theme }) => theme.fonts.body};
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    line-height: ${({ theme }) => theme.lineHeights.normal};
+    font-family: ${({ theme }) => theme.fonts.ui};
+    font-size: ${({ theme }) => theme.text.md[0]};
+    line-height: ${({ theme }) => theme.text.md[1]};
     color: ${({ theme }) => theme.colors.textPrimary};
-    background-color: ${({ theme }) => theme.colors.bgSecondary};
+    background: ${({ theme }) => theme.colors.surfacePage};
     min-height: 100vh;
-    transition: background-color ${({ theme }) => theme.transitions.normal},
-                color ${({ theme }) => theme.transitions.normal};
+    transition:
+      background ${({ theme }) => theme.transitions.normal},
+      color ${({ theme }) => theme.transitions.normal};
   }
 
-  /* Links */
   a {
     text-decoration: none;
     color: inherit;
-    transition: color ${({ theme }) => theme.transitions.fast};
   }
 
-  /* Headings */
   h1, h2, h3, h4, h5, h6 {
-    font-family: ${({ theme }) => theme.fonts.heading};
-    font-weight: ${({ theme }) => theme.fontWeights.semibold};
+    font-family: ${({ theme }) => theme.fonts.display};
     color: ${({ theme }) => theme.colors.textPrimary};
-    letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
+    text-wrap: balance;
   }
 
-  /* Paragraphs */
   p {
-    color: ${({ theme }) => theme.colors.textSecondary};
-    line-height: ${({ theme }) => theme.lineHeights.relaxed};
+    text-wrap: pretty;
   }
 
-  /* Code */
-  code, pre {
+  code, pre, kbd, samp {
     font-family: ${({ theme }) => theme.fonts.mono};
   }
 
-  code {
-    background: ${({ theme }) => theme.colors.codeBg};
-    padding: 2px 6px;
-    border-radius: ${({ theme }) => theme.radii.sm};
-    font-size: 0.9em;
-  }
-
-  pre {
-    background: ${({ theme }) => theme.colors.codeBg};
-    padding: ${({ theme }) => theme.spacing.md};
-    border-radius: ${({ theme }) => theme.radii.md};
-    overflow-x: auto;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-  }
-
-  pre code {
-    background: none;
-    padding: 0;
-    border-radius: 0;
-  }
-
-  /* Images */
-  img {
+  img, svg, video {
     max-width: 100%;
-    height: auto;
     display: block;
   }
 
-  /* Buttons reset */
   button {
     font-family: inherit;
+    font-size: inherit;
     cursor: pointer;
     border: none;
     background: none;
+    color: inherit;
   }
 
-  /* Input reset */
   input, textarea, select {
     font-family: inherit;
     font-size: inherit;
+    color: inherit;
   }
 
-  /* Scrollbar - minimal */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  /* One focus ring for the whole application. Radix decides *when* focus is visible. */
+  :focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.lineFocus};
+    outline-offset: 2px;
   }
 
-  ::-webkit-scrollbar-track {
-    background: ${({ theme }) => theme.colors.scrollbarTrack};
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: ${({ theme }) => theme.colors.scrollbarThumb};
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: ${({ theme }) => theme.colors.scrollbarThumbHover};
-  }
-
-  /* Focus - clean ring */
-  *:focus-visible {
-    outline: none;
-    box-shadow: ${({ theme }) => theme.shadows.focusRing};
-  }
-
-  /* Selection */
   ::selection {
     background: ${({ theme }) => theme.colors.selection};
     color: ${({ theme }) => theme.colors.selectionText};
   }
 
-  /* Post Content */
-  .post-content {
-    font-family: ${({ theme }) => theme.fonts.body};
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    line-height: ${({ theme }) => theme.lineHeights.loose};
-    color: ${({ theme }) => theme.colors.textPrimary};
+  /* ── Scrollbars — thin, floating, no gutter ─────────────────────────────── */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: ${({ theme }) => theme.colors.lineStrong} transparent;
   }
+
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  ::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.colors.lineStrong};
+    border-radius: ${({ theme }) => theme.radii.full};
+    border: 4px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: ${({ theme }) => theme.colors.textMuted};
+    background-clip: content-box;
+  }
+
+  /* ── Article body ────────────────────────────────────────────────────────── */
+  .post-content {
+    font-size: ${({ theme }) => theme.text.lg[0]};
+    line-height: ${({ theme }) => theme.text.lg[1]};
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+
+  .post-content > * + * { margin-top: 1.4em; }
 
   .post-content h1,
   .post-content h2,
   .post-content h3 {
-    font-weight: ${({ theme }) => theme.fontWeights.semibold};
-    margin-top: 2em;
-    margin-bottom: 0.75em;
     color: ${({ theme }) => theme.colors.textPrimary};
-    letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
+    letter-spacing: ${({ theme }) => theme.tracking.tight};
+    font-weight: ${({ theme }) => theme.weights.semibold};
+    margin-top: 2em;
+    margin-bottom: 0.6em;
   }
 
-  .post-content h1 { font-size: 1.75rem; }
-  .post-content h2 { font-size: 1.5rem; }
-  .post-content h3 { font-size: 1.25rem; }
+  .post-content h1 { font-size: ${({ theme }) => theme.display.md[0]}; }
+  .post-content h2 { font-size: ${({ theme }) => theme.display.sm[0]}; }
+  .post-content h3 { font-size: ${({ theme }) => theme.display.xs[0]}; }
 
-  .post-content p {
-    margin-bottom: 1.25em;
-    color: ${({ theme }) => theme.colors.textSecondary};
+  .post-content a {
+    color: ${({ theme }) => theme.colors.textLink};
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    text-decoration-color: ${({ theme }) => theme.colors.accentLine};
   }
+
+  .post-content a:hover { text-decoration-color: currentColor; }
 
   .post-content ul,
-  .post-content ol {
-    margin-bottom: 1.25em;
-    padding-left: 1.5em;
-    color: ${({ theme }) => theme.colors.textSecondary};
-  }
-
-  .post-content li {
-    margin-bottom: 0.5em;
-  }
+  .post-content ol { padding-left: 1.4em; }
+  .post-content li + li { margin-top: 0.4em; }
 
   .post-content blockquote {
-    border-left: 3px solid ${({ theme }) => theme.colors.border};
-    padding-left: ${({ theme }) => theme.spacing.md};
-    margin: 1.5em 0;
-    color: ${({ theme }) => theme.colors.textMuted};
-    font-style: italic;
+    border-left: 3px solid ${({ theme }) => theme.colors.accentLine};
+    padding-left: ${({ theme }) => theme.spacing.xl};
+    color: ${({ theme }) => theme.colors.textSecondary};
   }
 
   .post-content img {
+    border-radius: ${({ theme }) => theme.radii.xl};
+    margin: 2.5em 0;
+  }
+
+  .post-content pre {
+    background: ${({ theme }) => theme.colors.surfaceContainer};
+    padding: ${({ theme }) => theme.spacing.xl};
     border-radius: ${({ theme }) => theme.radii.lg};
-    margin: 1.5em 0;
+    overflow-x: auto;
+    font-size: ${({ theme }) => theme.text.sm[0]};
+    line-height: 1.6;
   }
 
-  /* Rich Text Editor */
-  .ql-container {
-    min-height: 300px;
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    font-family: ${({ theme }) => theme.fonts.body};
-    border: 1px solid ${({ theme }) => theme.colors.inputBorder} !important;
-    border-top: none !important;
-    border-radius: 0 0 ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md};
-    background: ${({ theme }) => theme.colors.inputBg};
+  .post-content code {
+    background: ${({ theme }) => theme.colors.surfaceContainer};
+    padding: 0.15em 0.4em;
+    border-radius: ${({ theme }) => theme.radii.xs};
+    font-size: 0.875em;
   }
 
-  .ql-toolbar {
-    border-radius: ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md} 0 0;
-    background: ${({ theme }) => theme.colors.bgTertiary};
-    border: 1px solid ${({ theme }) => theme.colors.inputBorder} !important;
-    font-family: ${({ theme }) => theme.fonts.body};
+  .post-content pre code { background: none; padding: 0; }
+
+  .post-content hr {
+    border: none;
+    border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+    margin: 3em 0;
   }
 
-  .ql-editor {
-    min-height: 300px;
-    font-family: ${({ theme }) => theme.fonts.body};
-    line-height: ${({ theme }) => theme.lineHeights.relaxed};
-    color: ${({ theme }) => theme.colors.textPrimary};
+  /* ── Markdown editor ─────────────────────────────────────────────────────── */
+  .w-md-editor {
+    background: ${({ theme }) => theme.colors.surfaceContainerLow} !important;
+    color: ${({ theme }) => theme.colors.textPrimary} !important;
+    border: 1px solid ${({ theme }) => theme.colors.lineSubtle} !important;
+    border-radius: ${({ theme }) => theme.radii.lg} !important;
+    box-shadow: none !important;
+    overflow: hidden;
   }
 
-  .ql-editor.ql-blank::before {
-    color: ${({ theme }) => theme.colors.inputPlaceholder};
-    font-style: normal;
+  .w-md-editor-toolbar {
+    background: ${({ theme }) => theme.colors.surfaceContainer} !important;
+    border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle} !important;
+    padding: ${({ theme }) => theme.spacing.sm} !important;
   }
 
-  /* Utility Classes */
+  .w-md-editor-text-input,
+  .w-md-editor-text-pre > code {
+    font-family: ${({ theme }) => theme.fonts.mono} !important;
+    font-size: ${({ theme }) => theme.text.md[0]} !important;
+    line-height: 1.7 !important;
+  }
+
+  /* ── Utilities ───────────────────────────────────────────────────────────── */
   .text-truncate {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .text-truncate-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .text-truncate-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* Responsive */
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    .hide-mobile {
-      display: none !important;
-    }
-  }
-
-  @media (min-width: calc(${({ theme }) => theme.breakpoints.md} + 1px)) {
-    .hide-desktop {
-      display: none !important;
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
   }
 `;

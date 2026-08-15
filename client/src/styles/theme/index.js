@@ -1,6 +1,8 @@
 // Theme exports
 export { tokens } from './tokens';
-export { typography } from './typography';
+export { typography, typographyAliases } from './typography';
+export { createTheme } from './createTheme';
 export { lightTheme } from './lightTheme';
 export { darkTheme } from './darkTheme';
 export { GlobalStyles } from './GlobalStyles';
+export { display, text, label, clamp, media, interactive } from './mixins';

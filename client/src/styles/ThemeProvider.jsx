@@ -1,6 +1,13 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { ThemeProvider as StyledThemeProvider } from 'styled-components';
-import { tokens, typography, lightTheme, darkTheme, GlobalStyles } from './theme';
+import {
+  tokens,
+  typography,
+  typographyAliases,
+  lightTheme,
+  darkTheme,
+  GlobalStyles,
+} from './theme';
 
 // Theme context
 const ThemeContext = createContext(null);
@@ -74,13 +81,16 @@ export const ThemeProvider = ({ children }) => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Merge theme colors with tokens and typography
+  // Flatten colours, tokens and typography into the single object styled-components reads.
+  // typographyAliases is spread last so the flat fontSizes/lineHeights API the existing
+  // pages rely on stays available alongside the new ui/reading/display scales.
   const theme = useMemo(() => {
     const colorTheme = mode === 'light' ? lightTheme : darkTheme;
     return {
       ...colorTheme,
       ...tokens,
       ...typography,
+      ...typographyAliases,
     };
   }, [mode]);
 
