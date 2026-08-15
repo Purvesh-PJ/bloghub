@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { ProtectedRoute } from './guards/ProtectedRoute';
@@ -21,10 +21,8 @@ const UserProfile = lazyPage(() => import('./pages/UserProfile'), 'UserProfile')
 
 // User Pages (Protected)
 const WritePost = lazyPage(() => import('./pages/WritePost'), 'WritePost');
-const Profile = lazyPage(() => import('./pages/Profile'), 'Profile');
+const Dashboard = lazyPage(() => import('./pages/Dashboard'), 'Dashboard');
 const Settings = lazyPage(() => import('./pages/Settings'), 'Settings');
-const MyPosts = lazyPage(() => import('./pages/MyPosts'), 'MyPosts');
-const Analytics = lazyPage(() => import('./pages/Analytics'), 'Analytics');
 
 // Admin Pages
 const AdminDashboard = lazyPage(() => import('./pages/admin/Dashboard'), 'AdminDashboard');
@@ -71,26 +69,10 @@ function App() {
             }
           />
           <Route
-            path="profile"
+            path="dashboard"
             element={
               <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="my-posts"
-            element={
-              <ProtectedRoute>
-                <MyPosts />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="analytics"
-            element={
-              <ProtectedRoute>
-                <Analytics />
+                <Dashboard />
               </ProtectedRoute>
             }
           />
@@ -102,6 +84,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/*
+            /profile, /my-posts and /analytics were three views of one question and are now
+            the dashboard. They are kept as redirects because they are in browser histories,
+            in the old header menu, and quite possibly in somebody's bookmarks.
+          */}
+          <Route path="profile" element={<Navigate to="/dashboard" replace />} />
+          <Route path="my-posts" element={<Navigate to="/dashboard" replace />} />
+          <Route path="analytics" element={<Navigate to="/dashboard" replace />} />
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />

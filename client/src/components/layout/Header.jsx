@@ -1,15 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import styled, { css } from 'styled-components';
-import {
-  Search,
-  PenLine,
-  User,
-  FileText,
-  BarChart3,
-  Settings,
-  LogOut,
-  LayoutDashboard,
-} from 'lucide-react';
+import { Search, PenLine, User, LayoutGrid, Settings, LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import { Button, DropdownMenu } from '../ui';
@@ -244,14 +235,11 @@ export function Header() {
                   </>
                 )}
 
-                <DropdownMenu.Item onSelect={() => navigate('/profile')}>
-                  <User /> Profile
+                <DropdownMenu.Item onSelect={() => navigate('/dashboard')}>
+                  <LayoutGrid /> Dashboard
                 </DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => navigate('/my-posts')}>
-                  <FileText /> My stories
-                </DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => navigate('/analytics')}>
-                  <BarChart3 /> Analytics
+                <DropdownMenu.Item onSelect={() => navigate(`/user/${user?.user_id}`)}>
+                  <User /> Public profile
                 </DropdownMenu.Item>
                 <DropdownMenu.Item onSelect={() => navigate('/settings')}>
                   <Settings /> Settings
