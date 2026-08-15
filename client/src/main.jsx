@@ -1,6 +1,11 @@
-// Inter with the optical-size axis. One self-hosted variable file — no external request and
-// no font-loading shift — and large headings automatically pick up Inter's display shapes
-// (tighter apertures, less spacing) rather than being body Inter scaled up.
+// Three self-hosted variable faces — no external request and no font-loading shift.
+//
+// Fraunces carries the display type, Newsreader the article bodies, and Inter the interface
+// chrome. Inter and Newsreader ship their optical-size axis, so large settings pick up
+// display shapes rather than being body type scaled up; Fraunces' `soft` cut carries the
+// SOFT axis, which is what keeps its large sizes from turning brittle.
+import '@fontsource-variable/fraunces/soft.css';
+import '@fontsource-variable/newsreader/opsz.css';
 import '@fontsource-variable/inter/opsz.css';
 
 import React from 'react';

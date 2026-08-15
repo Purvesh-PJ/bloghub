@@ -11,13 +11,20 @@ import { text, interactive } from '../../styles/theme/mixins';
  */
 
 const variants = {
-  /** The single most important action on a view. */
+  /**
+   * The single most important action on a view — set in ink, not in the accent.
+   *
+   * Painting every primary button in the brand colour is what makes an interface read as a
+   * template: the accent stops meaning anything because it is everywhere. Reserved for
+   * links, marks and the read-rate bar, it stays a signal. A black button on warm paper is
+   * also simply the more confident object.
+   */
   primary: css`
-    background: ${({ theme }) => theme.colors.accentSolid};
-    color: ${({ theme }) => theme.colors.textOnAccent};
+    background: ${({ theme }) => theme.colors.inkSolid};
+    color: ${({ theme }) => theme.colors.textOnInk};
 
     &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.accentSolidHover};
+      background: ${({ theme }) => theme.colors.inkSolidHover};
     }
   `,
   /** Neutral container — the default for anything that is not the primary action. */

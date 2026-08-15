@@ -24,8 +24,11 @@ const StyledChip = styled.button`
   ${({ $selected, $interactive: clickable, theme }) =>
     $selected
       ? css`
-          background: ${theme.colors.accentSolid};
-          color: ${theme.colors.textOnAccent};
+          /* Ink, not the accent — same reasoning as the primary button. The accent is
+             reserved for data and links, so a row of filters does not shout over the
+             read-rate bars sitting next to it. */
+          background: ${theme.colors.inkSolid};
+          color: ${theme.colors.textOnInk};
         `
       : css`
           background: ${theme.colors.surfaceContainer};
