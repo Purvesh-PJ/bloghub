@@ -450,6 +450,7 @@ const ModalActions = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.sm};
   justify-content: flex-end;
+  margin-top: ${({ theme }) => theme.spacing.xl};
 `;
 
 const SecondaryButton = styled.button`
@@ -678,12 +679,13 @@ export function MyPosts() {
         )}
       </PostsCard>
 
-      {/* Delete Confirmation Modal using Radix Modal primitive */}
-      <Modal isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="Delete Post">
-        <p style={{ marginBottom: '20px', color: '#6b7280', fontSize: '14px' }}>
-          Are you sure you want to delete this post? This action cannot be undone.
-        </p>
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+      <Modal
+        open={Boolean(deleteId)}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title="Delete post"
+        description="This cannot be undone. The post and its comments will be removed."
+      >
+        <ModalActions>
           <Button variant="outline" onClick={() => setDeleteId(null)}>
             Cancel
           </Button>
@@ -694,7 +696,7 @@ export function MyPosts() {
           >
             Delete
           </Button>
-        </div>
+        </ModalActions>
       </Modal>
     </PageWrapper>
   );

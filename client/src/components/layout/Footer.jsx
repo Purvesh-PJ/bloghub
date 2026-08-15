@@ -1,271 +1,214 @@
 import { Link } from 'react-router-dom';
-import { Github, Twitter, Linkedin, Heart } from 'lucide-react';
 import styled from 'styled-components';
+import { Github, Twitter, Linkedin } from 'lucide-react';
+import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
 
-const FooterWrapper = styled.footer`
-  background: ${({ theme }) => theme.colors.bgSecondary};
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  margin-top: auto;
+/**
+ * Footer.
+ *
+ * Sits on a raised tone so the page visibly ends, rather than fading into the same grey as
+ * the content above it.
+ */
+
+const Wrapper = styled.footer`
+  margin-top: ${({ theme }) => theme.spacing['5xl']};
+  padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing.xl}
+    ${({ theme }) => theme.spacing['2xl']};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
 `;
 
-const FooterContent = styled.div`
-  max-width: 1200px;
+const Inner = styled.div`
+  max-width: ${({ theme }) => theme.layout.maxWidth};
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.lg};
 `;
 
-const TopSection = styled.div`
+const Top = styled.div`
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: ${({ theme }) => theme.spacing.xxl};
-  margin-bottom: ${({ theme }) => theme.spacing.xxl};
+  grid-template-columns: 1.6fr repeat(3, 1fr);
+  gap: ${({ theme }) => theme.spacing['3xl']};
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    grid-template-columns: 1fr 1fr;
-    gap: ${({ theme }) => theme.spacing.xl};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    grid-template-columns: 1fr;
-  }
+  ${media.down('lg')`grid-template-columns: 1fr 1fr;`}
+  ${media.down('sm')`grid-template-columns: 1fr;`}
 `;
 
-const BrandSection = styled.div``;
+const Brand = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+  align-items: flex-start;
+  max-width: 320px;
+`;
 
 const Logo = styled(Link)`
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: ${({ theme }) => theme.fontSizes.xl};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.accent};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.sm};
+  ${text('lg', 'semibold')}
+  letter-spacing: ${({ theme }) => theme.tracking.tight};
+  color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
-const LogoIcon = styled.div`
-  width: 32px;
-  height: 32px;
-  background: ${({ theme }) => theme.colors.accent};
-  border-radius: ${({ theme }) => theme.radii.md};
-  display: flex;
+const Mark = styled.span`
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  font-size: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  background: ${({ theme }) => theme.colors.accentSolid};
+  color: ${({ theme }) => theme.colors.textOnAccent};
+  font-size: 15px;
+  font-weight: ${({ theme }) => theme.weights.bold};
 `;
 
-const Tagline = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.md};
+const Blurb = styled.p`
+  ${text('sm')}
   color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.6;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  max-width: 300px;
 `;
 
-const SocialLinks = styled.div`
+const Socials = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-const SocialLink = styled.a`
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.colors.bgPrimary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  display: flex;
+const Social = styled.a`
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: ${({ theme }) => theme.colors.textMuted};
-  transition: all ${({ theme }) => theme.transitions.fast};
+  width: 38px;
+  height: 38px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  ${interactive}
 
   &:hover {
-    background: ${({ theme }) => theme.colors.accent};
-    border-color: ${({ theme }) => theme.colors.accent};
-    color: white;
-    transform: translateY(-2px);
+    background: ${({ theme }) => theme.colors.accentContainer};
+    color: ${({ theme }) => theme.colors.accentText};
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
   }
 `;
 
-const LinkSection = styled.div``;
-
-const LinkTitle = styled.h4`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
-
-const LinkList = styled.ul`
-  list-style: none;
+const Column = styled.nav`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
-
-const FooterLink = styled(Link)`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
-  transition: color ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accent};
-  }
-`;
-
-const ExternalLink = styled.a`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
-  transition: color ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accent};
-  }
-`;
-
-const Divider = styled.hr`
-  border: none;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const BottomSection = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const Copyright = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+const ColumnTitle = styled.h3`
+  ${labelStyle('sm')}
   color: ${({ theme }) => theme.colors.textMuted};
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  svg {
-    width: 14px;
-    height: 14px;
-    color: ${({ theme }) => theme.colors.error};
-  }
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
 `;
 
-const LegalLinks = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const LegalLink = styled(Link)`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
+const FooterLink = styled(Link)`
+  ${text('sm')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  width: fit-content;
+  ${interactive}
 
   &:hover {
-    color: ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 `;
 
-export function Footer() {
-  const currentYear = new Date().getFullYear();
+const Bottom = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.lg};
+  flex-wrap: wrap;
+  margin-top: ${({ theme }) => theme.spacing['3xl']};
+  padding-top: ${({ theme }) => theme.spacing.xl};
+  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  ${text('sm')}
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
 
+const BottomLinks = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xl};
+`;
+
+const COLUMNS = [
+  {
+    title: 'Product',
+    links: [
+      { to: '/', label: 'Home' },
+      { to: '/search', label: 'Explore' },
+      { to: '/write', label: 'Write' },
+    ],
+  },
+  {
+    title: 'Account',
+    links: [
+      { to: '/profile', label: 'Profile' },
+      { to: '/my-posts', label: 'My stories' },
+      { to: '/analytics', label: 'Analytics' },
+      { to: '/settings', label: 'Settings' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { to: '/search', label: 'Browse topics' },
+      { to: '/register', label: 'Create account' },
+      { to: '/login', label: 'Sign in' },
+    ],
+  },
+];
+
+export function Footer() {
   return (
-    <FooterWrapper>
-      <FooterContent>
-        <TopSection>
-          <BrandSection>
+    <Wrapper>
+      <Inner>
+        <Top>
+          <Brand>
             <Logo to="/">
-              <LogoIcon>B</LogoIcon>
+              <Mark>B</Mark>
               BlogHub
             </Logo>
-            <Tagline>
-              A modern platform for writers and readers. Share your stories, discover new ideas, and
-              connect with a community of thinkers.
-            </Tagline>
-            <SocialLinks>
-              <SocialLink href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-                <Twitter />
-              </SocialLink>
-              <SocialLink href="https://github.com" target="_blank" rel="noopener noreferrer">
+            <Blurb>
+              A writing platform for people with something to say. Markdown in, a clean article out.
+            </Blurb>
+            <Socials>
+              <Social href="https://github.com/Purvesh-PJ" aria-label="GitHub">
                 <Github />
-              </SocialLink>
-              <SocialLink href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+              </Social>
+              <Social href="https://twitter.com" aria-label="Twitter">
+                <Twitter />
+              </Social>
+              <Social href="https://linkedin.com" aria-label="LinkedIn">
                 <Linkedin />
-              </SocialLink>
-            </SocialLinks>
-          </BrandSection>
+              </Social>
+            </Socials>
+          </Brand>
 
-          <LinkSection>
-            <LinkTitle>Platform</LinkTitle>
-            <LinkList>
-              <li>
-                <FooterLink to="/">Home</FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/search">Explore</FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/write">Write</FooterLink>
-              </li>
-            </LinkList>
-          </LinkSection>
+          {COLUMNS.map((column) => (
+            <Column key={column.title}>
+              <ColumnTitle>{column.title}</ColumnTitle>
+              {column.links.map((link) => (
+                <FooterLink key={link.label} to={link.to}>
+                  {link.label}
+                </FooterLink>
+              ))}
+            </Column>
+          ))}
+        </Top>
 
-          <LinkSection>
-            <LinkTitle>Account</LinkTitle>
-            <LinkList>
-              <li>
-                <FooterLink to="/profile">Profile</FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/settings">Settings</FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/my-posts">My Stories</FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/analytics">Analytics</FooterLink>
-              </li>
-            </LinkList>
-          </LinkSection>
-
-          <LinkSection>
-            <LinkTitle>Resources</LinkTitle>
-            <LinkList>
-              <li>
-                <ExternalLink href="#">Help Center</ExternalLink>
-              </li>
-              <li>
-                <ExternalLink href="#">Writing Guide</ExternalLink>
-              </li>
-              <li>
-                <ExternalLink href="#">API Docs</ExternalLink>
-              </li>
-              <li>
-                <ExternalLink href="#">Status</ExternalLink>
-              </li>
-            </LinkList>
-          </LinkSection>
-        </TopSection>
-
-        <Divider />
-
-        <BottomSection>
-          <Copyright>
-            © {currentYear} BlogHub. Made with <Heart /> for writers everywhere.
-          </Copyright>
-          <LegalLinks>
-            <LegalLink to="/privacy">Privacy Policy</LegalLink>
-            <LegalLink to="/terms">Terms of Service</LegalLink>
-          </LegalLinks>
-        </BottomSection>
-      </FooterContent>
-    </FooterWrapper>
+        <Bottom>
+          <span>© {new Date().getFullYear()} BlogHub</span>
+          <BottomLinks>
+            <FooterLink to="/">Privacy</FooterLink>
+            <FooterLink to="/">Terms</FooterLink>
+          </BottomLinks>
+        </Bottom>
+      </Inner>
+    </Wrapper>
   );
 }

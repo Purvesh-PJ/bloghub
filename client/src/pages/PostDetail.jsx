@@ -15,51 +15,61 @@ import { useAuth } from '../context/AuthContext';
 import { Loading } from '../components/ui';
 import { Button } from '../components/ui';
 
+/* Reading surface. Editorial half of the design language: serif, generous, capped measure. */
+
 const PageWrapper = styled.div`
-  background: ${({ theme }) => theme.colors.bgPrimary};
+  background: ${({ theme }) => theme.colors.surfacePage};
   min-height: calc(100vh - ${({ theme }) => theme.layout.headerHeight});
+  padding-bottom: ${({ theme }) => theme.spacing['5xl']};
 `;
 
-const HeroImage = styled.div`
-  width: 100%;
-  max-height: 480px;
-  overflow: hidden;
+const HeroImage = styled.figure`
+  max-width: 1080px;
+  margin: ${({ theme }) => theme.spacing.xl} auto 0;
+  padding: 0 ${({ theme }) => theme.spacing.lg};
 
   img {
     width: 100%;
-    height: 100%;
+    /* Capped so the cover frames the piece instead of burying the headline. */
+    aspect-ratio: 21 / 9;
     object-fit: cover;
+    border-radius: ${({ theme }) => theme.radii.xl};
   }
 `;
 
 const Container = styled.div`
-  max-width: 680px;
+  max-width: ${({ theme }) => theme.layout.contentWidth};
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing.lg} 0;
 `;
 
 const Category = styled(Link)`
   display: inline-block;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.accent};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  font-family: ${({ theme }) => theme.fonts.ui};
+  font-size: ${({ theme }) => theme.ui.xs[0]};
+  font-weight: ${({ theme }) => theme.weights.semibold};
+  letter-spacing: ${({ theme }) => theme.tracking.caps};
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.accentText};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
 
   &:hover {
-    text-decoration: underline;
+    color: ${({ theme }) => theme.colors.textLinkHover};
   }
 `;
 
 const Title = styled.h1`
-  font-size: 2.5rem;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-family: ${({ theme }) => theme.fonts.reading};
+  font-size: ${({ theme }) => theme.display.xl[0]};
+  line-height: ${({ theme }) => theme.display.xl[1]};
+  font-weight: ${({ theme }) => theme.weights.bold};
+  letter-spacing: ${({ theme }) => theme.tracking.tight};
   color: ${({ theme }) => theme.colors.textPrimary};
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  text-wrap: balance;
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    font-size: 1.875rem;
+    font-size: ${({ theme }) => theme.display.lg[0]};
   }
 `;
 
@@ -79,28 +89,31 @@ const AuthorInfo = styled(Link)`
 `;
 
 const AuthorAvatar = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, #8b5cf6);
+  width: 40px;
+  height: 40px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentSubtle};
+  color: ${({ theme }) => theme.colors.accentText};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: white;
+  font-family: ${({ theme }) => theme.fonts.ui};
+  font-size: ${({ theme }) => theme.ui.md[0]};
+  font-weight: ${({ theme }) => theme.weights.semibold};
 `;
 
 const AuthorDetails = styled.div``;
 
 const AuthorName = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  font-family: ${({ theme }) => theme.fonts.ui};
+  font-size: ${({ theme }) => theme.ui.md[0]};
+  font-weight: ${({ theme }) => theme.weights.semibold};
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 const PostMeta = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-family: ${({ theme }) => theme.fonts.ui};
+  font-size: ${({ theme }) => theme.ui.base[0]};
   color: ${({ theme }) => theme.colors.textMuted};
   display: flex;
   align-items: center;
@@ -142,16 +155,25 @@ const ActionBtn = styled.button`
   }
 `;
 
+/**
+ * The article itself.
+ *
+ * Body copy is serif at 18px/1.75 and rendered in `textPrimary`. It was previously sans at
+ * `textSecondary` — grey body text on a light ground is the single biggest reason the
+ * reading experience felt washed out.
+ */
 const Content = styled.article`
-  font-size: 1.125rem;
-  line-height: 1.8;
+  font-family: ${({ theme }) => theme.fonts.reading};
+  font-size: ${({ theme }) => theme.reading.body[0]};
+  line-height: ${({ theme }) => theme.reading.body[1]};
   color: ${({ theme }) => theme.colors.textPrimary};
 
   .wmde-markdown {
     background: transparent !important;
-    font-size: 1.125rem;
-    line-height: 1.8;
-    color: ${({ theme }) => theme.colors.textSecondary};
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
   }
 
   h1,
@@ -162,52 +184,56 @@ const Content = styled.article`
   .wmde-markdown h2,
   .wmde-markdown h3,
   .wmde-markdown h4 {
-    font-weight: ${({ theme }) => theme.fontWeights.bold};
+    font-family: ${({ theme }) => theme.fonts.reading};
+    font-weight: ${({ theme }) => theme.weights.semibold};
+    letter-spacing: ${({ theme }) => theme.tracking.tight};
     color: ${({ theme }) => theme.colors.textPrimary};
-    margin: 2em 0 0.5em;
+    margin: 1.9em 0 0.55em;
     line-height: 1.3;
     border-bottom: none;
+    text-wrap: balance;
   }
 
   h1,
   .wmde-markdown h1 {
-    font-size: 1.75rem;
+    font-size: ${({ theme }) => theme.display.lg[0]};
   }
   h2,
   .wmde-markdown h2 {
-    font-size: 1.5rem;
+    font-size: ${({ theme }) => theme.display.md[0]};
   }
   h3,
   .wmde-markdown h3 {
-    font-size: 1.25rem;
+    font-size: ${({ theme }) => theme.display.sm[0]};
   }
 
   p,
   .wmde-markdown p {
-    margin-bottom: 1.5em;
-    color: ${({ theme }) => theme.colors.textSecondary};
+    margin-bottom: 1.35em;
+    color: inherit;
   }
 
   ul,
   ol,
   .wmde-markdown ul,
   .wmde-markdown ol {
-    margin-bottom: 1.5em;
-    padding-left: 1.5em;
-    color: ${({ theme }) => theme.colors.textSecondary};
+    margin-bottom: 1.35em;
+    padding-left: 1.4em;
+    color: inherit;
   }
 
   li,
   .wmde-markdown li {
-    margin-bottom: 0.5em;
+    margin-bottom: 0.45em;
   }
 
+  /* A hairline rule reads as an aside; a heavy accent bar competes with the headline. */
   blockquote,
   .wmde-markdown blockquote {
-    border-left: 3px solid ${({ theme }) => theme.colors.accent};
-    padding: 0.5em 0 0.5em 1.5em;
+    border-left: 2px solid ${({ theme }) => theme.colors.accentLine};
+    padding: 0 0 0 1.5em;
     margin: 2em 0;
-    font-size: 1.25rem;
+    font-size: ${({ theme }) => theme.reading.lead[0]};
     font-style: italic;
     color: ${({ theme }) => theme.colors.textSecondary};
     background: transparent;
@@ -215,77 +241,93 @@ const Content = styled.article`
 
   pre,
   .wmde-markdown pre {
-    background: ${({ theme }) => theme.colors.bgSecondary};
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    padding: 1.25em;
+    background: ${({ theme }) => theme.colors.surfaceSunken};
+    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+    padding: 1.15em 1.25em;
     border-radius: ${({ theme }) => theme.radii.lg};
     overflow-x: auto;
     margin: 2em 0;
-    font-size: 0.9rem;
+    font-size: ${({ theme }) => theme.ui.md[0]};
+    line-height: 1.6;
   }
 
   code,
   .wmde-markdown code {
-    background: ${({ theme }) => theme.colors.bgSecondary};
-    padding: 0.2em 0.5em;
-    border-radius: 4px;
-    font-size: 0.9em;
-    color: ${({ theme }) => theme.colors.accent};
+    font-family: ${({ theme }) => theme.fonts.mono};
+    background: ${({ theme }) => theme.colors.surfaceSunken};
+    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+    padding: 0.1em 0.35em;
+    border-radius: ${({ theme }) => theme.radii.sm};
+    font-size: 0.85em;
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 
   .wmde-markdown pre code {
     background: transparent;
+    border: none;
     padding: 0;
     color: inherit;
+    font-size: inherit;
   }
 
   img,
   .wmde-markdown img {
     max-width: 100%;
     border-radius: ${({ theme }) => theme.radii.lg};
-    margin: 2em 0;
+    margin: 2.25em 0;
   }
 
   a,
   .wmde-markdown a {
-    color: ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.textLink};
     text-decoration: underline;
-    text-underline-offset: 2px;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    text-decoration-color: ${({ theme }) => theme.colors.accentLine};
+
+    &:hover {
+      text-decoration-color: currentColor;
+    }
   }
 `;
 
 const Engagement = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  padding: ${({ theme }) => theme.spacing.xl} 0;
-  margin-top: ${({ theme }) => theme.spacing.xl};
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  gap: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacing.lg} 0;
+  margin-top: ${({ theme }) => theme.spacing['3xl']};
+  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
 `;
 
+/* Quiet by default — the article is the subject, not its toolbar. Colour arrives on action. */
 const EngageBtn = styled.button`
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
-  background: ${({ $active, theme }) => ($active ? theme.colors.error : theme.colors.bgSecondary)};
-  border: 1px solid ${({ $active, theme }) => ($active ? theme.colors.error : theme.colors.border)};
-  border-radius: ${({ theme }) => theme.radii.full};
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.xs} 0;
+  font-family: ${({ theme }) => theme.fonts.ui};
+  font-size: ${({ theme }) => theme.ui.md[0]};
+  font-weight: ${({ theme }) => theme.weights.medium};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.dangerText : theme.colors.textSecondary};
+  background: none;
+  border: none;
   cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
+  transition: color ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    border-color: ${({ $active, theme }) =>
-      $active ? theme.colors.error : theme.colors.textMuted};
+    color: ${({ $active, theme }) =>
+      $active ? theme.colors.dangerText : theme.colors.textPrimary};
   }
 
   svg {
     width: 18px;
     height: 18px;
-    fill: ${({ $active }) => ($active ? 'currentColor' : 'none')};
+    fill: ${({ $active, theme }) => ($active ? theme.colors.dangerSolid : 'none')};
+    stroke: ${({ $active, theme }) => ($active ? theme.colors.dangerSolid : 'currentColor')};
+    transition: fill ${({ theme }) => theme.transitions.fast};
   }
 `;
 
@@ -299,38 +341,51 @@ const Divider = styled.hr`
   margin: ${({ theme }) => theme.spacing.xl} 0;
 `;
 
-const CommentsSection = styled.section``;
+/* Below the article the surface switches to the interface scale: sans, tighter, denser.
+   Comments are a tool, not prose. */
+const CommentsSection = styled.section`
+  font-family: ${({ theme }) => theme.fonts.ui};
+  margin-top: ${({ theme }) => theme.spacing['3xl']};
+`;
 
 const CommentsHeader = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes.xl};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-family: ${({ theme }) => theme.fonts.ui};
+  font-size: ${({ theme }) => theme.display.sm[0]};
+  font-weight: ${({ theme }) => theme.weights.semibold};
+  letter-spacing: ${({ theme }) => theme.tracking.tight};
   color: ${({ theme }) => theme.colors.textPrimary};
   margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
 const CommentForm = styled.form`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
 `;
 
 const CommentInput = styled.textarea`
   width: 100%;
-  min-height: 120px;
+  min-height: 104px;
   padding: ${({ theme }) => theme.spacing.md};
-  font-family: inherit;
-  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-family: ${({ theme }) => theme.fonts.ui};
+  font-size: ${({ theme }) => theme.ui.md[0]};
+  line-height: ${({ theme }) => theme.ui.md[1]};
   color: ${({ theme }) => theme.colors.textPrimary};
-  background: ${({ theme }) => theme.colors.bgPrimary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceRaised};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
   border-radius: ${({ theme }) => theme.radii.lg};
-  resize: none;
+  resize: vertical;
+  transition: border-color ${({ theme }) => theme.transitions.fast};
 
   &::placeholder {
     color: ${({ theme }) => theme.colors.textMuted};
   }
 
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.lineStrong};
+  }
+
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.accent};
+    border-color: ${({ theme }) => theme.colors.lineFocus};
   }
 `;
 
@@ -365,16 +420,16 @@ const Comment = styled.div`
 `;
 
 const CommentAvatar = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border-radius: ${({ theme }) => theme.radii.full};
   background: ${({ theme }) => theme.colors.accentSubtle};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: ${({ theme }) => theme.colors.accent};
+  font-size: ${({ theme }) => theme.ui.sm[0]};
+  font-weight: ${({ theme }) => theme.weights.semibold};
+  color: ${({ theme }) => theme.colors.accentText};
   flex-shrink: 0;
 `;
 
@@ -390,18 +445,20 @@ const CommentMeta = styled.div`
 `;
 
 const CommentAuthor = styled.span`
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  font-size: ${({ theme }) => theme.ui.md[0]};
+  font-weight: ${({ theme }) => theme.weights.semibold};
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 const CommentDate = styled.span`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-size: ${({ theme }) => theme.ui.sm[0]};
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
 const CommentText = styled.p`
+  font-size: ${({ theme }) => theme.ui.md[0]};
+  line-height: ${({ theme }) => theme.ui.md[1]};
   color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.6;
 `;
 
 const ReplyBtn = styled.button`
