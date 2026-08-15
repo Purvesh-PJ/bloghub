@@ -24,16 +24,21 @@ import { Chip } from '../ui/Chip';
 */
 const Card = styled(Link)`
   display: grid;
-  gap: ${({ theme }) => theme.spacing['2xl']};
+  gap: ${({ theme }) => theme.spacing.xl};
   align-items: start;
 
   padding: ${({ theme }) => theme.spacing.xl};
   border-radius: ${({ theme }) => theme.radii.xl};
-  background: transparent;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
   ${interactive}
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surfaceContainerLow};
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    border-color: ${({ theme }) => theme.colors.accentLine};
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 0 15px -3px rgba(14, 165, 233, 0.15);
+    transform: translateY(-2px);
   }
 
   ${({ $layout }) =>
@@ -71,13 +76,14 @@ const AuthorDot = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentText};
-  font-size: 10px;
-  font-weight: ${({ theme }) => theme.weights.semibold};
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: ${({ theme }) => theme.weights.bold};
+  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.3);
 `;
 
 const Dot = styled.span`
@@ -88,10 +94,16 @@ const Title = styled.h3`
   ${display('xs')}
   color: ${({ theme }) => theme.colors.textPrimary};
   ${clamp(2)}
+  transition: color ${({ theme }) => theme.transitions.fast};
+
+  ${Card}:hover & {
+    color: ${({ theme }) => theme.colors.accentText};
+  }
 `;
 
 const Excerpt = styled.p`
-  ${text('md')}
+  ${text('sm')}
+  line-height: 1.6;
   color: ${({ theme }) => theme.colors.textSecondary};
   ${clamp(2)}
 `;
@@ -120,12 +132,18 @@ const Thumb = styled.div`
   border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
   background: ${({ theme }) => theme.colors.surfaceContainer};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
   flex-shrink: 0;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform ${({ theme }) => theme.transitions.normal};
+  }
+
+  ${Card}:hover & img {
+    transform: scale(1.03);
   }
 
   ${({ $layout }) =>
@@ -154,9 +172,11 @@ export function PostCard({ post, layout = 'row' }) {
   if (!post) return null;
 
   const category = post.categories?.[0]?.name ?? post.categories?.[0];
-  const author = post.user?.username ?? 'Anonymous';
+  const author = post.author?.name || post.author?.username || post.user?.username || 'Anonymous';
   const created = post.createdAt ? new Date(post.createdAt) : null;
   const showThumb = Boolean(post.imageURL) && !imageFailed;
+  const likesCount = post.likesCount ?? post.likes?.length ?? 0;
+  const commentsCount = post.commentsCount ?? post.comments?.length ?? 0;
 
   return (
     <Card to={`/post/${post._id}`} $layout={layout}>
@@ -180,10 +200,10 @@ export function PostCard({ post, layout = 'row' }) {
             </Chip>
           )}
           <Stat>
-            <Heart /> {post.likes?.length ?? 0}
+            <Heart /> {likesCount}
           </Stat>
           <Stat>
-            <MessageCircle /> {post.comments?.length ?? 0}
+            <MessageCircle /> {commentsCount}
           </Stat>
         </Footer>
       </Body>

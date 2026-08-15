@@ -11,32 +11,29 @@ import { text, interactive } from '../../styles/theme/mixins';
  */
 
 const variants = {
-  /**
-   * The single most important action on a view — set in ink, not in the accent.
-   *
-   * Painting every primary button in the brand colour is what makes an interface read as a
-   * template: the accent stops meaning anything because it is everywhere. Reserved for
-   * links, marks and the read-rate bar, it stays a signal. A black button on warm paper is
-   * also simply the more confident object.
-   */
+  /** Primary action — Crisp Sky Blue with soft ambient glow */
   primary: css`
-    background: ${({ theme }) => theme.colors.inkSolid};
-    color: ${({ theme }) => theme.colors.textOnInk};
+    background: ${({ theme }) => theme.colors.accentSolid};
+    color: ${({ theme }) => theme.colors.textOnAccent};
+    box-shadow: 0 2px 8px -2px rgba(14, 165, 233, 0.35);
 
     &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.inkSolidHover};
+      background: ${({ theme }) => theme.colors.accentSolidHover};
+      box-shadow: 0 4px 14px 0 rgba(14, 165, 233, 0.45);
     }
   `,
-  /** Neutral container — the default for anything that is not the primary action. */
+  /** Clean neutral container with subtle hairline border */
   secondary: css`
-    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
+    background: ${({ theme }) => theme.colors.surfaceContainer};
     color: ${({ theme }) => theme.colors.textPrimary};
+    box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.lineDefault};
 
     &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.surfaceContainerHighest};
+      background: ${({ theme }) => theme.colors.surfaceHover};
+      box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.lineStrong};
     }
   `,
-  /** Accent-tinted container — a secondary action that still belongs to the brand. */
+  /** Accent-tinted sky container */
   tonal: css`
     background: ${({ theme }) => theme.colors.accentContainer};
     color: ${({ theme }) => theme.colors.accentText};
@@ -52,7 +49,8 @@ const variants = {
 
     &:hover:not(:disabled) {
       background: ${({ theme }) => theme.colors.surfaceHover};
-      box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.lineStrong};
+      box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.accentLine};
+      color: ${({ theme }) => theme.colors.accentText};
     }
   `,
   ghost: css`

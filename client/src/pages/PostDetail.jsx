@@ -19,6 +19,7 @@ import { ReadRateBar } from '../components/stats/ReadRateBar';
 import { Button, Card, TextArea, Chip, Modal, Loading, EmptyState } from '../components/ui';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 import { readingTime, initial } from '../utils/text';
+import { CURATED_POSTS } from '../data/curatedPosts';
 
 /**
  * The article page.
@@ -98,17 +99,18 @@ const Portrait = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   flex-shrink: 0;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentSolid};
-  color: ${({ theme }) => theme.colors.textOnAccent};
-  ${text('md', 'semibold')}
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #ffffff;
+  ${text('md', 'bold')}
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
 `;
 
 const AuthorName = styled.span`
-  ${text('md', 'semibold')}
+  ${text('md', 'bold')}
   color: ${({ theme }) => theme.colors.textPrimary};
   display: block;
 `;
@@ -134,29 +136,17 @@ const OwnerActions = styled.div`
 /* ── Body ────────────────────────────────────────────────────────────────── */
 
 const Article = styled.article`
-  /* The editor package paints its own surface; make it inherit ours instead. */
+  /* Clean Tailwind prose styling */
   .wmde-markdown {
     background: transparent;
     color: ${({ theme }) => theme.colors.textPrimary};
-    /* Newsreader, not the interface sans. The body is the one thing on this page somebody
-       reads rather than scans, and it is set larger than interface copy for the same reason. */
     font-family: ${({ theme }) => theme.fonts.reading};
-    font-size: 1.1875rem;
-    line-height: 1.7;
+    font-size: 1.125rem;
+    line-height: 1.8;
   }
 
-  /*
-    Drop cap on the opening paragraph. An old device, and the reason it survives is that it
-    marks where the article actually begins — useful on a page that opens with a cover, a
-    topic, a byline and a stat bar before a single word of the piece.
-  */
-  .wmde-markdown > p:first-of-type::first-letter {
-    float: left;
-    font-family: ${({ theme }) => theme.fonts.display};
-    font-size: 3.6em;
-    line-height: 0.82;
-    padding: 0.08em 0.08em 0 0;
-    color: ${({ theme }) => theme.colors.textPrimary};
+  .wmde-markdown > * + * {
+    margin-top: 1.5em;
   }
 
   .wmde-markdown h1,
@@ -168,6 +158,7 @@ const Article = styled.article`
     margin-top: ${({ theme }) => theme.spacing['2xl']};
     margin-bottom: ${({ theme }) => theme.spacing.md};
     letter-spacing: ${({ theme }) => theme.tracking.tight};
+    font-weight: 700;
   }
 
   .wmde-markdown p,
@@ -362,12 +353,17 @@ export function PostDetail() {
   const articleRef = useRef(null);
   const progress = useReadingProgress(articleRef);
 
+  const isCurated = id?.startsWith('curated-');
+  const curatedFallback = CURATED_POSTS.find((p) => p._id === id);
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['post', id],
     queryFn: () => postService.getPost(id),
+    enabled: !isCurated,
+    retry: false,
   });
 
-  const post = data?.data;
+  const post = data?.data || curatedFallback;
   useReadTracking(post?._id, post?.content, articleRef);
 
   // A view is one per page load. Guarded so React's development double-invoke does not
@@ -487,11 +483,11 @@ export function PostDetail() {
 
         <Byline>
           <Author to={post.user?._id ? `/user/${post.user._id}` : '#'}>
-            <Portrait>{initial(post.user?.username)}</Portrait>
+            <Portrait>{initial(post.author?.name || post.user?.username)}</Portrait>
             <span>
-              <AuthorName>{post.user?.username || 'Anonymous'}</AuthorName>
+              <AuthorName>{post.author?.name || post.user?.username || 'Anonymous'}</AuthorName>
               <Meta>
-                {format(new Date(post.createdAt), 'd MMM yyyy')}
+                {post.createdAt ? format(new Date(post.createdAt), 'd MMM yyyy') : 'Recent'}
                 <Clock />
                 {readingTime(post.content)} min read
               </Meta>
@@ -534,19 +530,24 @@ export function PostDetail() {
         <Bar>
           <Action
             $active={liked}
-            onClick={() =>
-              isAuthenticated ? likeMutation.mutate() : toast.error('Sign in to like this')
-            }
+            onClick={() => {
+              if (isCurated) {
+                setLiked((prev) => !prev);
+                toast.success(liked ? 'Like removed' : 'Liked this story!');
+                return;
+              }
+              isAuthenticated ? likeMutation.mutate() : toast.error('Sign in to like this');
+            }}
           >
-            <Heart /> {post.likes?.length || 0}
+            <Heart /> {(post.likesCount || post.likes?.length || 0) + (isCurated && liked ? 1 : 0)}
           </Action>
           <Action as="a" href="#comments">
-            <MessageCircle /> {comments.length}
+            <MessageCircle /> {comments.length || (isCurated ? post.commentsCount : 0)}
           </Action>
           <Action
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
-              toast.success('Link copied');
+              toast.success('Link copied to clipboard!');
             }}
           >
             <Share2 /> Share

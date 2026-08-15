@@ -35,10 +35,11 @@ const elevationFor = (mode) =>
   mode === 'light'
     ? {
         none: 'none',
-        sm: '0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.03)',
-        md: '0 2px 4px rgba(15, 23, 42, 0.04), 0 6px 16px -4px rgba(15, 23, 42, 0.06)',
-        lg: '0 4px 8px rgba(15, 23, 42, 0.04), 0 16px 32px -8px rgba(15, 23, 42, 0.08)',
-        xl: '0 8px 16px rgba(15, 23, 42, 0.05), 0 32px 64px -16px rgba(15, 23, 42, 0.12)',
+        sm: '0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04)',
+        md: '0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05)',
+        lg: '0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04)',
+        xl: '0 20px 25px -5px rgba(15, 23, 42, 0.10), 0 8px 10px -6px rgba(15, 23, 42, 0.04)',
+        glow: '0 4px 14px 0 rgba(14, 165, 233, 0.35)',
       }
     : {
         none: 'none',
@@ -46,64 +47,53 @@ const elevationFor = (mode) =>
         md: '0 2px 6px rgba(0, 0, 0, 0.35), 0 8px 20px -6px rgba(0, 0, 0, 0.30)',
         lg: '0 4px 12px rgba(0, 0, 0, 0.40), 0 20px 40px -12px rgba(0, 0, 0, 0.35)',
         xl: '0 8px 24px rgba(0, 0, 0, 0.45), 0 40px 80px -20px rgba(0, 0, 0, 0.50)',
+        glow: '0 4px 16px 0 rgba(56, 189, 248, 0.30)',
       };
 
 export function createTheme(ramps, mode) {
   const { neutral: n, accent: a, success: s, warning: w, danger: d, info: i, alpha } = ramps;
 
-  // Ramp objects are keyed by their own name (slate1, indigo9 …), so read them positionally.
+  // Ramp objects are keyed by their own name (slate1, sky9 …), so read them positionally.
   const step = (ramp, index) => Object.values(ramp)[index - 1];
   const isLight = mode === 'light';
 
   const colors = {
-    // ── Tonal surfaces ──────────────────────────────────────────────────────
-    // Layered by tone. Each container step sits one tone above the page, so depth reads
-    // without a single border or shadow. This is the core of the "soft" look.
-    surfacePage: step(n, 1),
-    surfaceContainerLow: step(n, 2),
-    surfaceContainer: step(n, 3),
-    surfaceContainerHigh: step(n, 4),
-    surfaceContainerHighest: step(n, 5),
+    // ── White Paper Tonal surfaces ──────────────────────────────────────────
+    surfacePage: isLight ? '#ffffff' : '#0b0f17',
+    surfaceContainerLow: isLight ? '#f8fafc' : step(n, 2),
+    surfaceContainer: isLight ? '#f1f5f9' : step(n, 3),
+    surfaceContainerHigh: isLight ? '#e2e8f0' : step(n, 4),
+    surfaceContainerHighest: isLight ? '#cbd5e1' : step(n, 5),
 
     // Elevated things that float above the page (menus, dialogs, sheets).
-    //
-    // Deliberately one tone *below* `surfaceContainer` so that controls placed on an
-    // elevated surface still read as a step up from it. Setting this to step 3 in dark made
-    // inputs and their card identical.
     surfaceElevated: isLight ? '#ffffff' : step(n, 2),
 
-    surfaceHover: step(n, 4),
-    surfaceActive: step(n, 5),
-    surfaceScrim: isLight ? 'rgba(15, 23, 42, 0.32)' : 'rgba(0, 0, 0, 0.60)',
+    surfaceHover: isLight ? '#f1f5f9' : step(n, 4),
+    surfaceActive: isLight ? '#e2e8f0' : step(n, 5),
+    surfaceScrim: isLight ? 'rgba(15, 23, 42, 0.40)' : 'rgba(0, 0, 0, 0.70)',
 
     // ── Text ────────────────────────────────────────────────────────────────
-    textPrimary: step(n, 12),
-    textSecondary: step(n, 11),
-    textMuted: step(n, 10), // meta only — below 4.5:1 by design
-    textDisabled: step(n, 8),
-    textOnAccent: '#ffffff', // step 9 of every Radix ramp is built for white text
+    textPrimary: isLight ? '#0f172a' : step(n, 12),
+    textSecondary: isLight ? '#475569' : step(n, 11),
+    textMuted: isLight ? '#64748b' : step(n, 10),
+    textDisabled: isLight ? '#94a3b8' : step(n, 8),
+    textOnAccent: '#ffffff',
     textLink: step(a, 11),
     textLinkHover: step(a, 12),
 
     // ── Lines ───────────────────────────────────────────────────────────────
-    // Deliberately faint. Tone separates surfaces; a line is only for genuine division.
-    lineSubtle: step(n, 5),
-    lineDefault: step(n, 6),
-    lineStrong: step(n, 8),
+    lineSubtle: isLight ? '#f1f5f9' : step(n, 4),
+    lineDefault: isLight ? '#e2e8f0' : step(n, 6),
+    lineStrong: isLight ? '#cbd5e1' : step(n, 8),
     lineFocus: step(a, 8),
 
-    // ── Ink ─────────────────────────────────────────────────────────────────
-    // The primary action colour, and deliberately *not* the accent. An interface that
-    // paints every important button in its brand colour reads as a template, because the
-    // accent ends up meaning nothing. Ink is the darkest neutral in light mode and the
-    // lightest in dark, so a primary button is always the highest-contrast object present.
-    inkSolid: isLight ? step(n, 12) : step(n, 12),
-    inkSolidHover: isLight ? step(n, 11) : step(n, 11),
-    textOnInk: isLight ? step(n, 1) : step(n, 1),
+    // ── Primary Action / Ink (Sky Blue) ─────────────────────────────────────
+    inkSolid: step(a, 9),
+    inkSolidHover: step(a, 10),
+    textOnInk: '#ffffff',
 
-    // ── Accent ──────────────────────────────────────────────────────────────
-    // Used sparingly: links, marks, the read-rate fill. Never a page full of buttons.
-    accentContainer: step(a, 3), // tonal chip / selected state
+    // ── Accent (Sky Blue) ───────────────────────────────────────────────────
+    accentContainer: step(a, 3),
     accentContainerHover: step(a, 4),
     accentLine: step(a, 7),
     accentSolid: step(a, 9),

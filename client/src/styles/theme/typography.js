@@ -1,64 +1,42 @@
 /**
- * Typography.
+ * Typography — Modern Tailwind-inspired sans-serif system.
  *
- * Three faces, each doing a job the others cannot:
- *
- *   Fraunces    display. A high-contrast variable serif with SOFT and WONK axes. This is
- *               the single decision that stops the product looking like every other one:
- *               Inter set large is what a dashboard looks like, and a place for reading
- *               should not look like a dashboard.
- *   Newsreader  article bodies. A face drawn for long-form on screen — larger x-height and
- *               open counters than a print serif, so 2,000 words stay comfortable.
- *   Inter       interface chrome only. Buttons, labels, table cells, meta. It is the right
- *               choice for text you scan rather than read, and the wrong one for both of
- *               the above.
- *
- * All three are variable and self-hosted, so this costs three woff2 files, not three
- * families' worth of weights.
- *
- * The hierarchy comes from contrast, not decoration. Every jump in the display scale is
- * large enough to be deliberate, and there are no in-between sizes.
+ * Clean, modern, comfortable typography designed for effortless scanning and long-form reading.
  */
 
-const SANS = "'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-const DISPLAY = "'Fraunces Variable', 'Iowan Old Style', Georgia, 'Times New Roman', serif";
-const READING = "'Newsreader Variable', Georgia, 'Times New Roman', serif";
+const SANS = "'Inter Variable', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 export const typography = {
   fonts: {
     ui: SANS,
-    display: DISPLAY,
-    reading: READING,
-    mono: "'SF Mono', 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace",
+    display: SANS,
+    reading: SANS,
+    mono: "'SF Mono', 'Cascadia Code', 'Fira Code', 'Roboto Mono', Menlo, Consolas, monospace",
   },
 
   /**
-   * Display — headlines only. [size, lineHeight, letterSpacing, weight].
-   *
-   * Weights are lower than a sans scale would use: a serif at 800 turns into a slab. The
-   * drama comes from size and from Fraunces' own contrast, so 600 is the ceiling. Tracking
-   * is near-neutral for the same reason — negative tracking that flatters Inter closes up
-   * a serif's counters and makes it look squeezed.
+   * Display — headlines and section headers. [size, lineHeight, letterSpacing, weight].
+   * Modern, tight tracking with crisp bold/semibold weights.
    */
   display: {
-    xs: ['1.375rem', '1.3', '-0.01em', 600], // 22px — card titles
-    sm: ['1.75rem', '1.2', '-0.012em', 600], // 28px — panel headings
-    md: ['2.5rem', '1.12', '-0.015em', 600], // 40px — sub-section
-    lg: ['3.5rem', '1.05', '-0.018em', 600], // 56px — section titles
-    xl: ['4.75rem', '1.0', '-0.02em', 600], // 76px
-    '2xl': ['6.25rem', '0.95', '-0.022em', 600], // 100px — hero only
+    xs: ['1.25rem', '1.35', '-0.02em', 600], // 20px — card titles
+    sm: ['1.5rem', '1.3', '-0.022em', 700], // 24px — panel headings
+    md: ['2.25rem', '1.2', '-0.025em', 700], // 36px — sub-section
+    lg: ['3rem', '1.15', '-0.03em', 800], // 48px — section titles
+    xl: ['4rem', '1.1', '-0.035em', 800], // 64px
+    '2xl': ['5rem', '1.05', '-0.04em', 800], // 80px — hero only
   },
 
-  /** Body and interface text. */
+  /** Body and interface text. Comfortable reading and scanning. */
   text: {
-    xs: ['0.75rem', '1.45'], // 12px
-    sm: ['0.8125rem', '1.5'], // 13px
-    md: ['0.9375rem', '1.55'], // 15px — interface default
-    lg: ['1.0625rem', '1.6'], // 17px — body copy
-    xl: ['1.375rem', '1.5'], // 22px — lead paragraphs
+    xs: ['0.75rem', '1.5'], // 12px
+    sm: ['0.875rem', '1.5'], // 14px
+    md: ['1rem', '1.6'], // 16px — interface default
+    lg: ['1.125rem', '1.75'], // 18px — comfortable article body
+    xl: ['1.25rem', '1.65'], // 20px — lead paragraphs
   },
 
-  /** Uppercase eyebrow. Always accent-coloured, always tracked. */
+  /** Uppercase eyebrow. Tracked and crisp. */
   label: {
     sm: ['0.75rem', '1.2'], // 12px
     md: ['0.8125rem', '1.2'], // 13px
@@ -78,28 +56,21 @@ export const typography = {
     tight: '-0.02em',
     normal: '0',
     wide: '0.01em',
-    caps: '0.09em',
+    caps: '0.08em',
   },
 
   leading: {
     none: 1,
-    tight: 1.1,
-    snug: 1.25,
+    tight: 1.15,
+    snug: 1.3,
     normal: 1.5,
-    relaxed: 1.6,
-    loose: 1.75,
+    relaxed: 1.65,
+    loose: 1.8,
   },
 };
 
-/** Compatibility layer for pages still reading the flat `theme.fontSizes.*` API. */
+/** Compatibility layer for legacy theme lookups */
 export const typographyAliases = {
-  /*
-    Spread over `typography.fonts` in the provider, so it must carry every key the real
-    object has. It previously listed `heading` but not `display`, which silently deleted
-    `theme.fonts.display`: every heading in the application resolved to `undefined`,
-    styled-components emitted no font-family rule, and everything inherited the body sans.
-    The display face had no effect at all for as long as this alias existed.
-  */
   fonts: {
     ...typography.fonts,
     body: typography.fonts.ui,
@@ -111,13 +82,13 @@ export const typographyAliases = {
     xs: typography.text.xs[0],
     sm: typography.text.sm[0],
     md: typography.text.md[0],
-    base: typography.text.lg[0],
-    lg: typography.text.xl[0],
-    xl: typography.display.xs[0],
-    '2xl': typography.display.sm[0],
-    '3xl': typography.display.md[0],
-    '4xl': typography.display.lg[0],
-    '5xl': typography.display.xl[0],
+    base: typography.text.md[0],
+    lg: typography.text.lg[0],
+    xl: typography.text.xl[0],
+    '2xl': typography.display.xs[0],
+    '3xl': typography.display.sm[0],
+    '4xl': typography.display.md[0],
+    '5xl': typography.display.lg[0],
   },
   fontWeights: {
     normal: typography.weights.regular,
@@ -134,3 +105,4 @@ export const typographyAliases = {
     wider: typography.tracking.caps,
   },
 };
+

@@ -11,11 +11,11 @@ import { text, label as labelStyle, media, interactive } from '../../styles/them
  */
 
 const Wrapper = styled.footer`
-  margin-top: ${({ theme }) => theme.spacing['5xl']};
-  padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing.xl}
+  margin-top: ${({ theme }) => theme.spacing['3xl']};
+  padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing.xl}
     ${({ theme }) => theme.spacing['2xl']};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  background: transparent;
+  border-top: none;
 `;
 
 const Inner = styled.div`
@@ -53,13 +53,14 @@ const Mark = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: ${({ theme }) => theme.radii.sm};
-  background: ${({ theme }) => theme.colors.accentSolid};
-  color: ${({ theme }) => theme.colors.textOnAccent};
-  font-size: 15px;
-  font-weight: ${({ theme }) => theme.weights.bold};
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
 `;
 
 const Blurb = styled.p`

@@ -43,13 +43,8 @@ export const GlobalStyles = createGlobalStyle`
     font-family: ${({ theme }) => theme.fonts.display};
     color: ${({ theme }) => theme.colors.textPrimary};
     text-wrap: balance;
-    /*
-      Fraunces' SOFT axis rounds the terminals. At 0 it is a sharp Scotch-style face that
-      turns brittle on a screen; a little softness is what makes it read as warm rather
-      than as a newspaper masthead. WONK swaps in the angled 'g' and 'y' — the detail that
-      makes the face recognisable rather than generic.
-    */
-    font-variation-settings: 'SOFT' 24, 'WONK' 1;
+    font-weight: ${({ theme }) => theme.weights.bold};
+    letter-spacing: ${({ theme }) => theme.tracking.tight};
   }
 
   p {

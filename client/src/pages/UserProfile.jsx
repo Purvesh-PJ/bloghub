@@ -43,10 +43,13 @@ const Portrait = styled.div`
   height: 96px;
   flex-shrink: 0;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentSolid};
-  color: ${({ theme }) => theme.colors.textOnAccent};
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #ffffff;
   ${display('sm')}
+  font-weight: 700;
   overflow: hidden;
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.35);
+  border: 3px solid ${({ theme }) => theme.colors.surfaceElevated};
 
   img {
     width: 100%;

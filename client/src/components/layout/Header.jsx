@@ -15,17 +15,17 @@ import { text, media, interactive } from '../../styles/theme/mixins';
  * keys, no focus return, no `aria-expanded`.
  */
 
-/* Full-width sticky bar with a hairline base. A floating pill draws attention to the
-   chrome; the chrome should be the quietest thing on the page. */
+/* Full-width sticky bar without any dividing border line for seamless one-page look */
 const Wrapper = styled.header`
   position: sticky;
   top: 0;
   z-index: ${({ theme }) => theme.zIndices.sticky};
   background: ${({ theme }) =>
-    theme.mode === 'light' ? 'rgba(252, 252, 253, 0.80)' : 'rgba(17, 17, 19, 0.80)'};
+    theme.mode === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(11, 15, 23, 0.85)'};
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
-  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  border-bottom: none;
+  box-shadow: none;
 `;
 
 const Bar = styled.div`
@@ -51,8 +51,8 @@ const Logo = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
-  ${text('lg', 'semibold')}
-  letter-spacing: ${({ theme }) => theme.tracking.tight};
+  ${text('md', 'bold')}
+  letter-spacing: -0.02em;
   color: ${({ theme }) => theme.colors.textPrimary};
   flex-shrink: 0;
 `;
@@ -61,35 +61,37 @@ const Mark = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  background: ${({ theme }) => theme.colors.accentSolid};
-  color: ${({ theme }) => theme.colors.textOnAccent};
-  font-size: 15px;
-  font-weight: ${({ theme }) => theme.weights.bold};
+  width: 28px;
+  height: 28px;
+  border-radius: ${({ theme }) => theme.radii.xs};
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
 `;
 
 const Nav = styled.nav`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: 2px;
 
   ${media.down('md')`display: none;`}
 `;
 
 const NavLink = styled(Link)`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: 5px 12px;
   border-radius: ${({ theme }) => theme.radii.full};
   ${text('sm', 'medium')}
   color: ${({ theme, $active }) =>
-    $active ? theme.colors.textPrimary : theme.colors.textSecondary};
+    $active ? theme.colors.accentText : theme.colors.textSecondary};
   ${interactive}
 
   ${({ $active, theme }) =>
     $active &&
     css`
-      background: ${theme.colors.surfaceContainer};
+      background: ${theme.colors.accentContainer};
+      font-weight: 600;
     `}
 
   &:hover {
@@ -107,22 +109,44 @@ const Right = styled.div`
 const SearchButton = styled.button`
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
   border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.surfaceContainer};
   color: ${({ theme }) => theme.colors.textSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  ${text('xs', 'medium')}
   ${interactive}
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surfaceContainer};
+    background: ${({ theme }) => theme.colors.surfaceContainerLow};
+    border-color: ${({ theme }) => theme.colors.accentLine};
     color: ${({ theme }) => theme.colors.textPrimary};
   }
 
   svg {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
   }
+
+  ${media.down('sm')`
+    padding: 0;
+    width: 34px;
+    justify-content: center;
+  `}
+`;
+
+const Kbd = styled.kbd`
+  font-family: inherit;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: ${({ theme }) => theme.radii.xs};
+  background: ${({ theme }) => theme.colors.surfaceContainerHigh};
+  color: ${({ theme }) => theme.colors.textMuted};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+
+  ${media.down('sm')`display: none;`}
 `;
 
 const AvatarButton = styled.button`
@@ -132,13 +156,15 @@ const AvatarButton = styled.button`
   width: 36px;
   height: 36px;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentSolid};
-  color: ${({ theme }) => theme.colors.textOnAccent};
-  ${text('sm', 'semibold')}
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #ffffff;
+  ${text('sm', 'bold')}
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
   ${interactive}
 
   &:hover {
-    background: ${({ theme }) => theme.colors.accentSolidHover};
+    transform: scale(1.04);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.45);
   }
 `;
 
@@ -202,6 +228,8 @@ export function Header() {
         <Right>
           <SearchButton onClick={() => navigate('/search')} aria-label="Search">
             <Search />
+            <span style={{ opacity: 0.8 }}>Search...</span>
+            <Kbd>⌘K</Kbd>
           </SearchButton>
 
           <ThemeToggle />
