@@ -1,390 +1,283 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import styled, { css } from 'styled-components';
 import {
   Search,
   PenLine,
   User,
-  LogOut,
-  Settings,
-  LayoutDashboard,
   FileText,
   BarChart3,
-  Bell,
+  Settings,
+  LogOut,
+  LayoutDashboard,
 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
+import { Button, DropdownMenu } from '../ui';
+import { text, media, interactive } from '../../styles/theme/mixins';
 
-const HeaderWrapper = styled.header`
-  position: fixed;
+/**
+ * Header — a floating glass bar.
+ *
+ * Sits inside the viewport rather than flush against it, so the page scrolls *under* a
+ * rounded, blurred surface. The account menu is a real Radix DropdownMenu: the previous
+ * hand-rolled one listened for `mousedown` and handled nothing else — no Escape, no arrow
+ * keys, no focus return, no `aria-expanded`.
+ */
+
+/* Full-width sticky bar with a hairline base. A floating pill draws attention to the
+   chrome; the chrome should be the quietest thing on the page. */
+const Wrapper = styled.header`
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  height: ${({ theme }) => theme.layout.headerHeight};
-  background: ${({ theme }) => theme.colors.bgPrimary};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   z-index: ${({ theme }) => theme.zIndices.sticky};
+  background: ${({ theme }) =>
+    theme.mode === 'light' ? 'rgba(252, 252, 253, 0.80)' : 'rgba(17, 17, 19, 0.80)'};
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
 `;
 
-const HeaderContent = styled.div`
+const Bar = styled.div`
+  max-width: ${({ theme }) => theme.layout.maxWidth};
+  margin: 0 auto;
+  height: ${({ theme }) => theme.layout.headerHeight};
+  padding: 0 ${({ theme }) => theme.spacing.xl};
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 ${({ theme }) => theme.spacing.lg};
-`;
-
-const LeftSection = styled.div`
-  display: flex;
-  align-items: center;
   gap: ${({ theme }) => theme.spacing.lg};
 `;
 
-const Logo = styled(Link)`
-  font-size: ${({ theme }) => theme.fontSizes.xl};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.accent};
+const Left = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: ${({ theme }) => theme.spacing.xl};
+  min-width: 0;
 `;
 
-const LogoIcon = styled.div`
-  width: 32px;
-  height: 32px;
-  background: ${({ theme }) => theme.colors.accent};
-  border-radius: ${({ theme }) => theme.radii.md};
-  display: flex;
+const Logo = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  ${text('lg', 'semibold')}
+  letter-spacing: ${({ theme }) => theme.tracking.tight};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  flex-shrink: 0;
+`;
+
+const Mark = styled.span`
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  font-size: 16px;
+  width: 30px;
+  height: 30px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  background: ${({ theme }) => theme.colors.accentSolid};
+  color: ${({ theme }) => theme.colors.textOnAccent};
+  font-size: 15px;
+  font-weight: ${({ theme }) => theme.weights.bold};
 `;
 
-const SearchBar = styled.div`
+const Nav = styled.nav`
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: ${({ theme }) => theme.colors.bgSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  gap: ${({ theme }) => theme.spacing.xs};
+
+  ${media.down('md')`display: none;`}
+`;
+
+const NavLink = styled(Link)`
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   border-radius: ${({ theme }) => theme.radii.full};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
+  ${text('sm', 'medium')}
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.textPrimary : theme.colors.textSecondary};
+  ${interactive}
+
+  ${({ $active, theme }) =>
+    $active &&
+    css`
+      background: ${theme.colors.surfaceContainer};
+    `}
 
   &:hover {
-    border-color: ${({ theme }) => theme.colors.borderHover};
-  }
-
-  svg {
-    color: ${({ theme }) => theme.colors.textMuted};
-    width: 16px;
-    height: 16px;
-  }
-
-  span {
-    color: ${({ theme }) => theme.colors.textMuted};
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    span {
-      display: none;
-    }
-    padding: 8px;
+    color: ${({ theme }) => theme.colors.textPrimary};
+    background: ${({ theme }) => theme.colors.surfaceContainer};
   }
 `;
 
-const Actions = styled.div`
+const Right = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-const IconButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: none;
-  border-radius: 50%;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.bgHover};
-    color: ${({ theme }) => theme.colors.accent};
-  }
-`;
-
-const WriteButton = styled(Link)`
+const SearchButton = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.buttonPrimaryText};
-  background: ${({ theme }) => theme.colors.accent};
-  border: none;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
   border-radius: ${({ theme }) => theme.radii.full};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  ${interactive}
 
   &:hover {
-    background: ${({ theme }) => theme.colors.accentHover};
-    transform: translateY(-1px);
+    background: ${({ theme }) => theme.colors.surfaceContainer};
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 
   svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    span {
-      display: none;
-    }
-    padding: 8px 12px;
-  }
-`;
-
-const AuthButton = styled(Link)`
-  padding: 8px 16px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  border-radius: ${({ theme }) => theme.radii.full};
-  transition: all ${({ theme }) => theme.transitions.fast};
-`;
-
-const SignInButton = styled(AuthButton)`
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-`;
-
-const SignUpButton = styled(AuthButton)`
-  background: ${({ theme }) => theme.colors.accent};
-  color: ${({ theme }) => theme.colors.buttonPrimaryText};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.accentHover};
+    width: 18px;
+    height: 18px;
   }
 `;
 
 const AvatarButton = styled.button`
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  background: ${({ theme }) => theme.colors.accentSubtle};
-  border: 2px solid ${({ theme }) => theme.colors.accent};
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: ${({ theme }) => theme.colors.accent};
-  transition: all ${({ theme }) => theme.transitions.fast};
+  width: 36px;
+  height: 36px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentSolid};
+  color: ${({ theme }) => theme.colors.textOnAccent};
+  ${text('sm', 'semibold')}
+  ${interactive}
 
   &:hover {
-    transform: scale(1.05);
+    background: ${({ theme }) => theme.colors.accentSolidHover};
   }
 `;
 
-const DropdownWrapper = styled.div`
-  position: relative;
+const MenuHeader = styled.div`
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.sm};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
 `;
 
-const DropdownMenu = styled.div`
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 220px;
-  background: ${({ theme }) => theme.colors.bgPrimary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
-  z-index: ${({ theme }) => theme.zIndices.dropdown};
-  overflow: hidden;
-`;
-
-const DropdownHeader = styled.div`
-  padding: ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.bgSecondary};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-`;
-
-const UserName = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+const MenuName = styled.div`
+  ${text('sm', 'semibold')}
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
-const UserEmail = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.xs};
+const MenuEmail = styled.div`
+  ${text('xs')}
   color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: 2px;
 `;
 
-const DropdownItem = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px ${({ theme }) => theme.spacing.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.bgHover};
-    color: ${({ theme }) => theme.colors.accent};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
+const HideOnMobile = styled.span`
+  ${media.down('sm')`display: none;`}
 `;
 
-const DropdownButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px ${({ theme }) => theme.spacing.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.errorBg};
-    color: ${({ theme }) => theme.colors.error};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const DropdownDivider = styled.div`
-  height: 1px;
-  background: ${({ theme }) => theme.colors.border};
-`;
+const NAV = [
+  { to: '/', label: 'Home', exact: true },
+  { to: '/search', label: 'Explore' },
+];
 
 export function Header() {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { isAuthenticated, user, logout, isAdmin } = useAuth();
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleLogout = () => {
     logout();
-    setIsDropdownOpen(false);
     navigate('/');
   };
 
-  const handleDropdownItemClick = () => {
-    setIsDropdownOpen(false);
-  };
-
   return (
-    <HeaderWrapper>
-      <HeaderContent>
-        <LeftSection>
+    <Wrapper>
+      <Bar>
+        <Left>
           <Logo to="/">
-            <LogoIcon>B</LogoIcon>
+            <Mark>B</Mark>
             BlogHub
           </Logo>
 
-          <SearchBar onClick={() => navigate('/search')}>
-            <Search />
-            <span>Search...</span>
-          </SearchBar>
-        </LeftSection>
+          <Nav>
+            {NAV.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                $active={item.exact ? pathname === item.to : pathname.startsWith(item.to)}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </Nav>
+        </Left>
 
-        <Actions>
+        <Right>
+          <SearchButton onClick={() => navigate('/search')} aria-label="Search">
+            <Search />
+          </SearchButton>
+
           <ThemeToggle />
 
           {isAuthenticated ? (
             <>
-              <WriteButton to="/write">
-                <PenLine />
-                <span>Write</span>
-              </WriteButton>
+              <HideOnMobile>
+                <Button size="sm" onClick={() => navigate('/write')}>
+                  <PenLine /> Write
+                </Button>
+              </HideOnMobile>
 
-              <DropdownWrapper ref={dropdownRef}>
-                <AvatarButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-                  {user?.username?.[0]?.toUpperCase() || 'U'}
-                </AvatarButton>
+              <DropdownMenu
+                trigger={
+                  <AvatarButton aria-label="Account menu">
+                    {user?.username?.[0]?.toUpperCase() ?? 'U'}
+                  </AvatarButton>
+                }
+              >
+                <MenuHeader>
+                  <MenuName>{user?.username}</MenuName>
+                  <MenuEmail>{user?.email}</MenuEmail>
+                </MenuHeader>
 
-                {isDropdownOpen && (
-                  <DropdownMenu>
-                    <DropdownHeader>
-                      <UserName>{user?.username}</UserName>
-                      <UserEmail>{user?.email}</UserEmail>
-                    </DropdownHeader>
-
-                    {isAdmin() && (
-                      <>
-                        <DropdownItem to="/admin" onClick={handleDropdownItemClick}>
-                          <LayoutDashboard /> Admin Dashboard
-                        </DropdownItem>
-                        <DropdownDivider />
-                      </>
-                    )}
-
-                    <DropdownItem to="/profile" onClick={handleDropdownItemClick}>
-                      <User /> Profile
-                    </DropdownItem>
-                    <DropdownItem to="/my-posts" onClick={handleDropdownItemClick}>
-                      <FileText /> My Stories
-                    </DropdownItem>
-                    <DropdownItem to="/analytics" onClick={handleDropdownItemClick}>
-                      <BarChart3 /> Analytics
-                    </DropdownItem>
-                    <DropdownItem to="/settings" onClick={handleDropdownItemClick}>
-                      <Settings /> Settings
-                    </DropdownItem>
-                    <DropdownDivider />
-                    <DropdownButton onClick={handleLogout}>
-                      <LogOut /> Sign Out
-                    </DropdownButton>
-                  </DropdownMenu>
+                {isAdmin() && (
+                  <>
+                    <DropdownMenu.Item onSelect={() => navigate('/admin')}>
+                      <LayoutDashboard /> Admin dashboard
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Separator />
+                  </>
                 )}
-              </DropdownWrapper>
+
+                <DropdownMenu.Item onSelect={() => navigate('/profile')}>
+                  <User /> Profile
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => navigate('/my-posts')}>
+                  <FileText /> My stories
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => navigate('/analytics')}>
+                  <BarChart3 /> Analytics
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => navigate('/settings')}>
+                  <Settings /> Settings
+                </DropdownMenu.Item>
+
+                <DropdownMenu.Separator />
+
+                <DropdownMenu.Item $tone="danger" onSelect={handleLogout}>
+                  <LogOut /> Sign out
+                </DropdownMenu.Item>
+              </DropdownMenu>
             </>
           ) : (
             <>
-              <SignInButton to="/login">Sign in</SignInButton>
-              <SignUpButton to="/register">Get started</SignUpButton>
+              <HideOnMobile>
+                <Button size="sm" variant="ghost" onClick={() => navigate('/login')}>
+                  Sign in
+                </Button>
+              </HideOnMobile>
+              <Button size="sm" onClick={() => navigate('/register')}>
+                Get started
+              </Button>
             </>
           )}
-        </Actions>
-      </HeaderContent>
-    </HeaderWrapper>
+        </Right>
+      </Bar>
+    </Wrapper>
   );
 }
