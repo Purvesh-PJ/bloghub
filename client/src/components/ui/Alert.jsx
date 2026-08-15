@@ -1,61 +1,74 @@
 import styled, { css } from 'styled-components';
 import { AlertCircle, CheckCircle2, Info, AlertTriangle } from 'lucide-react';
+import { text } from '../../styles/theme/mixins';
 
-const alertVariantStyles = {
+/**
+ * Alert — an inline message.
+ *
+ * Was four hard-coded rgba/hex triples, so in dark mode it kept painting a pale wash with
+ * dark text on it. Tonal container/text pairs from the theme now, matching Badge.
+ */
+
+const variants = {
   info: css`
-    background: rgba(14, 165, 233, 0.1);
-    border: 1px solid rgba(14, 165, 233, 0.3);
-    color: #0369a1;
+    background: ${({ theme }) => theme.colors.infoContainer};
+    color: ${({ theme }) => theme.colors.infoText};
   `,
   success: css`
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    color: #15803d;
+    background: ${({ theme }) => theme.colors.successContainer};
+    color: ${({ theme }) => theme.colors.successText};
   `,
   warning: css`
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    color: #b45309;
+    background: ${({ theme }) => theme.colors.warningContainer};
+    color: ${({ theme }) => theme.colors.warningText};
   `,
-  error: css`
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #b91c1c;
+  danger: css`
+    background: ${({ theme }) => theme.colors.dangerContainer};
+    color: ${({ theme }) => theme.colors.dangerText};
   `,
 };
 
 const StyledAlert = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: ${({ theme }) => theme.radii?.md || '8px'};
-  font-size: 14px;
-  line-height: 1.5;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.md};
+  ${text('sm')}
 
-  ${({ $variant }) => alertVariantStyles[$variant] || alertVariantStyles.info}
+  ${({ $variant }) => variants[$variant] || variants.info}
 
   svg {
+    width: 18px;
+    height: 18px;
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 1px;
   }
 `;
 
-const IconMap = {
+const Title = styled.strong`
+  display: block;
+  ${text('sm', 'semibold')}
+  margin-bottom: 2px;
+`;
+
+const icons = {
   info: Info,
   success: CheckCircle2,
   warning: AlertTriangle,
-  error: AlertCircle,
+  danger: AlertCircle,
 };
 
 export function Alert({ children, variant = 'info', title, ...props }) {
-  const IconComponent = IconMap[variant] || Info;
+  // `error` was the old name for this variant; keep it working.
+  const key = variant === 'error' ? 'danger' : variant;
+  const Icon = icons[key] || Info;
 
   return (
-    <StyledAlert $variant={variant} {...props}>
-      <IconComponent size={18} />
+    <StyledAlert $variant={key} role={key === 'danger' ? 'alert' : undefined} {...props}>
+      <Icon />
       <div>
-        {title && <strong style={{ display: 'block', marginBottom: 2 }}>{title}</strong>}
+        {title && <Title>{title}</Title>}
         {children}
       </div>
     </StyledAlert>
