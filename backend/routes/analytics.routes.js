@@ -27,10 +27,12 @@ router.get(
   AnalyticsController.getAdminAnalytics,
 );
 
-// Track a page view
-router.post('/view/:postId', AnalyticsController.trackPageView);
-
-// Track a post read
-router.post('/read/:postId', AnalyticsController.trackPostRead);
+// Tracking stays open to anonymous readers — a view from a signed-out visitor still counts.
+// attachUserIfPresent associates it with the reader when a token is present without
+// rejecting the request when one is not. Without it req.user was never set on these routes,
+// so every view and read was stored with a null user and nothing could be attributed to
+// anybody: "continue reading" had no rows to find.
+router.post('/view/:postId', AuthUser.attachUserIfPresent, AnalyticsController.trackPageView);
+router.post('/read/:postId', AuthUser.attachUserIfPresent, AnalyticsController.trackPostRead);
 
 module.exports = router;
