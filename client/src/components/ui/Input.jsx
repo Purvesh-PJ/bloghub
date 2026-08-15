@@ -1,59 +1,155 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
+import { text, label as labelStyle, interactive } from '../../styles/theme/mixins';
 
-const InputWrapper = styled.div`
+/**
+ * Input and TextArea.
+ *
+ * Fields sit on a container tone with no border — the tone itself defines the field. A ring
+ * appears on focus. This is the soft, borderless form language of the reference sites.
+ */
+
+const Field = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: ${({ theme }) => theme.spacing.sm};
   width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
 `;
 
 const Label = styled.label`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors?.textPrimary || '#374151'};
+  ${text('sm', 'medium')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  padding-left: ${({ theme }) => theme.spacing.xs};
 `;
 
-const StyledInput = styled.input`
+const controlBase = css`
   width: 100%;
-  height: 40px;
-  padding: 8px 12px;
-  font-size: 14px;
-  border-radius: ${({ theme }) => theme.radii?.md || '8px'};
-  border: 1px solid
-    ${({ $hasError, theme }) => ($hasError ? '#ef4444' : theme.colors?.border || '#d1d5db')};
-  background: ${({ theme }) => theme.colors?.bgSecondary || '#ffffff'};
-  color: ${({ theme }) => theme.colors?.textPrimary || '#111827'};
-  outline: none;
-  transition: border-color 0.2s ease-in-out;
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  border: none;
+  ${text('md')}
+  ${interactive}
 
-  &:focus {
-    border-color: ${({ $hasError, theme }) =>
-      $hasError ? '#ef4444' : theme.colors?.accentPrimary || '#6366f1'};
-  }
+  /* The ring lives in box-shadow so it never shifts layout. */
+  box-shadow: inset 0 0 0 1px transparent;
 
   &::placeholder {
-    color: ${({ theme }) => theme.colors?.textMuted || '#9ca3af'};
+    color: ${({ theme }) => theme.colors.textMuted};
+  }
+
+  &:hover:not(:disabled):not(:focus) {
+    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
+  }
+
+  /* Focus steps the field *up* a tone rather than down, so it never sinks into the card
+     it sits on. */
+  &:focus {
+    outline: none;
+    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
+    box-shadow: inset 0 0 0 2px ${({ theme }) => theme.colors.accentSolid};
   }
 
   &:disabled {
-    background: ${({ theme }) => theme.colors?.bgDisabled || '#f3f4f6'};
+    opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  ${({ $error, theme }) =>
+    $error &&
+    css`
+      box-shadow: inset 0 0 0 1px ${theme.colors.dangerLine};
+
+      &:focus {
+        box-shadow: inset 0 0 0 2px ${theme.colors.dangerSolid};
+      }
+    `}
+`;
+
+const StyledInput = styled.input`
+  ${controlBase}
+  height: 48px;
+  padding: 0 ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.md};
+
+  /* Room for a leading icon when one is present. */
+  ${({ $hasIcon, theme }) =>
+    $hasIcon &&
+    css`
+      padding-left: ${theme.spacing['3xl']};
+    `}
+`;
+
+const StyledTextArea = styled.textarea`
+  ${controlBase}
+  min-height: 120px;
+  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.md};
+  resize: vertical;
+  line-height: 1.6;
+`;
+
+const ControlWrap = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+const LeadingIcon = styled.span`
+  position: absolute;
+  left: ${({ theme }) => theme.spacing.lg};
+  display: inline-flex;
+  pointer-events: none;
+  color: ${({ theme }) => theme.colors.textMuted};
+
+  svg {
+    width: 18px;
+    height: 18px;
   }
 `;
 
-const ErrorText = styled.span`
-  font-size: 12px;
-  color: #ef4444;
+const Message = styled.span`
+  ${text('sm')}
+  padding-left: ${({ theme }) => theme.spacing.xs};
+  color: ${({ theme, $error }) => ($error ? theme.colors.dangerText : theme.colors.textMuted)};
 `;
 
-export function Input({ label, error, fullWidth = true, id, ...props }) {
-  const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
-
+export function Input({ label, error, hint, icon, fullWidth = true, id, ...props }) {
+  const inputId = id ?? props.name;
   return (
-    <InputWrapper $fullWidth={fullWidth}>
+    <Field $fullWidth={fullWidth}>
       {label && <Label htmlFor={inputId}>{label}</Label>}
-      <StyledInput id={inputId} $hasError={!!error} {...props} />
-      {error && <ErrorText>{error}</ErrorText>}
-    </InputWrapper>
+      <ControlWrap>
+        {icon && <LeadingIcon>{icon}</LeadingIcon>}
+        <StyledInput
+          id={inputId}
+          $error={Boolean(error)}
+          $hasIcon={Boolean(icon)}
+          aria-invalid={Boolean(error) || undefined}
+          {...props}
+        />
+      </ControlWrap>
+      {(error || hint) && <Message $error={Boolean(error)}>{error || hint}</Message>}
+    </Field>
   );
 }
+
+export function TextArea({ label, error, hint, fullWidth = true, id, ...props }) {
+  const inputId = id ?? props.name;
+  return (
+    <Field $fullWidth={fullWidth}>
+      {label && <Label htmlFor={inputId}>{label}</Label>}
+      <StyledTextArea
+        id={inputId}
+        $error={Boolean(error)}
+        aria-invalid={Boolean(error) || undefined}
+        {...props}
+      />
+      {(error || hint) && <Message $error={Boolean(error)}>{error || hint}</Message>}
+    </Field>
+  );
+}
+
+/** Uppercase eyebrow used above section titles and stat values. */
+export const Eyebrow = styled.span`
+  ${labelStyle('md')}
+  color: ${({ theme }) => theme.colors.textMuted};
+`;

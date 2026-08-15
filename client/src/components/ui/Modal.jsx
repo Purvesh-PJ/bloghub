@@ -1,68 +1,134 @@
-import { Dialog as RadixDialog } from '@radix-ui/themes';
-import styled from 'styled-components';
+import * as Dialog from '@radix-ui/react-dialog';
+import styled, { keyframes } from 'styled-components';
 import { X } from 'lucide-react';
 
-const StyledContent = styled(RadixDialog.Content)`
-  background: ${({ theme }) => theme.colors?.bgSecondary || '#ffffff'} !important;
-  border-radius: ${({ theme }) => theme.radii?.lg || '12px'} !important;
-  border: 1px solid ${({ theme }) => theme.colors?.border || '#e5e7eb'} !important;
-  max-width: ${({ $maxWidth }) => $maxWidth || '500px'} !important;
-  padding: 0 !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+/**
+ * Modal — Radix Dialog underneath.
+ *
+ * Radix owns the behaviour: focus trap, focus restore on close, Escape to dismiss, scroll
+ * lock, `aria-modal`, and the labelling relationship between title and content. We own only
+ * how it looks.
+ */
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to   { opacity: 1; }
+`;
+
+const scaleIn = keyframes`
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+`;
+
+const Overlay = styled(Dialog.Overlay)`
+  position: fixed;
+  inset: 0;
+  background: ${({ theme }) => theme.colors.surfaceOverlay};
+  z-index: ${({ theme }) => theme.zIndices.overlay};
+  animation: ${fadeIn} ${({ theme }) => theme.motion.base} ${({ theme }) => theme.motion.easing};
+`;
+
+const Content = styled(Dialog.Content)`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  max-width: ${({ $width }) => $width};
+  max-height: 85vh;
+  overflow-y: auto;
+  z-index: ${({ theme }) => theme.zIndices.modal};
+
+  background: ${({ theme }) => theme.colors.surfaceRaised};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  box-shadow: ${({ theme }) => theme.shadows.overlay};
+  padding: ${({ theme }) => theme.spacing.xl};
+
+  animation: ${scaleIn} ${({ theme }) => theme.motion.base} ${({ theme }) => theme.motion.easing};
+
+  &:focus {
+    outline: none;
+  }
 `;
 
 const Header = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors?.border || '#e5e7eb'};
+  gap: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
-const StyledTitle = styled(RadixDialog.Title)`
-  margin: 0 !important;
-  font-size: 18px !important;
-  font-weight: 600 !important;
-  color: ${({ theme }) => theme.colors?.textPrimary || '#111827'} !important;
+const Title = styled(Dialog.Title)`
+  font-size: ${({ theme }) => theme.display.md[0]};
+  line-height: ${({ theme }) => theme.display.md[1]};
+  font-weight: ${({ theme }) => theme.weights.semibold};
+  letter-spacing: ${({ theme }) => theme.tracking.tight};
+  color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
-const CloseButton = styled.button`
-  background: transparent;
-  border: none;
-  color: ${({ theme }) => theme.colors?.textSecondary || '#6b7280'};
-  cursor: pointer;
-  display: flex;
+const Description = styled(Dialog.Description)`
+  margin-top: ${({ theme }) => theme.spacing.xs};
+  font-size: ${({ theme }) => theme.ui.md[0]};
+  line-height: ${({ theme }) => theme.ui.md[1]};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const CloseButton = styled(Dialog.Close)`
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  margin: -4px -4px 0 0;
+  border-radius: ${({ theme }) => theme.radii.md};
+  color: ${({ theme }) => theme.colors.textMuted};
+  transition:
+    background ${({ theme }) => theme.transitions.fast},
+    color ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    background: ${({ theme }) => theme.colors?.bgHover || '#f3f4f6'};
-    color: ${({ theme }) => theme.colors?.textPrimary || '#111827'};
+    background: ${({ theme }) => theme.colors.surfaceHover};
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 `;
 
-const Body = styled.div`
-  padding: 20px;
-`;
-
-export function Modal({ isOpen, onClose, title, children, maxWidth = '500px' }) {
+export function Modal({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  width = '440px',
+  showClose = true,
+}) {
   return (
-    <RadixDialog.Root open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
-      <StyledContent $maxWidth={maxWidth}>
-        {title && (
-          <Header>
-            <StyledTitle>{title}</StyledTitle>
-            <RadixDialog.Close>
-              <CloseButton aria-label="Close modal">
-                <X size={18} />
-              </CloseButton>
-            </RadixDialog.Close>
-          </Header>
-        )}
-        <Body>{children}</Body>
-      </StyledContent>
-    </RadixDialog.Root>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Overlay />
+        <Content $width={width} aria-describedby={description ? undefined : 'undefined'}>
+          {title && (
+            <Header>
+              <div>
+                <Title>{title}</Title>
+                {description && <Description>{description}</Description>}
+              </div>
+              {showClose && (
+                <CloseButton aria-label="Close">
+                  <X size={18} />
+                </CloseButton>
+              )}
+            </Header>
+          )}
+          {children}
+        </Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
+
+// Escape hatches for callers that need to drive the dialog directly.
+Modal.Trigger = Dialog.Trigger;
+Modal.Close = Dialog.Close;
