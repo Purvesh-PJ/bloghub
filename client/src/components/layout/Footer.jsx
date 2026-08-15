@@ -147,9 +147,8 @@ const COLUMNS = [
   {
     title: 'Account',
     links: [
-      { to: '/profile', label: 'Profile' },
-      { to: '/my-posts', label: 'My stories' },
-      { to: '/analytics', label: 'Analytics' },
+      { to: '/dashboard', label: 'Dashboard' },
+      { to: '/write', label: 'New story' },
       { to: '/settings', label: 'Settings' },
     ],
   },

@@ -381,7 +381,7 @@ export function WritePost() {
         }
       }
       toast.success('Post created');
-      navigate(data.postId ? `/post/${data.postId}` : '/my-posts');
+      navigate(data.postId ? `/post/${data.postId}` : '/dashboard');
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to create post');
