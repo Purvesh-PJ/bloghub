@@ -1,311 +1,109 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Image, Eye, Pencil } from 'lucide-react';
-import toast from 'react-hot-toast';
 import styled from 'styled-components';
 import MDEditor from '@uiw/react-md-editor';
+import { Eye, Pencil, Globe, Lock, FileText } from 'lucide-react';
+import toast from 'react-hot-toast';
+
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
-import { Loading } from '../components/ui';
-import { Button } from '../components/ui';
+import { useTheme } from '../styles/ThemeProvider';
+import { PageShell, PageHeader, Section } from '../components/layout/PageShell';
+import { topicIcon } from '../components/marketing/Topics';
+import { Button, Card, Input, Chip, Loading } from '../components/ui';
+import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
+import { readingTime } from '../utils/text';
 
-const PageWrapper = styled.div`
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
+/**
+ * The editor.
+ *
+ * Rebuilt on the shared primitives, and the markdown surface no longer has
+ * `data-color-mode="light"` pinned on it — the editor and its preview stayed white while
+ * the rest of the page went dark, which is also why a draft never looked like the article
+ * it would become.
+ *
+ * Visibility is a three-way choice made in the open rather than a select buried in a
+ * sidebar, because it is the decision on this page a writer is most likely to get wrong.
+ */
+
+const Layout = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: ${({ theme }) => theme.spacing['2xl']};
+  align-items: start;
+
+  ${media.down('lg')`grid-template-columns: 1fr;`}
 `;
 
-const ContentLayout = styled.div`
+const Main = styled.div`
   display: flex;
+  flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xl};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    flex-direction: column;
-  }
+  min-width: 0;
 `;
 
-const MainEditor = styled.div`
-  flex: 1;
-`;
-
-const Sidebar = styled.div`
-  width: 280px;
-  flex-shrink: 0;
+const Aside = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.lg};
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    width: 100%;
-  }
-`;
-
-const Card = styled.div`
-  background: ${({ theme }) => theme.colors.cardBg};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.card};
-  padding: ${({ theme }) => theme.spacing.lg};
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const CardTitle = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const ToggleButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: transparent;
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.bgHover};
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const Label = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: 8px;
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const SmallLabel = styled.label`
-  display: block;
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-bottom: 6px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 10px 12px;
-  background: ${({ theme }) => theme.colors.inputBg};
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.inputPlaceholder};
-  }
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 10px 32px 10px 12px;
-  background: ${({ theme }) => theme.colors.inputBg};
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
-  }
-`;
-
-const ImagePreview = styled.div`
-  margin-top: 8px;
-  border-radius: ${({ theme }) => theme.radii.md};
-  overflow: hidden;
-
-  img {
-    width: 100%;
-    max-height: 120px;
-    object-fit: cover;
-  }
-`;
-
-const WordCount = styled.span`
-  display: block;
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: 8px;
-`;
-
-const Divider = styled.hr`
-  border: none;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  margin: ${({ theme }) => theme.spacing.md} 0;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const SidebarTitle = styled.h3`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-`;
-
-const CategoriesWrapper = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-`;
-
-const CategoryBadge = styled.button`
-  padding: 4px 10px;
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  border-radius: ${({ theme }) => theme.radii.full};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-  border: none;
-
-  ${({ $selected, theme }) =>
-    $selected
-      ? `
-    background: ${theme.colors.badgeActiveBg};
-    color: ${theme.colors.badgeActiveText};
-  `
-      : `
-    background: ${theme.colors.badgeBg};
-    color: ${theme.colors.badgeText};
-    
-    &:hover {
-      background: ${theme.colors.bgActive};
-    }
+  ${media.up('lg')`
+    position: sticky;
+    top: calc(${({ theme }) => theme.layout.headerHeight} + ${({ theme }) => theme.spacing.xl});
   `}
 `;
 
-const InfoText = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-bottom: 4px;
-`;
-
-const PreviewContent = styled.div`
-  h1,
-  h2,
-  h3 {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
-  }
-
-  p {
-    color: ${({ theme }) => theme.colors.textSecondary};
-    line-height: ${({ theme }) => theme.lineHeights.relaxed};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
-  }
-`;
-
-const PreviewTitle = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes['2xl']};
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+/* A borderless title field, sized like the heading it becomes. */
+const TitleField = styled.textarea`
+  width: 100%;
+  resize: none;
+  border: none;
+  background: transparent;
+  ${display('sm')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textDisabled};
+  }
+
+  &:focus {
+    outline: none;
+  }
 `;
 
-const PreviewImage = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.radii.md};
+const Editor = styled.div`
+  border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
 
-  img {
-    width: 100%;
-    max-height: 250px;
-    object-fit: cover;
-  }
-`;
-
-const EditorWrapper = styled.div`
   .w-md-editor {
-    background: ${({ theme }) => theme.colors.inputBg};
-    border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-    border-radius: ${({ theme }) => theme.radii.lg};
+    background: ${({ theme }) => theme.colors.surfaceContainerLow};
     box-shadow: none;
   }
 
   .w-md-editor-toolbar {
-    background: ${({ theme }) => theme.colors.bgSecondary};
-    border-bottom: 1px solid ${({ theme }) => theme.colors.inputBorder};
-    border-radius: ${({ theme }) => theme.radii.lg} ${({ theme }) => theme.radii.lg} 0 0;
-    padding: 8px;
+    background: ${({ theme }) => theme.colors.surfaceContainer};
+    border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
   }
 
-  .w-md-editor-toolbar ul > li > button {
-    color: ${({ theme }) => theme.colors.textSecondary};
-  }
-
-  .w-md-editor-toolbar ul > li > button:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    background: ${({ theme }) => theme.colors.bgHover};
-  }
-
-  .w-md-editor-content {
-    background: ${({ theme }) => theme.colors.inputBg};
-  }
-
-  .w-md-editor-text-pre > code,
-  .w-md-editor-text-input {
+  .w-md-editor-text-input,
+  .w-md-editor-text-pre > code {
     font-size: 15px !important;
-    line-height: 1.7 !important;
-    color: ${({ theme }) => theme.colors.textPrimary} !important;
-  }
-
-  .w-md-editor-preview {
-    background: ${({ theme }) => theme.colors.inputBg};
-    padding: 16px;
+    line-height: 1.6 !important;
   }
 
   .wmde-markdown {
     background: transparent;
     color: ${({ theme }) => theme.colors.textPrimary};
-    font-size: 15px;
-    line-height: 1.7;
+  }
+`;
+
+const Preview = styled.div`
+  .wmde-markdown {
+    background: transparent;
+    color: ${({ theme }) => theme.colors.textPrimary};
+    font-size: ${({ theme }) => theme.text.lg[0]};
+    line-height: ${({ theme }) => theme.text.lg[1]};
   }
 
   .wmde-markdown h1,
@@ -315,25 +113,134 @@ const EditorWrapper = styled.div`
     border-bottom: none;
   }
 
-  .wmde-markdown code {
-    background: ${({ theme }) => theme.colors.bgSecondary};
-    color: ${({ theme }) => theme.colors.accent};
-  }
-
-  .wmde-markdown pre {
-    background: ${({ theme }) => theme.colors.bgSecondary};
-    border: 1px solid ${({ theme }) => theme.colors.border};
-  }
-
-  .wmde-markdown blockquote {
-    border-left: 3px solid ${({ theme }) => theme.colors.accent};
+  .wmde-markdown p,
+  .wmde-markdown li {
     color: ${({ theme }) => theme.colors.textSecondary};
   }
+
+  .wmde-markdown pre,
+  .wmde-markdown code {
+    background: ${({ theme }) => theme.colors.surfaceContainer};
+    border-radius: ${({ theme }) => theme.radii.sm};
+  }
+
+  .wmde-markdown img {
+    border-radius: ${({ theme }) => theme.radii.lg};
+    max-width: 100%;
+  }
 `;
+
+const CoverPreview = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  overflow: hidden;
+  aspect-ratio: 21 / 9;
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const AsideLabel = styled.p`
+  ${labelStyle('sm')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const Choices = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Choice = styled.button`
+  display: flex;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.md};
+  text-align: left;
+  ${interactive}
+
+  background: ${({ theme, $active }) => ($active ? theme.colors.accentContainer : 'transparent')};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.accentText : theme.colors.textSecondary};
+
+  &:hover {
+    background: ${({ theme, $active }) =>
+      $active ? theme.colors.accentContainer : theme.colors.surfaceContainer};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+`;
+
+const ChoiceName = styled.span`
+  ${text('sm', 'semibold')}
+  display: block;
+`;
+
+const ChoiceNote = styled.span`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  display: block;
+`;
+
+const Topics = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  flex-wrap: wrap;
+`;
+
+const Facts = styled.dl`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const Fact = styled.div`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+  ${text('sm')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+
+  dd {
+    color: ${({ theme }) => theme.colors.textPrimary};
+    font-variant-numeric: tabular-nums;
+  }
+`;
+
+const Buttons = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const VISIBILITY = [
+  { id: 'public', icon: Globe, name: 'Public', note: 'Anyone can find and read it.' },
+  { id: 'private', icon: Lock, name: 'Private', note: 'Only you, via a direct link.' },
+  { id: 'draft', icon: FileText, name: 'Draft', note: 'Not published. Only you can see it.' },
+];
+
+const slugify = (value) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 
 export function WritePost() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { mode } = useTheme();
   const isEditing = Boolean(id);
 
   const [title, setTitle] = useState('');
@@ -343,7 +250,7 @@ export function WritePost() {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [originalCategories, setOriginalCategories] = useState([]);
   const [imageURL, setImageURL] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
+  const [preview, setPreview] = useState(false);
 
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
@@ -357,17 +264,16 @@ export function WritePost() {
   });
 
   useEffect(() => {
-    if (existingPost?.data) {
-      const post = existingPost.data;
-      setTitle(post.title || '');
-      setContent(post.content || '');
-      setSlug(post.slug || '');
-      setVisibility(post.visibility || 'draft');
-      setImageURL(post.imageURL || '');
-      const catNames = post.categories?.map((c) => c.name) || [];
-      setSelectedCategories(catNames);
-      setOriginalCategories(catNames);
-    }
+    if (!existingPost?.data) return;
+    const post = existingPost.data;
+    setTitle(post.title || '');
+    setContent(post.content || '');
+    setSlug(post.slug || '');
+    setVisibility(post.visibility || 'draft');
+    setImageURL(post.imageURL || '');
+    const names = post.categories?.map((category) => category.name) || [];
+    setSelectedCategories(names);
+    setOriginalCategories(names);
   }, [existingPost]);
 
   const createMutation = useMutation({
@@ -376,261 +282,254 @@ export function WritePost() {
       if (selectedCategories.length > 0 && data.postId) {
         try {
           await categoryService.attachCategoriesToPost(selectedCategories, data.postId);
-        } catch (err) {
-          console.error('Failed to attach categories:', err);
+        } catch (error) {
+          console.error('[WritePost] attaching categories failed', error);
         }
       }
       toast.success('Post created');
       navigate(data.postId ? `/post/${data.postId}` : '/dashboard');
     },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to create post');
-    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Could not create the post'),
   });
 
   const updateMutation = useMutation({
     mutationFn: (data) => postService.updatePost(id, data),
     onSuccess: async () => {
-      const addedCategories = selectedCategories.filter((c) => !originalCategories.includes(c));
-      const removedCategories = originalCategories.filter((c) => !selectedCategories.includes(c));
+      const added = selectedCategories.filter((name) => !originalCategories.includes(name));
+      const removed = originalCategories.filter((name) => !selectedCategories.includes(name));
 
-      if (addedCategories.length > 0 || removedCategories.length > 0) {
+      if (added.length > 0 || removed.length > 0) {
         try {
-          await categoryService.updatePostCategories(id, addedCategories, removedCategories);
-        } catch (err) {
-          console.error('Failed to update categories:', err);
+          await categoryService.updatePostCategories(id, added, removed);
+        } catch (error) {
+          console.error('[WritePost] updating categories failed', error);
         }
       }
       toast.success('Post updated');
       navigate(`/post/${id}`);
     },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to update post');
-    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Could not update the post'),
   });
 
-  const generateSlug = (text) => {
-    return text
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+  const handleTitle = (value) => {
+    setTitle(value);
+    // Keep the slug following the title until it has been set by hand or already published.
+    if (!isEditing || !slug) setSlug(slugify(value));
   };
 
-  const handleTitleChange = (e) => {
-    const newTitle = e.target.value;
-    setTitle(newTitle);
-    if (!isEditing || !slug) {
-      setSlug(generateSlug(newTitle));
-    }
-  };
+  const submit = (nextVisibility) => {
+    if (!title.trim()) return toast.error('Give it a title first');
+    if (!content.trim()) return toast.error('There is nothing to publish yet');
 
-  const toggleCategory = (catName) => {
-    setSelectedCategories((prev) =>
-      prev.includes(catName) ? prev.filter((name) => name !== catName) : [...prev, catName]
-    );
-  };
+    const finalSlug = slug.trim() || slugify(title);
+    if (!finalSlug) return toast.error('That title cannot make a valid link');
 
-  const handleSubmit = (e, submitVisibility) => {
-    if (e) e.preventDefault();
-
-    if (!title.trim()) {
-      toast.error('Title is required');
-      return;
-    }
-    if (!content.trim()) {
-      toast.error('Content is required');
-      return;
-    }
-    if (!slug.trim()) {
-      toast.error('Slug is required');
-      return;
-    }
-
-    const postData = {
+    const payload = {
       title: title.trim(),
-      content: content,
-      slug: slug.trim(),
-      visibility: submitVisibility || visibility,
+      content,
+      slug: finalSlug,
+      visibility: nextVisibility || visibility,
       imageURL: imageURL.trim() || '',
     };
 
-    if (isEditing) {
-      updateMutation.mutate(postData);
-    } else {
-      createMutation.mutate(postData);
-    }
+    setVisibility(payload.visibility);
+    return isEditing ? updateMutation.mutate(payload) : createMutation.mutate(payload);
   };
 
-  if (isEditing && postLoading) {
-    return <Loading text="Loading..." />;
-  }
-
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const words = useMemo(() => content.split(/\s+/).filter(Boolean).length, [content]);
   const categories = categoriesData?.data || [];
-  const wordCount = content.split(/\s+/).filter(Boolean).length;
+  const pending = createMutation.isPending || updateMutation.isPending;
+
+  if (isEditing && postLoading) return <Loading text="Loading the post…" />;
 
   return (
-    <PageWrapper>
-      <ContentLayout>
-        <MainEditor>
-          <Card>
-            <CardHeader>
-              <CardTitle>{isEditing ? 'Edit Post' : 'New Post'}</CardTitle>
-              <ToggleButton onClick={() => setShowPreview(!showPreview)}>
-                {showPreview ? (
-                  <>
-                    <Pencil /> Edit
-                  </>
-                ) : (
-                  <>
-                    <Eye /> Preview
-                  </>
-                )}
-              </ToggleButton>
-            </CardHeader>
-
-            {showPreview ? (
-              <PreviewContent>
-                <PreviewTitle>{title || 'Untitled'}</PreviewTitle>
-                {imageURL && (
-                  <PreviewImage>
-                    <img src={imageURL} alt="Cover" />
-                  </PreviewImage>
-                )}
-                <EditorWrapper data-color-mode="light">
-                  <MDEditor.Markdown source={content || 'No content'} />
-                </EditorWrapper>
-              </PreviewContent>
+    <PageShell>
+      <PageHeader
+        title={isEditing ? 'Edit post' : 'New post'}
+        subtitle={
+          preview ? 'This is how it will read once published.' : 'Markdown, with a live preview.'
+        }
+        actions={
+          <Button variant="secondary" onClick={() => setPreview((current) => !current)}>
+            {preview ? (
+              <>
+                <Pencil /> Keep writing
+              </>
             ) : (
               <>
-                <FormGroup>
-                  <Label>Title</Label>
-                  <Input
-                    type="text"
-                    placeholder="Post title"
-                    value={title}
-                    onChange={handleTitleChange}
-                  />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>
-                    <Image /> Cover Image URL
-                  </Label>
-                  <Input
-                    type="text"
-                    placeholder="https://..."
-                    value={imageURL}
-                    onChange={(e) => setImageURL(e.target.value)}
-                  />
-                  {imageURL && (
-                    <ImagePreview>
-                      <img
-                        src={imageURL}
-                        alt="Preview"
-                        onError={(e) => (e.target.style.display = 'none')}
-                      />
-                    </ImagePreview>
-                  )}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Content</Label>
-                  <EditorWrapper data-color-mode="light">
-                    <MDEditor
-                      value={content}
-                      onChange={(val) => setContent(val || '')}
-                      height={400}
-                      preview="edit"
-                      hideToolbar={false}
-                    />
-                  </EditorWrapper>
-                  <WordCount>{wordCount} words</WordCount>
-                </FormGroup>
+                <Eye /> Preview
               </>
             )}
-          </Card>
-        </MainEditor>
+          </Button>
+        }
+      />
 
-        <Sidebar>
-          <Card>
-            <SidebarTitle>Publish</SidebarTitle>
-
-            <FormGroup>
-              <SmallLabel>Status</SmallLabel>
-              <Select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
-                <option value="draft">Draft</option>
-                <option value="private">Private</option>
-                <option value="public">Public</option>
-              </Select>
-            </FormGroup>
-
-            <FormGroup>
-              <SmallLabel>URL Slug</SmallLabel>
-              <Input
-                type="text"
-                placeholder="post-slug"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
+      <Layout>
+        <Main>
+          {preview ? (
+            <Card tone="low" radius="xl" padding="2xl">
+              <h1 style={{ marginBottom: 16 }}>
+                <TitleField as="span" style={{ display: 'block' }}>
+                  {title || 'Untitled'}
+                </TitleField>
+              </h1>
+              {imageURL && (
+                <CoverPreview>
+                  <img src={imageURL} alt="" />
+                </CoverPreview>
+              )}
+              <Preview data-color-mode={mode} style={{ marginTop: 24 }}>
+                <MDEditor.Markdown source={content || '_Nothing written yet._'} />
+              </Preview>
+            </Card>
+          ) : (
+            <>
+              <TitleField
+                rows={1}
+                placeholder="Title"
+                value={title}
+                onChange={(event) => handleTitle(event.target.value)}
+                onInput={(event) => {
+                  event.target.style.height = 'auto';
+                  event.target.style.height = `${event.target.scrollHeight}px`;
+                }}
+                aria-label="Post title"
               />
-            </FormGroup>
 
-            <Divider />
+              <Editor data-color-mode={mode}>
+                <MDEditor
+                  value={content}
+                  onChange={(value) => setContent(value || '')}
+                  height={520}
+                  preview="edit"
+                />
+              </Editor>
+            </>
+          )}
+        </Main>
 
-            <ButtonGroup>
-              <Button
-                variant="primary"
-                fullWidth
-                onClick={(e) => handleSubmit(e, 'public')}
-                isLoading={isPending}
-              >
-                {isEditing ? 'Update' : 'Publish'}
-              </Button>
+        <Aside>
+          <Card tone="low" radius="lg" padding="lg">
+            <AsideLabel>Who can see it</AsideLabel>
+            <Choices>
+              {VISIBILITY.map((option) => (
+                <Choice
+                  key={option.id}
+                  type="button"
+                  $active={visibility === option.id}
+                  onClick={() => setVisibility(option.id)}
+                  aria-pressed={visibility === option.id}
+                >
+                  <option.icon />
+                  <span>
+                    <ChoiceName>{option.name}</ChoiceName>
+                    <ChoiceNote>{option.note}</ChoiceNote>
+                  </span>
+                </Choice>
+              ))}
+            </Choices>
+          </Card>
+
+          <Card tone="low" radius="lg" padding="lg">
+            <AsideLabel>Topics</AsideLabel>
+            {categories.length === 0 ? (
+              <ChoiceNote>No topics exist yet. An administrator can add them.</ChoiceNote>
+            ) : (
+              <Topics>
+                {categories.map((category) => {
+                  const Icon = topicIcon(category.name);
+                  return (
+                    <Chip
+                      key={category._id}
+                      size="sm"
+                      selected={selectedCategories.includes(category.name)}
+                      onClick={() =>
+                        setSelectedCategories((current) =>
+                          current.includes(category.name)
+                            ? current.filter((name) => name !== category.name)
+                            : [...current, category.name]
+                        )
+                      }
+                    >
+                      <Icon />
+                      {category.name}
+                    </Chip>
+                  );
+                })}
+              </Topics>
+            )}
+          </Card>
+
+          <Card tone="low" radius="lg" padding="lg">
+            <AsideLabel>Details</AsideLabel>
+            <Input
+              label="Cover image"
+              placeholder="https://…"
+              value={imageURL}
+              onChange={(event) => setImageURL(event.target.value)}
+            />
+            {imageURL && (
+              <CoverPreview>
+                <img src={imageURL} alt="" onError={(event) => (event.target.src = '')} />
+              </CoverPreview>
+            )}
+            <div style={{ marginTop: 16 }}>
+              <Input
+                label="Link"
+                placeholder="post-title"
+                value={slug}
+                onChange={(event) => setSlug(event.target.value)}
+                hint="Used in the post's address."
+              />
+            </div>
+          </Card>
+
+          <Card tone="low" radius="lg" padding="lg">
+            <AsideLabel>Length</AsideLabel>
+            <Facts>
+              <Fact>
+                <dt>Words</dt>
+                <dd>{words}</dd>
+              </Fact>
+              <Fact>
+                <dt>Reading time</dt>
+                <dd>{readingTime(content)} min</dd>
+              </Fact>
+              {isEditing && existingPost?.data && (
+                <>
+                  <Fact>
+                    <dt>Likes</dt>
+                    <dd>{existingPost.data.likes?.length || 0}</dd>
+                  </Fact>
+                  <Fact>
+                    <dt>Responses</dt>
+                    <dd>{existingPost.data.comments?.length || 0}</dd>
+                  </Fact>
+                </>
+              )}
+            </Facts>
+          </Card>
+
+          <Buttons>
+            <Button fullWidth isLoading={pending} onClick={() => submit(visibility)}>
+              {isEditing ? 'Save changes' : visibility === 'public' ? 'Publish' : 'Save'}
+            </Button>
+            {visibility !== 'draft' && !isEditing && (
               <Button
                 variant="secondary"
                 fullWidth
-                onClick={(e) => handleSubmit(e, 'draft')}
-                disabled={isPending}
+                disabled={pending}
+                onClick={() => submit('draft')}
               >
-                Save Draft
+                Save as draft
               </Button>
-              <Button variant="ghost" fullWidth onClick={() => navigate(-1)}>
-                Cancel
-              </Button>
-            </ButtonGroup>
-          </Card>
-
-          <Card>
-            <SidebarTitle>Categories</SidebarTitle>
-            {categories.length === 0 ? (
-              <InfoText>No categories available</InfoText>
-            ) : (
-              <CategoriesWrapper>
-                {categories.map((cat) => (
-                  <CategoryBadge
-                    key={cat._id}
-                    $selected={selectedCategories.includes(cat.name)}
-                    onClick={() => toggleCategory(cat.name)}
-                  >
-                    {cat.name}
-                  </CategoryBadge>
-                ))}
-              </CategoriesWrapper>
             )}
-          </Card>
-
-          {isEditing && existingPost?.data && (
-            <Card>
-              <SidebarTitle>Info</SidebarTitle>
-              <InfoText>
-                Created: {new Date(existingPost.data.createdAt).toLocaleDateString()}
-              </InfoText>
-              <InfoText>Likes: {existingPost.data.likes?.length || 0}</InfoText>
-              <InfoText>Comments: {existingPost.data.comments?.length || 0}</InfoText>
-            </Card>
-          )}
-        </Sidebar>
-      </ContentLayout>
-    </PageWrapper>
+            <Button variant="ghost" fullWidth onClick={() => navigate(-1)}>
+              Cancel
+            </Button>
+          </Buttons>
+        </Aside>
+      </Layout>
+    </PageShell>
   );
 }
