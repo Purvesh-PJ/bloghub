@@ -13,10 +13,10 @@ export const GlobalStyles = createGlobalStyle`
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Let Inter's opsz axis pick display shapes at large sizes automatically. */
+    /* Let the opsz axis pick display shapes at large sizes automatically. */
     font-optical-sizing: auto;
-    /* Inter's own contextual alternates — notably a better single-storey 'a' at display
-       sizes and improved figure spacing. */
+    /* Inter's contextual alternates — a better single-storey 'a' at display sizes and
+       improved figure spacing. Harmless on the serifs, which do not define them. */
     font-feature-settings: 'cv11', 'ss01';
     scroll-behavior: smooth;
     scroll-padding-top: calc(${({ theme }) => theme.layout.headerHeight} + 24px);
@@ -43,6 +43,13 @@ export const GlobalStyles = createGlobalStyle`
     font-family: ${({ theme }) => theme.fonts.display};
     color: ${({ theme }) => theme.colors.textPrimary};
     text-wrap: balance;
+    /*
+      Fraunces' SOFT axis rounds the terminals. At 0 it is a sharp Scotch-style face that
+      turns brittle on a screen; a little softness is what makes it read as warm rather
+      than as a newspaper masthead. WONK swaps in the angled 'g' and 'y' — the detail that
+      makes the face recognisable rather than generic.
+    */
+    font-variation-settings: 'SOFT' 24, 'WONK' 1;
   }
 
   p {

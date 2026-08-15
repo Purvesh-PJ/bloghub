@@ -138,9 +138,25 @@ const Article = styled.article`
   .wmde-markdown {
     background: transparent;
     color: ${({ theme }) => theme.colors.textPrimary};
-    font-family: ${({ theme }) => theme.fonts.reading ?? theme.fonts.ui};
-    font-size: ${({ theme }) => theme.text.lg[0]};
-    line-height: ${({ theme }) => theme.text.lg[1]};
+    /* Newsreader, not the interface sans. The body is the one thing on this page somebody
+       reads rather than scans, and it is set larger than interface copy for the same reason. */
+    font-family: ${({ theme }) => theme.fonts.reading};
+    font-size: 1.1875rem;
+    line-height: 1.7;
+  }
+
+  /*
+    Drop cap on the opening paragraph. An old device, and the reason it survives is that it
+    marks where the article actually begins — useful on a page that opens with a cover, a
+    topic, a byline and a stat bar before a single word of the piece.
+  */
+  .wmde-markdown > p:first-of-type::first-letter {
+    float: left;
+    font-family: ${({ theme }) => theme.fonts.display};
+    font-size: 3.6em;
+    line-height: 0.82;
+    padding: 0.08em 0.08em 0 0;
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 
   .wmde-markdown h1,

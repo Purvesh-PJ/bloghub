@@ -92,7 +92,17 @@ export function createTheme(ramps, mode) {
     lineStrong: step(n, 8),
     lineFocus: step(a, 8),
 
+    // ── Ink ─────────────────────────────────────────────────────────────────
+    // The primary action colour, and deliberately *not* the accent. An interface that
+    // paints every important button in its brand colour reads as a template, because the
+    // accent ends up meaning nothing. Ink is the darkest neutral in light mode and the
+    // lightest in dark, so a primary button is always the highest-contrast object present.
+    inkSolid: isLight ? step(n, 12) : step(n, 12),
+    inkSolidHover: isLight ? step(n, 11) : step(n, 11),
+    textOnInk: isLight ? step(n, 1) : step(n, 1),
+
     // ── Accent ──────────────────────────────────────────────────────────────
+    // Used sparingly: links, marks, the read-rate fill. Never a page full of buttons.
     accentContainer: step(a, 3), // tonal chip / selected state
     accentContainerHover: step(a, 4),
     accentLine: step(a, 7),

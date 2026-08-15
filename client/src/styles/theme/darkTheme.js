@@ -1,6 +1,6 @@
 import {
-  slateDark,
-  indigoDark,
+  sandDark,
+  tomatoDark,
   grassDark,
   amberDark,
   redDark,
@@ -18,8 +18,8 @@ import { createTheme } from './createTheme';
  */
 export const darkTheme = createTheme(
   {
-    neutral: slateDark,
-    accent: indigoDark,
+    neutral: sandDark,
+    accent: tomatoDark,
     success: grassDark,
     warning: amberDark,
     danger: redDark,
