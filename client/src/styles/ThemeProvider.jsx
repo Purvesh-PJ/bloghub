@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import {
   tokens,
@@ -21,61 +21,68 @@ export const useTheme = () => {
   return context;
 };
 
-// Get initial theme from localStorage or system preference
-const getInitialTheme = () => {
-  if (typeof window === 'undefined') return 'light';
+/**
+ * Two separate things, which the previous version conflated:
+ *
+ *   preference — what the reader chose: 'light', 'dark' or 'system'
+ *   mode       — what is actually painted: 'light' or 'dark'
+ *
+ * They only differ under 'system'. Storing just the resolved mode is what broke the
+ * system option: the persist effect wrote `theme` on first render, so the
+ * "only auto-switch if the reader has not chosen" guard was never true again and
+ * following the OS became unreachable. Settings offered a System card that did nothing.
+ */
 
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme && ['light', 'dark'].includes(savedTheme)) {
-    return savedTheme;
-  }
+const STORAGE_KEY = 'theme-preference';
 
-  // Check system preference
-  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
+const prefersDark = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  return 'light';
+const getInitialPreference = () => {
+  if (typeof window === 'undefined') return 'system';
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved && ['light', 'dark', 'system'].includes(saved)) return saved;
+
+  // Migrate the old key, which only ever held a resolved mode.
+  const legacy = localStorage.getItem('theme');
+  if (legacy && ['light', 'dark'].includes(legacy)) return legacy;
+
+  return 'system';
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [mode, setMode] = useState(getInitialTheme);
+  const [preference, setPreference] = useState(getInitialPreference);
+  const [systemMode, setSystemMode] = useState(() => (prefersDark() ? 'dark' : 'light'));
 
-  // Toggle between light and dark
-  const toggleTheme = () => {
-    setMode((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
+  const mode = preference === 'system' ? systemMode : preference;
 
-  // Set specific theme
-  const setTheme = (newMode) => {
-    if (['light', 'dark'].includes(newMode)) {
-      setMode(newMode);
-    }
-  };
+  const toggleTheme = useCallback(() => setPreference(mode === 'light' ? 'dark' : 'light'), [mode]);
 
-  // Persist theme and update document attribute
+  const setTheme = useCallback((next) => {
+    if (['light', 'dark', 'system'].includes(next)) setPreference(next);
+  }, []);
+
+  // Persist the choice, not the outcome.
   useEffect(() => {
-    localStorage.setItem('theme', mode);
+    localStorage.setItem(STORAGE_KEY, preference);
+    localStorage.removeItem('theme');
+  }, [preference]);
+
+  useEffect(() => {
     document.documentElement.setAttribute('data-theme', mode);
 
-    // Update meta theme-color for mobile browsers
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', mode === 'dark' ? '#0d1117' : '#ffffff');
     }
   }, [mode]);
 
-  // Listen for system preference changes
+  // Track the OS setting continuously. Under 'system' this repaints; otherwise it is
+  // simply kept current so switching to 'system' later lands on the right mode.
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const handleChange = (e) => {
-      // Only auto-switch if user hasn't manually set a preference
-      const savedTheme = localStorage.getItem('theme');
-      if (!savedTheme) {
-        setMode(e.matches ? 'dark' : 'light');
-      }
-    };
+    const handleChange = (event) => setSystemMode(event.matches ? 'dark' : 'light');
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
@@ -98,12 +105,13 @@ export const ThemeProvider = ({ children }) => {
   const contextValue = useMemo(
     () => ({
       mode,
+      preference,
       isDark: mode === 'dark',
       isLight: mode === 'light',
       toggleTheme,
       setTheme,
     }),
-    [mode]
+    [mode, preference, toggleTheme, setTheme]
   );
 
   return (
