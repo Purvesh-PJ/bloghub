@@ -1,3 +1,8 @@
+// Inter with the optical-size axis. One self-hosted variable file — no external request and
+// no font-loading shift — and large headings automatically pick up Inter's display shapes
+// (tighter apertures, less spacing) rather than being body Inter scaled up.
+import '@fontsource-variable/inter/opsz.css';
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
