@@ -19,7 +19,16 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
-          radix: ['@radix-ui/themes', '@radix-ui/react-icons'],
+          // The headless Radix primitives, which every page pulls in through ui/.
+          // @radix-ui/themes used to be chunked here; it was never configured with a
+          // stylesheet or a provider, so everything built on it rendered unstyled.
+          radix: [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-avatar',
+          ],
           editor: ['@uiw/react-md-editor'],
         },
       },
