@@ -11,6 +11,7 @@ const Comment = require('./models/comment.model');
 const Like = require('./models/like.model');
 const Profile = require('./models/user-profile.model');
 const View = require('./models/view.model');
+const Read = require('./models/read.model');
 const Analytics = require('./models/analytics.model');
 
 const { connectDB } = require('./config/db');
@@ -362,6 +363,7 @@ async function seed() {
       Like.deleteMany({}),
       Profile.deleteMany({}),
       View.deleteMany({}),
+      Read.deleteMany({}),
       Analytics.deleteMany({}),
     ]);
 
@@ -487,21 +489,45 @@ async function seed() {
     }
     console.log(`Added ${likeCount} likes`);
 
-    // Add views (for analytics)
-    console.log('Adding views...');
+    // Add views and reads (for analytics)
+    //
+    // Both, not just views. Seeding views alone left every read-through rate at 0%, which
+    // is the one figure the product is built around — so a freshly seeded database showed
+    // the headline metric as dead everywhere.
+    //
+    // Each post gets its own read-through between 15% and 75%, so the dashboard has a
+    // spread to rank and the bars differ from one another. A reader who finished a post
+    // necessarily opened it, so reads are drawn from that post's viewers.
+    console.log('Adding views and reads...');
     let viewCount = 0;
+    let readCount = 0;
+
     for (const post of createdPosts) {
       const numViews = Math.floor(Math.random() * 50) + 10;
+      const viewers = [];
+
       for (let i = 0; i < numViews; i++) {
         const randomUser = createdUsers[Math.floor(Math.random() * createdUsers.length)];
         const view = new View({ user: randomUser._id, post: post._id });
         await view.save();
         post.views.push(view._id);
+        viewers.push(randomUser._id);
         viewCount++;
       }
+
+      const readThrough = 0.15 + Math.random() * 0.6;
+      const finishers = new Set(
+        viewers.slice(0, Math.round(viewers.length * readThrough)).map(String),
+      );
+
+      for (const userId of finishers) {
+        await new Read({ user: userId, post: post._id }).save();
+        readCount++;
+      }
+
       await post.save();
     }
-    console.log(`Added ${viewCount} views`);
+    console.log(`Added ${viewCount} views and ${readCount} reads`);
 
     // Create analytics records
     console.log('Creating analytics...');
