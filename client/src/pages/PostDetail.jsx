@@ -1,508 +1,332 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Heart, MessageCircle, Share2, Pencil, Trash2 } from 'lucide-react';
-import { formatDistanceToNow, format } from 'date-fns';
 import styled from 'styled-components';
-import toast from 'react-hot-toast';
 import MDEditor from '@uiw/react-md-editor';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Heart, MessageCircle, Share2, Pencil, Trash2, FileQuestion, Clock } from 'lucide-react';
+import toast from 'react-hot-toast';
+
 import { postService } from '../services/postService';
 import { commentService } from '../services/commentService';
 import { likeService } from '../services/likeService';
 import { analyticsService } from '../services/analyticsService';
-import { userService } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
-import { Loading } from '../components/ui';
-import { Button } from '../components/ui';
+import { useTheme } from '../styles/ThemeProvider';
+import { useReadTracking, useReadingProgress } from '../hooks/useReading';
+import { PageShell } from '../components/layout/PageShell';
+import { ReadRateBar } from '../components/stats/ReadRateBar';
+import { Button, Card, TextArea, Chip, Modal, Loading, EmptyState } from '../components/ui';
+import { display, text, media, interactive } from '../styles/theme/mixins';
+import { readingTime, initial } from '../utils/text';
 
-/* Reading surface. Editorial half of the design language: serif, generous, capped measure. */
+/**
+ * The article page.
+ *
+ * Two things were wrong beyond the styling. The markdown body was rendered with
+ * `data-color-mode="light"` hard-coded, so in dark mode the article kept a white background
+ * while the page around it went dark. And the reader's progress was never reported: the
+ * service had trackPostRead and nothing anywhere called it, so no Read document was ever
+ * created by the running application and read-through rate would have stayed at 0% in
+ * production regardless of how many people finished a piece.
+ */
 
-const PageWrapper = styled.div`
-  background: ${({ theme }) => theme.colors.surfacePage};
-  min-height: calc(100vh - ${({ theme }) => theme.layout.headerHeight});
-  padding-bottom: ${({ theme }) => theme.spacing['5xl']};
+/* ── Progress ────────────────────────────────────────────────────────────────
+   A reading platform that measures how far people get should show the reader the
+   same thing. Sits under the header, which is 64px tall and sticky. */
+
+const Progress = styled.div`
+  position: fixed;
+  top: ${({ theme }) => theme.layout.headerHeight};
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: ${({ theme }) => theme.zIndices.sticky};
+  background: transparent;
+  pointer-events: none;
 `;
 
-const HeroImage = styled.figure`
-  max-width: 1080px;
-  margin: ${({ theme }) => theme.spacing.xl} auto 0;
-  padding: 0 ${({ theme }) => theme.spacing.lg};
+const ProgressFill = styled.div`
+  height: 100%;
+  width: ${({ $percent }) => $percent}%;
+  background: ${({ theme }) => theme.colors.accentSolid};
+  transition: width 80ms linear;
+`;
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+const Cover = styled.div`
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  border-radius: ${({ theme }) => theme.radii['2xl']};
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.surfaceContainer};
 
   img {
     width: 100%;
-    /* Capped so the cover frames the piece instead of burying the headline. */
-    aspect-ratio: 21 / 9;
+    height: 100%;
     object-fit: cover;
-    border-radius: ${({ theme }) => theme.radii.xl};
   }
-`;
 
-const Container = styled.div`
-  max-width: ${({ theme }) => theme.layout.contentWidth};
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing.lg} 0;
-`;
-
-const Category = styled(Link)`
-  display: inline-block;
-  font-family: ${({ theme }) => theme.fonts.ui};
-  font-size: ${({ theme }) => theme.ui.xs[0]};
-  font-weight: ${({ theme }) => theme.weights.semibold};
-  letter-spacing: ${({ theme }) => theme.tracking.caps};
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.colors.accentText};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.textLinkHover};
-  }
+  ${media.down('sm')`aspect-ratio: 16 / 9;`}
 `;
 
 const Title = styled.h1`
-  font-family: ${({ theme }) => theme.fonts.reading};
-  font-size: ${({ theme }) => theme.display.xl[0]};
-  line-height: ${({ theme }) => theme.display.xl[1]};
-  font-weight: ${({ theme }) => theme.weights.bold};
-  letter-spacing: ${({ theme }) => theme.tracking.tight};
+  ${display('md')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  text-wrap: balance;
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    font-size: ${({ theme }) => theme.display.lg[0]};
-  }
+  ${media.down('sm')`font-size: ${({ theme }) => theme.display.sm[0]};`}
 `;
 
-const AuthorSection = styled.div`
+const Byline = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.lg};
+  flex-wrap: wrap;
   padding-bottom: ${({ theme }) => theme.spacing.xl};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
 `;
 
-const AuthorInfo = styled(Link)`
+const Author = styled(Link)`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const AuthorAvatar = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentSubtle};
-  color: ${({ theme }) => theme.colors.accentText};
-  display: flex;
+const Portrait = styled.span`
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: ${({ theme }) => theme.fonts.ui};
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  font-weight: ${({ theme }) => theme.weights.semibold};
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentSolid};
+  color: ${({ theme }) => theme.colors.textOnAccent};
+  ${text('md', 'semibold')}
 `;
 
-const AuthorDetails = styled.div``;
-
-const AuthorName = styled.div`
-  font-family: ${({ theme }) => theme.fonts.ui};
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  font-weight: ${({ theme }) => theme.weights.semibold};
+const AuthorName = styled.span`
+  ${text('md', 'semibold')}
   color: ${({ theme }) => theme.colors.textPrimary};
+  display: block;
 `;
 
-const PostMeta = styled.div`
-  font-family: ${({ theme }) => theme.fonts.ui};
-  font-size: ${({ theme }) => theme.ui.base[0]};
+const Meta = styled.span`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  ${text('xs')}
   color: ${({ theme }) => theme.colors.textMuted};
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+`;
+
+const OwnerActions = styled.div`
   display: flex;
-  align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-const AuthorActions = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
+/* ── Body ────────────────────────────────────────────────────────────────── */
 
-const ActionBtn = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  background: ${({ theme }) => theme.colors.bgSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.accent};
-    color: ${({ theme }) => theme.colors.accent};
+const Article = styled.article`
+  /* The editor package paints its own surface; make it inherit ours instead. */
+  .wmde-markdown {
+    background: transparent;
+    color: ${({ theme }) => theme.colors.textPrimary};
+    font-family: ${({ theme }) => theme.fonts.reading ?? theme.fonts.ui};
+    font-size: ${({ theme }) => theme.text.lg[0]};
+    line-height: ${({ theme }) => theme.text.lg[1]};
   }
 
-  &[data-danger='true']:hover {
-    border-color: ${({ theme }) => theme.colors.error};
-    color: ${({ theme }) => theme.colors.error};
+  .wmde-markdown h1,
+  .wmde-markdown h2,
+  .wmde-markdown h3,
+  .wmde-markdown h4 {
+    color: ${({ theme }) => theme.colors.textPrimary};
+    border-bottom: none;
+    margin-top: ${({ theme }) => theme.spacing['2xl']};
+    margin-bottom: ${({ theme }) => theme.spacing.md};
+    letter-spacing: ${({ theme }) => theme.tracking.tight};
+  }
+
+  .wmde-markdown p,
+  .wmde-markdown li {
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+
+  .wmde-markdown a {
+    color: ${({ theme }) => theme.colors.accentText};
+  }
+
+  .wmde-markdown blockquote {
+    border-left: 3px solid ${({ theme }) => theme.colors.accentLine};
+    background: ${({ theme }) => theme.colors.surfaceContainerLow};
+    border-radius: ${({ theme }) => theme.radii.sm};
+    padding: ${({ theme }) => theme.spacing.lg};
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+
+  .wmde-markdown pre,
+  .wmde-markdown code {
+    background: ${({ theme }) => theme.colors.surfaceContainer};
+    border-radius: ${({ theme }) => theme.radii.sm};
+  }
+
+  .wmde-markdown img {
+    border-radius: ${({ theme }) => theme.radii.lg};
+    max-width: 100%;
+  }
+
+  .wmde-markdown table {
+    display: block;
+    overflow-x: auto;
+  }
+`;
+
+/* ── Engagement ──────────────────────────────────────────────────────────── */
+
+const Bar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+  padding: ${({ theme }) => theme.spacing.xl} 0;
+  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+`;
+
+const Action = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  height: 40px;
+  padding: 0 ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.full};
+  ${text('sm', 'medium')}
+  ${interactive}
+
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.dangerContainer : theme.colors.surfaceContainer};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.dangerText : theme.colors.textSecondary};
+
+  &:hover {
+    background: ${({ theme, $active }) =>
+      $active ? theme.colors.dangerContainerHover : theme.colors.surfaceContainerHigh};
+    color: ${({ theme, $active }) =>
+      $active ? theme.colors.dangerText : theme.colors.textPrimary};
   }
 
   svg {
     width: 16px;
     height: 16px;
+    fill: ${({ $active }) => ($active ? 'currentColor' : 'none')};
   }
 `;
 
-/**
- * The article itself.
- *
- * Body copy is serif at 18px/1.75 and rendered in `textPrimary`. It was previously sans at
- * `textSecondary` — grey body text on a light ground is the single biggest reason the
- * reading experience felt washed out.
- */
-const Content = styled.article`
-  font-family: ${({ theme }) => theme.fonts.reading};
-  font-size: ${({ theme }) => theme.reading.body[0]};
-  line-height: ${({ theme }) => theme.reading.body[1]};
-  color: ${({ theme }) => theme.colors.textPrimary};
+/* ── Comments ────────────────────────────────────────────────────────────── */
 
-  .wmde-markdown {
-    background: transparent !important;
-    font-family: inherit;
-    font-size: inherit;
-    line-height: inherit;
-    color: inherit;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  .wmde-markdown h1,
-  .wmde-markdown h2,
-  .wmde-markdown h3,
-  .wmde-markdown h4 {
-    font-family: ${({ theme }) => theme.fonts.reading};
-    font-weight: ${({ theme }) => theme.weights.semibold};
-    letter-spacing: ${({ theme }) => theme.tracking.tight};
-    color: ${({ theme }) => theme.colors.textPrimary};
-    margin: 1.9em 0 0.55em;
-    line-height: 1.3;
-    border-bottom: none;
-    text-wrap: balance;
-  }
-
-  h1,
-  .wmde-markdown h1 {
-    font-size: ${({ theme }) => theme.display.lg[0]};
-  }
-  h2,
-  .wmde-markdown h2 {
-    font-size: ${({ theme }) => theme.display.md[0]};
-  }
-  h3,
-  .wmde-markdown h3 {
-    font-size: ${({ theme }) => theme.display.sm[0]};
-  }
-
-  p,
-  .wmde-markdown p {
-    margin-bottom: 1.35em;
-    color: inherit;
-  }
-
-  ul,
-  ol,
-  .wmde-markdown ul,
-  .wmde-markdown ol {
-    margin-bottom: 1.35em;
-    padding-left: 1.4em;
-    color: inherit;
-  }
-
-  li,
-  .wmde-markdown li {
-    margin-bottom: 0.45em;
-  }
-
-  /* A hairline rule reads as an aside; a heavy accent bar competes with the headline. */
-  blockquote,
-  .wmde-markdown blockquote {
-    border-left: 2px solid ${({ theme }) => theme.colors.accentLine};
-    padding: 0 0 0 1.5em;
-    margin: 2em 0;
-    font-size: ${({ theme }) => theme.reading.lead[0]};
-    font-style: italic;
-    color: ${({ theme }) => theme.colors.textSecondary};
-    background: transparent;
-  }
-
-  pre,
-  .wmde-markdown pre {
-    background: ${({ theme }) => theme.colors.surfaceSunken};
-    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-    padding: 1.15em 1.25em;
-    border-radius: ${({ theme }) => theme.radii.lg};
-    overflow-x: auto;
-    margin: 2em 0;
-    font-size: ${({ theme }) => theme.ui.md[0]};
-    line-height: 1.6;
-  }
-
-  code,
-  .wmde-markdown code {
-    font-family: ${({ theme }) => theme.fonts.mono};
-    background: ${({ theme }) => theme.colors.surfaceSunken};
-    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-    padding: 0.1em 0.35em;
-    border-radius: ${({ theme }) => theme.radii.sm};
-    font-size: 0.85em;
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-
-  .wmde-markdown pre code {
-    background: transparent;
-    border: none;
-    padding: 0;
-    color: inherit;
-    font-size: inherit;
-  }
-
-  img,
-  .wmde-markdown img {
-    max-width: 100%;
-    border-radius: ${({ theme }) => theme.radii.lg};
-    margin: 2.25em 0;
-  }
-
-  a,
-  .wmde-markdown a {
-    color: ${({ theme }) => theme.colors.textLink};
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-    text-decoration-thickness: 1px;
-    text-decoration-color: ${({ theme }) => theme.colors.accentLine};
-
-    &:hover {
-      text-decoration-color: currentColor;
-    }
-  }
-`;
-
-const Engagement = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.lg};
-  padding: ${({ theme }) => theme.spacing.lg} 0;
-  margin-top: ${({ theme }) => theme.spacing['3xl']};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-`;
-
-/* Quiet by default — the article is the subject, not its toolbar. Colour arrives on action. */
-const EngageBtn = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  padding: ${({ theme }) => theme.spacing.xs} 0;
-  font-family: ${({ theme }) => theme.fonts.ui};
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  font-weight: ${({ theme }) => theme.weights.medium};
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.dangerText : theme.colors.textSecondary};
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    color: ${({ $active, theme }) =>
-      $active ? theme.colors.dangerText : theme.colors.textPrimary};
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-    fill: ${({ $active, theme }) => ($active ? theme.colors.dangerSolid : 'none')};
-    stroke: ${({ $active, theme }) => ($active ? theme.colors.dangerSolid : 'currentColor')};
-    transition: fill ${({ theme }) => theme.transitions.fast};
-  }
-`;
-
-const ShareBtn = styled(EngageBtn)`
-  margin-left: auto;
-`;
-
-const Divider = styled.hr`
-  border: none;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  margin: ${({ theme }) => theme.spacing.xl} 0;
-`;
-
-/* Below the article the surface switches to the interface scale: sans, tighter, denser.
-   Comments are a tool, not prose. */
-const CommentsSection = styled.section`
-  font-family: ${({ theme }) => theme.fonts.ui};
-  margin-top: ${({ theme }) => theme.spacing['3xl']};
-`;
-
-const CommentsHeader = styled.h2`
-  font-family: ${({ theme }) => theme.fonts.ui};
-  font-size: ${({ theme }) => theme.display.sm[0]};
-  font-weight: ${({ theme }) => theme.weights.semibold};
-  letter-spacing: ${({ theme }) => theme.tracking.tight};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const CommentForm = styled.form`
-  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
-`;
-
-const CommentInput = styled.textarea`
-  width: 100%;
-  min-height: 104px;
-  padding: ${({ theme }) => theme.spacing.md};
-  font-family: ${({ theme }) => theme.fonts.ui};
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  line-height: ${({ theme }) => theme.ui.md[1]};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  background: ${({ theme }) => theme.colors.surfaceRaised};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  resize: vertical;
-  transition: border-color ${({ theme }) => theme.transitions.fast};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.textMuted};
-  }
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.lineStrong};
-  }
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.lineFocus};
-  }
-`;
-
-const CommentActions = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: ${({ theme }) => theme.spacing.sm};
-`;
-
-const LoginPrompt = styled.p`
-  padding: ${({ theme }) => theme.spacing.lg};
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textMuted};
-  background: ${({ theme }) => theme.colors.bgSecondary};
-  border-radius: ${({ theme }) => theme.radii.lg};
-
-  a {
-    color: ${({ theme }) => theme.colors.accent};
-    font-weight: ${({ theme }) => theme.fontWeights.medium};
-  }
-`;
-
-const CommentsList = styled.div`
+const Comments = styled.section`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacing.xl};
 `;
 
-const Comment = styled.div`
+const CommentsTitle = styled.h2`
+  ${display('xs')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+const Thread = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xl};
+`;
+
+const CommentRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const CommentAvatar = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentSubtle};
-  display: flex;
+const SmallPortrait = styled.span`
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: ${({ theme }) => theme.ui.sm[0]};
-  font-weight: ${({ theme }) => theme.weights.semibold};
-  color: ${({ theme }) => theme.colors.accentText};
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentText};
+  ${text('xs', 'semibold')}
 `;
 
 const CommentBody = styled.div`
   flex: 1;
+  min-width: 0;
 `;
 
-const CommentMeta = styled.div`
+const CommentHead = styled.div`
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: ${({ theme }) => theme.spacing.sm};
-  margin-bottom: 6px;
+  flex-wrap: wrap;
 `;
 
 const CommentAuthor = styled.span`
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  font-weight: ${({ theme }) => theme.weights.semibold};
+  ${text('sm', 'semibold')}
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
-const CommentDate = styled.span`
-  font-size: ${({ theme }) => theme.ui.sm[0]};
+const CommentWhen = styled.span`
+  ${text('xs')}
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
 const CommentText = styled.p`
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  line-height: ${({ theme }) => theme.ui.md[1]};
+  ${text('md')}
   color: ${({ theme }) => theme.colors.textSecondary};
+  margin-top: ${({ theme }) => theme.spacing.xs};
+  white-space: pre-wrap;
 `;
 
-const ReplyBtn = styled.button`
-  margin-top: 8px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
+const ReplyToggle = styled.button`
+  ${text('xs', 'medium')}
   color: ${({ theme }) => theme.colors.textMuted};
-  background: none;
-  border: none;
-  cursor: pointer;
+  margin-top: ${({ theme }) => theme.spacing.sm};
 
   &:hover {
-    color: ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.accentText};
   }
 `;
 
+/* Nesting drawn with a rule rather than indentation alone, so a deep thread stays readable. */
 const Replies = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.md};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacing.lg};
   padding-left: ${({ theme }) => theme.spacing.lg};
-  border-left: 2px solid ${({ theme }) => theme.colors.border};
+  border-left: 2px solid ${({ theme }) => theme.colors.lineSubtle};
+`;
+
+const Composer = styled.form`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
-`;
+  align-items: flex-end;
 
-const NoComments = styled.p`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textMuted};
-  padding: ${({ theme }) => theme.spacing.xl};
-`;
-
-const ErrorPage = styled.div`
-  text-align: center;
-  padding: 100px ${({ theme }) => theme.spacing.lg};
-
-  h2 {
-    font-size: ${({ theme }) => theme.fontSizes['2xl']};
-    color: ${({ theme }) => theme.colors.textPrimary};
-    margin-bottom: ${({ theme }) => theme.spacing.sm};
+  > * {
+    width: 100%;
   }
 
-  p {
-    color: ${({ theme }) => theme.colors.textMuted};
-    margin-bottom: ${({ theme }) => theme.spacing.lg};
+  button {
+    width: auto;
   }
 `;
 
@@ -511,47 +335,72 @@ export function PostDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { isAuthenticated, user } = useAuth();
+  const { mode } = useTheme();
+
   const [comment, setComment] = useState('');
   const [liked, setLiked] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const [replyText, setReplyText] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const articleRef = useRef(null);
+  const progress = useReadingProgress(articleRef);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['post', id],
     queryFn: () => postService.getPost(id),
   });
 
+  const post = data?.data;
+  useReadTracking(post?._id, post?.content, articleRef);
+
+  // A view is one per page load. Guarded so React's development double-invoke does not
+  // record two.
+  const viewed = useRef(null);
   useEffect(() => {
-    if (id) analyticsService.trackPageView(id).catch(() => {});
+    if (!id || viewed.current === id) return;
+    viewed.current = id;
+    analyticsService.trackPageView(id).catch(() => {});
   }, [id]);
 
   useEffect(() => {
-    if (data?.data?.likes && user?.user_id) {
-      // likes are populated with their user reference; fall back to a bare id in case the
+    if (post?.likes && user?.user_id) {
+      // Likes are populated with their user reference; fall back to a bare id in case the
       // payload is not populated.
-      setLiked(
-        data.data.likes.some((like) => {
-          const likeUserId = like?.user ?? like;
-          return String(likeUserId) === String(user.user_id);
-        })
-      );
+      setLiked(post.likes.some((like) => String(like?.user ?? like) === String(user.user_id)));
     }
-  }, [data, user]);
+  }, [post, user]);
+
+  const isAuthor = user?.user_id === post?.user?._id;
+
+  /* The author sees how their own piece is doing, in the same shape the dashboard uses. */
+  const { data: analytics } = useQuery({
+    queryKey: ['userAnalytics', user?.user_id],
+    queryFn: () => analyticsService.getUserAnalytics(user?.user_id),
+    enabled: Boolean(isAuthor && user?.user_id),
+    retry: false,
+  });
+
+  const postStats = analytics?.postsAnalytics?.find(
+    (entry) => String(entry.postId) === String(post?._id)
+  );
 
   const deleteMutation = useMutation({
     mutationFn: () => postService.deletePost(id),
     onSuccess: () => {
-      toast.success('Deleted');
-      navigate('/');
+      toast.success('Post deleted');
+      navigate('/dashboard');
     },
+    onError: () => toast.error('Could not delete the post'),
   });
 
   const commentMutation = useMutation({
-    mutationFn: (d) => commentService.createComment(d),
+    mutationFn: (payload) => commentService.createComment(payload),
     onSuccess: () => {
       setComment('');
-      queryClient.invalidateQueries(['post', id]);
+      queryClient.invalidateQueries({ queryKey: ['post', id] });
     },
+    onError: () => toast.error('Could not post that comment'),
   });
 
   const replyMutation = useMutation({
@@ -560,217 +409,275 @@ export function PostDetail() {
     onSuccess: () => {
       setReplyTo(null);
       setReplyText('');
-      queryClient.invalidateQueries(['post', id]);
+      queryClient.invalidateQueries({ queryKey: ['post', id] });
     },
+    onError: () => toast.error('Could not post that reply'),
   });
 
   const likeMutation = useMutation({
     mutationFn: () => (liked ? likeService.unlikePost(id) : likeService.likePost(id)),
     onSuccess: () => {
-      setLiked(!liked);
-      queryClient.invalidateQueries(['post', id]);
+      setLiked((current) => !current);
+      queryClient.invalidateQueries({ queryKey: ['post', id] });
     },
+    onError: () => toast.error('Could not register that'),
   });
 
-  if (isLoading) return <Loading text="Loading..." />;
+  if (isLoading) return <Loading text="Loading…" />;
 
-  if (error || !data?.success) {
+  if (error || !data?.success || !post) {
     return (
-      <PageWrapper>
-        <ErrorPage>
-          <h2>Post not found</h2>
-          <p>The post you're looking for doesn't exist or has been removed.</p>
-          <Button as={Link} to="/">
-            Back to Home
-          </Button>
-        </ErrorPage>
-      </PageWrapper>
+      <PageShell $width="reading">
+        <EmptyState
+          icon={FileQuestion}
+          title="This post is not here"
+          actions={
+            <Button as={Link} to="/">
+              Back to the feed
+            </Button>
+          }
+        >
+          It may have been deleted, or made private by its author.
+        </EmptyState>
+      </PageShell>
     );
   }
 
-  const post = data.data;
-  const isAuthor = user?.user_id === post.user?._id;
   const category = post.categories?.[0];
+  const comments = post.comments || [];
 
   return (
-    <PageWrapper>
-      {post.imageURL && (
-        <HeroImage>
-          <img src={post.imageURL} alt={post.title} />
-        </HeroImage>
-      )}
+    <>
+      <Progress aria-hidden="true">
+        <ProgressFill $percent={progress} />
+      </Progress>
 
-      <Container>
-        {category && <Category to={`/?category=${category.name}`}>{category.name}</Category>}
+      <PageShell $width="reading">
+        {post.imageURL && (
+          <Cover>
+            <img src={post.imageURL} alt="" />
+          </Cover>
+        )}
+
+        {category && (
+          <div>
+            <Chip size="sm" onClick={() => navigate('/search')}>
+              {category.name ?? category}
+            </Chip>
+          </div>
+        )}
 
         <Title>{post.title}</Title>
 
-        <AuthorSection>
-          <AuthorInfo to={post.user?._id ? `/user/${post.user._id}` : '#'}>
-            <AuthorAvatar>{post.user?.username?.[0]?.toUpperCase() || 'U'}</AuthorAvatar>
-            <AuthorDetails>
+        <Byline>
+          <Author to={post.user?._id ? `/user/${post.user._id}` : '#'}>
+            <Portrait>{initial(post.user?.username)}</Portrait>
+            <span>
               <AuthorName>{post.user?.username || 'Anonymous'}</AuthorName>
-              <PostMeta>
-                <span>{format(new Date(post.createdAt), 'MMM d, yyyy')}</span>
-              </PostMeta>
-            </AuthorDetails>
-          </AuthorInfo>
+              <Meta>
+                {format(new Date(post.createdAt), 'd MMM yyyy')}
+                <Clock />
+                {readingTime(post.content)} min read
+              </Meta>
+            </span>
+          </Author>
 
           {isAuthor && (
-            <AuthorActions>
-              <ActionBtn as={Link} to={`/edit/${post._id}`}>
+            <OwnerActions>
+              <Button as={Link} to={`/edit/${post._id}`} variant="secondary" size="sm">
                 <Pencil /> Edit
-              </ActionBtn>
-              <ActionBtn
-                data-danger="true"
-                onClick={() => window.confirm('Delete this post?') && deleteMutation.mutate()}
-              >
+              </Button>
+              <Button variant="dangerTonal" size="sm" onClick={() => setConfirmDelete(true)}>
                 <Trash2 /> Delete
-              </ActionBtn>
-            </AuthorActions>
+              </Button>
+            </OwnerActions>
           )}
-        </AuthorSection>
+        </Byline>
 
-        <Content data-color-mode="light">
-          {post.content?.startsWith('<') ? (
-            <div dangerouslySetInnerHTML={{ __html: post.content }} />
-          ) : (
-            <MDEditor.Markdown source={post.content} />
-          )}
-        </Content>
+        {isAuthor && postStats && postStats.views > 0 && (
+          <Card tone="low" radius="lg" padding="lg">
+            <ReadRateBar
+              views={postStats.views}
+              reads={postStats.reads}
+              rate={postStats.readRate}
+              size="lg"
+            />
+          </Card>
+        )}
 
-        <Engagement>
-          <EngageBtn
+        <Article ref={articleRef}>
+          <div data-color-mode={mode}>
+            {post.content?.startsWith('<') ? (
+              <div className="wmde-markdown" dangerouslySetInnerHTML={{ __html: post.content }} />
+            ) : (
+              <MDEditor.Markdown source={post.content} />
+            )}
+          </div>
+        </Article>
+
+        <Bar>
+          <Action
             $active={liked}
             onClick={() =>
-              isAuthenticated ? likeMutation.mutate() : toast.error('Please sign in')
+              isAuthenticated ? likeMutation.mutate() : toast.error('Sign in to like this')
             }
           >
-            <Heart /> {post.likes?.length || 0} Likes
-          </EngageBtn>
-          <EngageBtn as="a" href="#comments">
-            <MessageCircle /> {post.comments?.length || 0} Comments
-          </EngageBtn>
-          <ShareBtn
+            <Heart /> {post.likes?.length || 0}
+          </Action>
+          <Action as="a" href="#comments">
+            <MessageCircle /> {comments.length}
+          </Action>
+          <Action
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
-              toast.success('Link copied!');
+              toast.success('Link copied');
             }}
           >
             <Share2 /> Share
-          </ShareBtn>
-        </Engagement>
+          </Action>
+        </Bar>
 
-        <Divider />
-
-        <CommentsSection id="comments">
-          <CommentsHeader>Comments ({post.comments?.length || 0})</CommentsHeader>
+        <Comments id="comments">
+          <CommentsTitle>
+            {comments.length} {comments.length === 1 ? 'response' : 'responses'}
+          </CommentsTitle>
 
           {isAuthenticated ? (
-            <CommentForm
-              onSubmit={(e) => {
-                e.preventDefault();
-                comment.trim() &&
+            <Composer
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (comment.trim()) {
                   commentMutation.mutate({ userId: user.user_id, postId: id, message: comment });
+                }
               }}
             >
-              <CommentInput
-                placeholder="Share your thoughts..."
+              <TextArea
+                placeholder="What did you make of it?"
                 value={comment}
-                onChange={(e) => setComment(e.target.value)}
+                onChange={(event) => setComment(event.target.value)}
+                rows={3}
+                aria-label="Write a response"
               />
-              <CommentActions>
-                <Button
-                  type="submit"
-                  isLoading={commentMutation.isPending}
-                  disabled={!comment.trim()}
-                >
-                  Post Comment
-                </Button>
-              </CommentActions>
-            </CommentForm>
+              <Button
+                type="submit"
+                isLoading={commentMutation.isPending}
+                disabled={!comment.trim()}
+              >
+                Respond
+              </Button>
+            </Composer>
           ) : (
-            <LoginPrompt>
-              <Link to="/login">Sign in</Link> to join the conversation
-            </LoginPrompt>
+            <Card tone="low" radius="lg" padding="lg">
+              <CommentText style={{ margin: 0 }}>
+                <Link to="/login">Sign in</Link> to join the conversation.
+              </CommentText>
+            </Card>
           )}
 
-          {post.comments?.length === 0 ? (
-            <NoComments>No comments yet. Start the conversation!</NoComments>
+          {comments.length === 0 ? (
+            <EmptyState icon={MessageCircle} title="No responses yet" tone="low">
+              Be the first to say something.
+            </EmptyState>
           ) : (
-            <CommentsList>
-              {post.comments?.map((c) => (
-                <Comment key={c._id}>
-                  <CommentAvatar>{c.user?.username?.[0]?.toUpperCase() || 'U'}</CommentAvatar>
+            <Thread>
+              {comments.map((entry) => (
+                <CommentRow key={entry._id}>
+                  <SmallPortrait>{initial(entry.user?.username)}</SmallPortrait>
                   <CommentBody>
-                    <CommentMeta>
-                      <CommentAuthor>{c.user?.username || 'Anonymous'}</CommentAuthor>
-                      <CommentDate>
-                        {formatDistanceToNow(new Date(c.date), { addSuffix: true })}
-                      </CommentDate>
-                    </CommentMeta>
-                    <CommentText>{c.message}</CommentText>
+                    <CommentHead>
+                      <CommentAuthor>{entry.user?.username || 'Anonymous'}</CommentAuthor>
+                      <CommentWhen>
+                        {formatDistanceToNow(new Date(entry.date), { addSuffix: true })}
+                      </CommentWhen>
+                    </CommentHead>
+                    <CommentText>{entry.message}</CommentText>
 
                     {isAuthenticated && (
-                      <ReplyBtn onClick={() => setReplyTo(replyTo === c._id ? null : c._id)}>
-                        Reply
-                      </ReplyBtn>
+                      <ReplyToggle
+                        onClick={() => setReplyTo(replyTo === entry._id ? null : entry._id)}
+                      >
+                        {replyTo === entry._id ? 'Cancel' : 'Reply'}
+                      </ReplyToggle>
                     )}
 
-                    {replyTo === c._id && (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          replyText.trim() &&
+                    {replyTo === entry._id && (
+                      <Composer
+                        style={{ marginTop: 12 }}
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          if (replyText.trim()) {
                             replyMutation.mutate({
                               userId: user.user_id,
-                              repliedCommentId: c._id,
+                              repliedCommentId: entry._id,
                               message: replyText,
                             });
+                          }
                         }}
-                        style={{ marginTop: 12 }}
                       >
-                        <CommentInput
-                          placeholder="Write a reply..."
+                        <TextArea
+                          placeholder={`Reply to ${entry.user?.username || 'this'}`}
                           value={replyText}
-                          onChange={(e) => setReplyText(e.target.value)}
-                          style={{ minHeight: 80 }}
+                          onChange={(event) => setReplyText(event.target.value)}
+                          rows={2}
+                          aria-label="Write a reply"
+                          autoFocus
                         />
-                        <CommentActions>
-                          <Button type="submit" disabled={!replyText.trim()}>
-                            Reply
-                          </Button>
-                        </CommentActions>
-                      </form>
+                        <Button
+                          type="submit"
+                          size="sm"
+                          disabled={!replyText.trim()}
+                          isLoading={replyMutation.isPending}
+                        >
+                          Reply
+                        </Button>
+                      </Composer>
                     )}
 
-                    {c.replies?.length > 0 && (
+                    {entry.replies?.length > 0 && (
                       <Replies>
-                        {c.replies.map((r) => (
-                          <Comment key={r._id}>
-                            <CommentAvatar>
-                              {r.user?.username?.[0]?.toUpperCase() || 'U'}
-                            </CommentAvatar>
+                        {entry.replies.map((reply) => (
+                          <CommentRow key={reply._id}>
+                            <SmallPortrait>{initial(reply.user?.username)}</SmallPortrait>
                             <CommentBody>
-                              <CommentMeta>
-                                <CommentAuthor>{r.user?.username || 'Anonymous'}</CommentAuthor>
-                                <CommentDate>
-                                  {formatDistanceToNow(new Date(r.date), { addSuffix: true })}
-                                </CommentDate>
-                              </CommentMeta>
-                              <CommentText>{r.message}</CommentText>
+                              <CommentHead>
+                                <CommentAuthor>{reply.user?.username || 'Anonymous'}</CommentAuthor>
+                                <CommentWhen>
+                                  {formatDistanceToNow(new Date(reply.date), { addSuffix: true })}
+                                </CommentWhen>
+                              </CommentHead>
+                              <CommentText>{reply.message}</CommentText>
                             </CommentBody>
-                          </Comment>
+                          </CommentRow>
                         ))}
                       </Replies>
                     )}
                   </CommentBody>
-                </Comment>
+                </CommentRow>
               ))}
-            </CommentsList>
+            </Thread>
           )}
-        </CommentsSection>
-      </Container>
-    </PageWrapper>
+        </Comments>
+      </PageShell>
+
+      <Modal
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Delete this post?"
+        description={`"${post.title}" and its responses will be removed. This cannot be undone.`}
+      >
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="secondary" onClick={() => setConfirmDelete(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => deleteMutation.mutate()}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+          </Button>
+        </div>
+      </Modal>
+    </>
   );
 }
