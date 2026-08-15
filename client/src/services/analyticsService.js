@@ -11,6 +11,11 @@ export const analyticsService = {
     return response.data;
   },
 
+  getReadingActivity: async () => {
+    const response = await api.get('/analytics/me/reading');
+    return response.data;
+  },
+
   getAdminAnalytics: async () => {
     const response = await api.get('/analytics/admin');
     return response.data;

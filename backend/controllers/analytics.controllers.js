@@ -1,8 +1,22 @@
+const mongoose = require('mongoose');
 const Analytics = require('../models/analytics.model');
 const Post = require('../models/post.model');
 const User = require('../models/user.model');
 const View = require('../models/view.model');
 const Read = require('../models/read.model');
+
+// Counts documents per post in one grouped query. The alternative — countDocuments()
+// inside a map over the posts — costs two round trips per post, so a writer with fifty
+// posts paid for a hundred queries on every dashboard load.
+const countByPost = async (Model, postIds) => {
+  const rows = await Model.aggregate([
+    { $match: { post: { $in: postIds } } },
+    { $group: { _id: '$post', count: { $sum: 1 } } },
+  ]);
+  return new Map(rows.map((row) => [String(row._id), row.count]));
+};
+
+const rate = (part, whole) => (whole > 0 ? Math.round((part / whole) * 1000) / 10 : 0);
 
 // Get analytics by blog post ID
 exports.getAnalytics = async (req, res) => {
@@ -24,43 +38,100 @@ exports.getUserAnalytics = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Get user's posts
-    const userPosts = await Post.find({ user: userId });
+    const userPosts = await Post.find({ user: userId })
+      .select('title visibility createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
     const postIds = userPosts.map((post) => post._id);
 
-    // Get views, reads, and other analytics for these posts
-    const views = await View.find({ post: { $in: postIds } }).countDocuments();
-    const reads = await Read.find({ post: { $in: postIds } }).countDocuments();
+    const [viewsByPost, readsByPost] = await Promise.all([
+      countByPost(View, postIds),
+      countByPost(Read, postIds),
+    ]);
 
-    // Get analytics for each post
-    const postsAnalytics = await Promise.all(
-      userPosts.map(async (post) => {
-        const postViews = await View.find({ post: post._id }).countDocuments();
-        const postReads = await Read.find({ post: post._id }).countDocuments();
-        return {
-          postId: post._id,
-          title: post.title,
-          views: postViews,
-          reads: postReads,
-          readRate: postViews > 0 ? (postReads / postViews) * 100 : 0,
-        };
-      }),
-    );
+    const postsAnalytics = userPosts.map((post) => {
+      const views = viewsByPost.get(String(post._id)) || 0;
+      const reads = readsByPost.get(String(post._id)) || 0;
+      return {
+        postId: post._id,
+        title: post.title,
+        visibility: post.visibility,
+        createdAt: post.createdAt,
+        views,
+        reads,
+        readRate: rate(reads, views),
+      };
+    });
 
-    // Get top performing posts
-    const topPosts = [...postsAnalytics].sort((a, b) => b.views - a.views).slice(0, 5);
+    const totalViews = postsAnalytics.reduce((sum, post) => sum + post.views, 0);
+    const totalReads = postsAnalytics.reduce((sum, post) => sum + post.reads, 0);
+
+    // Ranked by reads rather than views: the point of the platform is who finished,
+    // and a post with 900 openers and 20 finishers is not a top performer.
+    const topPosts = [...postsAnalytics].sort((a, b) => b.reads - a.reads).slice(0, 5);
 
     res.json({
       totalPosts: userPosts.length,
-      totalViews: views,
-      totalReads: reads,
-      readRate: views > 0 ? (reads / views) * 100 : 0,
+      totalViews,
+      totalReads,
+      readRate: rate(totalReads, totalViews),
       postsAnalytics,
       topPosts,
     });
   } catch (error) {
-    console.error(error);
+    console.error('[getUserAnalytics]', error);
     res.status(500).json({ error: 'An error occurred while fetching user analytics' });
+  }
+};
+
+// What the signed-in reader has been reading. Powers the reader half of the dashboard,
+// which is otherwise empty for an account that only reads: every other panel there is
+// built from posts the account wrote.
+exports.getReadingActivity = async (req, res) => {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+
+    // One row per post, carrying the most recent time this reader opened it.
+    const opened = await View.aggregate([
+      { $match: { user: userId } },
+      { $sort: { createdAt: -1 } },
+      { $group: { _id: '$post', lastOpenedAt: { $first: '$createdAt' } } },
+      { $sort: { lastOpenedAt: -1 } },
+      { $limit: 40 },
+    ]);
+
+    const openedIds = opened.map((row) => row._id);
+
+    const finishedIds = new Set(
+      (await Read.find({ user: userId, post: { $in: openedIds } }).distinct('post')).map(String),
+    );
+
+    const posts = await Post.find({ _id: { $in: openedIds }, visibility: 'public' })
+      .select('title imageURL createdAt categories')
+      .populate('user', 'username')
+      .populate('categories', 'name')
+      .lean();
+
+    const postById = new Map(posts.map((post) => [String(post._id), post]));
+
+    // A post deleted or made private since it was read simply drops out.
+    const activity = opened
+      .map((row) => {
+        const post = postById.get(String(row._id));
+        if (!post) return null;
+        return { post, lastOpenedAt: row.lastOpenedAt, finished: finishedIds.has(String(row._id)) };
+      })
+      .filter(Boolean);
+
+    res.json({
+      unfinished: activity.filter((item) => !item.finished).slice(0, 12),
+      finished: activity.filter((item) => item.finished).slice(0, 12),
+      totalOpened: activity.length,
+      totalFinished: activity.filter((item) => item.finished).length,
+    });
+  } catch (error) {
+    console.error('[getReadingActivity]', error);
+    res.status(500).json({ error: 'An error occurred while fetching reading activity' });
   }
 };
 

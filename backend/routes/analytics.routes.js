@@ -15,6 +15,10 @@ router.get(
   AnalyticsController.getUserAnalytics,
 );
 
+// What the caller has been reading. Scoped to the token, so it takes no user parameter
+// and cannot be pointed at somebody else's reading history.
+router.get('/me/reading', AuthUser.authenticateUser, AnalyticsController.getReadingActivity);
+
 // Get admin analytics (overall site analytics)
 router.get(
   '/admin',
