@@ -1,26 +1,115 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Box,
-  Container,
-  Flex,
-  Heading,
-  Text,
-  Avatar,
-  Card,
-  Grid,
-  Button,
-  Badge,
-  Separator,
-} from '@radix-ui/themes';
-import { FileTextIcon, HeartIcon, PersonIcon } from '@radix-ui/react-icons';
+import styled from 'styled-components';
+import { UserPlus, UserCheck, Settings as SettingsIcon, PenLine } from 'lucide-react';
 import toast from 'react-hot-toast';
+
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
 import { useAuth } from '../context/AuthContext';
 import { PostCard } from '../components/posts/PostCard';
-import { Loading } from '../components/ui';
+import { PageShell, Section } from '../components/layout/PageShell';
+import { Button, Chip, Loading, EmptyState } from '../components/ui';
+import { display, text, label as labelStyle, media } from '../styles/theme/mixins';
+import { initial } from '../utils/text';
+
+/**
+ * A person's public page — the same page whether it is yours or somebody else's.
+ *
+ * There used to be two: this one, built on @radix-ui/themes, and /profile, built on
+ * styled-components. Neither matched the other, and this one rendered unstyled because the
+ * Themes package was never given its stylesheet or its provider. Viewing your own profile
+ * now lands here too, with an Edit button where the Follow button would be, so what you see
+ * is what a reader sees.
+ */
+
+const Head = styled.header`
+  display: flex;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing['2xl']};
+
+  ${media.down('sm')`
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.lg};
+  `}
+`;
+
+const Portrait = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentSolid};
+  color: ${({ theme }) => theme.colors.textOnAccent};
+  ${display('sm')}
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const Identity = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const NameRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.lg};
+  flex-wrap: wrap;
+`;
+
+const Name = styled.h1`
+  ${display('sm')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+const Bio = styled.p`
+  ${text('lg')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  max-width: 60ch;
+`;
+
+const Counts = styled.dl`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xl};
+  flex-wrap: wrap;
+`;
+
+const Count = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const CountValue = styled.dt`
+  ${text('md', 'semibold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-variant-numeric: tabular-nums;
+`;
+
+const CountLabel = styled.dd`
+  ${labelStyle('sm')}
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: ${({ theme }) => theme.spacing.xl};
+`;
 
 export function UserProfile() {
   const { userId } = useParams();
@@ -28,134 +117,166 @@ export function UserProfile() {
   const queryClient = useQueryClient();
   const [isFollowing, setIsFollowing] = useState(false);
 
-  // Get published posts and filter by user
+  const isOwnProfile = currentUser?.user_id === userId;
+
   const { data: postsResponse, isLoading: postsLoading } = useQuery({
     queryKey: ['posts'],
     queryFn: () => postService.getPosts(),
   });
 
-  // Check if following
   const { data: followingData } = useQuery({
     queryKey: ['isFollowing', userId],
     queryFn: () => userService.isFollowing(userId),
-    enabled: isAuthenticated && currentUser?.user_id !== userId,
+    enabled: isAuthenticated && !isOwnProfile,
   });
 
   useEffect(() => {
-    if (followingData) {
-      setIsFollowing(followingData.isFollowing);
-    }
+    if (followingData) setIsFollowing(followingData.isFollowing);
   }, [followingData]);
 
   const followMutation = useMutation({
     mutationFn: () => userService.followUser(userId),
     onSuccess: () => {
       setIsFollowing(true);
-      queryClient.invalidateQueries(['isFollowing', userId]);
-      toast.success('Followed successfully');
+      queryClient.invalidateQueries({ queryKey: ['isFollowing', userId] });
     },
-    onError: () => toast.error('Failed to follow'),
+    onError: () => toast.error('Could not follow this person'),
   });
 
   const unfollowMutation = useMutation({
     mutationFn: () => userService.unfollowUser(userId),
     onSuccess: () => {
       setIsFollowing(false);
-      queryClient.invalidateQueries(['isFollowing', userId]);
-      toast.success('Unfollowed successfully');
+      queryClient.invalidateQueries({ queryKey: ['isFollowing', userId] });
     },
-    onError: () => toast.error('Failed to unfollow'),
+    onError: () => toast.error('Could not unfollow this person'),
   });
 
-  if (postsLoading) {
-    return <Loading text="Loading profile..." />;
-  }
-
   // The endpoint already returns only published posts.
-  const userPosts = (postsResponse?.data || []).filter((post) => post.user?._id === userId);
+  const userPosts = useMemo(
+    () => (postsResponse?.data || []).filter((post) => post.user?._id === userId),
+    [postsResponse, userId]
+  );
 
-  const totalLikes = userPosts.reduce((acc, p) => acc + (p.likes?.length || 0), 0);
-  const authorName = userPosts[0]?.user?.username || 'User';
+  const author = userPosts[0]?.user;
+  const authorName = author?.username || 'This writer';
 
-  const isOwnProfile = currentUser?.user_id === userId;
+  const totals = useMemo(
+    () => ({
+      posts: userPosts.length,
+      likes: userPosts.reduce((sum, post) => sum + (post.likes?.length || 0), 0),
+      replies: userPosts.reduce((sum, post) => sum + (post.comments?.length || 0), 0),
+    }),
+    [userPosts]
+  );
+
+  /** Topics this person actually writes about, most frequent first. */
+  const topics = useMemo(() => {
+    const tally = new Map();
+    userPosts.forEach((post) =>
+      (post.categories || []).forEach((category) => {
+        const name = category?.name;
+        if (name) tally.set(name, (tally.get(name) || 0) + 1);
+      })
+    );
+    return [...tally.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  }, [userPosts]);
 
   const handleFollowToggle = () => {
     if (!isAuthenticated) {
-      toast.error('Please login to follow');
+      toast.error('Sign in to follow writers');
       return;
     }
-    if (isFollowing) {
-      unfollowMutation.mutate();
-    } else {
-      followMutation.mutate();
-    }
+    (isFollowing ? unfollowMutation : followMutation).mutate();
   };
 
+  if (postsLoading) return <Loading text="Loading profile…" />;
+
+  const pending = followMutation.isPending || unfollowMutation.isPending;
+
   return (
-    <Container size="3" py="6">
-      <Flex direction="column" gap="6">
-        {/* Profile Header */}
-        <Card>
-          <Flex direction={{ initial: 'column', sm: 'row' }} gap="5" p="5" align="center">
-            <Avatar size="8" fallback={authorName[0]?.toUpperCase() || 'U'} radius="full" />
-            <Box style={{ flex: 1, textAlign: 'center' }}>
-              <Heading size="6" mb="2">
-                {authorName}
-              </Heading>
+    <PageShell>
+      <Head>
+        <Portrait>
+          {author?.profileImage ? <img src={author.profileImage} alt="" /> : initial(authorName)}
+        </Portrait>
 
-              <Flex gap="6" justify="center" mb="4">
-                <Box style={{ textAlign: 'center' }}>
-                  <Text size="5" weight="bold">
-                    {userPosts.length}
-                  </Text>
-                  <Text size="1" color="gray" style={{ display: 'block' }}>
-                    Posts
-                  </Text>
-                </Box>
-                <Box style={{ textAlign: 'center' }}>
-                  <Text size="5" weight="bold">
-                    {totalLikes}
-                  </Text>
-                  <Text size="1" color="gray" style={{ display: 'block' }}>
-                    Likes
-                  </Text>
-                </Box>
-              </Flex>
+        <Identity>
+          <NameRow>
+            <Name>{authorName}</Name>
 
-              {!isOwnProfile && isAuthenticated && (
+            {isOwnProfile ? (
+              <Button as={Link} to="/settings" variant="secondary">
+                <SettingsIcon /> Edit profile
+              </Button>
+            ) : (
+              isAuthenticated && (
                 <Button
-                  variant={isFollowing ? 'soft' : 'solid'}
+                  variant={isFollowing ? 'tonal' : 'primary'}
                   onClick={handleFollowToggle}
-                  disabled={followMutation.isPending || unfollowMutation.isPending}
+                  disabled={pending}
                 >
-                  <PersonIcon />
-                  {isFollowing ? 'Unfollow' : 'Follow'}
+                  {isFollowing ? <UserCheck /> : <UserPlus />}
+                  {isFollowing ? 'Following' : 'Follow'}
                 </Button>
-              )}
-            </Box>
-          </Flex>
-        </Card>
+              )
+            )}
+          </NameRow>
 
-        {/* Posts */}
-        <Box>
-          <Heading size="5" mb="4">
-            Posts by {authorName}
-          </Heading>
-          {userPosts.length === 0 ? (
-            <Card>
-              <Flex direction="column" align="center" py="9">
-                <Text color="gray">No public posts yet</Text>
-              </Flex>
-            </Card>
-          ) : (
-            <Grid columns={{ initial: '1', sm: '2' }} gap="4">
-              {userPosts.map((post) => (
-                <PostCard key={post._id} post={post} />
+          {author?.profile?.bio && <Bio>{author.profile.bio}</Bio>}
+
+          <Counts>
+            <Count>
+              <CountValue>{totals.posts}</CountValue>
+              <CountLabel>{totals.posts === 1 ? 'story' : 'stories'}</CountLabel>
+            </Count>
+            <Count>
+              <CountValue>{totals.likes}</CountValue>
+              <CountLabel>likes</CountLabel>
+            </Count>
+            <Count>
+              <CountValue>{totals.replies}</CountValue>
+              <CountLabel>replies</CountLabel>
+            </Count>
+          </Counts>
+
+          {topics.length > 0 && (
+            <Counts as="div">
+              {topics.map(([name, count]) => (
+                <Chip key={name} size="sm" interactive={false}>
+                  {name} · {count}
+                </Chip>
               ))}
-            </Grid>
+            </Counts>
           )}
-        </Box>
-      </Flex>
-    </Container>
+        </Identity>
+      </Head>
+
+      <Section title={isOwnProfile ? 'Your published stories' : `Stories by ${authorName}`}>
+        {userPosts.length === 0 ? (
+          <EmptyState
+            icon={PenLine}
+            title={isOwnProfile ? 'Nothing published yet' : 'Nothing here yet'}
+            actions={
+              isOwnProfile && (
+                <Button as={Link} to="/write">
+                  <PenLine /> Write your first story
+                </Button>
+              )
+            }
+          >
+            {isOwnProfile
+              ? 'Drafts and private posts stay off this page. Publish one and it will appear here.'
+              : `${authorName} has not published anything yet. Follow them and their first story will reach you.`}
+          </EmptyState>
+        ) : (
+          <Grid>
+            {userPosts.map((post) => (
+              <PostCard key={post._id} post={post} layout="stacked" />
+            ))}
+          </Grid>
+        )}
+      </Section>
+    </PageShell>
   );
 }
