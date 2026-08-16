@@ -527,18 +527,13 @@ export function PostDetail() {
           <Action
             $active={liked}
             onClick={() => {
-              if (isCurated) {
-                setLiked((prev) => !prev);
-                toast.success(liked ? 'Like removed' : 'Liked this story!');
-                return;
-              }
               isAuthenticated ? likeMutation.mutate() : toast.error('Sign in to like this');
             }}
           >
-            <Heart /> {(post.likesCount || post.likes?.length || 0) + (isCurated && liked ? 1 : 0)}
+            <Heart /> {post.likes?.length || 0}
           </Action>
           <Action as="a" href="#comments">
-            <MessageCircle /> {comments.length || (isCurated ? post.commentsCount : 0)}
+            <MessageCircle /> {comments.length}
           </Action>
           <Action
             onClick={() => {
@@ -600,7 +595,10 @@ export function PostDetail() {
                     <CommentHead>
                       <CommentAuthor>{entry.user?.username || 'Anonymous'}</CommentAuthor>
                       <CommentWhen>
-                        {formatDistanceToNow(new Date(entry.date), { addSuffix: true })}
+                        {(() => {
+                          const d = entry.date ? new Date(entry.date) : null;
+                          return d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'recently';
+                        })()}
                       </CommentWhen>
                     </CommentHead>
                     <CommentText>{entry.message}</CommentText>

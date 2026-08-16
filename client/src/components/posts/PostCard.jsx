@@ -174,6 +174,7 @@ export function PostCard({ post, layout = 'row' }) {
   const category = post.categories?.[0]?.name ?? post.categories?.[0];
   const author = post.author?.name || post.author?.username || post.user?.username || 'Anonymous';
   const created = post.createdAt ? new Date(post.createdAt) : null;
+  const isValidDate = created && !isNaN(created.getTime());
   const showThumb = Boolean(post.imageURL) && !imageFailed;
   const likesCount = post.likesCount ?? post.likes?.length ?? 0;
   const commentsCount = post.commentsCount ?? post.comments?.length ?? 0;
@@ -185,7 +186,7 @@ export function PostCard({ post, layout = 'row' }) {
           <AuthorDot>{initial(author)}</AuthorDot>
           <span>{author}</span>
           <Dot>·</Dot>
-          {created && <span>{formatDistanceToNow(created, { addSuffix: true })}</span>}
+          {isValidDate && <span>{formatDistanceToNow(created, { addSuffix: true })}</span>}
           <Dot>·</Dot>
           <span>{readingTime(post.content)} min read</span>
         </Meta>
