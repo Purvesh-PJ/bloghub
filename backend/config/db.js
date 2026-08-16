@@ -8,10 +8,9 @@ async function connectDB() {
   }
 
   try {
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // `useNewUrlParser` and `useUnifiedTopology` were no-ops from Mongoose 6 and were removed
+    // in 8; the underlying driver now always behaves the way they used to request.
+    await mongoose.connect(uri);
     console.log('[DB] Connection successful');
 
     mongoose.connection.on('error', (err) => {
