@@ -4,7 +4,8 @@
  * Clean, modern, comfortable typography designed for effortless scanning and long-form reading.
  */
 
-const SANS = "'Inter Variable', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+const SANS =
+  "'Inter Variable', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 export const typography = {
   fonts: {
@@ -106,4 +107,3 @@ export const typographyAliases = {
     wider: typography.tracking.caps,
   },
 };
-

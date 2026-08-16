@@ -17,7 +17,8 @@ export const display = (size = 'md') => css`
   font-family: ${({ theme }) => theme.fonts?.display || 'sans-serif'};
   font-size: ${({ theme }) => theme.display?.[size]?.[0] || theme.display?.md?.[0] || '1.5rem'};
   line-height: ${({ theme }) => theme.display?.[size]?.[1] || theme.display?.md?.[1] || '1.3'};
-  letter-spacing: ${({ theme }) => theme.display?.[size]?.[2] || theme.display?.md?.[2] || '-0.02em'};
+  letter-spacing: ${({ theme }) =>
+    theme.display?.[size]?.[2] || theme.display?.md?.[2] || '-0.02em'};
   font-weight: ${({ theme }) => theme.display?.[size]?.[3] || theme.display?.md?.[3] || 700};
 `;
 

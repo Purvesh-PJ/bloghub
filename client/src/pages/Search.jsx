@@ -27,7 +27,11 @@ import { excerpt, readingTime } from '../utils/text';
 /* ── Styled Components ───────────────────────────────────────────────────── */
 
 const SearchHero = styled.div`
-  background: linear-gradient(180deg, ${({ theme }) => theme.colors.surfaceContainerLow} 0%, transparent 100%);
+  background: linear-gradient(
+    180deg,
+    ${({ theme }) => theme.colors.surfaceContainerLow} 0%,
+    transparent 100%
+  );
   border-radius: ${({ theme }) => theme.radii['2xl']};
   padding: ${({ theme }) => theme.spacing['2xl']};
   border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
@@ -138,7 +142,9 @@ const ResultCard = styled(Link)`
   &:hover {
     border-color: ${({ theme }) => theme.colors.accentLine};
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 0 10px -2px rgba(14, 165, 233, 0.1);
+    box-shadow:
+      0 10px 25px -5px rgba(15, 23, 42, 0.06),
+      0 0 10px -2px rgba(14, 165, 233, 0.1);
   }
 `;
 
@@ -282,7 +288,8 @@ export function Search() {
             Explore Stories & Topics
           </h1>
           <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
-            Discover top-read articles, engineering insights, and tech tutorials from writers worldwide.
+            Discover top-read articles, engineering insights, and tech tutorials from writers
+            worldwide.
           </p>
         </div>
 
@@ -326,13 +333,18 @@ export function Search() {
       {query ? (
         <Section
           title={`Search Results for “${query}”`}
-          note={searching ? 'Searching…' : `${results.length} ${results.length === 1 ? 'result' : 'results'}`}
+          note={
+            searching
+              ? 'Searching…'
+              : `${results.length} ${results.length === 1 ? 'result' : 'results'}`
+          }
         >
           {searching ? (
             <Loading text="Searching BlogHub…" />
           ) : results.length === 0 ? (
             <EmptyState icon={SearchIcon} title="No matching stories">
-              We couldn't find any stories matching “{query}”. Try searching for different keywords or explore the topics below.
+              We couldn't find any stories matching “{query}”. Try searching for different keywords
+              or explore the topics below.
             </EmptyState>
           ) : (
             <ResultsGrid>

@@ -379,7 +379,7 @@ async function seed() {
 
     console.log('Creating categories...');
     const createdCategories = await Category.insertMany(
-      categories.map((name) => ({ name, posts: [] }))
+      categories.map((name) => ({ name, posts: [] })),
     );
     const categoryMap = {};
     createdCategories.forEach((cat) => (categoryMap[cat.name] = cat));
@@ -426,7 +426,7 @@ async function seed() {
     for (let uIdx = 0; uIdx < regularUsers.length; uIdx++) {
       const user = regularUsers[uIdx];
       // Every user gets between 6 and 8 posts (average 7)
-      const numPostsForUser = (uIdx % 3 === 0) ? 8 : (uIdx % 3 === 1) ? 7 : 6;
+      const numPostsForUser = uIdx % 3 === 0 ? 8 : uIdx % 3 === 1 ? 7 : 6;
 
       for (let pIdx = 0; pIdx < numPostsForUser; pIdx++) {
         // Pick a base story from pool and customize slug/title uniqueness
@@ -434,11 +434,12 @@ async function seed() {
         const template = storiesPool[templateIndex];
 
         // 1 Draft, 1 Private, rest Public
-        const visibility = (pIdx === 0 && numPostsForUser >= 7)
-          ? 'draft'
-          : (pIdx === 1 && numPostsForUser >= 8)
-            ? 'private'
-            : 'public';
+        const visibility =
+          pIdx === 0 && numPostsForUser >= 7
+            ? 'draft'
+            : pIdx === 1 && numPostsForUser >= 8
+              ? 'private'
+              : 'public';
 
         const categoryName = template.category;
         const category = categoryMap[categoryName] || createdCategories[0];
@@ -470,7 +471,9 @@ async function seed() {
       }
       await user.save();
     }
-    console.log(`Created ${createdPosts.length} total posts across ${regularUsers.length} creators!`);
+    console.log(
+      `Created ${createdPosts.length} total posts across ${regularUsers.length} creators!`,
+    );
 
     // Add comments to public posts
     console.log('Adding comments...');
@@ -540,7 +543,7 @@ async function seed() {
 
       const readThrough = 0.25 + Math.random() * 0.55;
       const finishers = new Set(
-        viewers.slice(0, Math.round(viewers.length * readThrough)).map(String)
+        viewers.slice(0, Math.round(viewers.length * readThrough)).map(String),
       );
 
       for (const userId of finishers) {
@@ -576,11 +579,11 @@ async function seed() {
             {
               $addToSet: { followers: regularUsers[followerIndex]._id },
               $inc: { followersCount: 1 },
-            }
+            },
           );
           await Profile.findOneAndUpdate(
             { user: regularUsers[followerIndex]._id },
-            { $addToSet: { followings: user._id }, $inc: { followingsCount: 1 } }
+            { $addToSet: { followings: user._id }, $inc: { followingsCount: 1 } },
           );
           followerCount++;
         }
@@ -597,7 +600,9 @@ async function seed() {
     console.log(`   • ${viewCount} Views & ${readCount} Completed Reads`);
     console.log('\n📝 Demo / Recruiter Accounts:');
     console.log('───────────────────────────────────────────────────');
-    console.log('👤 Primary Creator: john@example.com / password123 (Has 8 stories, active analytics, drafts & private posts)');
+    console.log(
+      '👤 Primary Creator: john@example.com / password123 (Has 8 stories, active analytics, drafts & private posts)',
+    );
     console.log('👤 UX Creator:      jane@example.com / password123 (Has 7 design stories)');
     console.log('👑 Admin:           admin@bloghub.com / admin123');
     console.log('───────────────────────────────────────────────────\n');

@@ -1,13 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import styled, { css } from 'styled-components';
-import {
-  LayoutDashboard,
-  PenLine,
-  Settings,
-  LogOut,
-  Globe,
-  ExternalLink,
-} from 'lucide-react';
+import { LayoutDashboard, PenLine, Settings, LogOut, Globe, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from '../ui';
@@ -134,8 +127,7 @@ const NavLink = styled(Link)`
   svg {
     width: 17px;
     height: 17px;
-    color: ${({ theme, $active }) =>
-      $active ? theme.colors.accentSolid : theme.colors.textMuted};
+    color: ${({ theme, $active }) => ($active ? theme.colors.accentSolid : theme.colors.textMuted)};
   }
 `;
 
@@ -284,7 +276,8 @@ export function WorkspaceLayout() {
 
   const getPageTitle = () => {
     if (location.pathname === '/dashboard') return 'Dashboard & Stories';
-    if (location.pathname.startsWith('/write') || location.pathname.startsWith('/edit')) return 'Story Editor';
+    if (location.pathname.startsWith('/write') || location.pathname.startsWith('/edit'))
+      return 'Story Editor';
     if (location.pathname === '/settings') return 'Account Settings';
     return 'Creator Studio';
   };
