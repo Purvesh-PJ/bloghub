@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
+import { WorkspaceLayout } from './components/layout/WorkspaceLayout';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { ProtectedRoute } from './guards/ProtectedRoute';
 import { AdminRoute } from './guards/AdminRoute';
@@ -41,60 +42,37 @@ function App() {
       }
     >
       <Routes>
-        {/* Public and User Routes */}
+        {/* Public Reader Routes */}
         <Route path="/" element={<Layout />}>
-          {/* Public Routes */}
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="post/:id" element={<PostDetail />} />
           <Route path="user/:userId" element={<UserProfile />} />
           <Route path="search" element={<Search />} />
+        </Route>
 
-          {/* Protected User Routes */}
-          <Route
-            path="write"
-            element={
-              <ProtectedRoute>
-                <WritePost />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="edit/:id"
-            element={
-              <ProtectedRoute>
-                <WritePost />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
+        {/* Protected Creator Workspace Routes */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <WorkspaceLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="write" element={<WritePost />} />
+          <Route path="edit/:id" element={<WritePost />} />
+          <Route path="settings" element={<Settings />} />
 
-          {/*
-            /profile, /my-posts and /analytics were three views of one question and are now
-            the dashboard. They are kept as redirects because they are in browser histories,
-            in the old header menu, and quite possibly in somebody's bookmarks.
-          */}
+          {/* Legacy redirects */}
           <Route path="profile" element={<Navigate to="/dashboard" replace />} />
           <Route path="my-posts" element={<Navigate to="/dashboard" replace />} />
           <Route path="analytics" element={<Navigate to="/dashboard" replace />} />
+        </Route>
 
-          {/* 404 */}
+        {/* 404 Fallback under Reader Layout */}
+        <Route path="/" element={<Layout />}>
           <Route path="*" element={<NotFound />} />
         </Route>
 
