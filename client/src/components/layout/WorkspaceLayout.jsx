@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 import {
   LayoutDashboard,
@@ -6,11 +6,7 @@ import {
   User,
   Settings,
   LogOut,
-  ArrowLeft,
-  Sparkles,
-  BarChart3,
   Globe,
-  Compass,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
@@ -22,18 +18,17 @@ const Shell = styled.div`
   display: flex;
   min-height: 100vh;
   background: ${({ theme }) => theme.colors.surfacePage};
+  color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 const Sidebar = styled.aside`
-  width: 260px;
+  width: 250px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
   background: ${({ theme }) => theme.colors.surfaceContainerLow};
   border-right: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-
   position: sticky;
   top: 0;
   height: 100vh;
@@ -59,7 +54,8 @@ const BrandRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.sm};
+  padding: 0 ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
 `;
 
 const Brand = styled(Link)`
@@ -67,7 +63,6 @@ const Brand = styled(Link)`
   align-items: center;
   gap: 8px;
   ${text('md', 'bold')}
-  letter-spacing: -0.02em;
   color: ${({ theme }) => theme.colors.textPrimary};
   text-decoration: none;
 `;
@@ -76,12 +71,12 @@ const Mark = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: ${({ theme }) => theme.radii.sm};
   background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
   color: #ffffff;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
 `;
@@ -93,44 +88,29 @@ const StudioBadge = styled.span`
   color: ${({ theme }) => theme.colors.accentText};
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: 1px solid ${({ theme }) => theme.colors.accentLine};
-`;
-
-const NavSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
-
-const SectionLabel = styled.span`
-  ${labelStyle('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  padding: 0 ${({ theme }) => theme.spacing.md};
-  margin-bottom: 4px;
-  font-weight: 700;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
 `;
 
 const Nav = styled.nav`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: 6px;
   flex: 1;
 
   ${media.down('md')`
     flex-direction: row;
     overflow-x: auto;
     flex: none;
+    margin-bottom: ${({ theme }) => theme.spacing.md};
   `}
 `;
 
 const NavLink = styled(Link)`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: 10px ${({ theme }) => theme.spacing.md};
+  gap: 10px;
+  padding: 10px 14px;
   border-radius: ${({ theme }) => theme.radii.lg};
   ${text('sm', 'medium')}
   color: ${({ theme, $active }) =>
@@ -144,7 +124,6 @@ const NavLink = styled(Link)`
       background: ${theme.colors.accentContainer};
       color: ${theme.colors.accentText};
       font-weight: 600;
-      border: 1px solid ${theme.colors.accentLine};
     `}
 
   &:hover {
@@ -175,7 +154,7 @@ const UserCard = styled.div`
 const UserLeft = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: 10px;
   min-width: 0;
 `;
 
@@ -249,6 +228,10 @@ const Topbar = styled.div`
   position: sticky;
   top: 0;
   z-index: 10;
+
+  ${media.down('md')`
+    padding: 0 ${({ theme }) => theme.spacing.md};
+  `}
 `;
 
 const Breadcrumb = styled.div`
@@ -264,23 +247,17 @@ const Breadcrumb = styled.div`
   }
 `;
 
-const TopbarActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
 const Content = styled.main`
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  background: ${({ theme }) => theme.colors.surfacePage};
 `;
 
 export function WorkspaceLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
 
   const userId = user?._id || user?.user_id;
 
@@ -305,37 +282,23 @@ export function WorkspaceLayout() {
           </BrandRow>
 
           <Nav>
-            <NavSection>
-              <SectionLabel>CREATOR WORKSPACE</SectionLabel>
-              <NavLink to="/dashboard" $active={location.pathname === '/dashboard'}>
-                <LayoutDashboard /> Overview & Stories
+            <NavLink to="/dashboard" $active={location.pathname === '/dashboard'}>
+              <LayoutDashboard /> Dashboard & Stories
+            </NavLink>
+            <NavLink to="/write" $active={location.pathname.startsWith('/write')}>
+              <PenLine /> Write New Story
+            </NavLink>
+            {userId && (
+              <NavLink to={`/user/${userId}`} $active={location.pathname === `/user/${userId}`}>
+                <User /> My Public Profile
               </NavLink>
-              <NavLink to="/write" $active={location.pathname.startsWith('/write')}>
-                <PenLine /> Write New Story
-              </NavLink>
-            </NavSection>
-
-            <NavSection style={{ marginTop: 16 }}>
-              <SectionLabel>ACCOUNT & COMMUNITY</SectionLabel>
-              {userId && (
-                <NavLink to={`/user/${userId}`} $active={location.pathname === `/user/${userId}`}>
-                  <User /> My Public Profile
-                </NavLink>
-              )}
-              <NavLink to="/settings" $active={location.pathname === '/settings'}>
-                <Settings /> Profile Settings
-              </NavLink>
-            </NavSection>
-
-            <NavSection style={{ marginTop: 16 }}>
-              <SectionLabel>EXPLORE</SectionLabel>
-              <NavLink to="/">
-                <Globe /> Public Reader Feed
-              </NavLink>
-              <NavLink to="/search">
-                <Compass /> Explore Topics
-              </NavLink>
-            </NavSection>
+            )}
+            <NavLink to="/settings" $active={location.pathname === '/settings'}>
+              <Settings /> Settings
+            </NavLink>
+            <NavLink to="/" style={{ marginTop: 'auto' }}>
+              <Globe /> Reader Feed
+            </NavLink>
           </Nav>
 
           <UserCard>
@@ -360,14 +323,12 @@ export function WorkspaceLayout() {
               <strong>{getPageTitle()}</strong>
             </Breadcrumb>
 
-            <TopbarActions>
-              <Button size="sm" as={Link} to="/write">
-                <PenLine size={14} /> New Story
-              </Button>
-            </TopbarActions>
+            <Button size="sm" as={Link} to="/write">
+              <PenLine size={14} /> New Story
+            </Button>
           </Topbar>
 
-          <div style={{ flex: 1, padding: '24px 0' }}>
+          <div style={{ flex: 1 }}>
             <Outlet />
           </div>
         </Content>
