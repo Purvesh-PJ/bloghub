@@ -11,7 +11,6 @@ import {
   Pencil,
   Trash2,
   ExternalLink,
-  Compass,
   TrendingUp,
   Eye,
   EyeOff,
@@ -24,14 +23,17 @@ import {
   User,
   Settings as SettingsIcon,
   Sparkles,
+  Lock,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { useAuth } from '../context/AuthContext';
-import { userService } from '../services/userService';
+import { useDebounced } from '../hooks/useDebounced';
 import { postService } from '../services/postService';
 import { analyticsService } from '../services/analyticsService';
-import { PageShell, PageHeader, Section } from '../components/layout/PageShell';
+import { PageShell, Section } from '../components/layout/PageShell';
 import { ReadRateBar } from '../components/stats/ReadRateBar';
 import {
   Button,
@@ -45,7 +47,7 @@ import {
   EmptyState,
   DropdownMenu,
 } from '../components/ui';
-import { text, label as labelStyle, media, clamp, display, interactive } from '../styles/theme/mixins';
+import { text, label as labelStyle, media, clamp, display } from '../styles/theme/mixins';
 import { initial } from '../utils/text';
 
 /* ── Executive Metrics Grid ─────────────────────────────────────────────── */
@@ -112,7 +114,11 @@ const MetricSub = styled.div`
 /* ── Creator Profile Banner ─────────────────────────────────────────────── */
 
 const CreatorBanner = styled.div`
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.surfaceContainerLow} 0%, ${({ theme }) => theme.colors.accentContainer} 100%);
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.surfaceContainerLow} 0%,
+    ${({ theme }) => theme.colors.accentContainer} 100%
+  );
   border: 1px solid ${({ theme }) => theme.colors.accentLine};
   border-radius: ${({ theme }) => theme.radii['2xl']};
   padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing['2xl']};
@@ -200,16 +206,19 @@ const Rows = styled.div`
 
 const Row = styled.div`
   display: grid;
-  grid-template-columns: 1fr 200px 140px 40px;
-  grid-template-areas: 'title rate engagement actions';
+  grid-template-columns: 28px 1fr 200px 140px 40px;
+  grid-template-areas: 'select title rate engagement actions';
   align-items: center;
   gap: ${({ theme }) => theme.spacing.xl};
   padding: ${({ theme }) => theme.spacing.lg};
   border-radius: ${({ theme }) => theme.radii.md};
   transition: background ${({ theme }) => theme.transitions.fast};
+  background: ${({ theme, $selected }) =>
+    $selected ? theme.colors.accentContainer : 'transparent'};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surfaceContainer};
+    background: ${({ theme, $selected }) =>
+      $selected ? theme.colors.accentContainer : theme.colors.surfaceContainer};
   }
 
   & + & {
@@ -217,17 +226,91 @@ const Row = styled.div`
   }
 
   ${media.down('lg')`
-    grid-template-columns: 1fr 200px 40px;
-    grid-template-areas: 'title rate actions';
+    grid-template-columns: 28px 1fr 200px 40px;
+    grid-template-areas: 'select title rate actions';
   `}
 
   ${media.down('sm')`
-    grid-template-columns: 1fr 40px;
+    grid-template-columns: 28px 1fr 40px;
     grid-template-areas:
-      'title actions'
-      'rate  rate';
+      'select title  actions'
+      '.      rate   rate';
     gap: ${({ theme }) => theme.spacing.md};
   `}
+`;
+
+const SelectCell = styled.div`
+  grid-area: select;
+  display: flex;
+  align-items: center;
+`;
+
+const SelectAllRow = styled.label`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  cursor: pointer;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+`;
+
+const Checkbox = styled.input`
+  width: 16px;
+  height: 16px;
+  accent-color: ${({ theme }) => theme.colors.accentSolid};
+  cursor: pointer;
+`;
+
+/* Sits above the table when something is selected, replacing the filter row. */
+const BulkBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  border: 1px solid ${({ theme }) => theme.colors.accentLine};
+`;
+
+const BulkCount = styled.span`
+  ${text('sm', 'semibold')}
+  color: ${({ theme }) => theme.colors.accentText};
+  margin-right: auto;
+`;
+
+const Pager = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+`;
+
+const PagerLabel = styled.span`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-variant-numeric: tabular-nums;
+`;
+
+const SortSelect = styled.select`
+  height: 36px;
+  padding: 0 ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  ${text('sm')}
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.accentSolid};
+    outline-offset: 1px;
+  }
 `;
 
 const TitleCell = styled.div`
@@ -375,44 +458,6 @@ const ReadingMeta = styled.span`
   margin-top: auto;
 `;
 
-/* ── Onboarding Quick-Start ──────────────────────────────────────────────── */
-
-const OnboardingGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing.lg};
-  margin-top: ${({ theme }) => theme.spacing.lg};
-
-  ${media.down('md')`grid-template-columns: 1fr;`}
-`;
-
-const OnboardingCard = styled.div`
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  padding: ${({ theme }) => theme.spacing.xl};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-  ${interactive}
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.accentLine};
-    box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.12);
-  }
-`;
-
-const OnboardingTitle = styled.h3`
-  ${text('md', 'bold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const OnboardingDesc = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.5;
-`;
-
 const TipText = styled.p`
   ${text('xs')}
   color: ${({ theme }) => theme.colors.textSecondary};
@@ -422,7 +467,7 @@ const TipText = styled.p`
 
 /* ── Row Component ───────────────────────────────────────────────────────── */
 
-function PostRow({ post, stats, onDelete, onToggleVisibility }) {
+function PostRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSelected }) {
   const navigate = useNavigate();
 
   const handleCopyLink = () => {
@@ -431,23 +476,26 @@ function PostRow({ post, stats, onDelete, onToggleVisibility }) {
     toast.success('Public article link copied! 📋');
   };
 
+  // Every visibility the post is not currently in, so "private" is reachable from the table.
+  // The menu previously toggled only between public and draft, which left the Private tab
+  // filtering for a state nothing here could produce.
+  const visibilityActions = [
+    { value: 'public', label: 'Publish story live', icon: <Globe size={14} /> },
+    { value: 'draft', label: 'Move to drafts', icon: <EyeOff size={14} /> },
+    { value: 'private', label: 'Make private', icon: <Lock size={14} /> },
+  ].filter((option) => option.value !== (post.visibility || 'draft'));
+
   const menuItems = [
     {
       label: 'Edit story',
       icon: <Pencil size={14} />,
       onClick: () => navigate(`/edit/${post._id}`),
     },
-    post.visibility !== 'public'
-      ? {
-          label: 'Publish story live',
-          icon: <Globe size={14} />,
-          onClick: () => onToggleVisibility(post, 'public'),
-        }
-      : {
-          label: 'Move to drafts',
-          icon: <EyeOff size={14} />,
-          onClick: () => onToggleVisibility(post, 'draft'),
-        },
+    ...visibilityActions.map((option) => ({
+      label: option.label,
+      icon: option.icon,
+      onClick: () => onSetVisibility(post, option.value),
+    })),
     {
       label: 'Copy public link',
       icon: <Share2 size={14} />,
@@ -471,7 +519,16 @@ function PostRow({ post, stats, onDelete, onToggleVisibility }) {
   const rate = stats?.readRate ?? (views > 0 ? Math.round((reads / views) * 100) : 0);
 
   return (
-    <Row>
+    <Row $selected={selected}>
+      <SelectCell>
+        <Checkbox
+          type="checkbox"
+          checked={selected}
+          onChange={() => onToggleSelected(post._id)}
+          aria-label={`Select ${post.title || 'Untitled'}`}
+        />
+      </SelectCell>
+
       <TitleCell>
         <RowTitle to={`/post/${post._id}`}>{post.title || 'Untitled'}</RowTitle>
         <RowMeta>
@@ -489,12 +546,12 @@ function PostRow({ post, stats, onDelete, onToggleVisibility }) {
           <span>
             {(() => {
               const d = post.createdAt ? new Date(post.createdAt) : null;
-              return d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'recently';
+              return d && !isNaN(d.getTime())
+                ? formatDistanceToNow(d, { addSuffix: true })
+                : 'recently';
             })()}
           </span>
-          {post.categories?.[0] && (
-            <span>· {(post.categories[0]?.name ?? post.categories[0])}</span>
-          )}
+          {post.categories?.[0] && <span>· {post.categories[0]?.name ?? post.categories[0]}</span>}
         </RowMeta>
       </TitleCell>
 
@@ -511,13 +568,21 @@ function PostRow({ post, stats, onDelete, onToggleVisibility }) {
         </Stat>
       </EngagementCell>
 
-      <div style={{ gridArea: 'actions', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
-        {post.visibility === 'draft' && (
+      <div
+        style={{
+          gridArea: 'actions',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          justifyContent: 'flex-end',
+        }}
+      >
+        {post.visibility !== 'public' && (
           <Button
             size="xs"
             variant="tonal"
-            onClick={() => onToggleVisibility(post, 'public')}
-            title="Publish this draft live immediately"
+            onClick={() => onSetVisibility(post, 'public')}
+            title="Publish this story live immediately"
           >
             <Globe size={12} /> Publish
           </Button>
@@ -544,44 +609,81 @@ const FILTERS = [
   { id: 'private', label: 'Private' },
 ];
 
+const SORTS = [
+  { id: 'newest', label: 'Newest first' },
+  { id: 'oldest', label: 'Oldest first' },
+  { id: 'updated', label: 'Recently updated' },
+  { id: 'title', label: 'Title A–Z' },
+];
+
+const PAGE_SIZE = 10;
+
 export function Dashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState('all');
   const [query, setQuery] = useState('');
+  const [sort, setSort] = useState('newest');
+  const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [pendingBulk, setPendingBulk] = useState(null);
+
+  // Typing in the search box should not fire a request per keystroke.
+  const debouncedQuery = useDebounced(query, 300);
+
+  // Filtering, sorting and paging happen on the server, so they belong in the query key —
+  // changing any of them is a different request, not a different view of the same data.
+  const listParams = {
+    page,
+    limit: PAGE_SIZE,
+    sort,
+    ...(filter !== 'all' && { visibility: filter }),
+    ...(debouncedQuery.trim() && { q: debouncedQuery.trim() }),
+  };
 
   const { data: postsData, isLoading: postsLoading } = useQuery({
-    queryKey: ['myPosts'],
-    queryFn: postService.getMyPosts,
+    queryKey: ['myPosts', listParams],
+    queryFn: () => postService.getMyPosts(listParams),
+    placeholderData: (previous) => previous, // keeps the table on screen while paging
   });
 
+  /*
+    These two used to name service methods that did not exist — `analyticsService.getMyAnalytics`
+    and `userService.getReadingList` were both undefined, so every metric read zero, every
+    read-rate bar sat empty, and "Continue Reading" never showed anything. The data was being
+    computed and returned by the server the whole time; nothing was asking for it.
+  */
   const { data: analyticsData } = useQuery({
     queryKey: ['myAnalytics'],
     queryFn: analyticsService.getMyAnalytics,
   });
 
   const { data: readingData, isLoading: readingLoading } = useQuery({
-    queryKey: ['readingList'],
-    queryFn: userService.getReadingList,
+    queryKey: ['readingActivity'],
+    queryFn: analyticsService.getReadingActivity,
   });
 
-  const toggleVisibilityMutation = useMutation({
-    mutationFn: ({ post, newVisibility }) => {
-      return postService.updatePost(post._id, {
-        title: post.title,
-        slug: post.slug,
-        content: post.content,
-        imageURL: post.imageURL,
-        categories: (post.categories || []).map((c) => c._id || c),
-        visibility: newVisibility,
-      });
-    },
+  const refreshLists = () => {
+    queryClient.invalidateQueries({ queryKey: ['myPosts'] });
+    queryClient.invalidateQueries({ queryKey: ['myAnalytics'] });
+    queryClient.invalidateQueries({ queryKey: ['posts'] });
+  };
+
+  const VISIBILITY_MESSAGE = {
+    public: 'Story published live! 🎉',
+    draft: 'Story moved to drafts.',
+    private: 'Story is now private.',
+  };
+
+  const setVisibilityMutation = useMutation({
+    // Only the field being changed is sent. Replaying the whole post back meant an edit made
+    // in another tab could be overwritten by a stale copy held in this one.
+    mutationFn: ({ post, newVisibility }) =>
+      postService.updatePost(post._id, { visibility: newVisibility }),
     onSuccess: (_, { newVisibility }) => {
-      queryClient.invalidateQueries({ queryKey: ['myPosts'] });
-      queryClient.invalidateQueries({ queryKey: ['myAnalytics'] });
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-      toast.success(newVisibility === 'public' ? 'Story published live! 🎉' : 'Story moved to drafts.');
+      refreshLists();
+      toast.success(VISIBILITY_MESSAGE[newVisibility] ?? 'Story updated.');
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Could not update story visibility');
@@ -591,9 +693,7 @@ export function Dashboard() {
   const deleteMutation = useMutation({
     mutationFn: postService.deletePost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myPosts'] });
-      queryClient.invalidateQueries({ queryKey: ['myAnalytics'] });
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      refreshLists();
       toast.success('Story deleted successfully');
       setPendingDelete(null);
     },
@@ -602,49 +702,57 @@ export function Dashboard() {
     },
   });
 
-  const posts = useMemo(() => {
-    if (Array.isArray(postsData?.data)) return postsData.data;
-    if (Array.isArray(postsData)) return postsData;
-    return [];
-  }, [postsData]);
+  const bulkMutation = useMutation({
+    mutationFn: ({ ids, action }) => postService.bulkUpdate(ids, action),
+    onSuccess: (response) => {
+      refreshLists();
+      setSelectedIds([]);
+      setPendingBulk(null);
+      toast.success(response?.message || 'Stories updated');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Could not update those stories');
+    },
+  });
+
+  const posts = useMemo(() => (Array.isArray(postsData?.data) ? postsData.data : []), [postsData]);
+  const pagination = postsData?.pagination;
+  // Counts come from the server and describe every post, not just the page on screen.
+  const counts = postsData?.counts ?? { all: 0, public: 0, draft: 0, private: 0 };
 
   const analytics = analyticsData?.data;
-  const unfinished = useMemo(() => readingData?.data || [], [readingData]);
+  const unfinished = useMemo(() => readingData?.data?.unfinished ?? [], [readingData]);
 
   const statsByPost = useMemo(() => {
     const map = new Map();
-    (analytics?.posts || []).forEach((entry) => map.set(String(entry.postId), entry));
+    (analytics?.postsAnalytics ?? []).forEach((entry) => map.set(String(entry.postId), entry));
     return map;
   }, [analytics]);
 
-  const counts = useMemo(
-    () => ({
-      all: posts.length,
-      public: posts.filter((p) => p.visibility === 'public').length,
-      draft: posts.filter((p) => p.visibility === 'draft').length,
-      private: posts.filter((p) => p.visibility === 'private').length,
-    }),
-    [posts]
-  );
-
-  const visible = useMemo(() => {
-    return posts.filter((post) => {
-      if (filter !== 'all' && post.visibility !== filter) return false;
-      if (query.trim()) {
-        return (post.title || '').toLowerCase().includes(query.toLowerCase());
-      }
-      return true;
-    });
-  }, [posts, filter, query]);
-
   const topFinished = useMemo(() => {
-    return [...(analytics?.posts || [])]
+    return [...(analytics?.postsAnalytics ?? [])]
       .filter((entry) => (entry.views || 0) > 0)
       .sort((a, b) => (b.readRate || 0) - (a.readRate || 0))
       .slice(0, 4);
   }, [analytics]);
 
-  const drafts = useMemo(() => posts.filter((p) => p.visibility === 'draft'), [posts]);
+  // Selection is per page; leaving the page drops it rather than acting on rows no longer
+  // in front of the reader.
+  const visibleIds = posts.map((post) => post._id);
+  const allOnPageSelected =
+    visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
+
+  const toggleSelected = (id) =>
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((value) => value !== id) : [...current, id]
+    );
+
+  const resetToFirstPage = (apply) => {
+    apply();
+    setPage(1);
+    setSelectedIds([]);
+  };
+
   const firstName = user?.username?.split(' ')[0] || user?.username || 'Creator';
 
   if (postsLoading) {
@@ -661,9 +769,12 @@ export function Dashboard() {
     );
   }
 
-  const totalViews = analytics?.totalViews ?? posts.reduce((acc, p) => acc + (p.views?.length || 0), 0);
+  // Straight from the analytics endpoint. The fallback exists only for the moment before
+  // that query resolves — it used to be the value that actually showed, because the query
+  // never ran, and it can only ever count the posts on the current page.
+  const totalViews = analytics?.totalViews ?? 0;
   const totalReads = analytics?.totalReads ?? 0;
-  const overallRate = analytics?.readRate ?? (totalViews > 0 ? Math.round((totalReads / totalViews) * 100) : 0);
+  const overallRate = analytics?.readRate ?? 0;
 
   return (
     <PageShell>
@@ -676,7 +787,8 @@ export function Dashboard() {
               Welcome back, {firstName} <Sparkles size={16} />
             </CreatorName>
             <CreatorBio>
-              {user?.bio || 'Manage your published stories, draft new ideas, and monitor reader engagement.'}
+              {user?.bio ||
+                'Manage your published stories, draft new ideas, and monitor reader engagement.'}
             </CreatorBio>
           </CreatorDetails>
         </CreatorInfo>
@@ -731,66 +843,110 @@ export function Dashboard() {
             <FileText />
           </MetricHeader>
           <MetricValue>{counts.public}</MetricValue>
-          <MetricSub>{counts.draft} draft{counts.draft === 1 ? '' : 's'} in progress</MetricSub>
+          <MetricSub>
+            {counts.draft} draft{counts.draft === 1 ? '' : 's'} in progress
+          </MetricSub>
         </MetricCard>
       </MetricGrid>
 
-      {/* ── Creator Studio Stories Hub ────────────────────────────────────── */}
-      {drafts.length > 0 && (
-        <Section
-          title="Pick up where you left off"
-          note={`${drafts.length} unfinished ${drafts.length === 1 ? 'draft' : 'drafts'}`}
-        >
-          <Surface $tone="low" $radius="xl" $padding="sm">
-            <Rows>
-              {drafts.slice(0, 3).map((post) => (
-                <PostRow
-                  key={post._id}
-                  post={post}
-                  stats={statsByPost.get(String(post._id))}
-                  onDelete={setPendingDelete}
-                  onToggleVisibility={(p, vis) =>
-                    toggleVisibilityMutation.mutate({ post: p, newVisibility: vis })
-                  }
-                />
-              ))}
-            </Rows>
-          </Surface>
-        </Section>
-      )}
-
       <Split>
         <Section title="Your Stories">
-          <Toolbar>
-            {FILTERS.map((option) => (
-              <Chip
-                key={option.id}
-                selected={filter === option.id}
-                onClick={() => setFilter(option.id)}
+          {selectedIds.length > 0 ? (
+            <BulkBar>
+              <BulkCount>{selectedIds.length} selected</BulkCount>
+              <Button
+                size="sm"
+                variant="tonal"
+                onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'public' })}
+                disabled={bulkMutation.isPending}
               >
-                {option.label}
-                {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
-              </Chip>
-            ))}
+                <Globe size={14} /> Publish
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'draft' })}
+                disabled={bulkMutation.isPending}
+              >
+                <EyeOff size={14} /> To drafts
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'private' })}
+                disabled={bulkMutation.isPending}
+              >
+                <Lock size={14} /> Make private
+              </Button>
+              <Button
+                size="sm"
+                variant="dangerTonal"
+                onClick={() => setPendingBulk(selectedIds)}
+                disabled={bulkMutation.isPending}
+              >
+                <Trash2 size={14} /> Delete
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
+                Cancel
+              </Button>
+            </BulkBar>
+          ) : (
+            <Toolbar>
+              {FILTERS.map((option) => (
+                <Chip
+                  key={option.id}
+                  selected={filter === option.id}
+                  onClick={() => resetToFirstPage(() => setFilter(option.id))}
+                >
+                  {option.label}
+                  {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
+                </Chip>
+              ))}
 
-            <SearchField>
-              <Input
-                icon={<SearchIcon />}
-                placeholder="Search by title…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </SearchField>
-          </Toolbar>
+              <SortSelect
+                value={sort}
+                onChange={(e) => resetToFirstPage(() => setSort(e.target.value))}
+                aria-label="Sort stories"
+              >
+                {SORTS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </SortSelect>
 
-          {visible.length === 0 ? (
+              <SearchField>
+                <Input
+                  icon={<SearchIcon />}
+                  placeholder="Search by title…"
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </SearchField>
+            </Toolbar>
+          )}
+
+          {posts.length === 0 ? (
             <EmptyState
               icon={SearchIcon}
-              title={posts.length === 0 ? 'No stories written yet' : 'No matching stories'}
+              title={counts.all === 0 ? 'No stories written yet' : 'No matching stories'}
             >
-              {posts.length === 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 8 }}>
-                  <span>You haven't published or drafted any stories yet. Start writing today!</span>
+              {counts.all === 0 ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 12,
+                    marginTop: 8,
+                  }}
+                >
+                  <span>
+                    You haven't published or drafted any stories yet. Start writing today!
+                  </span>
                   <Button as={Link} to="/write" size="sm">
                     <PenLine size={14} /> Start Writing
                   </Button>
@@ -801,19 +957,69 @@ export function Dashboard() {
             </EmptyState>
           ) : (
             <Surface $tone="low" $radius="xl" $padding="sm">
+              <SelectAllRow>
+                <Checkbox
+                  type="checkbox"
+                  checked={allOnPageSelected}
+                  onChange={() =>
+                    setSelectedIds(
+                      allOnPageSelected
+                        ? selectedIds.filter((id) => !visibleIds.includes(id))
+                        : [...new Set([...selectedIds, ...visibleIds])]
+                    )
+                  }
+                  aria-label="Select every story on this page"
+                />
+                <span>Select all on this page</span>
+              </SelectAllRow>
+
               <Rows>
-                {visible.map((post) => (
+                {posts.map((post) => (
                   <PostRow
                     key={post._id}
                     post={post}
                     stats={statsByPost.get(String(post._id))}
+                    selected={selectedIds.includes(post._id)}
+                    onToggleSelected={toggleSelected}
                     onDelete={setPendingDelete}
-                    onToggleVisibility={(p, vis) =>
-                      toggleVisibilityMutation.mutate({ post: p, newVisibility: vis })
+                    onSetVisibility={(p, vis) =>
+                      setVisibilityMutation.mutate({ post: p, newVisibility: vis })
                     }
                   />
                 ))}
               </Rows>
+
+              {pagination && pagination.pages > 1 && (
+                <Pager>
+                  <PagerLabel>
+                    Page {pagination.page} of {pagination.pages} · {pagination.total} stories
+                  </PagerLabel>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={page <= 1}
+                      onClick={() => {
+                        setPage((n) => n - 1);
+                        setSelectedIds([]);
+                      }}
+                    >
+                      <ChevronLeft size={14} /> Previous
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={page >= pagination.pages}
+                      onClick={() => {
+                        setPage((n) => n + 1);
+                        setSelectedIds([]);
+                      }}
+                    >
+                      Next <ChevronRight size={14} />
+                    </Button>
+                  </div>
+                </Pager>
+              )}
             </Surface>
           )}
         </Section>
@@ -828,11 +1034,7 @@ export function Dashboard() {
                 {topFinished.map((entry) => (
                   <TopPost key={String(entry.postId)} to={`/post/${entry.postId}`}>
                     <TopPostTitle>{entry.title}</TopPostTitle>
-                    <ReadRateBar
-                      views={entry.views}
-                      reads={entry.reads}
-                      rate={entry.readRate}
-                    />
+                    <ReadRateBar views={entry.views} reads={entry.reads} rate={entry.readRate} />
                   </TopPost>
                 ))}
               </div>
@@ -844,7 +1046,8 @@ export function Dashboard() {
               <Sparkles /> Quick Creator Tip
             </AsideLabel>
             <TipText>
-              Articles with a clear table of contents, high-quality cover photo, and 3–5 min read time achieve a <strong>24% higher completion rate</strong> on BlogHub.
+              Articles with a clear table of contents, high-quality cover photo, and 3–5 min read
+              time achieve a <strong>24% higher completion rate</strong> on BlogHub.
             </TipText>
           </Card>
         </Aside>
@@ -865,7 +1068,8 @@ export function Dashboard() {
           <ReadingGrid>
             {unfinished.map(({ post, lastOpenedAt }) => {
               const d = lastOpenedAt ? new Date(lastOpenedAt) : null;
-              const formattedDate = d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'recently';
+              const formattedDate =
+                d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'recently';
               return (
                 <ReadingItem key={post._id} to={`/post/${post._id}`}>
                   <ReadingTitle>{post.title}</ReadingTitle>
@@ -901,6 +1105,27 @@ export function Dashboard() {
             disabled={deleteMutation.isPending}
           >
             {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+          </Button>
+        </div>
+      </Modal>
+
+      {/* ── Bulk Delete Modal ─────────────────────────────────────────────── */}
+      <Modal
+        open={!!pendingBulk}
+        onOpenChange={(open) => !open && setPendingBulk(null)}
+        title={`Delete ${pendingBulk?.length ?? 0} ${pendingBulk?.length === 1 ? 'story' : 'stories'}?`}
+        description="They will be permanently removed, along with their comments and likes. This cannot be undone."
+      >
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+          <Button variant="secondary" onClick={() => setPendingBulk(null)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => bulkMutation.mutate({ ids: pendingBulk, action: 'delete' })}
+            disabled={bulkMutation.isPending}
+          >
+            {bulkMutation.isPending ? 'Deleting…' : 'Delete all'}
           </Button>
         </div>
       </Modal>
