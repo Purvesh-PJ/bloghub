@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import MDEditor from '@uiw/react-md-editor';
 import { Eye, Pencil, Globe, Lock, FileText } from 'lucide-react';
@@ -243,6 +243,7 @@ const slugify = (value) =>
 export function WritePost() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { mode } = useTheme();
   const isEditing = Boolean(id);
 
@@ -282,6 +283,8 @@ export function WritePost() {
   const createMutation = useMutation({
     mutationFn: postService.createPost,
     onSuccess: async (data) => {
+      queryClient.invalidateQueries({ queryKey: ['myPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
       if (selectedCategories.length > 0 && data.postId) {
         try {
           await categoryService.attachCategoriesToPost(selectedCategories, data.postId);
@@ -289,7 +292,7 @@ export function WritePost() {
           console.error('[WritePost] attaching categories failed', error);
         }
       }
-      toast.success('Post created');
+      toast.success('Post published successfully! 🎉');
       navigate(data.postId ? `/post/${data.postId}` : '/dashboard');
     },
     onError: (error) => toast.error(error.response?.data?.message || 'Could not create the post'),
@@ -298,6 +301,9 @@ export function WritePost() {
   const updateMutation = useMutation({
     mutationFn: (data) => postService.updatePost(id, data),
     onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ['myPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['post', id] });
       const added = selectedCategories.filter((name) => !originalCategories.includes(name));
       const removed = originalCategories.filter((name) => !selectedCategories.includes(name));
 
@@ -308,7 +314,7 @@ export function WritePost() {
           console.error('[WritePost] updating categories failed', error);
         }
       }
-      toast.success('Post updated');
+      toast.success('Post updated successfully! 🚀');
       navigate(`/post/${id}`);
     },
     onError: (error) => toast.error(error.response?.data?.message || 'Could not update the post'),
