@@ -14,6 +14,7 @@ import { analyticsService } from '../services/analyticsService';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../styles/ThemeProvider';
 import { useReadTracking, useReadingProgress } from '../hooks/useReading';
+import { markdownRehypePlugins } from '../config/markdown';
 import { PageShell } from '../components/layout/PageShell';
 import { ReadRateBar } from '../components/stats/ReadRateBar';
 import { Button, Card, TextArea, Chip, Modal, Loading, EmptyState } from '../components/ui';
@@ -463,7 +464,7 @@ export function PostDetail() {
       <PageShell $width="reading">
         {post.imageURL && (
           <Cover>
-            <img src={post.imageURL} alt="" />
+            <img src={post.imageURL} alt={`Cover image for ${post.title}`} />
           </Cover>
         )}
 
@@ -515,25 +516,34 @@ export function PostDetail() {
 
         <Article ref={articleRef}>
           <div data-color-mode={mode}>
-            {post.content?.startsWith('<') ? (
-              <div className="wmde-markdown" dangerouslySetInnerHTML={{ __html: post.content }} />
-            ) : (
-              <MDEditor.Markdown source={post.content} />
-            )}
+            {/*
+              One rendering path, always sanitised. Content that begins with a tag used to
+              bypass Markdown entirely via dangerouslySetInnerHTML; the renderer handles
+              inline HTML on its own, so the special case bought nothing and cost us an
+              unsanitised sink.
+            */}
+            <MDEditor.Markdown source={post.content} rehypePlugins={markdownRehypePlugins} />
           </div>
         </Article>
 
+        {/*
+          Each control pairs an icon with a bare number, which a screen reader would otherwise
+          announce as "button, 12". The visible count stays as it is; the label supplies the
+          noun, and aria-pressed reports the like state rather than leaving it to the colour.
+        */}
         <Bar>
           <Action
             $active={liked}
+            aria-pressed={liked}
+            aria-label={liked ? 'Unlike this post' : 'Like this post'}
             onClick={() => {
               isAuthenticated ? likeMutation.mutate() : toast.error('Sign in to like this');
             }}
           >
-            <Heart /> {post.likes?.length || 0}
+            <Heart aria-hidden="true" /> {post.likes?.length || 0}
           </Action>
-          <Action as="a" href="#comments">
-            <MessageCircle /> {comments.length}
+          <Action as="a" href="#comments" aria-label={`Jump to ${comments.length} responses`}>
+            <MessageCircle aria-hidden="true" /> {comments.length}
           </Action>
           <Action
             onClick={() => {
@@ -541,7 +551,7 @@ export function PostDetail() {
               toast.success('Link copied to clipboard!');
             }}
           >
-            <Share2 /> Share
+            <Share2 aria-hidden="true" /> Share
           </Action>
         </Bar>
 
@@ -597,7 +607,9 @@ export function PostDetail() {
                       <CommentWhen>
                         {(() => {
                           const d = entry.date ? new Date(entry.date) : null;
-                          return d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'recently';
+                          return d && !isNaN(d.getTime())
+                            ? formatDistanceToNow(d, { addSuffix: true })
+                            : 'recently';
                         })()}
                       </CommentWhen>
                     </CommentHead>
