@@ -28,15 +28,15 @@ server-side token registry, no cookies.
 ## Registration
 
 ```
-validate (SignupValidation)
-   username non-empty · valid email · password ≥ 6 · confirmation matches
+validate (validators/auth.validators.js → signUpRules)
+   username 3–30, [A-Za-z0-9_-] · valid email · password ≥ 10 · confirmation matches
         ✗ → 400 with field errors
         ▼
 schema normalises email (lowercase, trim)
         ▼
 User.findOne({ $or: [email, username] })    ✗ found → 409
         ▼
-bcrypt.genSalt(10) → bcrypt.hash
+bcrypt.genSalt(12) → bcrypt.hash
         ▼
 User.create(...)     ✗ duplicate key (unique index) → 409
         ▼
