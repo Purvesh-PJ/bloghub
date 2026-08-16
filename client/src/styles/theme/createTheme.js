@@ -58,33 +58,33 @@ export function createTheme(ramps, mode) {
   const isLight = mode === 'light';
 
   const colors = {
-    // ── White Paper Tonal surfaces ──────────────────────────────────────────
-    surfacePage: isLight ? '#ffffff' : '#0b0f17',
-    surfaceContainerLow: isLight ? '#f8fafc' : step(n, 2),
-    surfaceContainer: isLight ? '#f1f5f9' : step(n, 3),
-    surfaceContainerHigh: isLight ? '#e2e8f0' : step(n, 4),
-    surfaceContainerHighest: isLight ? '#cbd5e1' : step(n, 5),
+    // ── Surfaces (Tonal, Rich Obsidian & Deep Navy in dark mode) ───────────
+    surfacePage: isLight ? '#ffffff' : '#070b13',
+    surfaceContainerLow: isLight ? '#f8fafc' : '#0d1424',
+    surfaceContainer: isLight ? '#f1f5f9' : '#121b2f',
+    surfaceContainerHigh: isLight ? '#e2e8f0' : '#1a263e',
+    surfaceContainerHighest: isLight ? '#cbd5e1' : '#223250',
 
-    // Elevated things that float above the page (menus, dialogs, sheets).
-    surfaceElevated: isLight ? '#ffffff' : step(n, 2),
+    // Elevated things that float above the page (cards, menus, dialogs).
+    surfaceElevated: isLight ? '#ffffff' : '#10182b',
 
-    surfaceHover: isLight ? '#f1f5f9' : step(n, 4),
-    surfaceActive: isLight ? '#e2e8f0' : step(n, 5),
-    surfaceScrim: isLight ? 'rgba(15, 23, 42, 0.40)' : 'rgba(0, 0, 0, 0.70)',
+    surfaceHover: isLight ? '#f1f5f9' : '#1a263e',
+    surfaceActive: isLight ? '#e2e8f0' : '#223250',
+    surfaceScrim: isLight ? 'rgba(15, 23, 42, 0.40)' : 'rgba(0, 0, 0, 0.80)',
 
     // ── Text ────────────────────────────────────────────────────────────────
-    textPrimary: isLight ? '#0f172a' : step(n, 12),
-    textSecondary: isLight ? '#475569' : step(n, 11),
-    textMuted: isLight ? '#64748b' : step(n, 10),
-    textDisabled: isLight ? '#94a3b8' : step(n, 8),
+    textPrimary: isLight ? '#0f172a' : '#f8fafc',
+    textSecondary: isLight ? '#475569' : '#94a3b8',
+    textMuted: isLight ? '#64748b' : '#64748b',
+    textDisabled: isLight ? '#94a3b8' : '#475569',
     textOnAccent: '#ffffff',
     textLink: step(a, 11),
     textLinkHover: step(a, 12),
 
     // ── Lines ───────────────────────────────────────────────────────────────
-    lineSubtle: isLight ? '#f1f5f9' : step(n, 4),
-    lineDefault: isLight ? '#e2e8f0' : step(n, 6),
-    lineStrong: isLight ? '#cbd5e1' : step(n, 8),
+    lineSubtle: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.07)',
+    lineDefault: isLight ? '#e2e8f0' : 'rgba(255, 255, 255, 0.12)',
+    lineStrong: isLight ? '#cbd5e1' : 'rgba(255, 255, 255, 0.20)',
     lineFocus: step(a, 8),
 
     // ── Primary Action / Ink (Sky Blue) ─────────────────────────────────────
