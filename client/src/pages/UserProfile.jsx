@@ -10,7 +10,9 @@ import { postService } from '../services/postService';
 import { useAuth } from '../context/AuthContext';
 import { PostCard } from '../components/posts/PostCard';
 import { PageShell, Section } from '../components/layout/PageShell';
-import { Button, Chip, Loading, EmptyState } from '../components/ui';
+// Card is used by the loading skeleton below. It was missing from this list, so visiting any
+// profile threw a ReferenceError for as long as the posts query was in flight.
+import { Button, Card, Chip, Loading, EmptyState } from '../components/ui';
 import { display, text, label as labelStyle, media } from '../styles/theme/mixins';
 import { initial } from '../utils/text';
 
@@ -221,7 +223,11 @@ export function UserProfile() {
     <PageShell>
       <Head>
         <Portrait>
-          {author?.profileImage ? <img src={author.profileImage} alt="" /> : initial(authorName)}
+          {author?.profileImage ? (
+            <img src={author.profileImage} alt={`${authorName}'s profile picture`} />
+          ) : (
+            initial(authorName)
+          )}
         </Portrait>
 
         <Identity>
