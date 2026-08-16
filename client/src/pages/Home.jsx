@@ -683,7 +683,7 @@ export function Home() {
     { name: 'Health', icon: Activity },
   ];
 
-  if (isLoading && rawPosts.length === 0) return <Loading text="Loading stories…" />;
+  if (isLoading && posts.length === 0) return <Loading text="Loading stories…" />;
 
   return (
     <Page>

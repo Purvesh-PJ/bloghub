@@ -459,9 +459,10 @@ function PostRow({ post, stats, onDelete }) {
             {post.visibility || 'draft'}
           </Badge>
           <span>
-            {post.createdAt
-              ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
-              : 'recently'}
+            {(() => {
+              const d = post.createdAt ? new Date(post.createdAt) : null;
+              return d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'recently';
+            })()}
           </span>
           {post.categories?.[0] && (
             <span>· {(post.categories[0]?.name ?? post.categories[0])}</span>
@@ -822,15 +823,19 @@ export function Dashboard() {
           </EmptyState>
         ) : (
           <ReadingGrid>
-            {unfinished.map(({ post, lastOpenedAt }) => (
-              <ReadingItem key={post._id} to={`/post/${post._id}`}>
-                <ReadingTitle>{post.title}</ReadingTitle>
-                <ReadingMeta>
-                  {post.user?.username ? `${post.user.username} · ` : ''}
-                  opened {formatDistanceToNow(new Date(lastOpenedAt), { addSuffix: true })}
-                </ReadingMeta>
-              </ReadingItem>
-            ))}
+            {unfinished.map(({ post, lastOpenedAt }) => {
+              const d = lastOpenedAt ? new Date(lastOpenedAt) : null;
+              const formattedDate = d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'recently';
+              return (
+                <ReadingItem key={post._id} to={`/post/${post._id}`}>
+                  <ReadingTitle>{post.title}</ReadingTitle>
+                  <ReadingMeta>
+                    {post.user?.username ? `${post.user.username} · ` : ''}
+                    opened {formattedDate}
+                  </ReadingMeta>
+                </ReadingItem>
+              );
+            })}
           </ReadingGrid>
         )}
       </Section>
