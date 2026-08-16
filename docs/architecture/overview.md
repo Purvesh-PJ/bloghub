@@ -47,15 +47,19 @@ bloghub/
 │   │   └── env.js                 # boot-time configuration validation
 │   ├── controllers/               # 12 modules, one per resource
 │   ├── middlewares/
-│   │   ├── authenticateUser.js    # JWT verification, optional auth, admin gate
+│   │   ├── authenticateUser.js    # JWT verification + account check, optional auth, admin gate
 │   │   ├── authorizeSelfOrAdmin.js# scopes a :userId route to its owner
-│   │   ├── SignupValidation.js    # express-validator rules
-│   │   ├── errorHandler.js        # terminal error middleware
+│   │   ├── asyncHandler.js        # routes a rejected promise to the error middleware
+│   │   ├── validate.js            # terminates a validator chain; validateObjectId
+│   │   ├── upload.js              # avatar upload — memory storage, type and size limits
+│   │   ├── errorHandler.js        # terminal error middleware, maps errors to statuses
 │   │   └── logger.js              # morgan, format switched by NODE_ENV
 │   ├── models/                    # 11 Mongoose schemas
 │   ├── routes/                    # 12 routers
 │   ├── services/                  # postService, commentServices
-│   ├── tests/                     # post.test.js — cannot run, no runner installed
+│   ├── utils/                     # AppError, visitor keying
+│   ├── validators/                # express-validator chains, one module per area
+│   ├── tests/                     # jest + supertest against an in-memory MongoDB
 │   ├── index.js                   # composition root
 │   ├── seed.js                    # sample dataset
 │   └── package.json

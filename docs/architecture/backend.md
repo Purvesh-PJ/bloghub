@@ -143,13 +143,16 @@ the right pattern when a whole resource is authenticated.
 
 | Middleware | Responsibility |
 |------------|----------------|
-| `authenticateUser` | Extracts the bearer token, verifies it, rejects a non-`access` type, normalises `req.user = { id, _id, roles }` |
+| `authenticateUser` | Verifies the bearer token, rejects a non-`access` type, then loads the account to confirm it still exists and its `tokenVersion` matches. `req.user = { id, _id, roles }`, with roles read from the record rather than the payload |
 | `attachUserIfPresent` | Same population, but never rejects — for public routes whose response varies for a signed-in viewer |
 | `authorizeAdmin` | Requires `admin` in `req.user.roles` |
 | `authorizeSelfOrAdmin(param)` | Requires `req.params[param]` to be the caller, unless admin. An absent optional parameter means "me" |
-| `SignupValidation` | `express-validator` chain for registration |
-| `errorHandler` | Terminal error middleware |
-| `logger` | Morgan — `dev` in development, `combined` otherwise |
+| `validate` | Terminates an `express-validator` chain, collecting failures into one 400 |
+| `validateObjectId(name, source)` | Rejects a malformed or non-string id before it reaches a query |
+| `asyncHandler(fn)` | Wraps an async handler so a rejection reaches `errorHandler` instead of becoming an unhandled rejection |
+| `uploadAvatar` | Multer, memory storage, single file, 2 MB cap, image MIME allowlist |
+| `errorHandler` | Terminal error middleware. Reports the status an error carries and translates Mongoose/multer faults to 4xx |
+| `logger` | Morgan — `dev` in development, `combined` otherwise, silent under test |
 
 ### `controllers/`
 

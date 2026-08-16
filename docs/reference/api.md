@@ -112,10 +112,17 @@ path id (admins bypass) · `owner` resource ownership (admins bypass) · `admin`
 | POST | `/auth/signup` | — | `username, email, password, confirmPassword` | 201 | envelope |
 | POST | `/auth/signin` | — | `credential, password` | 200 | envelope, `data: { accessToken, refreshToken, userdata }` |
 | POST | `/auth/refreshToken` | — | `refreshToken` | 200 | envelope, `data: { accessToken }` |
+| POST | `/auth/signout` | ✓ | — | 200 | envelope |
+| PUT | `/auth/password` | ✓ | `currentPassword, newPassword, confirmPassword` | 200 | envelope |
 
-`credential` accepts an email address or a username. Validation: username non-empty, valid
-email, password ≥ 6 characters, matching confirmation. Errors: 400 validation, 409 duplicate,
-401 bad credentials, 429 too many failed attempts.
+`credential` accepts an email address or a username. Validation: username 3–30 characters from
+`[A-Za-z0-9_-]`, valid email, password ≥ 10 characters, matching confirmation. Errors: 400
+validation, 409 duplicate, 401 bad credentials, 429 too many failed attempts.
+
+Both tokens carry a `tokenVersion` claim which is compared against the stored value on every
+authenticated request. `signout` and a successful password change increment it, which is what
+revokes outstanding tokens — including the one that made the request. Roles are read from the
+account on each request and on refresh, never taken from the token payload.
 
 ### Posts — `/posts`
 
@@ -123,9 +130,13 @@ email, password ≥ 6 characters, matching confirmation. Errors: 400 validation,
 |--------|------|------|-------|-------|
 | GET | `/posts` | — | **Published posts only**, paginated, newest first. Admins may pass `?all=true` for the unfiltered moderation list; the flag is ignored for everyone else | envelope + pagination |
 | GET | `/posts/:id` | — | Author, likes, comments, replies and categories populated. Non-public posts return 404 unless the caller is the author or an admin | envelope |
-| POST | `/posts` | ✓ | Body `title, slug, content, imageURL?, visibility?`. `visibility` validated against `draft \| private \| public`, default `draft` | envelope + `postId` |
-| PUT | `/posts/:_id` | owner | `imageURL` optional. `visibility` only written when sent | envelope |
-| DELETE | `/posts/:_id` | owner | Cascades to comments and category back-references; counters adjust against the post's author | envelope |
+| POST | `/posts` | ✓ | Body `title, slug?, content, imageURL?, visibility?, tags?`. `visibility` validated against `draft \| private \| public`, default `draft`. Up to 5 tags, created on demand | envelope + `postId` |
+| POST | `/posts/bulk` | ✓ | Body `ids` (1–100) and `action` = `delete \| public \| draft \| private`. Scoped to the caller's own posts unless admin; ids belonging to others match nothing | envelope + `affected` |
+| PUT | `/posts/:id` | owner | Every field optional. `visibility` and `tags` only written when sent | envelope |
+| DELETE | `/posts/:id` | owner | Cascades to comments and category back-references; counters adjust against the post's author | envelope |
+
+Slugs are unique; a collision is resolved by appending `-2`, `-3`, … The route parameter is
+`:id` on every post route — it was previously `:_id` on write and `:id` on read.
 
 ### Users — `/users`
 
@@ -134,7 +145,8 @@ email, password ≥ 6 characters, matching confirmation. Errors: 400 validation,
 | GET | `/users` | admin | `?page=1&limit=10` | envelope + pagination |
 | GET | `/users/getUser` | ✓ | The signed-in user with profile | **`User` key**, not `data` |
 | PUT | `/users/setUser` | ✓ | `multipart/form-data`: `username, email, bio`, file `image` | envelope |
-| GET | `/users/getUserPosts` | ✓ | From the `User.posts` array; includes drafts | bare array |
+| GET | `/users/getUserPosts` | ✓ | The caller's own posts, including drafts. `?page&limit&visibility&sort&q`; `sort` ∈ `newest \| oldest \| title \| updated` | envelope + pagination + `counts` |
+| DELETE | `/users/me` | ✓ | Body `password`. Deletes the account, its posts, and the comments and likes on them | envelope |
 | POST | `/users/postUserProfile` | ✓ | Creates a profile | bare object |
 | GET | `/users/getUserProfile` | ✓ | The caller's profile | envelope |
 | POST | `/users/followUser` | ✓ | Body `toFollowId`. 409 on self-follow | envelope |
@@ -167,9 +179,13 @@ No client code writes tags yet ([GAP-04](../product/roadmap.md#gap-04)).
 
 | Method | Path | Auth | Notes | Shape |
 |--------|------|------|-------|-------|
-| GET | `/comments` | — | Every comment in the database, unpaginated ([SEC-11](../security/checklist.md#sec-11)) | bare array |
-| POST | `/comments` | ✓ | Body `{ postId, message }` | envelope |
+| GET | `/comments/post/:postId` | optional | Comments on one post, paginated. Comments on a non-public post are visible only to its author or an admin, which is reported as 404 | envelope + pagination |
+| POST | `/comments` | ✓ | Body `{ postId, message }`. Message capped at 5000 characters | envelope, 201 |
 | POST | `/comments/replies` | ✓ | Body `{ repliedCommentId, message }`. 404 for an unknown parent; the reply stores the parent's post | envelope, 201 |
+| DELETE | `/comments/:id` | author, post author or admin | Removes the comment and its replies | envelope |
+
+The unscoped `GET /comments`, which returned every comment in the database to anonymous
+callers, has been removed.
 
 ### Search — `/search`
 
@@ -195,22 +211,24 @@ A unique index on `(post, user)` enforces one like per user per post.
 
 | Method | Path | Auth | Notes | Shape |
 |--------|------|------|-------|-------|
-| POST | `/page-views` | — | Body `{ postId }`. Verifies the post exists | `{ message, view }` |
-| GET | `/page-views/post/:postId` | — | Usernames only | bare array |
-| GET | `/page-views/post/:postId/count` | — | | `{ count }` |
-| GET | `/page-views/:id` | — | | bare object |
+| GET | `/page-views/post/:postId` | author or admin | Per-visit detail, capped at 200 rows | envelope |
+| GET | `/page-views/post/:postId/count` | — | | envelope + `count` |
 
-Overlaps with `POST /analytics/view/:postId`; consolidate on one.
+Read-only. Recording a view lives at `POST /analytics/view/:postId`, which is the only writer
+and the only path that applies per-visitor de-duplication. The unauthenticated `POST
+/page-views` and the `GET /page-views/:id` lookup have been removed.
 
 ### Analytics — `/analytics`
 
 | Method | Path | Auth | Notes | Shape |
 |--------|------|------|-------|-------|
 | GET | `/analytics/post/:id` | — | Reads the stale `Analytics` collection; 404 for anything unseeded ([BUG-06](../product/roadmap.md#bug-06)) | bare object |
-| GET | `/analytics/user/:userId` | **self** | Totals, per-post breakdown, top five. 403 for another user's id | bare object |
+| GET | `/analytics/user/:userId` | **self** | Totals, per-post breakdown, top five. 403 for another user's id | envelope, `data: { totalViews, totalReads, readRate, postsAnalytics, topPosts }` |
+| GET | `/analytics/me` | ✓ | The same figures for the caller, taking no id | as above |
+| GET | `/analytics/me/reading` | ✓ | What the caller has opened and finished | envelope, `data: { unfinished, finished, … }` |
 | GET | `/analytics/admin` | admin | Site totals, top posts, top authors, recent views | bare object |
-| POST | `/analytics/view/:postId` | — | No deduplication ([SEC-04](../security/checklist.md#sec-04)) | `{ message }` |
-| POST | `/analytics/read/:postId` | — | No client calls this today | `{ message }` |
+| POST | `/analytics/view/:postId` | optional | Records one view per visitor per 6 hours. Anonymous visitors are keyed by a salted hash of their address; 404 for a post they could not be reading | envelope + `counted` |
+| POST | `/analytics/read/:postId` | optional | Same de-duplication as above | envelope + `counted` |
 
 ### User activity — `/user-activity`
 
