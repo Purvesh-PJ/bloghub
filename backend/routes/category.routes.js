@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/category.controllers');
 const AuthUser = require('../middlewares/authenticateUser');
+const { validateObjectId } = require('../middlewares/validate');
 
 // Public read
 router.get('/', categoryController.getCategories);
@@ -14,11 +15,13 @@ router.post('/', AuthUser.authenticateUser, AuthUser.authorizeAdmin, categoryCon
 router.post(
   '/categoriesCollection',
   AuthUser.authenticateUser,
+  validateObjectId('postId', 'body'),
   categoryController.postCategoryCollection,
 );
 router.put(
   '/updateCategoriesCollection/:id',
   AuthUser.authenticateUser,
+  validateObjectId('id'),
   categoryController.updateCategoryCollection,
 );
 

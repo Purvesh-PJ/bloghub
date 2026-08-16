@@ -9,6 +9,11 @@ const CommentSchema = new mongoose.Schema(
 
     message: {
       type: String,
+      required: true,
+      trim: true,
+      // Unbounded before this, so a single request could store up to the 1 MB body limit and
+      // repeat it indefinitely.
+      maxlength: [5000, 'Comment cannot exceed 5000 characters'],
     },
 
     post: {
