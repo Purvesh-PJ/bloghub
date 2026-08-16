@@ -1,373 +1,364 @@
-const { mongoose } = require('mongoose');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const User = require('../models/user.model');
 const Post = require('../models/post.model');
 const Profile = require('../models/user-profile.model');
-const { ObjectId } = require('mongodb');
+const Comment = require('../models/comment.model');
+const Like = require('../models/like.model');
+const View = require('../models/view.model');
+const Read = require('../models/read.model');
+const Category = require('../models/category.model');
+const Tag = require('../models/tag.model');
+const UserSettings = require('../models/user-settings.model');
+const asyncHandler = require('../middlewares/asyncHandler');
+const { notFound, conflict, badRequest, unauthorized } = require('../utils/AppError');
 
-exports.getUser = async (req, res) => {
-  try {
-    const userId = req.user ? req.user.id || req.user._id || req.user : null;
-
-    if (!userId || !ObjectId.isValid(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid user id',
-        error: 'InvalidUserIdException',
-      });
-    }
-
-    const foundUser = await User.findById(userId).select('-password -posts').populate({
-      path: 'profile',
-      select: '-followers -followings',
-    });
-
-    if (!foundUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-        error: 'UserNotFoundException',
-      });
-    } else {
-      const userPlainObject = foundUser.toObject();
-
-      let base64 = null;
-      if (foundUser.profile && foundUser.profile.image && foundUser.profile.image.data) {
-        const { contentType, data } = foundUser.profile.image;
-        base64 = `data:${contentType};base64,${Buffer.from(data).toString('base64')}`;
-      }
-
-      const resposeUser = {
-        ...userPlainObject,
-        profile: {
-          ...userPlainObject.profile,
-          image:
-            foundUser.profile && foundUser.profile.image
-              ? {
-                  ...userPlainObject.profile.image,
-                  data: base64,
-                }
-              : null,
-        },
-      };
-
-      return res.status(200).json({
-        success: true,
-        message: 'User found',
-        User: resposeUser,
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: 'An error occurred',
-      error: 'ServerError',
-    });
-  }
+/**
+ * Renders a stored avatar as a data URI.
+ *
+ * `image.data` is a Buffer of the image itself. It used to hold the *file path* multer wrote
+ * to, which this function then base64-encoded — producing a data URI containing the text of a
+ * path and therefore an image that never loaded.
+ */
+const avatarDataUri = (image) => {
+  if (!image?.data || !image.contentType) return null;
+  return `data:${image.contentType};base64,${Buffer.from(image.data).toString('base64')}`;
 };
 
-exports.setUser = async (req, res) => {
+exports.getUser = asyncHandler(async (req, res) => {
+  const foundUser = await User.findById(req.user.id).select('-password -posts').populate({
+    path: 'profile',
+    select: '-followers -followings',
+  });
+
+  if (!foundUser) {
+    throw notFound('User not found', 'UserNotFoundException');
+  }
+
+  const plain = foundUser.toObject();
+
+  res.status(200).json({
+    success: true,
+    message: 'User found',
+    User: {
+      ...plain,
+      profile: plain.profile
+        ? {
+            ...plain.profile,
+            image: { ...plain.profile.image, data: avatarDataUri(plain.profile.image) },
+          }
+        : null,
+    },
+  });
+});
+
+exports.setUser = asyncHandler(async (req, res) => {
   const { file, body } = req;
-  const user_id = req.user ? req.user.id || req.user._id || req.user : null;
+  const userId = req.user.id;
   const { username, email, bio } = body;
 
-  try {
-    const userData = {};
-    if (username) userData.username = username;
-    if (email) userData.email = email;
+  const userData = {};
+  if (username) userData.username = username;
+  if (email) userData.email = email;
 
-    const profileData = {};
-    if (bio) profileData.bio = bio;
+  const profileData = {};
+  if (bio !== undefined) profileData.bio = bio;
 
-    if (file) {
-      profileData.image = {
-        data: file.path,
-        contentType: file.mimetype,
-      };
+  // The bytes, not the path. See avatarDataUri above for what the old behaviour produced.
+  if (file) {
+    profileData.image = { data: file.buffer, contentType: file.mimetype };
+  }
+
+  if (Object.keys(userData).length > 0) {
+    // Checked up front so a clash reports as 409 with a useful message. The unique indexes
+    // remain the real guard, and the error handler translates a duplicate-key race to 409 too.
+    const clash = await User.findOne({
+      _id: { $ne: userId },
+      $or: [...(email ? [{ email }] : []), ...(username ? [{ username }] : [])],
+    })
+      .select('email')
+      .lean();
+
+    if (clash) {
+      throw conflict(clash.email === email ? 'Email already exists' : 'Username already exists');
     }
 
-    const updateUser = await User.findByIdAndUpdate(
-      user_id,
+    const updated = await User.findByIdAndUpdate(
+      userId,
       { $set: userData },
       { new: true, runValidators: true },
     );
-
-    if (!updateUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    const existingProfile = await Profile.findOne({ user: user_id });
-
-    if (existingProfile) {
-      const updateProfile = await Profile.findByIdAndUpdate(
-        existingProfile._id,
-        { $set: profileData },
-        { new: true, runValidators: true },
-      );
-
-      if (!updateProfile) {
-        return res.status(404).json({
-          success: false,
-          message: 'profile not found',
-        });
-      }
-      return res.status(200).json({
-        success: true,
-        message: 'profile updated successfully',
-      });
-    } else {
-      const newProfile = new Profile({
-        user: user_id,
-        image: {
-          data: file ? file.path : null,
-          contentType: file ? file.mimetype : null,
-        },
-        bio: body.bio,
-      });
-      await newProfile.save();
-
-      await User.findByIdAndUpdate(user_id, { $set: { profile: newProfile._id } }, { new: true });
-      return res.status(201).json({
-        success: true,
-        message: 'profile created succesfully',
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    if (!updated) throw notFound('User not found');
   }
+
+  const profile = await Profile.findOneAndUpdate(
+    { user: userId },
+    { $set: profileData },
+    { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
+  );
+
+  // Keep the back-reference in step; a profile created by upsert was previously left
+  // unlinked from its user.
+  await User.updateOne(
+    { _id: userId, profile: { $exists: false } },
+    { $set: { profile: profile._id } },
+  );
+
+  res.status(200).json({
+    success: true,
+    message: 'Profile updated successfully',
+  });
+});
+
+// Sort keys the dashboard offers, mapped to the query they stand for. Restricted to a known
+// set so the sort field cannot be chosen freely by the caller.
+const POST_SORTS = {
+  newest: { createdAt: -1 },
+  oldest: { createdAt: 1 },
+  title: { title: 1 },
+  updated: { updatedAt: -1 },
 };
 
-async function filterPostsByUserId(postIds) {
-  try {
-    const postObjIds = postIds.map((postId) => new mongoose.Types.ObjectId(postId));
-    const filteredPostsByUserId = await Post.find({ _id: { $in: postObjIds } });
-    return filteredPostsByUserId;
-  } catch (error) {
-    console.error(error);
-    throw error; // Handle the error appropriately in your application
+/**
+ * The author's own posts, paginated.
+ *
+ * Returned every post in one response before this, and the dashboard rendered all of them —
+ * fine at ten posts, not at a few hundred. Filtering and sorting happen here rather than in
+ * the browser for the same reason: the client should not need the whole collection in order
+ * to show one page of it.
+ */
+exports.getUserSelfPosts = asyncHandler(async (req, res) => {
+  const page = req.query.page || 1;
+  const limit = Math.min(req.query.limit || 10, 50);
+
+  const filter = { user: req.user.id };
+
+  if (['draft', 'private', 'public'].includes(req.query.visibility)) {
+    filter.visibility = req.query.visibility;
   }
-}
 
-exports.getUserSelfPosts = async (req, res) => {
-  try {
-    const userId = req.user ? req.user.id || req.user._id || req.user : null;
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
-    }
-
-    const posts = await Post.find({ user: userId })
-      .populate('categories')
-      .populate('user', 'username')
-      .sort({ createdAt: -1 });
-
-    return res.status(200).json({
-      success: true,
-      data: posts,
-    });
-  } catch (error) {
-    console.error('[getUserSelfPosts]', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  if (req.query.q) {
+    // Escaped: a title search containing regex metacharacters must be treated as text.
+    filter.title = {
+      $regex: String(req.query.q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+      $options: 'i',
+    };
   }
-};
 
-exports.getUserProfile = async (req, res) => {
-  const userId = req.user ? req.user.id || req.user._id || req.user : null;
-  const user = await User.findById(userId);
+  const sort = POST_SORTS[req.query.sort] || POST_SORTS.newest;
 
-  if (user) {
-    try {
-      const userProfile = await Profile.findOne({ user: user.id });
-      if (userProfile) {
-        return res.status(200).json({
-          success: true,
-          message: 'Profile found succesfully',
-          data: {
-            userProfile,
-          },
-        });
-      } else {
-        return res.status(404).json({
-          success: false,
-          message: 'Personal details not found',
-          error: 'ProfileNotFound',
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-        success: false,
-        message: 'Internal Server Error',
-        error: 'ServerError',
-      });
-    }
-  } else {
-    return res.status(404).json({
-      success: false,
-      message: 'User not found',
-      error: 'UserNotFound',
-    });
+  const [posts, total, counts] = await Promise.all([
+    Post.find(filter)
+      .populate('categories', 'name')
+      .populate('tags', 'name')
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+    Post.countDocuments(filter),
+    // Tab counts must reflect every post the author has, not just the page being shown.
+    Post.aggregate([
+      { $match: { user: new mongoose.Types.ObjectId(req.user.id) } },
+      { $group: { _id: '$visibility', count: { $sum: 1 } } },
+    ]),
+  ]);
+
+  const byVisibility = counts.reduce((acc, row) => ({ ...acc, [row._id]: row.count }), {});
+
+  res.status(200).json({
+    success: true,
+    data: posts,
+    pagination: { total, page, limit, pages: Math.ceil(total / limit) },
+    counts: {
+      all: Object.values(byVisibility).reduce((sum, n) => sum + n, 0),
+      public: byVisibility.public || 0,
+      draft: byVisibility.draft || 0,
+      private: byVisibility.private || 0,
+    },
+  });
+});
+
+exports.getUserProfile = asyncHandler(async (req, res) => {
+  // This lookup used to sit above the try block, so a rejection became an unhandled promise
+  // rejection rather than a response. asyncHandler now covers the whole handler.
+  const userProfile = await Profile.findOne({ user: req.user.id });
+
+  if (!userProfile) {
+    throw notFound('Personal details not found', 'ProfileNotFound');
   }
-};
 
-exports.postUserProfile = async (req, res) => {
-  try {
-    const userId = req.user ? req.user.id || req.user._id || req.user : null;
-    const { file, body } = req;
+  res.status(200).json({
+    success: true,
+    message: 'Profile found successfully',
+    data: { userProfile },
+  });
+});
 
-    const newProfile = new Profile({
-      user: userId,
-      image: {
-        data: file ? file.path : null,
-        contentType: file ? file.mimetype : null,
+exports.postUserProfile = asyncHandler(async (req, res) => {
+  const { file, body } = req;
+
+  // Upsert rather than insert: the unique index on `user` means a second POST from the same
+  // account used to fail with a duplicate-key error reported as a 500.
+  await Profile.findOneAndUpdate(
+    { user: req.user.id },
+    {
+      $set: {
+        bio: body?.bio ?? '',
+        ...(file && { image: { data: file.buffer, contentType: file.mimetype } }),
       },
-      bio: body ? body.bio : '',
-    });
+    },
+    { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true },
+  );
 
-    await newProfile.save();
-    return res.status(201).json({ message: 'Profile saved succesfully' });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
+  res.status(201).json({ success: true, message: 'Profile saved successfully' });
+});
 
-exports.followUser = async (req, res) => {
+exports.followUser = asyncHandler(async (req, res) => {
   const { toFollowId } = req.body;
-  const followerId = req.user ? req.user.id || req.user._id || req.user : null;
+  const followerId = req.user.id;
 
-  if (!toFollowId || !followerId) {
-    return res.status(400).json({ success: false, message: 'Invalid follow parameters' });
+  if (toFollowId === followerId.toString()) {
+    throw badRequest('Cannot follow yourself');
   }
 
-  if (toFollowId.toString() === followerId.toString()) {
-    return res.status(409).json({ success: false, message: 'Cannot follow yourself' });
+  const target = await User.exists({ _id: toFollowId });
+  if (!target) throw notFound('User not found');
+
+  // $addToSet reports whether it actually added anything, so the counter only moves when the
+  // set changed. The previous read-then-write left the counters drifting whenever two follows
+  // raced, because both saw "not following yet" and both incremented.
+  const followed = await Profile.updateOne(
+    { user: toFollowId, followers: { $ne: followerId } },
+    { $addToSet: { followers: followerId }, $inc: { followersCount: 1 } },
+    { upsert: false },
+  );
+
+  if (followed.modifiedCount === 0) {
+    return res.status(200).json({ success: true, message: 'Already following user' });
   }
 
-  try {
-    const targetProfile = await Profile.findOne({ user: toFollowId });
-    if (!targetProfile) {
-      return res.status(404).json({ success: false, message: 'Target profile not found' });
-    }
+  await Profile.updateOne(
+    { user: followerId, followings: { $ne: toFollowId } },
+    { $addToSet: { followings: toFollowId }, $inc: { followingsCount: 1 } },
+  );
 
-    const isAlreadyFollowing = targetProfile.followers.some(
-      (id) => id.toString() === followerId.toString(),
-    );
+  res.status(200).json({ success: true, message: 'Followed successfully' });
+});
 
-    if (isAlreadyFollowing) {
-      return res.status(200).json({ success: true, message: 'Already following user' });
-    }
+exports.unfollowUser = asyncHandler(async (req, res) => {
+  const { toUnfollowId } = req.body;
+  const followerId = req.user.id;
 
-    await Profile.findOneAndUpdate(
-      { user: toFollowId },
-      { $addToSet: { followers: followerId }, $inc: { followersCount: 1 } },
-    );
-    await Profile.findOneAndUpdate(
-      { user: followerId },
-      { $addToSet: { followings: toFollowId }, $inc: { followingsCount: 1 } },
-    );
+  const unfollowed = await Profile.updateOne(
+    { user: toUnfollowId, followers: followerId },
+    { $pull: { followers: followerId }, $inc: { followersCount: -1 } },
+  );
 
-    return res.status(200).json({
-      success: true,
-      message: 'followed succesfully',
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-exports.unfollowUser = async (req, res) => {
-  const toUnfollowId = req.body.toUnfollowId;
-  const followerId = req.user ? req.user.id || req.user._id || req.user : null;
-
-  if (!toUnfollowId || !followerId) {
-    return res.status(400).json({ success: false, message: 'Invalid unfollow parameters' });
+  if (unfollowed.modifiedCount === 0) {
+    return res.status(200).json({ success: true, message: 'Not following user' });
   }
 
-  try {
-    const targetProfile = await Profile.findOne({ user: toUnfollowId });
-    if (!targetProfile) {
-      return res.status(404).json({ success: false, message: 'Target profile not found' });
-    }
+  await Profile.updateOne(
+    { user: followerId, followings: toUnfollowId },
+    { $pull: { followings: toUnfollowId }, $inc: { followingsCount: -1 } },
+  );
 
-    const isFollowing = targetProfile.followers.some(
-      (id) => id.toString() === followerId.toString(),
-    );
+  res.status(200).json({ success: true, message: 'Unfollowed successfully' });
+});
 
-    if (!isFollowing) {
-      return res.status(200).json({ success: true, message: 'Not following user' });
-    }
+exports.isFollowing = asyncHandler(async (req, res) => {
+  const following = await Profile.exists({
+    user: req.user.id,
+    followings: req.params.id,
+  });
 
-    await Profile.findOneAndUpdate(
-      { user: toUnfollowId },
-      { $pull: { followers: followerId }, $inc: { followersCount: -1 } },
-    );
-    await Profile.findOneAndUpdate(
-      { user: followerId },
-      { $pull: { followings: toUnfollowId }, $inc: { followingsCount: -1 } },
-    );
+  res.status(200).json({ success: true, isFollowing: Boolean(following) });
+});
 
-    return res.status(200).json({
-      success: true,
-      message: 'unfollowed succesfully',
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+/**
+ * Deletes the caller's account and everything belonging to it.
+ *
+ * Requires the password: an authenticated session alone is not enough authority to destroy
+ * the account, for the same reason a password change requires it.
+ *
+ * Removal is deliberate rather than a soft flag — a person asking to be deleted should be
+ * deleted. What survives is other people's data that merely referenced them: their follower
+ * lists lose this id, and posts they had liked keep their counts.
+ */
+exports.deleteAccount = asyncHandler(async (req, res) => {
+  const { password } = req.body;
+  const userId = req.user.id;
+
+  const user = await User.findById(userId).select('password');
+  if (!user) throw notFound('User not found');
+
+  if (!(await bcrypt.compare(password, user.password))) {
+    throw unauthorized('Password is incorrect', 'InvalidPassword');
   }
-};
 
-exports.isFollowing = async (req, res) => {
-  const tofollowId = req.params.id;
-  const currentUser = req.user ? req.user.id || req.user._id || req.user : null;
+  const posts = await Post.find({ user: userId }).select('_id categories tags').lean();
+  const postIds = posts.map((post) => post._id);
 
-  try {
-    const userProfile = await Profile.findOne({ user: currentUser });
+  await Promise.all([
+    // The person's own content.
+    Post.deleteMany({ user: userId }),
+    Comment.deleteMany({ user: userId }),
+    Like.deleteMany({ user: userId }),
+    View.deleteMany({ user: userId }),
+    Read.deleteMany({ user: userId }),
+    Profile.deleteOne({ user: userId }),
+    UserSettings.deleteOne({ user: userId }),
 
-    if (!userProfile) {
-      return res.status(404).json({ message: 'Profile not found' });
-    }
+    // Everything on their posts that belonged to other people.
+    Comment.deleteMany({ post: { $in: postIds } }),
+    Like.deleteMany({ post: { $in: postIds } }),
 
-    const isFollowing = userProfile.followings.some(
-      (id) => id.toString() === tofollowId.toString(),
-    );
-    return res.status(200).json({ isFollowing });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
+    // References to them and their posts held elsewhere.
+    Category.updateMany({}, { $pull: { posts: { $in: postIds } } }),
+    Tag.updateMany({}, { $pull: { posts: { $in: postIds } } }),
+    Profile.updateMany(
+      { $or: [{ followers: userId }, { followings: userId }] },
+      { $pull: { followers: userId, followings: userId } },
+    ),
+  ]);
 
-exports.getAllUsers = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const skip = (page - 1) * limit;
-
-    const users = await User.find()
-      .select('-password')
-      .populate('profile')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    const totalUsers = await User.countDocuments();
-
-    return res.status(200).json({
-      success: true,
-      data: users,
-      pagination: {
-        total: totalUsers,
-        page,
-        pages: Math.ceil(totalUsers / limit),
+  // Follower counters are derived from the arrays just trimmed, so recompute rather than
+  // guess at how far each one moved.
+  await Profile.updateMany({}, [
+    {
+      $set: {
+        followersCount: { $size: { $ifNull: ['$followers', []] } },
+        followingsCount: { $size: { $ifNull: ['$followings', []] } },
       },
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-};
+    },
+  ]);
+
+  await User.deleteOne({ _id: userId });
+
+  res.status(200).json({
+    success: true,
+    message: 'Your account and all its content have been deleted',
+  });
+});
+
+exports.getAllUsers = asyncHandler(async (req, res) => {
+  // Bounded by the validator; an unbounded `limit` previously returned the whole table.
+  const page = req.query.page || 1;
+  const limit = Math.min(req.query.limit || 10, 50);
+
+  const [users, totalUsers] = await Promise.all([
+    User.find()
+      .select('-password')
+      .populate('profile', '-followers -followings -image')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit),
+    User.countDocuments(),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: users,
+    pagination: { total: totalUsers, page, limit, pages: Math.ceil(totalUsers / limit) },
+  });
+});

@@ -3,228 +3,211 @@ const Category = require('../models/category.model');
 const Comment = require('../models/comment.model');
 const User = require('../models/user.model');
 const Profile = require('../models/user-profile.model');
+const asyncHandler = require('../middlewares/asyncHandler');
 const { createPost, updatePost } = require('../services/postService');
+const { notFound, forbidden } = require('../utils/AppError');
 
 const MAX_PAGE_SIZE = 50;
 
-exports.getBlogs = async (req, res) => {
-  try {
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), MAX_PAGE_SIZE);
-    const skip = (page - 1) * limit;
+exports.getBlogs = asyncHandler(async (req, res) => {
+  // The validator has already bounded and coerced these.
+  const page = req.query.page || 1;
+  const limit = Math.min(req.query.limit || 20, MAX_PAGE_SIZE);
+  const skip = (page - 1) * limit;
 
-    // Public listing: only published posts. Drafts and private posts are reachable
-    // through the owner-scoped endpoints, never from here.
-    //
-    // Administrators may opt into the unfiltered list with ?all=true, which is what the
-    // moderation console needs. The flag is ignored for everyone else.
-    const wantsAll = req.query.all === 'true';
-    const isAdmin = req.user?.roles?.includes('admin');
-    const filter = wantsAll && isAdmin ? {} : { visibility: 'public' };
+  // Public listing: only published posts. Drafts and private posts are reachable
+  // through the owner-scoped endpoints, never from here.
+  //
+  // Administrators may opt into the unfiltered list with ?all=true, which is what the
+  // moderation console needs. The flag is ignored for everyone else.
+  const wantsAll = req.query.all === 'true';
+  const isAdmin = req.user?.roles?.includes('admin');
+  const filter = wantsAll && isAdmin ? {} : { visibility: 'public' };
 
-    const [posts, total] = await Promise.all([
-      Post.find(filter)
-        .populate('user', 'username')
-        .populate('categories')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
-      Post.countDocuments(filter),
-    ]);
-
-    res.status(200).json({
-      success: true,
-      message: 'Posts found successfully',
-      data: posts,
-      pagination: { total, page, limit, pages: Math.ceil(total / limit) },
-    });
-  } catch (err) {
-    console.error('[getBlogs]', err);
-    res.status(500).json({
-      success: false,
-      message: 'An error occurred while fetching posts',
-    });
-  }
-};
-
-exports.getSinglePost = async (req, res) => {
-  try {
-    const singlePost = await Post.findById(req.params.id)
+  const [posts, total] = await Promise.all([
+    Post.find(filter)
       .populate('user', 'username')
-      .populate('likes', 'user')
-      .populate({
-        path: 'comments',
-        populate: [
-          {
-            path: 'user',
-            select: 'username',
-            model: 'User',
-          },
-          {
-            path: 'replies',
-            populate: {
-              path: 'user',
-              select: 'username',
-              model: 'User',
-            },
-          },
-        ],
-      })
-      .populate('categories');
+      .populate('categories')
+      .populate('tags', 'name')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Post.countDocuments(filter),
+  ]);
 
-    if (!singlePost) {
-      return res.status(404).json({
-        success: false,
-        message: 'Post not found',
-        error: 'NotFound',
-      });
+  res.status(200).json({
+    success: true,
+    message: 'Posts found successfully',
+    data: posts,
+    pagination: { total, page, limit, pages: Math.ceil(total / limit) },
+  });
+});
+
+exports.getSinglePost = asyncHandler(async (req, res) => {
+  const singlePost = await Post.findById(req.params.id)
+    .populate('user', 'username')
+    .populate('likes', 'user')
+    .populate({
+      path: 'comments',
+      populate: [
+        { path: 'user', select: 'username', model: 'User' },
+        { path: 'replies', populate: { path: 'user', select: 'username', model: 'User' } },
+      ],
+    })
+    .populate('categories')
+    .populate('tags', 'name');
+
+  if (!singlePost) {
+    throw notFound('Post not found');
+  }
+
+  // A non-public post is only visible to its author and to administrators. 404 rather
+  // than 403 so the response never confirms that an unpublished post exists.
+  if (singlePost.visibility !== 'public') {
+    const viewerId = req.user ? req.user.id || req.user._id : null;
+    const isOwner = viewerId && singlePost.user?._id?.toString() === viewerId.toString();
+    const isAdmin = req.user?.roles?.includes('admin');
+
+    if (!isOwner && !isAdmin) {
+      throw notFound('Post not found');
     }
+  }
 
-    // A non-public post is only visible to its author and to administrators. 404 rather
-    // than 403 so the response never confirms that an unpublished post exists.
-    if (singlePost.visibility !== 'public') {
-      const viewerId = req.user ? req.user.id || req.user._id : null;
-      const isOwner = viewerId && singlePost.user?._id?.toString() === viewerId.toString();
-      const isAdmin = req.user?.roles?.includes('admin');
+  res.status(200).json({
+    success: true,
+    message: 'Post found successfully',
+    data: singlePost,
+  });
+});
 
-      if (!isOwner && !isAdmin) {
-        return res.status(404).json({
-          success: false,
-          message: 'Post not found',
-          error: 'NotFound',
-        });
-      }
+exports.postBlogs = asyncHandler(async (req, res) => {
+  const newPost = await createPost(req.user.id, req.body);
+
+  await Profile.updateOne({ user: req.user.id }, { $inc: { postCount: 1 } });
+
+  res.status(201).json({
+    success: true,
+    message: 'Post created successfully',
+    postId: newPost._id,
+  });
+});
+
+exports.putBlogs = asyncHandler(async (req, res) => {
+  const postId = req.params.id;
+
+  const existingPost = await Post.findById(postId).select('user').lean();
+  if (!existingPost) throw notFound('Post not found');
+
+  if (
+    existingPost.user &&
+    existingPost.user.toString() !== req.user.id.toString() &&
+    !req.user.roles?.includes('admin')
+  ) {
+    throw forbidden('Unauthorized to edit this post');
+  }
+
+  await updatePost(req.body, postId);
+
+  res.status(200).json({
+    success: true,
+    message: 'Post updated successfully',
+  });
+});
+
+/**
+ * Applies one action to several of the caller's posts at once.
+ *
+ * Doing this as N separate requests from the browser meant a partial failure left the client
+ * guessing which ones landed, and N round trips for what is one intent.
+ *
+ * Ownership is enforced by the query rather than checked per post: the filter itself is
+ * scoped to the caller (or unrestricted for an administrator), so an id belonging to someone
+ * else simply matches nothing instead of being acted on.
+ */
+exports.bulkUpdatePosts = asyncHandler(async (req, res) => {
+  const { ids, action } = req.body;
+
+  const isAdmin = req.user.roles?.includes('admin');
+  const scope = { _id: { $in: ids }, ...(isAdmin ? {} : { user: req.user.id }) };
+
+  if (action === 'delete') {
+    const doomed = await Post.find(scope).select('_id user categories').lean();
+    const doomedIds = doomed.map((post) => post._id);
+
+    if (doomedIds.length > 0) {
+      await Promise.all([
+        Category.updateMany(
+          { _id: { $in: doomed.flatMap((post) => post.categories ?? []) } },
+          { $pull: { posts: { $in: doomedIds } } },
+        ),
+        Comment.deleteMany({ post: { $in: doomedIds } }),
+        User.updateMany({}, { $pull: { posts: { $in: doomedIds } } }),
+      ]);
+
+      await Post.deleteMany({ _id: { $in: doomedIds } });
+
+      // Decrement each author's counter by however many of their posts went, clamped at zero.
+      const perAuthor = doomed.reduce((acc, post) => {
+        const key = String(post.user);
+        return { ...acc, [key]: (acc[key] || 0) + 1 };
+      }, {});
+
+      await Promise.all(
+        Object.entries(perAuthor).map(([userId, n]) =>
+          Profile.updateOne({ user: userId, postCount: { $gte: n } }, { $inc: { postCount: -n } }),
+        ),
+      );
     }
 
     return res.status(200).json({
       success: true,
-      message: 'post found succesfully',
-      data: singlePost,
-    });
-  } catch (error) {
-    console.error('[getSinglePost]', error);
-    res.status(500).json({
-      success: false,
-      message: 'An error occurred while fetching the post',
+      message: `${doomedIds.length} ${doomedIds.length === 1 ? 'story' : 'stories'} deleted`,
+      affected: doomedIds.length,
     });
   }
-};
 
-exports.postBlogs = async (req, res) => {
-  const user_id = req.user ? req.user.id || req.user._id || req.user : null;
+  // Remaining actions are visibility changes; the validator has already limited the values.
+  const result = await Post.updateMany(scope, { $set: { visibility: action } });
 
-  try {
-    const newPost = await createPost(user_id, req.body);
+  res.status(200).json({
+    success: true,
+    message: `${result.modifiedCount} ${result.modifiedCount === 1 ? 'story' : 'stories'} updated`,
+    affected: result.modifiedCount,
+  });
+});
 
-    await Profile.findOneAndUpdate(
-      { user: user_id },
-      { $inc: { postCount: 1 } },
-      { new: true, runValidators: true },
-    );
-    return res.status(201).json({
-      success: true,
-      message: 'post created successfully',
-      postId: newPost._id,
-    });
-  } catch (error) {
-    console.error(error.message);
-    const statusCode =
-      error.message === 'All fields are required' || error.message === 'User not found' ? 400 : 500;
-    return res.status(statusCode).json({
-      success: false,
-      message: error.message || 'An error occurred while creating the blog post',
-    });
+exports.deletePost = asyncHandler(async (req, res) => {
+  const postId = req.params.id;
+
+  const post = await Post.findById(postId).select('user categories comments').lean();
+  if (!post) throw notFound('Post not found');
+
+  if (
+    post.user &&
+    post.user.toString() !== req.user.id.toString() &&
+    !req.user.roles?.includes('admin')
+  ) {
+    throw forbidden('Unauthorized to delete this post');
   }
-};
 
-exports.putBlogs = async (req, res) => {
-  try {
-    const user_id = req.user ? req.user.id || req.user._id || req.user : null;
-    const postData = req.body;
-    const postId = req.params._id || req.params.id;
+  // Counters belong to the post's author, not to whoever issued the delete — an
+  // administrator moderating someone else's post must not lose their own post count.
+  const authorId = post.user || req.user.id;
 
-    const existingPost = await Post.findById(postId);
-    if (!existingPost) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
+  // Independent cleanups, so there is nothing to gain from running them in series.
+  await Promise.all([
+    Category.updateMany({ _id: { $in: post.categories ?? [] } }, { $pull: { posts: postId } }),
+    Comment.deleteMany({ post: postId }),
+    User.updateOne({ _id: authorId }, { $pull: { posts: postId } }),
+  ]);
 
-    if (
-      existingPost.user &&
-      existingPost.user.toString() !== user_id.toString() &&
-      !req.user?.roles?.includes('admin')
-    ) {
-      return res.status(403).json({ success: false, message: 'Unauthorized to edit this post' });
-    }
+  await Post.deleteOne({ _id: postId });
 
-    await updatePost(postData, postId);
+  // Clamped at zero: a counter that drifted below zero previously stayed negative forever.
+  await Profile.updateOne({ user: authorId, postCount: { $gt: 0 } }, { $inc: { postCount: -1 } });
 
-    return res.status(200).json({
-      success: true,
-      message: 'post updated successfully',
-    });
-  } catch (error) {
-    console.error(error.message);
-    const statusCode =
-      error.message === 'All fields are required' || error.message === 'User not found' ? 400 : 500;
-    return res.status(statusCode).json({
-      success: false,
-      message: error.message || 'An error occurred while updating the blog post',
-    });
-  }
-};
-
-exports.deletePost = async (req, res) => {
-  const user_id = req.user ? req.user.id || req.user._id || req.user : null;
-  try {
-    const post_id = req.params._id || req.params.id;
-
-    const post = await Post.findById(post_id).populate('categories').populate('comments');
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
-
-    if (
-      post.user &&
-      post.user.toString() !== user_id.toString() &&
-      !req.user?.roles?.includes('admin')
-    ) {
-      return res.status(403).json({ success: false, message: 'Unauthorized to delete this post' });
-    }
-
-    const postAttachedCategoryIds = post.categories.map((catId) => catId._id);
-    const postAttachedCommentIds = post.comments.map((cmtId) => cmtId._id);
-
-    await Category.updateMany(
-      { _id: { $in: postAttachedCategoryIds } },
-      { $pull: { posts: post_id } },
-    );
-
-    await Comment.deleteMany({ _id: { $in: postAttachedCommentIds } });
-
-    // Counters belong to the post's author, not to whoever issued the delete — an
-    // administrator moderating someone else's post must not lose their own post count.
-    const authorId = post.user || user_id;
-
-    await User.updateOne({ _id: authorId }, { $pull: { posts: post_id } });
-
-    await Post.findByIdAndDelete(post_id);
-
-    await Profile.findOneAndUpdate(
-      { user: authorId },
-      { $inc: { postCount: -1 } },
-      { new: true, runValidators: true },
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: 'post deleted succesfully',
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      success: false,
-      error: 'Internal Server error',
-    });
-  }
-};
+  res.status(200).json({
+    success: true,
+    message: 'Post deleted successfully',
+  });
+});
