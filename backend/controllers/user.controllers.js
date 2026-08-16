@@ -155,18 +155,22 @@ async function filterPostsByUserId(postIds) {
 exports.getUserSelfPosts = async (req, res) => {
   try {
     const userId = req.user ? req.user.id || req.user._id || req.user : null;
-    const user = await User.findById(userId);
-
-    if (user) {
-      const postIds = user.posts.map((post) => post.toString());
-      const userFilteredPostsByIds = await filterPostsByUserId(postIds);
-      return res.status(200).json(userFilteredPostsByIds);
-    } else {
-      return res.status(404).json({ message: 'User not found' });
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
+
+    const posts = await Post.find({ user: userId })
+      .populate('categories')
+      .populate('user', 'username')
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: posts,
+    });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    console.error('[getUserSelfPosts]', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 
