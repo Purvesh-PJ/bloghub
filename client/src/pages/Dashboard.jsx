@@ -648,8 +648,8 @@ export function Dashboard() {
           <Button as={Link} to="/write">
             <PenLine /> Write New Story
           </Button>
-          {user?._id && (
-            <Button as={Link} to={`/user/${user._id}`} variant="secondary">
+          {(user?._id || user?.user_id) && (
+            <Button as={Link} to={`/user/${user._id || user.user_id}`} variant="secondary">
               <User /> Public Profile
             </Button>
           )}

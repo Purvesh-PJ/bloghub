@@ -2,6 +2,15 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const AUTH_STORAGE_KEY = 'auth-storage';
 
+const normalizeUser = (u) => {
+  if (!u) return null;
+  return {
+    ...u,
+    _id: u._id || u.user_id || u.id,
+    user_id: u.user_id || u._id || u.id,
+  };
+};
+
 // Helper to get initial state from localStorage
 const getInitialState = () => {
   try {
@@ -9,7 +18,7 @@ const getInitialState = () => {
     if (stored) {
       const parsed = JSON.parse(stored);
       return {
-        user: parsed.user || null,
+        user: normalizeUser(parsed.user),
         accessToken: parsed.accessToken || null,
         refreshToken: parsed.refreshToken || null,
         isAuthenticated: parsed.isAuthenticated || false,
@@ -97,8 +106,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   const setAuth = useCallback((data) => {
+    const raw = data.userdata || data.user;
     authState.setState({
-      user: data.userdata,
+      user: normalizeUser(raw),
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
       isAuthenticated: true,
@@ -110,7 +120,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const setUser = useCallback((user) => {
-    authState.setState({ ...authState.getState(), user });
+    authState.setState({ ...authState.getState(), user: normalizeUser(user) });
   }, []);
 
   const logout = useCallback(() => {
