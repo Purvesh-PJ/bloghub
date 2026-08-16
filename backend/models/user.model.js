@@ -22,7 +22,19 @@ const UserSchema = new mongoose.Schema(
 
     roles: {
       type: [String],
+      enum: ['user', 'admin'],
       default: ['user'],
+    },
+
+    // Bumped whenever every existing session for this account must stop working: sign-out,
+    // password change, or an administrator revoking access. Both token types carry the value
+    // they were minted with, and authentication rejects any token whose copy is stale.
+    //
+    // Without it there is no way to revoke anything — a refresh token stays valid for its
+    // full lifetime no matter what happens to the account behind it.
+    tokenVersion: {
+      type: Number,
+      default: 0,
     },
 
     profile: {
