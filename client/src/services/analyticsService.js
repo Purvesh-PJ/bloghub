@@ -11,6 +11,13 @@ export const analyticsService = {
     return response.data;
   },
 
+  // The caller's own figures. Scoped to the token, so the dashboard does not need its own
+  // user id to ask. Returns { success, data: { totalViews, totalReads, postsAnalytics, … } }.
+  getMyAnalytics: async () => {
+    const response = await api.get('/analytics/me');
+    return response.data;
+  },
+
   getReadingActivity: async () => {
     const response = await api.get('/analytics/me/reading');
     return response.data;

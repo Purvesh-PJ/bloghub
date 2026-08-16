@@ -29,13 +29,30 @@ export const postService = {
     return response.data;
   },
 
-  getMyPosts: async () => {
-    const response = await api.get('/users/getUserPosts');
+  /**
+   * The author's own posts.
+   *
+   * Filtering, sorting and paging happen on the server, so this takes
+   * { page, limit, visibility, sort, q } and returns { data, pagination, counts }.
+   */
+  getMyPosts: async (params = {}) => {
+    const response = await api.get('/users/getUserPosts', { params });
     return response.data;
   },
 
   deletePost: async (id) => {
     const response = await api.delete(`/posts/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Applies one action to several posts in a single request.
+   *
+   * @param {string[]} ids post ids
+   * @param {'delete'|'public'|'draft'|'private'} action
+   */
+  bulkUpdate: async (ids, action) => {
+    const response = await api.post('/posts/bulk', { ids, action });
     return response.data;
   },
 };
