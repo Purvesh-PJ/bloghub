@@ -1,78 +1,36 @@
 const View = require('../models/view.model');
 const Post = require('../models/post.model');
+const asyncHandler = require('../middlewares/asyncHandler');
+const { notFound, forbidden } = require('../utils/AppError');
 
-// Create a page view
-exports.createPageView = async (req, res) => {
-  try {
-    const { postId } = req.body;
-    const userId = req.user ? req.user.id || req.user._id || req.user : null;
+/*
+  Recording a view lives in analytics.controllers.js. What remains here is the read side:
+  a public count, and the per-view detail restricted to people entitled to see it.
+*/
 
-    // Check if post exists
-    const post = await Post.findById(postId);
-    if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
+// Get page views for a post — author or administrator only, since the rows carry reader ids.
+exports.getPostPageViews = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
 
-    // Create new page view
-    const newView = new View({
-      post: postId,
-      user: userId,
-      timestamp: new Date(),
-    });
+  const post = await Post.findById(postId).select('user').lean();
+  if (!post) throw notFound('Post not found');
 
-    await newView.save();
-
-    res.status(201).json({ message: 'Page view recorded successfully', view: newView });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while recording page view' });
+  const isOwner = post.user?.toString() === req.user.id.toString();
+  if (!isOwner && !req.user.roles?.includes('admin')) {
+    throw forbidden('You cannot read this post’s visitor detail');
   }
-};
 
-// Get page view by ID
-exports.getPageView = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const views = await View.find({ post: postId })
+    .populate('user', 'username')
+    .sort({ createdAt: -1 })
+    .limit(200)
+    .lean();
 
-    const view = await View.findById(id).populate('user', 'username').populate('post', 'title');
-
-    if (!view) {
-      return res.status(404).json({ error: 'Page view not found' });
-    }
-
-    res.json(view);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while fetching the page view' });
-  }
-};
-
-// Get page views for a post
-exports.getPostPageViews = async (req, res) => {
-  try {
-    const { postId } = req.params;
-
-    const views = await View.find({ post: postId })
-      .populate('user', 'username')
-      .sort({ timestamp: -1 });
-
-    res.json(views);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while fetching post page views' });
-  }
-};
+  res.status(200).json({ success: true, data: views });
+});
 
 // Get page view count for a post
-exports.getPostPageViewCount = async (req, res) => {
-  try {
-    const { postId } = req.params;
-
-    const count = await View.countDocuments({ post: postId });
-
-    res.json({ count });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while fetching page view count' });
-  }
-};
+exports.getPostPageViewCount = asyncHandler(async (req, res) => {
+  const count = await View.countDocuments({ post: req.params.postId });
+  res.status(200).json({ success: true, count });
+});

@@ -1,8 +1,10 @@
 import api from '../config/api';
 
 export const commentService = {
-  getComments: async () => {
-    const response = await api.get('/comments');
+  // Comments are scoped to a post. The old `GET /comments` returned every comment in the
+  // database and no longer exists.
+  getPostComments: async (postId, params = {}) => {
+    const response = await api.get(`/comments/post/${postId}`, { params });
     return response.data;
   },
 
@@ -17,6 +19,11 @@ export const commentService = {
       repliedCommentId,
       message,
     });
+    return response.data;
+  },
+
+  deleteComment: async (commentId) => {
+    const response = await api.delete(`/comments/${commentId}`);
     return response.data;
   },
 };

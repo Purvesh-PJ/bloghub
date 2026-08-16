@@ -4,6 +4,9 @@ const Post = require('../models/post.model');
 const User = require('../models/user.model');
 const View = require('../models/view.model');
 const Read = require('../models/read.model');
+const asyncHandler = require('../middlewares/asyncHandler');
+const { notFound } = require('../utils/AppError');
+const { visitorKey, DEDUPE_WINDOW_MS } = require('../utils/visitor');
 
 // Counts documents per post in one grouped query. The alternative — countDocuments()
 // inside a map over the posts — costs two round trips per post, so a writer with fifty
@@ -33,56 +36,63 @@ exports.getAnalytics = async (req, res) => {
   }
 };
 
-// Get user analytics (for a specific user)
-exports.getUserAnalytics = async (req, res) => {
-  try {
-    const { userId } = req.params;
+/**
+ * Analytics for one author's posts.
+ *
+ * Serves both `/analytics/user/:userId` and `/analytics/me`. The latter exists because the
+ * dashboard only ever wants the caller's own figures, and making it derive its own id in
+ * order to ask for them was needless — the token already says who is asking.
+ *
+ * The payload is wrapped in `{ success, data }` like the rest of the API. It used to be
+ * returned bare, which is half of why the dashboard read nothing but zeroes.
+ */
+exports.getUserAnalytics = asyncHandler(async (req, res) => {
+  const userId = req.params.userId || req.user.id;
 
-    const userPosts = await Post.find({ user: userId })
-      .select('title visibility createdAt')
-      .sort({ createdAt: -1 })
-      .lean();
-    const postIds = userPosts.map((post) => post._id);
+  const userPosts = await Post.find({ user: userId })
+    .select('title visibility createdAt')
+    .sort({ createdAt: -1 })
+    .lean();
+  const postIds = userPosts.map((post) => post._id);
 
-    const [viewsByPost, readsByPost] = await Promise.all([
-      countByPost(View, postIds),
-      countByPost(Read, postIds),
-    ]);
+  const [viewsByPost, readsByPost] = await Promise.all([
+    countByPost(View, postIds),
+    countByPost(Read, postIds),
+  ]);
 
-    const postsAnalytics = userPosts.map((post) => {
-      const views = viewsByPost.get(String(post._id)) || 0;
-      const reads = readsByPost.get(String(post._id)) || 0;
-      return {
-        postId: post._id,
-        title: post.title,
-        visibility: post.visibility,
-        createdAt: post.createdAt,
-        views,
-        reads,
-        readRate: rate(reads, views),
-      };
-    });
+  const postsAnalytics = userPosts.map((post) => {
+    const views = viewsByPost.get(String(post._id)) || 0;
+    const reads = readsByPost.get(String(post._id)) || 0;
+    return {
+      postId: post._id,
+      title: post.title,
+      visibility: post.visibility,
+      createdAt: post.createdAt,
+      views,
+      reads,
+      readRate: rate(reads, views),
+    };
+  });
 
-    const totalViews = postsAnalytics.reduce((sum, post) => sum + post.views, 0);
-    const totalReads = postsAnalytics.reduce((sum, post) => sum + post.reads, 0);
+  const totalViews = postsAnalytics.reduce((sum, post) => sum + post.views, 0);
+  const totalReads = postsAnalytics.reduce((sum, post) => sum + post.reads, 0);
 
-    // Ranked by reads rather than views: the point of the platform is who finished,
-    // and a post with 900 openers and 20 finishers is not a top performer.
-    const topPosts = [...postsAnalytics].sort((a, b) => b.reads - a.reads).slice(0, 5);
+  // Ranked by reads rather than views: the point of the platform is who finished,
+  // and a post with 900 openers and 20 finishers is not a top performer.
+  const topPosts = [...postsAnalytics].sort((a, b) => b.reads - a.reads).slice(0, 5);
 
-    res.json({
+  res.json({
+    success: true,
+    data: {
       totalPosts: userPosts.length,
       totalViews,
       totalReads,
       readRate: rate(totalReads, totalViews),
       postsAnalytics,
       topPosts,
-    });
-  } catch (error) {
-    console.error('[getUserAnalytics]', error);
-    res.status(500).json({ error: 'An error occurred while fetching user analytics' });
-  }
-};
+    },
+  });
+});
 
 // What the signed-in reader has been reading. Powers the reader half of the dashboard,
 // which is otherwise empty for an account that only reads: every other panel there is
@@ -123,11 +133,15 @@ exports.getReadingActivity = async (req, res) => {
       })
       .filter(Boolean);
 
+    // Wrapped in `{ success, data }` to match the rest of the API.
     res.json({
-      unfinished: activity.filter((item) => !item.finished).slice(0, 12),
-      finished: activity.filter((item) => item.finished).slice(0, 12),
-      totalOpened: activity.length,
-      totalFinished: activity.filter((item) => item.finished).length,
+      success: true,
+      data: {
+        unfinished: activity.filter((item) => !item.finished).slice(0, 12),
+        finished: activity.filter((item) => item.finished).slice(0, 12),
+        totalOpened: activity.length,
+        totalFinished: activity.filter((item) => item.finished).length,
+      },
     });
   } catch (error) {
     console.error('[getReadingActivity]', error);
@@ -229,41 +243,57 @@ exports.getAdminAnalytics = async (req, res) => {
 };
 
 // Track a new page view
-exports.trackPageView = async (req, res) => {
-  try {
+/**
+ * Records one tracking event, at most once per visitor per window.
+ *
+ * These endpoints are open to anonymous readers by design, and previously wrote a row for
+ * every request — so holding down refresh inflated any post's numbers without limit, which
+ * made every figure on the analytics dashboard meaningless.
+ *
+ * @param {import('mongoose').Model} Model View or Read
+ * @param {string} label word used in the response message
+ */
+const track = (Model, label) =>
+  asyncHandler(async (req, res) => {
     const { postId } = req.params;
-    const userId = req.user ? req.user.id || req.user._id || req.user : null;
 
-    const newView = new View({
+    // Do not accumulate rows against posts that no longer exist, or that the caller could
+    // not have been reading in the first place.
+    const post = await Post.findById(postId).select('visibility user').lean();
+    if (!post) throw notFound('Post not found');
+
+    const isOwner = req.user && post.user?.toString() === req.user.id.toString();
+    if (post.visibility !== 'public' && !isOwner) {
+      throw notFound('Post not found');
+    }
+
+    const key = visitorKey(req);
+    const since = new Date(Date.now() - DEDUPE_WINDOW_MS);
+
+    const alreadyCounted = await Model.exists({
       post: postId,
-      user: userId,
-      timestamp: new Date(),
+      visitorKey: key,
+      createdAt: { $gte: since },
     });
 
-    await newView.save();
-    res.status(201).json({ message: 'View tracked successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while tracking view' });
-  }
-};
+    if (alreadyCounted) {
+      return res
+        .status(200)
+        .json({ success: true, message: `${label} already recorded`, counted: false });
+    }
+
+    await Model.create({
+      post: postId,
+      user: req.user?.id ?? null,
+      visitorKey: key,
+    });
+
+    return res
+      .status(201)
+      .json({ success: true, message: `${label} tracked successfully`, counted: true });
+  });
+
+exports.trackPageView = track(View, 'View');
 
 // Track a post read (user spent enough time on the page)
-exports.trackPostRead = async (req, res) => {
-  try {
-    const { postId } = req.params;
-    const userId = req.user ? req.user.id || req.user._id || req.user : null;
-
-    const newRead = new Read({
-      post: postId,
-      user: userId,
-      timestamp: new Date(),
-    });
-
-    await newRead.save();
-    res.status(201).json({ message: 'Read tracked successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while tracking read' });
-  }
-};
+exports.trackPostRead = track(Read, 'Read');

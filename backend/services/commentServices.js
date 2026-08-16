@@ -1,32 +1,28 @@
 const Comment = require('../models/comment.model');
 const Post = require('../models/post.model');
+const { badRequest, notFound } = require('../utils/AppError');
 
+/**
+ * Stores a comment and links it to its post.
+ *
+ * The caller is expected to have already confirmed the post is visible to this user; the
+ * existence check here guards against it being deleted in between.
+ */
 exports.createComment = async ({ userId, postId, message }) => {
   if (!userId || !postId || !message) {
-    throw new Error('something missing to create comment');
+    throw badRequest('userId, postId and message are required');
   }
 
-  try {
-    const comment = new Comment({
-      message,
-      user: userId,
-      post: postId,
-    });
-    await comment.save();
+  const comment = await Comment.create({ message, user: userId, post: postId });
 
-    const post = await Post.findById(postId);
+  // Targeted update rather than loading the post and calling save(): that rewrote every
+  // field of the document, so two concurrent comments could clobber unrelated edits.
+  const linked = await Post.updateOne({ _id: postId }, { $addToSet: { comments: comment._id } });
 
-    if (!post) {
-      await Comment.findByIdAndDelete(comment._id);
-      throw new Error('Post not found');
-    }
-
-    post.comments.push(comment._id);
-    await post.save();
-
-    return comment;
-  } catch (error) {
-    console.error('Error adding comment to post :', error.message);
-    throw new Error('Error adding comment to post');
+  if (linked.matchedCount === 0) {
+    await Comment.deleteOne({ _id: comment._id });
+    throw notFound('Post not found');
   }
+
+  return comment;
 };
