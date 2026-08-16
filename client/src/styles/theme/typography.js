@@ -38,6 +38,7 @@ export const typography = {
 
   /** Uppercase eyebrow. Tracked and crisp. */
   label: {
+    xs: ['0.6875rem', '1.2'], // 11px
     sm: ['0.75rem', '1.2'], // 12px
     md: ['0.8125rem', '1.2'], // 13px
   },
