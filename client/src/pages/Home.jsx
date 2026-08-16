@@ -674,6 +674,26 @@ export function Home() {
     setNewsletterEmail('');
   };
 
+  const featuredPost = posts[0];
+  const featuredCategory = featuredPost?.categories?.[0]?.name ?? featuredPost?.categories?.[0] ?? 'Featured';
+  const featuredAuthor = featuredPost?.user?.username ?? 'john_doe';
+
+  const featuredWriters = useMemo(() => {
+    const map = new Map();
+    posts.forEach((p) => {
+      const u = p.user;
+      if (u && (u._id || u.username) && !map.has(u.username)) {
+        map.set(u.username, {
+          id: u._id,
+          name: u.username,
+          topic: (p.categories?.[0]?.name ?? p.categories?.[0]) || 'Creator',
+          storiesCount: posts.filter((item) => item.user?.username === u.username).length || 7,
+        });
+      }
+    });
+    return Array.from(map.values()).slice(0, 4);
+  }, [posts]);
+
   const DEFAULT_TOPICS = [
     { name: 'Food', icon: Coffee },
     { name: 'Technology', icon: Cpu },
@@ -727,31 +747,31 @@ export function Home() {
             <ShowcaseCard>
               <CardHeader>
                 <AuthorInfo>
-                  <AuthorAvatar>CR</AuthorAvatar>
+                  <AuthorAvatar>{initial(featuredAuthor)}</AuthorAvatar>
                   <AuthorMeta>
                     <AuthorName>
-                      Camilla Rossi <CheckCircle2 />
+                      {featuredAuthor} <CheckCircle2 />
                     </AuthorName>
-                    <AuthorHandle>@camilla · Culinary Science</AuthorHandle>
+                    <AuthorHandle>@{featuredAuthor.toLowerCase()} · {featuredCategory}</AuthorHandle>
                   </AuthorMeta>
                 </AuthorInfo>
                 <Chip size="sm" selected>
-                  Food & Science
+                  {featuredCategory}
                 </Chip>
               </CardHeader>
 
-              <CardImageMock>
-                <ImageBadge>🥗 Culinary Chemistry</ImageBadge>
+              <CardImageMock style={{ backgroundImage: `url(${featuredPost?.imageURL || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80'})` }}>
+                <ImageBadge>⚡ Featured Story</ImageBadge>
               </CardImageMock>
 
               <CardTitle>
-                The Chemistry of Sourdough: Why Temperature and Hydration Rule the Crumb
+                {featuredPost?.title || 'The Chemistry of Sourdough: Why Temperature and Hydration Rule the Crumb'}
               </CardTitle>
 
               <ReadRateWidget>
                 <ReadRateHeader>
                   <span>Reader Completion Rate</span>
-                  <span className="percent">91.8%</span>
+                  <span className="percent">89.4%</span>
                 </ReadRateHeader>
                 <ProgressBar>
                   <div />
@@ -760,10 +780,10 @@ export function Home() {
 
               <CardFooterStats>
                 <StatItem $heart>
-                  <Heart /> 142 likes
+                  <Heart /> {featuredPost?.likes?.length || 18} likes
                 </StatItem>
                 <StatItem>
-                  <MessageCircle /> 28 replies
+                  <MessageCircle /> {featuredPost?.comments?.length || 6} replies
                 </StatItem>
                 <StatItem>
                   <Clock /> 4 min read
@@ -855,22 +875,21 @@ export function Home() {
                 <Users /> Featured Creators
               </SidebarTitle>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[
-                  { name: 'Camilla Rossi', topic: 'Food & Culinary', stories: '18 stories' },
-                  { name: 'Purvesh Joshi', topic: 'Cloud & Tech', stories: '24 stories' },
-                  { name: 'Dr. Evelyn Vance', topic: 'Astrophysics', stories: '12 stories' },
-                  { name: 'Maya Lin', topic: 'Travel & Culture', stories: '15 stories' },
-                ].map((writer) => (
+                {featuredWriters.map((writer) => (
                   <WriterRow key={writer.name}>
                     <WriterLeft>
                       <WriterAvatar>{initial(writer.name)}</WriterAvatar>
                       <WriterMeta>
                         <WriterName>{writer.name}</WriterName>
-                        <WriterFollowers>{writer.topic} · {writer.stories}</WriterFollowers>
+                        <WriterFollowers>{writer.topic} · {writer.storiesCount} stories</WriterFollowers>
                       </WriterMeta>
                     </WriterLeft>
-                    <Button size="sm" variant="tonal" onClick={() => navigate('/search')}>
-                      Follow
+                    <Button
+                      size="sm"
+                      variant="tonal"
+                      onClick={() => (writer.id ? navigate(`/user/${writer.id}`) : navigate('/search'))}
+                    >
+                      View
                     </Button>
                   </WriterRow>
                 ))}
