@@ -3,17 +3,23 @@ const router = express.Router();
 const AnalyticsController = require('../controllers/analytics.controllers');
 const AuthUser = require('../middlewares/authenticateUser');
 const authorizeSelfOrAdmin = require('../middlewares/authorizeSelfOrAdmin');
+const { validateObjectId } = require('../middlewares/validate');
 
 // Get analytics for a specific blog post
-router.get('/post/:id', AnalyticsController.getAnalytics);
+router.get('/post/:id', validateObjectId('id'), AnalyticsController.getAnalytics);
 
 // Get analytics for a specific user — readable only by that user or an administrator
 router.get(
   '/user/:userId',
   AuthUser.authenticateUser,
+  validateObjectId('userId'),
   authorizeSelfOrAdmin('userId'),
   AnalyticsController.getUserAnalytics,
 );
+
+// The caller's own figures. Scoped to the token, so the dashboard does not have to know or
+// send its own user id to ask for them.
+router.get('/me', AuthUser.authenticateUser, AnalyticsController.getUserAnalytics);
 
 // What the caller has been reading. Scoped to the token, so it takes no user parameter
 // and cannot be pointed at somebody else's reading history.
@@ -32,7 +38,17 @@ router.get(
 // rejecting the request when one is not. Without it req.user was never set on these routes,
 // so every view and read was stored with a null user and nothing could be attributed to
 // anybody: "continue reading" had no rows to find.
-router.post('/view/:postId', AuthUser.attachUserIfPresent, AnalyticsController.trackPageView);
-router.post('/read/:postId', AuthUser.attachUserIfPresent, AnalyticsController.trackPostRead);
+router.post(
+  '/view/:postId',
+  validateObjectId('postId'),
+  AuthUser.attachUserIfPresent,
+  AnalyticsController.trackPageView,
+);
+router.post(
+  '/read/:postId',
+  validateObjectId('postId'),
+  AuthUser.attachUserIfPresent,
+  AnalyticsController.trackPostRead,
+);
 
 module.exports = router;
