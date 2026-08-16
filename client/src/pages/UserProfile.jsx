@@ -120,7 +120,13 @@ export function UserProfile() {
   const queryClient = useQueryClient();
   const [isFollowing, setIsFollowing] = useState(false);
 
-  const isOwnProfile = currentUser?.user_id === userId;
+  const isOwnProfile = currentUser?._id === userId || currentUser?.user_id === userId;
+
+  const { data: userData } = useQuery({
+    queryKey: ['user', userId],
+    queryFn: () => userService.getUser(userId),
+    enabled: Boolean(userId),
+  });
 
   const { data: postsResponse, isLoading: postsLoading } = useQuery({
     queryKey: ['posts'],
@@ -161,8 +167,9 @@ export function UserProfile() {
     [postsResponse, userId]
   );
 
-  const author = userPosts[0]?.user;
-  const authorName = author?.username || 'This writer';
+  const author = userData?.data || userPosts[0]?.user;
+  const authorName = author?.username || 'Writer';
+  const authorBio = author?.bio || 'Storyteller on BlogHub.';
 
   const totals = useMemo(
     () => ({

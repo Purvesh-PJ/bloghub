@@ -23,7 +23,6 @@ import { topicIcon } from '../components/marketing/Topics';
 import { Input, Chip, Loading, EmptyState, Card, Button } from '../components/ui';
 import { text, display, clamp, media, interactive } from '../styles/theme/mixins';
 import { excerpt, readingTime } from '../utils/text';
-import { CURATED_POSTS } from '../data/curatedPosts';
 
 /* ── Styled Components ───────────────────────────────────────────────────── */
 
@@ -248,35 +247,17 @@ export function Search() {
   });
 
   const categories = categoriesData?.data || [];
-  
-  const allStories = useMemo(() => {
-    const dbPosts = postsData?.data || [];
-    const dbIds = new Set(dbPosts.map((p) => String(p._id)));
-    const additional = CURATED_POSTS.filter((p) => !dbIds.has(String(p._id)));
-    return [...dbPosts, ...additional];
-  }, [postsData]);
-
-  const results = useMemo(() => {
-    const dbResults = searchData?.data || [];
-    if (!query) return dbResults;
-    const dbIds = new Set(dbResults.map((r) => String(r._id)));
-    const qLower = query.toLowerCase();
-    const curatedMatches = CURATED_POSTS.filter(
-      (p) =>
-        !dbIds.has(String(p._id)) &&
-        (p.title.toLowerCase().includes(qLower) || p.content.toLowerCase().includes(qLower))
-    );
-    return [...dbResults, ...curatedMatches];
-  }, [searchData, query]);
+  const results = searchData?.data || [];
 
   const browsePosts = useMemo(() => {
-    if (!topic) return allStories;
-    return allStories.filter((post) =>
+    const posts = postsData?.data || [];
+    if (!topic) return posts;
+    return posts.filter((post) =>
       (post.categories || []).some(
         (category) => (category?.name ?? category).toLowerCase() === topic.toLowerCase()
       )
     );
-  }, [allStories, topic]);
+  }, [postsData, topic]);
 
   const setTopic = (name) => {
     const next = new URLSearchParams(searchParams);

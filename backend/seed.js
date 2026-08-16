@@ -1,7 +1,5 @@
 const path = require('path');
 const bcrypt = require('bcryptjs');
-// Both workspaces read the single .env at the repository root; a bare dotenv.config()
-// resolves against backend/ and finds nothing.
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const User = require('./models/user.model');
@@ -16,7 +14,7 @@ const Analytics = require('./models/analytics.model');
 
 const { connectDB } = require('./config/db');
 
-// Categories matching the homepage slideshow
+// All 10 Multi-Categories
 const categories = [
   'Technology',
   'Design',
@@ -35,312 +33,325 @@ const users = [
     username: 'john_doe',
     email: 'john@example.com',
     password: 'password123',
-    bio: 'Full-stack developer passionate about React and Node.js. Building the future one line at a time.',
+    bio: 'Full-stack engineer & culinary explorer. Writing about React, Edge systems, Sourdough science, and clean architecture.',
   },
   {
     username: 'jane_smith',
     email: 'jane@example.com',
     password: 'password123',
-    bio: 'UX Designer crafting beautiful digital experiences. Design is not just what it looks like, it is how it works.',
+    bio: 'Lead UX Designer crafting human-centered systems. Exploring micro-interactions, typography, and design tokens.',
   },
   {
     username: 'mike_wilson',
     email: 'mike@example.com',
     password: 'password123',
-    bio: 'DevOps engineer and cloud architect. Automating everything that can be automated.',
+    bio: 'DevOps lead & cloud architect. Automating distributed Kubernetes clusters and building resilient infrastructure.',
   },
   {
     username: 'sarah_jones',
     email: 'sarah@example.com',
     password: 'password123',
-    bio: 'Frontend developer specializing in Vue.js and modern CSS. Pixel perfectionist.',
+    bio: 'Frontend architect specializing in Vue 3, TypeScript, and modern fluid CSS layout systems.',
   },
   {
     username: 'alex_brown',
     email: 'alex@example.com',
     password: 'password123',
-    bio: 'Mobile app developer and startup founder. Turning ideas into reality.',
+    bio: 'Startup founder & mobile engineer. Sharing lessons on early-stage traction, product strategy, and React Native.',
   },
   {
     username: 'emily_davis',
     email: 'emily@example.com',
     password: 'password123',
-    bio: 'Data scientist exploring the world through numbers. ML enthusiast and Python lover.',
+    bio: 'Data scientist & deep learning researcher. Demystifying neural networks, Python workflows, and cosmic datasets.',
   },
   {
     username: 'chris_taylor',
     email: 'chris@example.com',
     password: 'password123',
-    bio: 'Backend developer with expertise in Python and Go. Performance optimization geek.',
+    bio: 'Backend systems engineer with expertise in Go, high-throughput queues, and distributed databases.',
   },
   {
     username: 'lisa_anderson',
     email: 'lisa@example.com',
     password: 'password123',
-    bio: 'Product manager and agile coach. Bridging the gap between tech and business.',
+    bio: 'Product strategist and agile coach. Exploring team dynamics, asynchronous workflows, and sustainable growth.',
   },
   {
     username: 'david_martin',
     email: 'david@example.com',
     password: 'password123',
-    bio: 'Security researcher and ethical hacker. Keeping the internet safe one bug at a time.',
+    bio: 'Security researcher & white-hat ethical hacker. Keeping web applications safe against modern exploit vectors.',
   },
   {
     username: 'emma_white',
     email: 'emma@example.com',
     password: 'password123',
-    bio: 'Technical writer and content creator. Making complex topics simple and engaging.',
+    bio: 'Technical author and storytelling advocate. Making complex computer science topics accessible and engaging.',
   },
   {
     username: 'james_lee',
     email: 'james@example.com',
     password: 'password123',
-    bio: 'AI researcher working on next-gen language models. The future is intelligent.',
+    bio: 'AI researcher working on transformer architectures, attention mechanisms, and multilingual tokenizers.',
   },
   {
     username: 'olivia_chen',
     email: 'olivia@example.com',
     password: 'password123',
-    bio: 'Blockchain developer and Web3 enthusiast. Decentralizing the world.',
+    bio: 'Web3 developer, digital nomad, and photographer. Writing about remote life, smart contracts, and travel.',
   },
   {
     username: 'ryan_garcia',
     email: 'ryan@example.com',
     password: 'password123',
-    bio: 'Game developer creating immersive experiences. Play is the highest form of research.',
+    bio: 'Graphics programmer and game designer. Crafting shaders, procedural generation, and immersive interactive worlds.',
   },
   {
     username: 'sophia_kim',
     email: 'sophia@example.com',
     password: 'password123',
-    bio: 'Cloud solutions architect at a Fortune 500. Scaling systems to millions of users.',
+    bio: 'Cloud solutions architect. Designing multi-region serverless architectures for global consumer applications.',
   },
   {
     username: 'admin',
     email: 'admin@bloghub.com',
     password: 'admin123',
-    bio: 'BlogHub Administrator',
+    bio: 'BlogHub Administrator and Platform Curator.',
     roles: ['user', 'admin'],
   },
 ];
 
-const samplePosts = [
-  // Technology
+// Rich Pool of Multi-Category Stories
+const storiesPool = [
+  // Technology & Cloud
   {
-    title: 'Getting Started with React 18: A Complete Guide',
-    slug: 'getting-started-react-18',
-    content: `# Introduction to React 18\n\nReact 18 brings exciting new features that improve performance and developer experience. In this comprehensive guide, we'll explore the key changes.\n\n## Concurrent Rendering\n\nOne of the most significant additions is concurrent rendering, which allows React to prepare multiple versions of the UI at the same time.\n\n## Automatic Batching\n\nReact 18 automatically batches state updates, even in promises and timeouts. This reduces unnecessary re-renders.\n\n> The future of React is concurrent, and React 18 is the first step in that direction.\n\nStart experimenting with these features today!`,
+    title: 'Getting Started with React 18: A Complete Guide to Concurrent Rendering',
+    slug: 'getting-started-react-18-guide',
+    content: `# Introduction to React 18\n\nReact 18 brings exciting new capabilities that improve both runtime performance and developer experience. In this comprehensive guide, we explore the key architectural changes.\n\n## Concurrent Rendering\n\nOne of the most significant additions is concurrent rendering, which allows React to prepare multiple versions of the UI in memory before committing changes to the DOM.\n\n## Automatic Batching\n\nReact 18 automatically batches state updates, even inside asynchronous promises, timeouts, and native event handlers. This drastically reduces unnecessary component re-renders.\n\n> The future of UI engineering is concurrent, and React 18 sets a high bar for responsive interfaces.\n\nStart experimenting with these features in your apps today!`,
     imageURL: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800',
-    visibility: 'public',
     category: 'Technology',
   },
   {
-    title: 'Docker for Developers: A Practical Guide',
+    title: 'Architecting Next-Gen Edge Systems: From Monolith to Distributed Workers',
+    slug: 'architecting-next-gen-edge-systems',
+    content: `# The Shift to the Edge\n\nModern web applications demand single-digit millisecond latency worldwide. Moving computation from centralized data centers to edge locations is no longer optional.\n\n## Edge Compute Mechanics\n\nBy executing lightweight V8 isolates close to visitors, edge workers reduce round-trip times by up to 80% compared to traditional origin servers.\n\n## Stateful vs Stateless at the Edge\n\nCombining serverless edge logic with globally distributed key-value stores unlocks real-time personalization without database bottlenecks.`,
+    imageURL: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800',
+    category: 'Technology',
+  },
+  {
+    title: 'Docker for Developers: Practical Multi-Stage Containerization',
     slug: 'docker-developers-practical-guide',
-    content: `# Why Docker?\n\nDocker solves the "it works on my machine" problem by packaging applications with their dependencies into containers.\n\n## Key Concepts\n\n- **Images:** Read-only templates used to create containers\n- **Containers:** Running instances of images\n- **Dockerfile:** Instructions for building images\n\n## Best Practices\n\nUse multi-stage builds, minimize layers, and never store secrets in images.\n\nContainerize your apps and deploy with confidence!`,
+    content: `# Why Containers Matter\n\nDocker eliminates "it works on my machine" inconsistencies by bundling applications with their runtime dependencies.\n\n## Multi-Stage Builds\n\nUsing multi-stage Dockerfiles keeps production container images minimal, secure, and fast to deploy across Kubernetes clusters.`,
     imageURL: 'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=800',
-    visibility: 'public',
     category: 'Technology',
   },
   {
-    title: 'The Future of Web Development in 2024',
-    slug: 'future-web-development-2024',
-    content: `# What's Next for the Web?\n\nThe web platform continues to evolve rapidly. Here are the trends shaping web development.\n\n## AI-Powered Development\n\nAI tools are becoming integral to the development workflow, from code completion to automated testing.\n\n## Edge Computing\n\nRunning code closer to users reduces latency and improves performance.\n\n## Web Components\n\nFramework-agnostic components are gaining traction, enabling better interoperability.\n\nStay curious and keep learning!`,
+    title: 'The Future of Web Development: AI, Edge, and Web Components',
+    slug: 'future-web-development-trends',
+    content: `# Evolving the Web Platform\n\nThe web continues to evolve rapidly. From AI-assisted coding tools to standard Web Components, developers now have unprecedented leverage to build fluid, cross-framework digital experiences.`,
     imageURL: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800',
-    visibility: 'public',
     category: 'Technology',
   },
 
-  // Design
+  // Food & Culinary Science
   {
-    title: 'Modern CSS Techniques Every Developer Should Know',
-    slug: 'modern-css-techniques',
-    content: `# CSS Has Evolved\n\nGone are the days of float-based layouts. Modern CSS is powerful and enjoyable to write.\n\n## CSS Grid\n\nCSS Grid is the most powerful layout system. It's two-dimensional, handling both columns and rows.\n\n## CSS Custom Properties\n\nVariables in CSS! Define once, use everywhere. They cascade and can be updated with JavaScript.\n\n## Container Queries\n\nStyle elements based on their container's size, not just the viewport.\n\nEmbrace these modern techniques!`,
-    imageURL: 'https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=800',
-    visibility: 'public',
-    category: 'Design',
+    title: 'The Chemistry of Sourdough: Why Temperature and Hydration Rule the Crumb',
+    slug: 'chemistry-of-sourdough-crumb',
+    content: `# The Science of Wild Fermentation\n\nSourdough baking is equal parts culinary art and microbiological precision. When wild yeasts and lactic acid bacteria ferment flour and water, they create complex organic acids that give the bread its signature tang and open, airy crumb structure.\n\n## The Role of Hydration\n\nA 75% hydration dough allows gluten to stretch without tearing during bulk fermentation. Combined with gentle stretch-and-folds every 30 minutes, you develop a strong gluten matrix capable of trapping CO2 during the oven spring.\n\n## Temperature as an Ingredient\n\nFermenting at 26°C (78°F) favors lactic acid production, delivering a smooth yogurt-like flavor, whereas lower temperatures (18°C) encourage acetic acid, creating a sharper, vinegary punch.`,
+    imageURL: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
+    category: 'Food',
   },
   {
-    title: 'UI Design Principles for Better User Experience',
-    slug: 'ui-design-principles-ux',
-    content: `# Designing for Humans\n\nGreat UI design is invisible. Users should focus on their tasks, not the interface.\n\n## Consistency is Key\n\nUse consistent patterns, colors, and typography throughout your application.\n\n## Visual Hierarchy\n\nGuide users' attention with size, color, and spacing. The most important elements should stand out.\n\n## Feedback Matters\n\nEvery action should have a visible response. Users need to know their input was received.\n\nDesign with empathy!`,
-    imageURL: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800',
-    visibility: 'public',
-    category: 'Design',
+    title: 'Artisanal Pasta from Scratch: The Geometry of Flour, Eggs, and Bronze Dies',
+    slug: 'artisanal-pasta-geometry-flour-eggs',
+    content: `# The Architecture of Fresh Pasta\n\nMaking pasta by hand is a sensory masterclass in gluten formation. The ratio of egg yolks to whole eggs dictates both elasticity and golden richness.\n\n## Semolina vs Type 00 Flour\n\n- **Semolina (Durum Wheat):** High protein and rough texture, ideal for extruded shapes like rigatoni that cling to heavy sauces.\n- **Type 00 Flour:** Finely ground soft wheat, yielding delicate, silky sheets perfect for filled tortellini and tagliatelle.\n\nRespect the dough, knead with intention, and let it rest!`,
+    imageURL: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800',
+    category: 'Food',
   },
   {
-    title: 'Color Theory for Digital Designers',
-    slug: 'color-theory-digital-designers',
-    content: `# The Power of Color\n\nColor influences emotion, guides attention, and creates brand recognition.\n\n## The Color Wheel\n\nUnderstand complementary, analogous, and triadic color schemes to create harmonious designs.\n\n## Accessibility\n\nEnsure sufficient contrast ratios. Not everyone sees color the same way.\n\n## Psychology of Color\n\n- Blue: Trust and stability\n- Green: Growth and nature\n- Red: Energy and urgency\n\nChoose colors intentionally!`,
-    imageURL: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800',
-    visibility: 'public',
-    category: 'Design',
-  },
-
-  // Business
-  {
-    title: 'Building a Successful Startup: Lessons Learned',
-    slug: 'building-successful-startup',
-    content: `# The Startup Journey\n\nStarting a company is a rollercoaster. Here's what I learned building mine.\n\n## Start with the Problem\n\nDon't fall in love with your solution. Fall in love with the problem you're solving.\n\n## Build in Public\n\nShare your journey. The community support and feedback are invaluable.\n\n## Hire Slow, Fire Fast\n\nCulture fit matters as much as skills. One toxic person can destroy a team.\n\nEmbrace the chaos!`,
-    imageURL: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800',
-    visibility: 'public',
-    category: 'Business',
-  },
-  {
-    title: 'Remote Team Management Best Practices',
-    slug: 'remote-team-management',
-    content: `# Leading from Anywhere\n\nManaging remote teams requires intentional communication and trust.\n\n## Over-communicate\n\nIn remote settings, there's no such thing as too much communication. Be proactive.\n\n## Async by Default\n\nNot everything needs a meeting. Use async communication for most things.\n\n## Build Culture Intentionally\n\nCulture doesn't happen by accident remotely. Create rituals and traditions.\n\nTrust your team!`,
-    imageURL: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800',
-    visibility: 'public',
-    category: 'Business',
-  },
-
-  // Lifestyle
-  {
-    title: 'Remote Work: Tips for Staying Productive',
-    slug: 'remote-work-productivity-tips',
-    content: `# Thriving in Remote Work\n\nRemote work offers flexibility but comes with unique challenges.\n\n## Create a Dedicated Workspace\n\nHaving a specific area for work helps your brain switch into "work mode".\n\n## Establish a Routine\n\nStart and end work at consistent times. Include breaks and exercise.\n\n## Set Boundaries\n\nJust because you can work anytime doesn't mean you should.\n\nRemote work is a skill that improves with practice!`,
-    imageURL: 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800',
-    visibility: 'public',
-    category: 'Lifestyle',
-  },
-  {
-    title: 'Healthy Habits for Software Developers',
-    slug: 'healthy-habits-developers',
-    content: `# Taking Care of Yourself\n\nLong hours at the computer can take a toll. Here's how to stay healthy.\n\n## Ergonomics Matter\n\nInvest in a good chair, position your monitor at eye level.\n\n## Take Regular Breaks\n\nFollow the 20-20-20 rule: every 20 minutes, look at something 20 feet away for 20 seconds.\n\n## Exercise Regularly\n\nEven a short walk can boost creativity and reduce stress.\n\nYour health is your most important asset!`,
-    imageURL: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800',
-    visibility: 'public',
-    category: 'Lifestyle',
-  },
-  {
-    title: 'Work-Life Balance in the Tech Industry',
-    slug: 'work-life-balance-tech',
-    content: `# Finding Balance\n\nThe tech industry glorifies hustle culture. But burnout is real.\n\n## Set Clear Boundaries\n\nDefine when work ends. Stick to it. Your Slack messages can wait.\n\n## Pursue Hobbies\n\nHave interests outside of tech. It makes you a better developer and person.\n\n## Learn to Say No\n\nYou can't do everything. Focus on what matters most.\n\nBalance is not a destination, it's a practice.`,
-    imageURL: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800',
-    visibility: 'public',
-    category: 'Lifestyle',
-  },
-
-  // Science
-  {
-    title: 'Introduction to Machine Learning for Beginners',
-    slug: 'intro-machine-learning-beginners',
-    content: `# What is Machine Learning?\n\nML enables systems to learn from experience without being explicitly programmed.\n\n## Types of Machine Learning\n\n- **Supervised Learning:** Learns from labeled data\n- **Unsupervised Learning:** Finds patterns in unlabeled data\n- **Reinforcement Learning:** Learns through trial and error\n\n## Getting Started\n\nStart with Python and scikit-learn. Begin with simple projects.\n\nThe journey of a thousand models begins with a single dataset!`,
-    imageURL: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800',
-    visibility: 'public',
-    category: 'Science',
-  },
-  {
-    title: 'Understanding Neural Networks',
-    slug: 'understanding-neural-networks',
-    content: `# How Neural Networks Work\n\nNeural networks are inspired by the human brain, but they're really just math.\n\n## Layers and Neurons\n\nInput layer receives data, hidden layers process it, output layer gives results.\n\n## Training Process\n\nNetworks learn by adjusting weights through backpropagation.\n\n## Applications\n\nImage recognition, natural language processing, game playing, and more.\n\nThe possibilities are endless!`,
-    imageURL: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800',
-    visibility: 'public',
-    category: 'Science',
-  },
-
-  // Travel
-  {
-    title: 'Digital Nomad Guide: Working from Anywhere',
-    slug: 'digital-nomad-guide',
-    content: `# The Nomad Life\n\nWork from beaches, mountains, or cafes around the world.\n\n## Essential Gear\n\nReliable laptop, noise-canceling headphones, portable charger, and good backpack.\n\n## Best Destinations\n\nBali, Lisbon, Chiang Mai, and Mexico City offer great nomad communities.\n\n## Staying Productive\n\nFind coworking spaces, maintain routines across time zones.\n\nThe world is your office!`,
-    imageURL: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
-    visibility: 'public',
-    category: 'Travel',
-  },
-  {
-    title: 'Best Cities for Tech Workers',
-    slug: 'best-cities-tech-workers',
-    content: `# Where to Build Your Career\n\nLocation matters for networking, opportunities, and quality of life.\n\n## San Francisco\n\nStill the heart of tech, but expensive. Great for startups and VC access.\n\n## Austin\n\nGrowing tech scene, no state income tax, vibrant culture.\n\n## Remote-First\n\nMore companies are fully remote. Location becomes a lifestyle choice.\n\nChoose what fits your life!`,
-    imageURL: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
-    visibility: 'public',
-    category: 'Travel',
-  },
-
-  // Programming
-  {
-    title: 'The Art of Clean Code: Best Practices',
-    slug: 'art-of-clean-code',
-    content: `# Why Clean Code Matters\n\nWriting clean code is about readability, maintainability, and scalability.\n\n## Meaningful Names\n\nChoose names that reveal intent. A variable name should tell you why it exists.\n\n## Functions Should Do One Thing\n\nEach function should have a single responsibility.\n\n## Comments Are Not Always Good\n\nThe best code is self-documenting. If you need a comment, consider rewriting.\n\nCode is read more often than it's written!`,
-    imageURL: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800',
-    visibility: 'public',
-    category: 'Programming',
-  },
-  {
-    title: 'Building Scalable APIs with Node.js',
-    slug: 'scalable-apis-nodejs',
-    content: `# Designing APIs That Scale\n\nBuilding APIs that handle millions of requests requires careful planning.\n\n## Project Structure\n\nOrganize into layers: routes, controllers, services, and models.\n\n## Error Handling\n\nImplement centralized error handling with custom error classes.\n\n## Rate Limiting\n\nProtect your API from abuse with rate limiting.\n\nYour API will be ready for production!`,
-    imageURL: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800',
-    visibility: 'public',
-    category: 'Programming',
-  },
-  {
-    title: 'TypeScript Best Practices in 2024',
-    slug: 'typescript-best-practices-2024',
-    content: `# Why TypeScript?\n\nTypeScript adds type safety to JavaScript, catching errors before runtime.\n\n## Strict Mode\n\nAlways enable strict mode. It catches more errors and makes your code safer.\n\n## Use Type Inference\n\nDon't over-annotate. Let TypeScript infer types when it can.\n\n## Utility Types\n\nMaster Partial, Required, Pick, and Omit for flexible type manipulation.\n\nTypes are documentation that never goes stale!`,
-    imageURL: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800',
-    visibility: 'public',
-    category: 'Programming',
-  },
-  {
-    title: 'Database Design Patterns for Modern Apps',
-    slug: 'database-design-patterns',
-    content: `# Choosing the Right Database\n\nThe database you choose can make or break your application.\n\n## SQL vs NoSQL\n\nSQL excels at complex queries. NoSQL offers flexibility and horizontal scaling.\n\n## Indexing Strategies\n\nProper indexing improves query performance by orders of magnitude.\n\n## Caching\n\nUse Redis or Memcached to reduce database load.\n\nDesign your database with your queries in mind!`,
-    imageURL: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800',
-    visibility: 'public',
-    category: 'Programming',
-  },
-
-  // Health
-  {
-    title: 'Mental Health in Tech: Breaking the Stigma',
-    slug: 'mental-health-tech',
-    content: `# It's Okay to Not Be Okay\n\nThe tech industry has high rates of burnout and mental health issues.\n\n## Recognize the Signs\n\nExhaustion, cynicism, and reduced productivity are warning signs.\n\n## Seek Help\n\nTherapy, coaching, and support groups are valuable resources.\n\n## Create Safe Spaces\n\nTeams should normalize mental health conversations.\n\nYour mental health matters!`,
-    imageURL: 'https://images.unsplash.com/photo-1493836512294-502baa1986e2?w=800',
-    visibility: 'public',
-    category: 'Health',
-  },
-
-  // Food
-  {
-    title: 'Quick Healthy Meals for Busy Developers',
-    slug: 'quick-healthy-meals-developers',
-    content: `# Eating Well While Coding\n\nYou don't need hours to eat healthy. Here are quick options.\n\n## Meal Prep Sundays\n\nSpend 2 hours prepping meals for the week. Your future self will thank you.\n\n## Healthy Snacks\n\nNuts, fruits, and yogurt beat chips and candy for sustained energy.\n\n## Stay Hydrated\n\nKeep water at your desk. Dehydration affects focus and mood.\n\nFuel your brain properly!`,
+    title: 'Quick Healthy Meals for Busy Creators: High-Energy Nutrition',
+    slug: 'quick-healthy-meals-busy-creators',
+    content: `# Fueling Your Focus\n\nLong hours creating or coding require sustained blood sugar without post-lunch crashes. Here are simple 15-minute meal frameworks using whole grains, lean proteins, and fermented foods.`,
     imageURL: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800',
-    visibility: 'public',
+    category: 'Food',
+  },
+  {
+    title: 'The Alchemy of Specialty Coffee: Extraction Ratios and Grind Distribution',
+    slug: 'alchemy-of-specialty-coffee-extraction',
+    content: `# Precision in the Cup\n\nFrom burr geometry to total dissolved solids (TDS), brewing exceptional pour-over coffee is an exercise in thermodynamic extraction. Discover how water mineral composition shapes acidity and body.`,
+    imageURL: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800',
     category: 'Food',
   },
 
-  // Photography
+  // Design & UI/UX
   {
-    title: 'Smartphone Photography Tips for Beginners',
-    slug: 'smartphone-photography-tips',
-    content: `# Great Photos with Your Phone\n\nYou don't need expensive gear to take stunning photos.\n\n## Lighting is Everything\n\nNatural light is your best friend. Shoot during golden hour for magic.\n\n## Composition Rules\n\nRule of thirds, leading lines, and framing create visual interest.\n\n## Edit Thoughtfully\n\nLess is more. Subtle adjustments beat heavy filters.\n\nThe best camera is the one you have with you!`,
+    title: 'Crafting Interfaces That Feel Alive: The Philosophy of Micro-Interactions',
+    slug: 'crafting-fluid-micro-interactions',
+    content: `# Fluid Physics in Digital Design\n\nGreat design is rarely about flashy visual fireworks; it is about the quiet delight of responsive physics. When an interface reacts with natural easing curves, spring physics, and purposeful tactile feedback, software feels less like cold pixels and more like a crafted physical instrument.\n\n## Rules for Delightful Interactions\n\n- Respect reduced motion preferences unconditionally.\n- Keep transition durations between 150ms and 240ms.\n- Use natural cubic-bezier curves rather than linear mechanical timing.`,
+    imageURL: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800',
+    category: 'Design',
+  },
+  {
+    title: 'Modern CSS Techniques: Container Queries, Subgrid, and Cascade Layers',
+    slug: 'modern-css-techniques-subgrid-layers',
+    content: `# CSS Has Evolved\n\nModern CSS provides native primitives that replace bulky JavaScript workarounds. Container queries let components adapt to their immediate parent card rather than the global viewport width.`,
+    imageURL: 'https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=800',
+    category: 'Design',
+  },
+  {
+    title: 'Color Theory for Digital Designers: Contrast, Emotion, and Accessibility',
+    slug: 'color-theory-digital-designers-contrast',
+    content: `# The Psychology of Color\n\nColors evoke trust, focus, and urgency. Learn how to build accessible palette tokens with automated WCAG AAA contrast compliance across both light and dark themes.`,
+    imageURL: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800',
+    category: 'Design',
+  },
+  {
+    title: 'UI Design Principles: Visual Hierarchy, Spacing Scales, and Typography',
+    slug: 'ui-design-principles-hierarchy-spacing',
+    content: `# Designing for Clarity\n\nGreat typography and predictable 4px/8px spacing systems establish an intuitive reading cadence that keeps visitors engaged from the headline down to the closing thoughts.`,
+    imageURL: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800',
+    category: 'Design',
+  },
+
+  // Science & Cosmos
+  {
+    title: 'Beyond the Event Horizon: What James Webb Reveals About Cosmic Dawn',
+    slug: 'beyond-event-horizon-james-webb',
+    content: `# Unveiling the Primordial Universe\n\nDeep-field infrared imagery from the James Webb Space Telescope (JWST) has challenged foundational assumptions in cosmology. Galaxies formed merely 350 million years after the Big Bang appear far more massive, structured, and luminous than classical stellar models predicted.\n\n## The Mystery of Early Black Holes\n\nSpectroscopic analysis of redshift galaxies reveals early metallicity and rapid black hole seeding, suggesting stellar nurseries ignited with unprecedented velocity in the cosmic dawn.`,
+    imageURL: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800',
+    category: 'Science',
+  },
+  {
+    title: 'Understanding Neural Networks and Deep Learning Architecture',
+    slug: 'understanding-neural-networks-architecture',
+    content: `# From Perceptrons to Transformers\n\nNeural networks learn representations through backpropagation and gradient descent. We break down weight initialization, activation functions, and multi-head self-attention mechanisms.`,
+    imageURL: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800',
+    category: 'Science',
+  },
+  {
+    title: 'The Quantum Computing Revolution: Qubits, Superposition, and Cryptography',
+    slug: 'quantum-computing-revolution-qubits',
+    content: `# The Next Frontier of Computation\n\nBy leveraging quantum superposition and entanglement, quantum computers solve polynomial factorization and molecular simulation problems that would take classical supercomputers millennia.`,
+    imageURL: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800',
+    category: 'Science',
+  },
+
+  // Travel & Culture
+  {
+    title: 'Lost in the Alleys of Kyoto: A Journey Through Ancient Tea Culture',
+    slug: 'lost-in-kyoto-ancient-tea-culture',
+    content: `# The Art of Omotenashi\n\nIn the quiet residential pockets behind Gion, century-old machiya townhouses preserve centuries of ceremonial Uji matcha preparation. Here, the ritual of tea is an exercise in mindfulness, seasonal awareness, and hospitality.\n\nWalking past cedar lanterns in the mist of early morning, you realize that traditional craftsmanship is not just surviving in modern Japan—it is quietly thriving.`,
+    imageURL: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800',
+    category: 'Travel',
+  },
+  {
+    title: 'Digital Nomad Guide: Working from Anywhere with Focus and Routine',
+    slug: 'digital-nomad-guide-work-anywhere',
+    content: `# The World as Your Studio\n\nBalancing travel with consistent client delivery requires intentional daily routines, ergonomic gear, reliable coworking hubs, and asynchronous team communication.`,
+    imageURL: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
+    category: 'Travel',
+  },
+  {
+    title: 'Top Emerging Global Tech & Creative Hubs for 2025',
+    slug: 'top-emerging-global-tech-hubs',
+    content: `# Beyond Silicon Valley\n\nFrom Lisbon to Tokyo and Bengaluru to Austin, vibrant creative ecosystems are drawing global talent with high quality of life and booming startup networks.`,
+    imageURL: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
+    category: 'Travel',
+  },
+
+  // Health & Mind
+  {
+    title: 'The Science of Deep Sleep: Circadian Rhythms and Cognitive Recovery',
+    slug: 'science-of-deep-sleep-recovery',
+    content: `# Biological Foundations of Rest\n\nSlow-wave sleep and REM cycles are the biological foundation of memory consolidation, neural waste clearance via the glymphatic system, and emotional resilience.\n\n## Optimizing Circadian Rhythms\n\n1. **Morning Sunlight:** Get 10–15 minutes of direct morning sunlight to anchor cortisol timing.\n2. **Temperature Drop:** The core body temperature must drop ~1°C to initiate deep sleep.\n3. **Caffeine Half-Life:** Cut caffeine intake at least 9 hours before bedtime.`,
+    imageURL: 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?w=800',
+    category: 'Health',
+  },
+  {
+    title: 'Mental Health in High-Pace Teams: Breaking Burnout Cycles',
+    slug: 'mental-health-high-pace-teams',
+    content: `# Sustainable High Performance\n\nTrue high performance requires structured recovery. Normalize asynchronous communication, enforce real offline weekends, and celebrate sustainable workflows over overtime firefighting.`,
+    imageURL: 'https://images.unsplash.com/photo-1493836512294-502baa1986e2?w=800',
+    category: 'Health',
+  },
+  {
+    title: 'Ergonomics for Engineers: Desk Setup, Posture, and Eye Health',
+    slug: 'ergonomics-for-engineers-desk-setup',
+    content: `# Protecting Your Physical Asset\n\nPrevent repetitive strain injuries (RSI) with monitor arm alignment, split mechanical keyboards, dynamic standing intervals, and 20-20-20 visual rest rules.`,
+    imageURL: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800',
+    category: 'Health',
+  },
+
+  // Programming & Architecture
+  {
+    title: 'The Art of Clean Code: Maintainable Patterns in TypeScript',
+    slug: 'art-of-clean-code-typescript',
+    content: `# Readability is King\n\nCode is read 10x more often than it is written. We explore self-documenting functions, immutability patterns, domain-driven design, and effective unit testing strategies.`,
+    imageURL: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800',
+    category: 'Programming',
+  },
+  {
+    title: 'Building High-Throughput REST & GraphQL APIs with Node.js',
+    slug: 'building-high-throughput-apis-nodejs',
+    content: `# Engineering Resilient Backends\n\nFrom connection pooling and Redis cache layers to centralized rate limiting and structured Pino logging, learn how to prepare Node.js APIs for millions of monthly requests.`,
+    imageURL: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800',
+    category: 'Programming',
+  },
+  {
+    title: 'Database Schema Design: SQL Normalization vs NoSQL Flexibility',
+    slug: 'database-schema-design-sql-nosql',
+    content: `# Storage Patterns for Modern Applications\n\nUnderstand when relational ACID guarantees outperform document stores, and how to structure compound indexes for single-digit millisecond query execution.`,
+    imageURL: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800',
+    category: 'Programming',
+  },
+
+  // Business & Startups
+  {
+    title: 'Building a Bootstrapped SaaS: 10 Lessons from 0 to 10k ARR',
+    slug: 'bootstrapped-saas-lessons-0-to-10k',
+    content: `# The Bootstrapper Journey\n\nFall in love with customer problems, not your initial solution. Learn how building in public and launching early creates compounding product feedback loops.`,
+    imageURL: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800',
+    category: 'Business',
+  },
+  {
+    title: 'Leading Asynchronous Engineering Teams: Culture, Trust, and Rituals',
+    slug: 'leading-async-engineering-teams',
+    content: `# Autonomous Collaboration\n\nReplace calendar-choking meetings with well-written RFCs, recorded walkthroughs, and clear sprint ownership. Empower engineers to do their best deep work.`,
+    imageURL: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800',
+    category: 'Business',
+  },
+
+  // Photography & Visuals
+  {
+    title: 'Smartphone Photography: Composition, Natural Light, and Storytelling',
+    slug: 'smartphone-photography-composition-light',
+    content: `# Evocative Mobile Photography\n\nYou do not need a massive camera rig to capture unforgettable frames. Master leading lines, golden hour directional lighting, and subtle shadow grading on your phone.`,
     imageURL: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800',
-    visibility: 'public',
+    category: 'Photography',
+  },
+  {
+    title: 'Street Photography in Motion: Capturing Spontaneous City Life',
+    slug: 'street-photography-spontaneous-city-life',
+    content: `# The Decisive Moment\n\nAnticipate human movement, observe interplay between neon reflections and shadows, and document the heartbeat of urban streets with respect and curiosity.`,
+    imageURL: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800',
     category: 'Photography',
   },
 ];
 
 const comments = [
-  'Great article! This really helped me understand the concept better.',
-  'Thanks for sharing! I learned something new today.',
-  'Excellent explanation. Looking forward to more content like this.',
-  'This is exactly what I was looking for. Very well written!',
-  'Bookmarked for future reference. Super helpful!',
-  'Could you elaborate more on this topic in a future post?',
-  'I implemented this in my project and it works perfectly!',
-  'Clear and concise. Thank you for this guide.',
-  'This changed my perspective on the subject. Great insights!',
-  'One of the best articles I have read on this topic.',
-  'Finally someone explains this properly! Thank you!',
-  'Sharing this with my team. Everyone should read this.',
-  'The examples really helped clarify the concepts.',
-  'Would love to see a follow-up post on advanced topics.',
-  'This saved me hours of debugging. Much appreciated!',
+  'Great article! This really helped me understand the nuance behind this concept.',
+  'Thanks for sharing! I bookmarked this for our team weekly sync.',
+  'Excellent breakdown. The visual examples made the mental model click immediately.',
+  'This is exactly what I was searching for. Extremely well written!',
+  'Bookmarked for future reference. Super insightful perspective!',
+  'Could you write a follow-up post expanding on this architecture?',
+  'I implemented this technique in my workflow today and saw immediate improvements.',
+  'Clear, concise, and beautifully structured. Thank you for this guide!',
+  'This changed my perspective completely. Looking forward to your next story.',
+  'One of the best in-depth articles I have read on BlogHub this month.',
 ];
 
-// Helper to get random date within last 60 days
 function randomDate(daysAgo = 60) {
   const date = new Date();
   date.setDate(date.getDate() - Math.floor(Math.random() * daysAgo));
@@ -353,7 +364,6 @@ async function seed() {
     await connectDB();
     console.log('Connected to database');
 
-    // Clear existing data
     console.log('Clearing existing data...');
     await Promise.all([
       User.deleteMany({}),
@@ -367,16 +377,14 @@ async function seed() {
       Analytics.deleteMany({}),
     ]);
 
-    // Create categories
     console.log('Creating categories...');
     const createdCategories = await Category.insertMany(
-      categories.map((name) => ({ name, posts: [] })),
+      categories.map((name) => ({ name, posts: [] }))
     );
     const categoryMap = {};
     createdCategories.forEach((cat) => (categoryMap[cat.name] = cat));
     console.log(`Created ${createdCategories.length} categories`);
 
-    // Create users
     console.log('Creating users...');
     const createdUsers = [];
     for (const userData of users) {
@@ -410,47 +418,69 @@ async function seed() {
     }
     console.log(`Created ${createdUsers.length} users`);
 
-    // Create posts with varied dates
-    console.log('Creating posts...');
+    // ── Generate 6 to 8 Posts PER User ──────────────────────────────────────
+    console.log('Generating 6 to 8 multi-category stories per creator...');
     const createdPosts = [];
-    for (let i = 0; i < samplePosts.length; i++) {
-      const postData = samplePosts[i];
-      const user = createdUsers[i % (createdUsers.length - 1)]; // Exclude admin
-      const category = categoryMap[postData.category];
+    const regularUsers = createdUsers.filter((u) => u.email !== 'admin@bloghub.com');
 
-      const post = new Post({
-        user: user._id,
-        title: postData.title,
-        slug: postData.slug,
-        content: postData.content,
-        imageURL: postData.imageURL,
-        visibility: postData.visibility,
-        categories: [category._id],
-        likes: [],
-        comments: [],
-        views: [],
-        createdAt: randomDate(45),
-      });
-      await post.save();
+    for (let uIdx = 0; uIdx < regularUsers.length; uIdx++) {
+      const user = regularUsers[uIdx];
+      // Every user gets between 6 and 8 posts (average 7)
+      const numPostsForUser = (uIdx % 3 === 0) ? 8 : (uIdx % 3 === 1) ? 7 : 6;
 
-      user.posts.push(post._id);
+      for (let pIdx = 0; pIdx < numPostsForUser; pIdx++) {
+        // Pick a base story from pool and customize slug/title uniqueness
+        const templateIndex = (uIdx * 4 + pIdx) % storiesPool.length;
+        const template = storiesPool[templateIndex];
+
+        // 1 Draft, 1 Private, rest Public
+        const visibility = (pIdx === 0 && numPostsForUser >= 7)
+          ? 'draft'
+          : (pIdx === 1 && numPostsForUser >= 8)
+            ? 'private'
+            : 'public';
+
+        const categoryName = template.category;
+        const category = categoryMap[categoryName] || createdCategories[0];
+        const uniqueSlug = `${template.slug}-${user.username}-${pIdx + 1}`;
+
+        const post = new Post({
+          user: user._id,
+          title: template.title,
+          slug: uniqueSlug,
+          content: template.content,
+          imageURL: template.imageURL,
+          visibility,
+          categories: [category._id],
+          likes: [],
+          comments: [],
+          views: [],
+          createdAt: randomDate(60),
+        });
+        await post.save();
+
+        user.posts.push(post._id);
+        if (visibility === 'public') {
+          await Profile.findOneAndUpdate({ user: user._id }, { $inc: { postCount: 1 } });
+          category.posts.push(post._id);
+          await category.save();
+        }
+
+        createdPosts.push(post);
+      }
       await user.save();
-      await Profile.findOneAndUpdate({ user: user._id }, { $inc: { postCount: 1 } });
-
-      category.posts.push(post._id);
-      await category.save();
-
-      createdPosts.push(post);
     }
-    console.log(`Created ${createdPosts.length} posts`);
+    console.log(`Created ${createdPosts.length} total posts across ${regularUsers.length} creators!`);
 
-    // Add comments
+    // Add comments to public posts
     console.log('Adding comments...');
     let commentCount = 0;
-    for (const post of createdPosts) {
-      const numComments = Math.floor(Math.random() * 6) + 2;
+    const publicPosts = createdPosts.filter((p) => p.visibility === 'public');
+
+    for (const post of publicPosts) {
+      const numComments = Math.floor(Math.random() * 5) + 2;
       for (let i = 0; i < numComments; i++) {
-        const randomUser = createdUsers[Math.floor(Math.random() * (createdUsers.length - 1))];
+        const randomUser = regularUsers[Math.floor(Math.random() * regularUsers.length)];
         const randomComment = comments[Math.floor(Math.random() * comments.length)];
 
         const comment = new Comment({
@@ -460,7 +490,7 @@ async function seed() {
           dislikes: [],
           replies: [],
           replyCount: 0,
-          date: new Date(post.createdAt.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000),
+          date: new Date(post.createdAt.getTime() + Math.random() * 5 * 24 * 60 * 60 * 1000),
         });
         await comment.save();
         post.comments.push(comment._id);
@@ -470,17 +500,18 @@ async function seed() {
     }
     console.log(`Added ${commentCount} comments`);
 
-    // Add likes
+    // Add likes to public posts
     console.log('Adding likes...');
     let likeCount = 0;
-    for (const post of createdPosts) {
-      const numLikes = Math.floor(Math.random() * 10) + 3;
-      const shuffledUsers = [...createdUsers].sort(() => Math.random() - 0.5);
+    for (const post of publicPosts) {
+      const numLikes = Math.floor(Math.random() * 8) + 2;
+      const likers = new Set();
+      while (likers.size < numLikes) {
+        likers.add(String(regularUsers[Math.floor(Math.random() * regularUsers.length)]._id));
+      }
 
-      for (let i = 0; i < Math.min(numLikes, shuffledUsers.length); i++) {
-        // Field is `post`, not `posts` — the plural silently wrote null and made every
-        // seeded like unqueryable by post.
-        const like = new Like({ user: shuffledUsers[i]._id, post: post._id });
+      for (const likerId of likers) {
+        const like = new Like({ user: likerId, post: post._id });
         await like.save();
         post.likes.push(like._id);
         likeCount++;
@@ -489,25 +520,17 @@ async function seed() {
     }
     console.log(`Added ${likeCount} likes`);
 
-    // Add views and reads (for analytics)
-    //
-    // Both, not just views. Seeding views alone left every read-through rate at 0%, which
-    // is the one figure the product is built around — so a freshly seeded database showed
-    // the headline metric as dead everywhere.
-    //
-    // Each post gets its own read-through between 15% and 75%, so the dashboard has a
-    // spread to rank and the bars differ from one another. A reader who finished a post
-    // necessarily opened it, so reads are drawn from that post's viewers.
-    console.log('Adding views and reads...');
+    // Add views and reads
+    console.log('Adding views, completed reads and analytics...');
     let viewCount = 0;
     let readCount = 0;
 
-    for (const post of createdPosts) {
-      const numViews = Math.floor(Math.random() * 50) + 10;
+    for (const post of publicPosts) {
+      const numViews = Math.floor(Math.random() * 40) + 15;
       const viewers = [];
 
       for (let i = 0; i < numViews; i++) {
-        const randomUser = createdUsers[Math.floor(Math.random() * createdUsers.length)];
+        const randomUser = regularUsers[Math.floor(Math.random() * regularUsers.length)];
         const view = new View({ user: randomUser._id, post: post._id });
         await view.save();
         post.views.push(view._id);
@@ -515,9 +538,9 @@ async function seed() {
         viewCount++;
       }
 
-      const readThrough = 0.15 + Math.random() * 0.6;
+      const readThrough = 0.25 + Math.random() * 0.55;
       const finishers = new Set(
-        viewers.slice(0, Math.round(viewers.length * readThrough)).map(String),
+        viewers.slice(0, Math.round(viewers.length * readThrough)).map(String)
       );
 
       for (const userId of finishers) {
@@ -526,42 +549,38 @@ async function seed() {
       }
 
       await post.save();
-    }
-    console.log(`Added ${viewCount} views and ${readCount} reads`);
 
-    // Create analytics records
-    console.log('Creating analytics...');
-    for (const post of createdPosts) {
+      // Create Analytics Document for post
       const analytics = new Analytics({
         blogPost: post._id,
-        totalPageViews: post.views.length + Math.floor(Math.random() * 100),
+        totalPageViews: post.views.length + Math.floor(Math.random() * 50),
         totalLikes: post.likes.length,
         totalComments: post.comments.length,
       });
       await analytics.save();
     }
-    console.log(`Created analytics for ${createdPosts.length} posts`);
+    console.log(`Added ${viewCount} views and ${readCount} completed reads with real analytics!`);
 
     // Add followers
-    console.log('Adding followers...');
+    console.log('Adding follower relationships...');
     let followerCount = 0;
-    for (let i = 0; i < createdUsers.length; i++) {
-      const user = createdUsers[i];
-      const numFollowers = Math.floor(Math.random() * 8) + 2;
+    for (let i = 0; i < regularUsers.length; i++) {
+      const user = regularUsers[i];
+      const numFollowers = Math.floor(Math.random() * 6) + 3;
 
       for (let j = 0; j < numFollowers; j++) {
-        const followerIndex = Math.floor(Math.random() * createdUsers.length);
+        const followerIndex = Math.floor(Math.random() * regularUsers.length);
         if (followerIndex !== i) {
           await Profile.findOneAndUpdate(
             { user: user._id },
             {
-              $addToSet: { followers: createdUsers[followerIndex]._id },
+              $addToSet: { followers: regularUsers[followerIndex]._id },
               $inc: { followersCount: 1 },
-            },
+            }
           );
           await Profile.findOneAndUpdate(
-            { user: createdUsers[followerIndex]._id },
-            { $addToSet: { followings: user._id }, $inc: { followingsCount: 1 } },
+            { user: regularUsers[followerIndex]._id },
+            { $addToSet: { followings: user._id }, $inc: { followingsCount: 1 } }
           );
           followerCount++;
         }
@@ -569,19 +588,19 @@ async function seed() {
     }
     console.log(`Added ${followerCount} follow relationships`);
 
-    console.log('\n✅ Seed completed successfully!');
+    console.log('\n✅ SEED COMPLETED SUCCESSFULLY!');
     console.log('\n📊 Summary:');
-    console.log(`   • ${createdUsers.length} users`);
-    console.log(`   • ${createdPosts.length} posts`);
-    console.log(`   • ${createdCategories.length} categories`);
-    console.log(`   • ${commentCount} comments`);
-    console.log(`   • ${likeCount} likes`);
-    console.log(`   • ${viewCount} views`);
-    console.log('\n📝 Test Accounts:');
-    console.log('─────────────────────────────────────');
-    console.log('Regular User: john@example.com / password123');
-    console.log('Admin User:   admin@bloghub.com / admin123');
-    console.log('─────────────────────────────────────\n');
+    console.log(`   • ${createdUsers.length} Users (Each with 6–8 stories)`);
+    console.log(`   • ${createdPosts.length} Total Stories across 10 Categories`);
+    console.log(`   • ${commentCount} Comments`);
+    console.log(`   • ${likeCount} Likes`);
+    console.log(`   • ${viewCount} Views & ${readCount} Completed Reads`);
+    console.log('\n📝 Demo / Recruiter Accounts:');
+    console.log('───────────────────────────────────────────────────');
+    console.log('👤 Primary Creator: john@example.com / password123 (Has 8 stories, active analytics, drafts & private posts)');
+    console.log('👤 UX Creator:      jane@example.com / password123 (Has 7 design stories)');
+    console.log('👑 Admin:           admin@bloghub.com / admin123');
+    console.log('───────────────────────────────────────────────────\n');
 
     process.exit(0);
   } catch (error) {
