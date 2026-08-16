@@ -583,7 +583,45 @@ export function Dashboard() {
   const hasWritten = posts.length > 0;
   const firstName = user?.username?.split(' ')[0] || user?.username || 'Creator';
 
-  if (postsLoading) return <Loading text="Loading Creator Studio…" />;
+  if (postsLoading) {
+    return (
+      <PageShell>
+        <div
+          style={{
+            height: 110,
+            borderRadius: 24,
+            background: '#f1f5f9',
+            border: '1px solid #e2e8f0',
+            animation: 'pulse 1.5s ease-in-out infinite',
+            marginBottom: 24,
+          }}
+        />
+        <MetricGrid>
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              style={{
+                height: 110,
+                borderRadius: 16,
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                animation: 'pulse 1.5s ease-in-out infinite',
+              }}
+            />
+          ))}
+        </MetricGrid>
+        <div
+          style={{
+            height: 260,
+            borderRadius: 20,
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
+        />
+      </PageShell>
+    );
+  }
 
   const totalViews = analytics?.totalViews ?? posts.reduce((acc, p) => acc + (p.views?.length || 0), 0);
   const totalReads = analytics?.totalReads ?? 0;
