@@ -106,9 +106,9 @@ const SectionNote = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
-export function Section({ title, note, aside, children }) {
+export function Section({ title, note, aside, children, ...props }) {
   return (
-    <SectionRoot>
+    <SectionRoot {...props}>
       {(title || aside) && (
         <SectionHead>
           <div>

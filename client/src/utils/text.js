@@ -21,9 +21,10 @@ const MARKDOWN_PATTERNS = [
 
 /** Strip Markdown down to plain prose. */
 export function stripMarkdown(input = '') {
+  const str = typeof input === 'string' ? input : String(input || '');
   return MARKDOWN_PATTERNS.reduce(
     (acc, [pattern, replacement]) => acc.replace(pattern, replacement),
-    input
+    str
   )
     .replace(/\s+/g, ' ')
     .trim();
@@ -47,5 +48,6 @@ export function readingTime(body = '') {
 
 /** First letter of a name, for avatar fallbacks. */
 export function initial(name = '') {
-  return name.trim().charAt(0).toUpperCase() || 'U';
+  const str = typeof name === 'string' ? name : String(name || '');
+  return str.trim().charAt(0).toUpperCase() || 'U';
 }

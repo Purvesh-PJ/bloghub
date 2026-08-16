@@ -61,11 +61,20 @@ export class ErrorBoundary extends Component {
           <div style={styles.card}>
             <h1 style={styles.title}>Something went wrong</h1>
             <p style={styles.text}>
-              We're sorry, but something unexpected happened. Please try refreshing the page.
+              {this.state.error?.message ||
+                "We're sorry, but something unexpected happened. Please try refreshing the page."}
             </p>
-            <button style={styles.button} onClick={() => window.location.reload()}>
-              Refresh Page
-            </button>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button style={styles.button} onClick={() => window.location.reload()}>
+                Refresh Page
+              </button>
+              <button
+                style={{ ...styles.button, background: '#0284c7' }}
+                onClick={() => (window.location.href = '/')}
+              >
+                Go to Home
+              </button>
+            </div>
           </div>
         </div>
       );
