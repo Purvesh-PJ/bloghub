@@ -264,10 +264,10 @@ export function Header() {
                 )}
 
                 <DropdownMenu.Item onSelect={() => navigate('/dashboard')}>
-                  <LayoutGrid /> Dashboard
+                  <LayoutDashboard /> Creator Studio
                 </DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => navigate(`/user/${user?.user_id}`)}>
-                  <User /> Public profile
+                <DropdownMenu.Item onSelect={() => navigate(`/user/${user?.user_id || user?._id}`)}>
+                  <User /> My Public Profile
                 </DropdownMenu.Item>
                 <DropdownMenu.Item onSelect={() => navigate('/settings')}>
                   <Settings /> Settings
