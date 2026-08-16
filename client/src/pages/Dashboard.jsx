@@ -602,7 +602,12 @@ export function Dashboard() {
     },
   });
 
-  const posts = useMemo(() => postsData?.data || [], [postsData]);
+  const posts = useMemo(() => {
+    if (Array.isArray(postsData?.data)) return postsData.data;
+    if (Array.isArray(postsData)) return postsData;
+    return [];
+  }, [postsData]);
+
   const analytics = analyticsData?.data;
   const unfinished = useMemo(() => readingData?.data || [], [readingData]);
 
@@ -640,7 +645,6 @@ export function Dashboard() {
   }, [analytics]);
 
   const drafts = useMemo(() => posts.filter((p) => p.visibility === 'draft'), [posts]);
-  const hasWritten = posts.length > 0;
   const firstName = user?.username?.split(' ')[0] || user?.username || 'Creator';
 
   if (postsLoading) {
@@ -660,7 +664,6 @@ export function Dashboard() {
   const totalViews = analytics?.totalViews ?? posts.reduce((acc, p) => acc + (p.views?.length || 0), 0);
   const totalReads = analytics?.totalReads ?? 0;
   const overallRate = analytics?.readRate ?? (totalViews > 0 ? Math.round((totalReads / totalViews) * 100) : 0);
-  const totalLikes = posts.reduce((acc, p) => acc + (p.likes?.length || 0), 0);
 
   return (
     <PageShell>
@@ -733,145 +736,119 @@ export function Dashboard() {
       </MetricGrid>
 
       {/* ── Creator Studio Stories Hub ────────────────────────────────────── */}
-      {hasWritten ? (
-        <>
-          {drafts.length > 0 && (
-            <Section
-              title="Pick up where you left off"
-              note={`${drafts.length} unfinished ${drafts.length === 1 ? 'draft' : 'drafts'}`}
-            >
-              <Surface $tone="low" $radius="xl" $padding="sm">
-                <Rows>
-                  {drafts.slice(0, 3).map((post) => (
-                    <PostRow
-                      key={post._id}
-                      post={post}
-                      stats={statsByPost.get(String(post._id))}
-                      onDelete={setPendingDelete}
-                      onToggleVisibility={(p, vis) =>
-                        toggleVisibilityMutation.mutate({ post: p, newVisibility: vis })
-                      }
-                    />
-                  ))}
-                </Rows>
-              </Surface>
-            </Section>
-          )}
-
-          <Split>
-            <Section title="Your Stories">
-              <Toolbar>
-                {FILTERS.map((option) => (
-                  <Chip
-                    key={option.id}
-                    selected={filter === option.id}
-                    onClick={() => setFilter(option.id)}
-                  >
-                    {option.label}
-                    {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
-                  </Chip>
-                ))}
-
-                <SearchField>
-                  <Input
-                    icon={<SearchIcon />}
-                    placeholder="Search by title…"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                </SearchField>
-              </Toolbar>
-
-              {visible.length === 0 ? (
-                <EmptyState icon={SearchIcon} title="No matching stories">
-                  No posts match that filter. Try selecting another tab or clear search.
-                </EmptyState>
-              ) : (
-                <Surface $tone="low" $radius="xl" $padding="sm">
-                  <Rows>
-                    {visible.map((post) => (
-                      <PostRow
-                        key={post._id}
-                        post={post}
-                        stats={statsByPost.get(String(post._id))}
-                        onDelete={setPendingDelete}
-                        onToggleVisibility={(p, vis) =>
-                          toggleVisibilityMutation.mutate({ post: p, newVisibility: vis })
-                        }
-                      />
-                    ))}
-                  </Rows>
-                </Surface>
-              )}
-            </Section>
-
-            <Aside>
-              {topFinished.length > 0 && (
-                <Card tone="low" radius="xl">
-                  <AsideLabel>
-                    <TrendingUp /> Highest Completion Rate
-                  </AsideLabel>
-                  <div style={{ marginTop: 8 }}>
-                    {topFinished.map((entry) => (
-                      <TopPost key={String(entry.postId)} to={`/post/${entry.postId}`}>
-                        <TopPostTitle>{entry.title}</TopPostTitle>
-                        <ReadRateBar
-                          views={entry.views}
-                          reads={entry.reads}
-                          rate={entry.readRate}
-                        />
-                      </TopPost>
-                    ))}
-                  </div>
-                </Card>
-              )}
-
-              <Card tone="low" radius="xl">
-                <AsideLabel>
-                  <Sparkles /> Quick Creator Tip
-                </AsideLabel>
-                <TipText>
-                  Articles with a clear table of contents, high-quality cover photo, and 3–5 min read time achieve a <strong>24% higher completion rate</strong> on BlogHub.
-                </TipText>
-              </Card>
-            </Aside>
-          </Split>
-        </>
-      ) : (
-        <Section title="Get Started In Your Studio">
-          <OnboardingGrid>
-            <OnboardingCard onClick={() => navigate('/write')}>
-              <OnboardingTitle>Write Your First Story</OnboardingTitle>
-              <OnboardingDesc>
-                Use our distraction-free markdown editor with live preview, multi-category tagging, and cover images.
-              </OnboardingDesc>
-              <Button size="sm" style={{ width: 'fit-content', marginTop: 'auto' }}>
-                Start Writing
-              </Button>
-            </OnboardingCard>
-
-            <OnboardingCard onClick={() => navigate('/search')}>
-              <OnboardingTitle>Explore Categories</OnboardingTitle>
-              <OnboardingDesc>
-                Browse diverse stories across Food, Tech, Science, Design, Travel, and Health.
-              </OnboardingDesc>
-              <Button size="sm" variant="secondary" style={{ width: 'fit-content', marginTop: 'auto' }}>
-                Browse Stories
-              </Button>
-            </OnboardingCard>
-
-            <OnboardingCard onClick={() => navigate('/settings')}>
-              <OnboardingTitle>Customize Profile</OnboardingTitle>
-              <OnboardingDesc>
-                Add your bio, social handles, and avatar so readers and followers know your background.
-              </OnboardingDesc>
-              <Button size="sm" variant="secondary" style={{ width: 'fit-content', marginTop: 'auto' }}>
-                Edit Profile
-              </Button>
-            </OnboardingCard>
-          </OnboardingGrid>
+      {drafts.length > 0 && (
+        <Section
+          title="Pick up where you left off"
+          note={`${drafts.length} unfinished ${drafts.length === 1 ? 'draft' : 'drafts'}`}
+        >
+          <Surface $tone="low" $radius="xl" $padding="sm">
+            <Rows>
+              {drafts.slice(0, 3).map((post) => (
+                <PostRow
+                  key={post._id}
+                  post={post}
+                  stats={statsByPost.get(String(post._id))}
+                  onDelete={setPendingDelete}
+                  onToggleVisibility={(p, vis) =>
+                    toggleVisibilityMutation.mutate({ post: p, newVisibility: vis })
+                  }
+                />
+              ))}
+            </Rows>
+          </Surface>
         </Section>
       )}
+
+      <Split>
+        <Section title="Your Stories">
+          <Toolbar>
+            {FILTERS.map((option) => (
+              <Chip
+                key={option.id}
+                selected={filter === option.id}
+                onClick={() => setFilter(option.id)}
+              >
+                {option.label}
+                {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
+              </Chip>
+            ))}
+
+            <SearchField>
+              <Input
+                icon={<SearchIcon />}
+                placeholder="Search by title…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </SearchField>
+          </Toolbar>
+
+          {visible.length === 0 ? (
+            <EmptyState
+              icon={SearchIcon}
+              title={posts.length === 0 ? 'No stories written yet' : 'No matching stories'}
+            >
+              {posts.length === 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 8 }}>
+                  <span>You haven't published or drafted any stories yet. Start writing today!</span>
+                  <Button as={Link} to="/write" size="sm">
+                    <PenLine size={14} /> Start Writing
+                  </Button>
+                </div>
+              ) : (
+                'No posts match that filter. Try selecting another tab or clear search.'
+              )}
+            </EmptyState>
+          ) : (
+            <Surface $tone="low" $radius="xl" $padding="sm">
+              <Rows>
+                {visible.map((post) => (
+                  <PostRow
+                    key={post._id}
+                    post={post}
+                    stats={statsByPost.get(String(post._id))}
+                    onDelete={setPendingDelete}
+                    onToggleVisibility={(p, vis) =>
+                      toggleVisibilityMutation.mutate({ post: p, newVisibility: vis })
+                    }
+                  />
+                ))}
+              </Rows>
+            </Surface>
+          )}
+        </Section>
+
+        <Aside>
+          {topFinished.length > 0 && (
+            <Card tone="low" radius="xl">
+              <AsideLabel>
+                <TrendingUp /> Highest Completion Rate
+              </AsideLabel>
+              <div style={{ marginTop: 8 }}>
+                {topFinished.map((entry) => (
+                  <TopPost key={String(entry.postId)} to={`/post/${entry.postId}`}>
+                    <TopPostTitle>{entry.title}</TopPostTitle>
+                    <ReadRateBar
+                      views={entry.views}
+                      reads={entry.reads}
+                      rate={entry.readRate}
+                    />
+                  </TopPost>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          <Card tone="low" radius="xl">
+            <AsideLabel>
+              <Sparkles /> Quick Creator Tip
+            </AsideLabel>
+            <TipText>
+              Articles with a clear table of contents, high-quality cover photo, and 3–5 min read time achieve a <strong>24% higher completion rate</strong> on BlogHub.
+            </TipText>
+          </Card>
+        </Aside>
+      </Split>
 
       {/* ── Reading Activity ──────────────────────────────────────────────── */}
       <Section
