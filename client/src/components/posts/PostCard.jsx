@@ -37,7 +37,9 @@ const Card = styled(Link)`
   &:hover {
     background: ${({ theme }) => theme.colors.surfaceElevated};
     border-color: ${({ theme }) => theme.colors.accentLine};
-    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 0 15px -3px rgba(14, 165, 233, 0.15);
+    box-shadow:
+      0 10px 25px -5px rgba(15, 23, 42, 0.06),
+      0 0 15px -3px rgba(14, 165, 233, 0.15);
     transform: translateY(-2px);
   }
 
@@ -211,6 +213,11 @@ export function PostCard({ post, layout = 'row' }) {
 
       {showThumb && (
         <Thumb $layout={layout}>
+          {/*
+            The card is a link whose accessible name is already the post title, so naming the
+            thumbnail again would make a screen reader read the same words twice. Empty alt is
+            correct here — unlike the full-size cover on the post page, which carries meaning.
+          */}
           <img src={post.imageURL} alt="" loading="lazy" onError={() => setImageFailed(true)} />
         </Thumb>
       )}

@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import styled from 'styled-components';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { SkipLink } from './SkipLink';
 
 const AppLayout = styled.div`
   display: flex;
@@ -23,8 +24,10 @@ const MainContent = styled.main`
 export function Layout() {
   return (
     <AppLayout>
+      <SkipLink />
       <Header />
-      <MainContent>
+      {/* tabIndex={-1} so the skip link can move focus here, not just scroll to it. */}
+      <MainContent id="main-content" tabIndex={-1}>
         <Outlet />
       </MainContent>
       <Footer />
