@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import MDEditor from '@uiw/react-md-editor';
-import { Eye, Pencil, Globe, Lock, FileText } from 'lucide-react';
+import { Eye, Pencil, Globe, Lock, FileText, X, RotateCcw } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 
 import { postService } from '../services/postService';
@@ -14,6 +15,11 @@ import { topicIcon } from '../components/marketing/Topics';
 import { Button, Card, Input, Chip, Loading } from '../components/ui';
 import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
 import { readingTime } from '../utils/text';
+import { markdownRehypePlugins } from '../config/markdown';
+import { useDraftRecovery, useBeforeUnload, useNavigationGuard } from '../hooks/useDraftRecovery';
+
+// Mirrors the server-side cap in validators/content.validators.js.
+const MAX_TAGS = 5;
 
 /**
  * The editor.
@@ -202,6 +208,47 @@ const Topics = styled.div`
   flex-wrap: wrap;
 `;
 
+const TagRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  flex-wrap: wrap;
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+
+  /* Collapses to nothing rather than leaving a gap above the input when there are no tags. */
+  &:empty {
+    display: none;
+  }
+`;
+
+const TagHint = styled.p`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: ${({ theme }) => theme.spacing.xs};
+`;
+
+/* Shown when a local snapshot survives a crash or an accidental navigation. */
+const RecoveryBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  flex-wrap: wrap;
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.warningContainer};
+  border: 1px solid ${({ theme }) => theme.colors.warningLine};
+  color: ${({ theme }) => theme.colors.warningText};
+  ${text('sm')}
+
+  span {
+    margin-right: auto;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+`;
+
 const Facts = styled.dl`
   display: flex;
   flex-direction: column;
@@ -253,8 +300,13 @@ export function WritePost() {
   const [visibility, setVisibility] = useState('draft');
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [originalCategories, setOriginalCategories] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [tagDraft, setTagDraft] = useState('');
   const [imageURL, setImageURL] = useState('');
   const [preview, setPreview] = useState(false);
+  // Flipped by any edit, cleared once the work reaches the server. Drives both the recovery
+  // snapshot and the navigation guards.
+  const [dirty, setDirty] = useState(false);
 
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
@@ -275,14 +327,54 @@ export function WritePost() {
     setSlug(post.slug || '');
     setVisibility(post.visibility || 'draft');
     setImageURL(post.imageURL || '');
+    setTags(post.tags?.map((tag) => tag.name ?? tag) || []);
     const names = post.categories?.map((category) => category.name) || [];
     setSelectedCategories(names);
     setOriginalCategories(names);
+    // Loading the server's own copy is not an edit.
+    setDirty(false);
   }, [existingPost]);
+
+  const editorValues = useMemo(
+    () => ({ title, content, slug, visibility, imageURL, tags, categories: selectedCategories }),
+    [title, content, slug, visibility, imageURL, tags, selectedCategories]
+  );
+
+  const {
+    recovered,
+    clear: clearDraft,
+    discard: discardDraft,
+  } = useDraftRecovery({
+    id,
+    values: editorValues,
+    dirty,
+    // Nothing worth snapshotting until the post being edited has actually loaded.
+    enabled: !isEditing || Boolean(existingPost?.data),
+  });
+
+  useBeforeUnload(dirty);
+  useNavigationGuard(dirty);
+
+  /** Puts a recovered snapshot back into the editor. */
+  const restoreDraft = () => {
+    if (!recovered) return;
+    setTitle(recovered.title ?? '');
+    setContent(recovered.content ?? '');
+    setSlug(recovered.slug ?? '');
+    setVisibility(recovered.visibility ?? 'draft');
+    setImageURL(recovered.imageURL ?? '');
+    setTags(recovered.tags ?? []);
+    setSelectedCategories(recovered.categories ?? []);
+    setDirty(true);
+    discardDraft();
+    toast.success('Recovered your unsaved work');
+  };
 
   const createMutation = useMutation({
     mutationFn: postService.createPost,
     onSuccess: async (data) => {
+      // The work is on the server now, so the local recovery copy is no longer wanted.
+      clearDraft();
       queryClient.invalidateQueries({ queryKey: ['myPosts'] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       if (selectedCategories.length > 0 && data.postId) {
@@ -301,6 +393,8 @@ export function WritePost() {
   const updateMutation = useMutation({
     mutationFn: (data) => postService.updatePost(id, data),
     onSuccess: async () => {
+      // The work is on the server now, so the local recovery copy is no longer wanted.
+      clearDraft();
       queryClient.invalidateQueries({ queryKey: ['myPosts'] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['post', id] });
@@ -322,8 +416,39 @@ export function WritePost() {
 
   const handleTitle = (value) => {
     setTitle(value);
+    setDirty(true);
     // Keep the slug following the title until it has been set by hand or already published.
     if (!isEditing || !slug) setSlug(slugify(value));
+  };
+
+  const handleContent = (value) => {
+    setContent(value || '');
+    setDirty(true);
+  };
+
+  const addTag = (raw) => {
+    const name = raw.trim().toLowerCase();
+    if (!name) return;
+    if (tags.length >= MAX_TAGS) return toast.error(`Up to ${MAX_TAGS} tags`);
+    if (tags.includes(name)) return setTagDraft('');
+    if (!/^[a-z0-9][a-z0-9 -]*$/.test(name)) {
+      return toast.error('Tags can use letters, numbers, spaces and hyphens');
+    }
+    setTags((current) => [...current, name]);
+    setTagDraft('');
+    setDirty(true);
+  };
+
+  const removeTag = (name) => {
+    setTags((current) => current.filter((tag) => tag !== name));
+    setDirty(true);
+  };
+
+  const toggleCategory = (name) => {
+    setSelectedCategories((current) =>
+      current.includes(name) ? current.filter((item) => item !== name) : [...current, name]
+    );
+    setDirty(true);
   };
 
   const submit = (nextVisibility) => {
@@ -339,9 +464,13 @@ export function WritePost() {
       slug: finalSlug,
       visibility: nextVisibility || visibility,
       imageURL: imageURL.trim() || '',
+      tags,
     };
 
     setVisibility(payload.visibility);
+    // Cleared before the request so the navigation the mutation performs on success is not
+    // itself blocked by the unsaved-changes guard.
+    setDirty(false);
     return isEditing ? updateMutation.mutate(payload) : createMutation.mutate(payload);
   };
 
@@ -373,6 +502,23 @@ export function WritePost() {
         }
       />
 
+      {recovered && (
+        <RecoveryBanner role="status">
+          <RotateCcw size={16} />
+          <span>
+            Unsaved work from{' '}
+            {formatDistanceToNow(new Date(recovered.savedAt), { addSuffix: true })} was found on
+            this device.
+          </span>
+          <Button size="sm" variant="tonal" onClick={restoreDraft}>
+            Restore it
+          </Button>
+          <Button size="sm" variant="ghost" onClick={discardDraft}>
+            Discard
+          </Button>
+        </RecoveryBanner>
+      )}
+
       <Layout>
         <Main>
           {preview ? (
@@ -388,7 +534,10 @@ export function WritePost() {
                 </CoverPreview>
               )}
               <Preview data-color-mode={mode} style={{ marginTop: 24 }}>
-                <MDEditor.Markdown source={content || '_Nothing written yet._'} />
+                <MDEditor.Markdown
+                  source={content || '_Nothing written yet._'}
+                  rehypePlugins={markdownRehypePlugins}
+                />
               </Preview>
             </Card>
           ) : (
@@ -408,9 +557,10 @@ export function WritePost() {
               <Editor data-color-mode={mode}>
                 <MDEditor
                   value={content}
-                  onChange={(value) => setContent(value || '')}
+                  onChange={handleContent}
                   height={520}
                   preview="edit"
+                  previewOptions={{ rehypePlugins: markdownRehypePlugins }}
                 />
               </Editor>
             </>
@@ -462,19 +612,48 @@ export function WritePost() {
                     key={category.id}
                     size="sm"
                     selected={isSelected}
-                    onClick={() =>
-                      setSelectedCategories((current) =>
-                        isSelected
-                          ? current.filter((item) => item !== category.name)
-                          : [...current, category.name]
-                      )
-                    }
+                    onClick={() => toggleCategory(category.name)}
                   >
                     <Icon size={13} /> {category.name}
                   </Chip>
                 );
               })}
             </Topics>
+          </Card>
+
+          {/*
+            Tags, unlike categories, are whatever the writer types — categories stay a fixed
+            list an administrator curates. The Tag model, its routes and the `tags` field on
+            Post all existed before this; nothing had ever written to them.
+          */}
+          <Card tone="low" radius="lg" padding="lg">
+            <AsideLabel>Tags</AsideLabel>
+            <TagRow>
+              {tags.map((tag) => (
+                <Chip key={tag} size="sm" selected onClick={() => removeTag(tag)}>
+                  {tag} <X size={12} />
+                </Chip>
+              ))}
+            </TagRow>
+            <Input
+              placeholder={tags.length >= MAX_TAGS ? 'Tag limit reached' : 'Add a tag, press Enter'}
+              value={tagDraft}
+              disabled={tags.length >= MAX_TAGS}
+              onChange={(event) => setTagDraft(event.target.value)}
+              onKeyDown={(event) => {
+                // Comma as well as Enter, since that is how people habitually separate tags.
+                if (event.key === 'Enter' || event.key === ',') {
+                  event.preventDefault();
+                  addTag(tagDraft);
+                } else if (event.key === 'Backspace' && !tagDraft && tags.length > 0) {
+                  removeTag(tags[tags.length - 1]);
+                }
+              }}
+              onBlur={() => addTag(tagDraft)}
+            />
+            <TagHint>
+              {tags.length}/{MAX_TAGS} · lowercase, letters, numbers and hyphens
+            </TagHint>
           </Card>
 
           <Card tone="low" radius="lg" padding="lg">
