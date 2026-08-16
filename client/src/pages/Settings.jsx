@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
-import { User, Bell, Palette, Shield, Sun, Moon, Monitor, Check, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Bell, Palette, Shield, Sun, Moon, Monitor, Check, Info, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { userService } from '../services/userService';
+import { authService } from '../services/authService';
 import { settingsService } from '../services/settingsService';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../styles/ThemeProvider';
 import { PageShell, PageHeader } from '../components/layout/PageShell';
-import { Button, Input, TextArea, Surface, Loading, Badge } from '../components/ui';
+import { Button, Input, TextArea, Surface, Loading, Modal } from '../components/ui';
+
+// Mirrors the server-side minimum in validators/auth.validators.js.
+const MIN_PASSWORD_LENGTH = 10;
 import { display, text, media, interactive } from '../styles/theme/mixins';
 
 /**
@@ -305,13 +310,21 @@ const TABS = [
 
 export function Settings() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { preference, setTheme } = useTheme();
   const [tab, setTab] = useState('profile');
 
   const [form, setForm] = useState({ username: '', email: '', bio: '' });
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [privacy, setPrivacy] = useState({ showEmail: false, showActivity: true });
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
 
   const { data: userData, isLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -342,6 +355,33 @@ export function Settings() {
     }
     if (data.privacySettings) setPrivacy((current) => ({ ...current, ...data.privacySettings }));
   }, [settings]);
+
+  const passwordMutation = useMutation({
+    mutationFn: ({ currentPassword, newPassword, confirmPassword }) =>
+      authService.changePassword(currentPassword, newPassword, confirmPassword),
+    onSuccess: () => {
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast.success('Password changed. Please sign in again.');
+      // The token that made this request was revoked along with the others, so there is no
+      // session left to return to.
+      logout();
+      navigate('/login', { replace: true });
+    },
+    onError: (error) =>
+      toast.error(error.response?.data?.message || 'Could not change your password'),
+  });
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: (password) => userService.deleteAccount(password),
+    onSuccess: () => {
+      setConfirmDelete(false);
+      toast.success('Your account has been deleted');
+      logout();
+      navigate('/', { replace: true });
+    },
+    onError: (error) =>
+      toast.error(error.response?.data?.message || 'Could not delete your account'),
+  });
 
   const profileMutation = useMutation({
     mutationFn: () => {
@@ -537,13 +577,10 @@ export function Settings() {
 
               <Panel>
                 <PanelHead>
-                  <PanelTitle>
-                    Sign-in and security <Badge variant="neutral">Coming soon</Badge>
-                  </PanelTitle>
+                  <PanelTitle>Change password</PanelTitle>
                   <PanelNote>
-                    Changing your password and deleting your account are not built yet. The previous
-                    version of this page showed forms for both; neither had anywhere to send your
-                    details, so they are not shown until they do.
+                    You will be signed out everywhere once it changes, including here — that is what
+                    makes changing it useful if the old one leaked.
                   </PanelNote>
                 </PanelHead>
 
@@ -554,11 +591,111 @@ export function Settings() {
                     short-lived token that refreshes silently while you are active.
                   </span>
                 </Notice>
+
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    if (passwordForm.newPassword.length < MIN_PASSWORD_LENGTH) {
+                      return toast.error(
+                        `New password must be at least ${MIN_PASSWORD_LENGTH} characters`
+                      );
+                    }
+                    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                      return toast.error('New passwords do not match');
+                    }
+                    passwordMutation.mutate(passwordForm);
+                  }}
+                >
+                  <Rows>
+                    <Input
+                      label="Current password"
+                      type="password"
+                      autoComplete="current-password"
+                      value={passwordForm.currentPassword}
+                      onChange={(event) =>
+                        setPasswordForm((f) => ({ ...f, currentPassword: event.target.value }))
+                      }
+                    />
+                    <Input
+                      label="New password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={passwordForm.newPassword}
+                      onChange={(event) =>
+                        setPasswordForm((f) => ({ ...f, newPassword: event.target.value }))
+                      }
+                      hint={`At least ${MIN_PASSWORD_LENGTH} characters. A passphrase beats punctuation.`}
+                    />
+                    <Input
+                      label="Confirm new password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(event) =>
+                        setPasswordForm((f) => ({ ...f, confirmPassword: event.target.value }))
+                      }
+                    />
+                  </Rows>
+
+                  <div style={{ marginTop: 16 }}>
+                    <Button type="submit" disabled={passwordMutation.isPending}>
+                      {passwordMutation.isPending ? 'Changing…' : 'Change password'}
+                    </Button>
+                  </div>
+                </form>
+              </Panel>
+
+              <Panel>
+                <PanelHead>
+                  <PanelTitle>Delete account</PanelTitle>
+                  <PanelNote>
+                    Removes your account, your stories, and the comments and likes on them. This
+                    cannot be undone.
+                  </PanelNote>
+                </PanelHead>
+
+                <Button variant="dangerTonal" onClick={() => setConfirmDelete(true)}>
+                  <Trash2 size={16} /> Delete my account
+                </Button>
               </Panel>
             </>
           )}
         </Panels>
       </Layout>
+
+      <Modal
+        open={confirmDelete}
+        onOpenChange={(open) => {
+          setConfirmDelete(open);
+          if (!open) setDeletePassword('');
+        }}
+        title="Delete your account?"
+        description="Your stories, and the comments and likes on them, go with it. This cannot be undone."
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!deletePassword) return toast.error('Enter your password to confirm');
+            deleteAccountMutation.mutate(deletePassword);
+          }}
+        >
+          <Input
+            label="Confirm your password"
+            type="password"
+            autoComplete="current-password"
+            value={deletePassword}
+            onChange={(event) => setDeletePassword(event.target.value)}
+          />
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+            <Button type="button" variant="secondary" onClick={() => setConfirmDelete(false)}>
+              Keep my account
+            </Button>
+            <Button type="submit" variant="danger" disabled={deleteAccountMutation.isPending}>
+              {deleteAccountMutation.isPending ? 'Deleting…' : 'Delete permanently'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </PageShell>
   );
 }

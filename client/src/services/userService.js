@@ -38,6 +38,12 @@ export const userService = {
     return response.data;
   },
 
+  // Permanent. Requires the account password, not just a valid session.
+  deleteAccount: async (password) => {
+    const response = await api.delete('/users/me', { data: { password } });
+    return response.data;
+  },
+
   getAllUsers: async (page = 1) => {
     const response = await api.get('/users', { params: { page } });
     return response.data;
