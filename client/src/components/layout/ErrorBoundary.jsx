@@ -64,7 +64,9 @@ export class ErrorBoundary extends Component {
               {this.state.error?.message ||
                 "We're sorry, but something unexpected happened. Please try refreshing the page."}
             </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div
+              style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}
+            >
               <button style={styles.button} onClick={() => window.location.reload()}>
                 Refresh Page
               </button>

@@ -44,7 +44,9 @@ const controlBase = css`
   &:focus {
     outline: none;
     background: ${({ theme }) => theme.colors.surfaceElevated};
-    box-shadow: inset 0 0 0 1.5px ${({ theme }) => theme.colors.accentSolid}, 0 0 0 3px rgba(14, 165, 233, 0.2);
+    box-shadow:
+      inset 0 0 0 1.5px ${({ theme }) => theme.colors.accentSolid},
+      0 0 0 3px rgba(14, 165, 233, 0.2);
   }
 
   &:disabled {
@@ -58,7 +60,9 @@ const controlBase = css`
       box-shadow: inset 0 0 0 1.5px ${theme.colors.dangerLine};
 
       &:focus {
-        box-shadow: inset 0 0 0 1.5px ${theme.colors.dangerSolid}, 0 0 0 3px rgba(239, 68, 68, 0.2);
+        box-shadow:
+          inset 0 0 0 1.5px ${theme.colors.dangerSolid},
+          0 0 0 3px rgba(239, 68, 68, 0.2);
       }
     `}
 `;

@@ -196,7 +196,9 @@ const ShowcaseCard = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.lineDefault};
   border-radius: ${({ theme }) => theme.radii['2xl']};
   padding: ${({ theme }) => theme.spacing.xl};
-  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 0 25px -5px rgba(14, 165, 233, 0.15);
+  box-shadow:
+    0 20px 40px -15px rgba(15, 23, 42, 0.08),
+    0 0 25px -5px rgba(14, 165, 233, 0.15);
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.lg};
@@ -447,7 +449,9 @@ const BentoCard = styled.div`
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.accentLine};
-    box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.08), 0 0 15px -3px rgba(14, 165, 233, 0.12);
+    box-shadow:
+      0 12px 30px -8px rgba(15, 23, 42, 0.08),
+      0 0 15px -3px rgba(14, 165, 233, 0.12);
     transform: translateY(-3px);
   }
 
@@ -675,7 +679,8 @@ export function Home() {
   };
 
   const featuredPost = posts[0];
-  const featuredCategory = featuredPost?.categories?.[0]?.name ?? featuredPost?.categories?.[0] ?? 'Featured';
+  const featuredCategory =
+    featuredPost?.categories?.[0]?.name ?? featuredPost?.categories?.[0] ?? 'Featured';
   const featuredAuthor = featuredPost?.user?.username ?? 'john_doe';
 
   const featuredWriters = useMemo(() => {
@@ -716,11 +721,13 @@ export function Home() {
             </HeroBadge>
 
             <HeroTitle>
-              Where ideas in food, tech, science & culture <span className="gradient-text">come to life.</span>
+              Where ideas in food, tech, science & culture{' '}
+              <span className="gradient-text">come to life.</span>
             </HeroTitle>
 
             <HeroSubtitle>
-              A clean, distraction-free reading and publishing platform. Explore diverse stories, follow passionate creators, and publish your own perspective.
+              A clean, distraction-free reading and publishing platform. Explore diverse stories,
+              follow passionate creators, and publish your own perspective.
             </HeroSubtitle>
 
             <HeroActions>
@@ -734,11 +741,21 @@ export function Home() {
 
             <HeroSocialProof>
               <CategoryPillsRow>
-                <MiniPill><Coffee /> Culinary & Food</MiniPill>
-                <MiniPill><Cpu /> Tech & AI</MiniPill>
-                <MiniPill><Atom /> Space & Science</MiniPill>
-                <MiniPill><Palette /> UI/UX Design</MiniPill>
-                <MiniPill><Plane /> Travel</MiniPill>
+                <MiniPill>
+                  <Coffee /> Culinary & Food
+                </MiniPill>
+                <MiniPill>
+                  <Cpu /> Tech & AI
+                </MiniPill>
+                <MiniPill>
+                  <Atom /> Space & Science
+                </MiniPill>
+                <MiniPill>
+                  <Palette /> UI/UX Design
+                </MiniPill>
+                <MiniPill>
+                  <Plane /> Travel
+                </MiniPill>
               </CategoryPillsRow>
             </HeroSocialProof>
           </HeroContent>
@@ -752,7 +769,9 @@ export function Home() {
                     <AuthorName>
                       {featuredAuthor} <CheckCircle2 />
                     </AuthorName>
-                    <AuthorHandle>@{featuredAuthor.toLowerCase()} · {featuredCategory}</AuthorHandle>
+                    <AuthorHandle>
+                      @{featuredAuthor.toLowerCase()} · {featuredCategory}
+                    </AuthorHandle>
                   </AuthorMeta>
                 </AuthorInfo>
                 <Chip size="sm" selected>
@@ -760,12 +779,17 @@ export function Home() {
                 </Chip>
               </CardHeader>
 
-              <CardImageMock style={{ backgroundImage: `url(${featuredPost?.imageURL || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80'})` }}>
+              <CardImageMock
+                style={{
+                  backgroundImage: `url(${featuredPost?.imageURL || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80'})`,
+                }}
+              >
                 <ImageBadge>⚡ Featured Story</ImageBadge>
               </CardImageMock>
 
               <CardTitle>
-                {featuredPost?.title || 'The Chemistry of Sourdough: Why Temperature and Hydration Rule the Crumb'}
+                {featuredPost?.title ||
+                  'The Chemistry of Sourdough: Why Temperature and Hydration Rule the Crumb'}
               </CardTitle>
 
               <ReadRateWidget>
@@ -831,10 +855,13 @@ export function Home() {
                   <Flame /> Curated Discoveries
                 </SectionKicker>
                 <SectionTitle>
-                  {selectedTopic === 'All' ? 'Trending Across All Categories' : `${selectedTopic} Stories`}
+                  {selectedTopic === 'All'
+                    ? 'Trending Across All Categories'
+                    : `${selectedTopic} Stories`}
                 </SectionTitle>
                 <SectionSubtitle>
-                  {filteredPosts.length} {filteredPosts.length === 1 ? 'article' : 'articles'} exploring ideas, techniques, and insights.
+                  {filteredPosts.length} {filteredPosts.length === 1 ? 'article' : 'articles'}{' '}
+                  exploring ideas, techniques, and insights.
                 </SectionSubtitle>
               </SectionLeft>
             </SectionHead>
@@ -853,7 +880,16 @@ export function Home() {
                 <TrendingUp /> Explore Topics
               </SidebarTitle>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {['Food', 'Technology', 'Science', 'Design', 'Travel', 'Health', 'Programming', 'Architecture'].map((name) => (
+                {[
+                  'Food',
+                  'Technology',
+                  'Science',
+                  'Design',
+                  'Travel',
+                  'Health',
+                  'Programming',
+                  'Architecture',
+                ].map((name) => (
                   <Chip
                     key={name}
                     size="sm"
@@ -881,13 +917,17 @@ export function Home() {
                       <WriterAvatar>{initial(writer.name)}</WriterAvatar>
                       <WriterMeta>
                         <WriterName>{writer.name}</WriterName>
-                        <WriterFollowers>{writer.topic} · {writer.storiesCount} stories</WriterFollowers>
+                        <WriterFollowers>
+                          {writer.topic} · {writer.storiesCount} stories
+                        </WriterFollowers>
                       </WriterMeta>
                     </WriterLeft>
                     <Button
                       size="sm"
                       variant="tonal"
-                      onClick={() => (writer.id ? navigate(`/user/${writer.id}`) : navigate('/search'))}
+                      onClick={() =>
+                        writer.id ? navigate(`/user/${writer.id}`) : navigate('/search')
+                      }
                     >
                       View
                     </Button>
@@ -897,14 +937,23 @@ export function Home() {
             </SidebarCard>
 
             {/* Newsletter Sidebar Widget */}
-            <SidebarCard style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', borderColor: '#bae6fd' }}>
+            <SidebarCard
+              style={{
+                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                borderColor: '#bae6fd',
+              }}
+            >
               <SidebarTitle style={{ color: '#0369a1' }}>
                 <Zap /> BlogHub Weekly
               </SidebarTitle>
               <p style={{ fontSize: 13, color: '#0369a1', lineHeight: 1.5 }}>
-                A handpicked selection of top culinary essays, scientific breakdowns, tech deep-dives, and design insights.
+                A handpicked selection of top culinary essays, scientific breakdowns, tech
+                deep-dives, and design insights.
               </p>
-              <form onSubmit={handleNewsletter} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <form
+                onSubmit={handleNewsletter}
+                style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+              >
                 <Input
                   placeholder="your.email@example.com"
                   value={newsletterEmail}
@@ -929,7 +978,8 @@ export function Home() {
             </SectionKicker>
             <SectionTitle>Designed For Every Storyteller</SectionTitle>
             <SectionSubtitle style={{ textAlign: 'center' }}>
-              Whether you're sharing a signature recipe, an engineering breakthrough, or a travel journal — BlogHub gives your words the stage they deserve.
+              Whether you're sharing a signature recipe, an engineering breakthrough, or a travel
+              journal — BlogHub gives your words the stage they deserve.
             </SectionSubtitle>
           </SectionLeft>
         </SectionHead>
@@ -941,7 +991,8 @@ export function Home() {
             </BentoIcon>
             <BentoTitle>Universal Multi-Category Hub</BentoTitle>
             <BentoDescription>
-              Publish across Food, Technology, Science, Travel, Design, and Health with rich tags and instant cross-category discoverability.
+              Publish across Food, Technology, Science, Travel, Design, and Health with rich tags
+              and instant cross-category discoverability.
             </BentoDescription>
           </BentoCard>
 
@@ -951,7 +1002,8 @@ export function Home() {
             </BentoIcon>
             <BentoTitle>Read-Through Completion Analytics</BentoTitle>
             <BentoDescription>
-              Go beyond simple click counts. Understand true reader engagement with live scroll-depth and completion percentage metrics.
+              Go beyond simple click counts. Understand true reader engagement with live
+              scroll-depth and completion percentage metrics.
             </BentoDescription>
           </BentoCard>
 
@@ -961,7 +1013,8 @@ export function Home() {
             </BentoIcon>
             <BentoTitle>Engaged Reader Community</BentoTitle>
             <BentoDescription>
-              Receive constructive feedback, threaded discussions, likes, bookmarks, and direct subscriber notifications.
+              Receive constructive feedback, threaded discussions, likes, bookmarks, and direct
+              subscriber notifications.
             </BentoDescription>
           </BentoCard>
 
@@ -971,7 +1024,8 @@ export function Home() {
             </BentoIcon>
             <BentoTitle>Seamless Draft, Unlisted & Public Workspaces</BentoTitle>
             <BentoDescription>
-              Keep works-in-progress private in your creator workspace, share unlisted peer-review links, or publish globally with one click.
+              Keep works-in-progress private in your creator workspace, share unlisted peer-review
+              links, or publish globally with one click.
             </BentoDescription>
           </BentoCard>
 
@@ -981,7 +1035,8 @@ export function Home() {
             </BentoIcon>
             <BentoTitle>Clean & Clutter-Free</BentoTitle>
             <BentoDescription>
-              No popups, zero intrusive ads, and responsive typography tuned for maximum reading comfort across all devices.
+              No popups, zero intrusive ads, and responsive typography tuned for maximum reading
+              comfort across all devices.
             </BentoDescription>
           </BentoCard>
         </BentoGrid>
@@ -992,7 +1047,8 @@ export function Home() {
         <CtaSection>
           <CtaTitle>Have an idea or story to share with the world?</CtaTitle>
           <CtaSubtitle>
-            Create your account in seconds. Publish food recipes, tech tutorials, science essays, or personal stories for a global audience.
+            Create your account in seconds. Publish food recipes, tech tutorials, science essays, or
+            personal stories for a global audience.
           </CtaSubtitle>
           <Button
             size="lg"
