@@ -19,7 +19,6 @@ import { ReadRateBar } from '../components/stats/ReadRateBar';
 import { Button, Card, TextArea, Chip, Modal, Loading, EmptyState } from '../components/ui';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 import { readingTime, initial } from '../utils/text';
-import { CURATED_POSTS } from '../data/curatedPosts';
 
 /**
  * The article page.
@@ -353,17 +352,14 @@ export function PostDetail() {
   const articleRef = useRef(null);
   const progress = useReadingProgress(articleRef);
 
-  const isCurated = id?.startsWith('curated-');
-  const curatedFallback = CURATED_POSTS.find((p) => p._id === id);
-
   const { data, isLoading, error } = useQuery({
     queryKey: ['post', id],
     queryFn: () => postService.getPost(id),
-    enabled: !isCurated,
+    enabled: Boolean(id),
     retry: false,
   });
 
-  const post = data?.data || curatedFallback;
+  const post = data?.data;
   useReadTracking(post?._id, post?.content, articleRef);
 
   // A view is one per page load. Guarded so React's development double-invoke does not

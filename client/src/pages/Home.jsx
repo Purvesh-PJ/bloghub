@@ -38,7 +38,6 @@ import { PostCard } from '../components/posts/PostCard';
 import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
 import { topicIcon } from '../components/marketing/Topics';
 import { initial } from '../utils/text';
-import { CURATED_POSTS } from '../data/curatedPosts';
 
 /* ── Keyframe Animations ─────────────────────────────────────────────────── */
 
@@ -653,28 +652,20 @@ export function Home() {
     queryFn: categoryService.getCategories,
   });
 
-  const rawPosts = postsResponse?.data ?? [];
+  const posts = postsResponse?.data ?? [];
   const categories = categoriesData?.data ?? [];
-
-  // Combine DB posts with rich curated stories so the portfolio is never empty
-  const allPosts = useMemo(() => {
-    if (rawPosts.length === 0) return CURATED_POSTS;
-    const dbIds = new Set(rawPosts.map((p) => String(p._id)));
-    const additional = CURATED_POSTS.filter((p) => !dbIds.has(String(p._id)));
-    return [...rawPosts, ...additional];
-  }, [rawPosts]);
 
   const startHref = isAuthenticated ? '/write' : '/register';
   const startLabel = isAuthenticated ? 'Open Creator Studio' : 'Start Publishing Free';
 
   const filteredPosts = useMemo(() => {
-    if (selectedTopic === 'All') return allPosts;
-    return allPosts.filter((post) =>
+    if (selectedTopic === 'All') return posts;
+    return posts.filter((post) =>
       (post.categories || []).some(
         (cat) => (cat?.name ?? cat).toLowerCase() === selectedTopic.toLowerCase()
       )
     );
-  }, [allPosts, selectedTopic]);
+  }, [posts, selectedTopic]);
 
   const handleNewsletter = (e) => {
     e.preventDefault();
