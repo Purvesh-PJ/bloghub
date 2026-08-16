@@ -203,39 +203,11 @@ export function UserProfile() {
   if (postsLoading) {
     return (
       <PageShell>
-        <Head>
-          <div
-            style={{
-              width: 96,
-              height: 96,
-              borderRadius: '50%',
-              background: '#e2e8f0',
-              animation: 'pulse 1.5s ease-in-out infinite',
-              flexShrink: 0,
-            }}
-          />
-          <Identity>
-            <div style={{ width: 180, height: 32, background: '#e2e8f0', borderRadius: 8 }} />
-            <div style={{ width: 320, height: 18, background: '#e2e8f0', borderRadius: 6 }} />
-            <div style={{ display: 'flex', gap: 24, marginTop: 8 }}>
-              <div style={{ width: 70, height: 20, background: '#e2e8f0', borderRadius: 4 }} />
-              <div style={{ width: 70, height: 20, background: '#e2e8f0', borderRadius: 4 }} />
-            </div>
-          </Identity>
-        </Head>
-        <Section title="Stories" style={{ marginTop: 40 }}>
+        <Card style={{ height: 120, opacity: 0.6, marginBottom: 24 }} />
+        <Section title="Stories">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                style={{
-                  height: 140,
-                  borderRadius: 16,
-                  background: '#f1f5f9',
-                  border: '1px solid #e2e8f0',
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                }}
-              />
+              <Card key={i} style={{ height: 140, opacity: 0.6 }} />
             ))}
           </div>
         </Section>

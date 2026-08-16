@@ -399,20 +399,22 @@ const OnboardingCard = styled.div`
   }
 `;
 
-const OnboardingIcon = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentSolid};
-  display: flex;
-  align-items: center;
-  justify-content: center;
+const OnboardingTitle = styled.h3`
+  ${text('md', 'bold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
 
-  svg {
-    width: 20px;
-    height: 20px;
-  }
+const OnboardingDesc = styled.p`
+  ${text('sm')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: 1.5;
+`;
+
+const TipText = styled.p`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: 1.6;
+  margin-top: 8px;
 `;
 
 /* ── Row Component ───────────────────────────────────────────────────────── */
@@ -586,39 +588,13 @@ export function Dashboard() {
   if (postsLoading) {
     return (
       <PageShell>
-        <div
-          style={{
-            height: 110,
-            borderRadius: 24,
-            background: '#f1f5f9',
-            border: '1px solid #e2e8f0',
-            animation: 'pulse 1.5s ease-in-out infinite',
-            marginBottom: 24,
-          }}
-        />
+        <Card style={{ height: 110, marginBottom: 24, opacity: 0.6 }} />
         <MetricGrid>
           {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              style={{
-                height: 110,
-                borderRadius: 16,
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                animation: 'pulse 1.5s ease-in-out infinite',
-              }}
-            />
+            <Card key={i} style={{ height: 110, opacity: 0.6 }} />
           ))}
         </MetricGrid>
-        <div
-          style={{
-            height: 260,
-            borderRadius: 20,
-            background: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            animation: 'pulse 1.5s ease-in-out infinite',
-          }}
-        />
+        <Card style={{ height: 260, opacity: 0.6 }} />
       </PageShell>
     );
   }
@@ -636,7 +612,7 @@ export function Dashboard() {
           <CreatorAvatar>{initial(user?.username || 'C')}</CreatorAvatar>
           <CreatorDetails>
             <CreatorName>
-              Welcome back, {firstName} <Sparkles size={16} color="#0284c7" />
+              Welcome back, {firstName} <Sparkles size={16} />
             </CreatorName>
             <CreatorBio>
               {user?.bio || 'Manage your published stories, draft new ideas, and monitor reader engagement.'}
@@ -790,9 +766,9 @@ export function Dashboard() {
                 <AsideLabel>
                   <Sparkles /> Quick Creator Tip
                 </AsideLabel>
-                <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, marginTop: 8 }}>
+                <TipText>
                   Articles with a clear table of contents, high-quality cover photo, and 3–5 min read time achieve a <strong>24% higher completion rate</strong> on BlogHub.
-                </p>
+                </TipText>
               </Card>
             </Aside>
           </Split>
@@ -801,45 +777,30 @@ export function Dashboard() {
         <Section title="Get Started In Your Studio">
           <OnboardingGrid>
             <OnboardingCard onClick={() => navigate('/write')}>
-              <OnboardingIcon>
-                <PenLine />
-              </OnboardingIcon>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>
-                Write Your First Story
-              </h3>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', lineHeight: 1.5 }}>
+              <OnboardingTitle>Write Your First Story</OnboardingTitle>
+              <OnboardingDesc>
                 Use our distraction-free markdown editor with live preview, multi-category tagging, and cover images.
-              </p>
+              </OnboardingDesc>
               <Button size="sm" style={{ width: 'fit-content', marginTop: 'auto' }}>
                 Start Writing
               </Button>
             </OnboardingCard>
 
             <OnboardingCard onClick={() => navigate('/search')}>
-              <OnboardingIcon>
-                <Compass />
-              </OnboardingIcon>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>
-                Explore Categories
-              </h3>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', lineHeight: 1.5 }}>
+              <OnboardingTitle>Explore Categories</OnboardingTitle>
+              <OnboardingDesc>
                 Browse diverse stories across Food, Tech, Science, Design, Travel, and Health.
-              </p>
+              </OnboardingDesc>
               <Button size="sm" variant="secondary" style={{ width: 'fit-content', marginTop: 'auto' }}>
                 Browse Stories
               </Button>
             </OnboardingCard>
 
             <OnboardingCard onClick={() => navigate('/settings')}>
-              <OnboardingIcon>
-                <User />
-              </OnboardingIcon>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>
-                Customize Profile
-              </h3>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', lineHeight: 1.5 }}>
+              <OnboardingTitle>Customize Profile</OnboardingTitle>
+              <OnboardingDesc>
                 Add your bio, social handles, and avatar so readers and followers know your background.
-              </p>
+              </OnboardingDesc>
               <Button size="sm" variant="secondary" style={{ width: 'fit-content', marginTop: 'auto' }}>
                 Edit Profile
               </Button>
