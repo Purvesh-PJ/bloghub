@@ -9,6 +9,13 @@ assertEnv();
 
 const app = express();
 
+// Every request arrives through the platform's proxy, so without this Express reads the
+// proxy's address as `req.ip` and the rate limiters below key every visitor to the same
+// bucket — turning a per-client limit into a site-wide one that a single caller can exhaust
+// for everybody. Trust exactly one hop; trusting all of them would let a client spoof
+// X-Forwarded-For and sidestep the limit entirely.
+app.set('trust proxy', 1);
+
 // IMPORT DATABASE CONNECTION
 const { connectDB } = require('./config/db');
 // The test harness owns the connection when running under Jest.
@@ -108,15 +115,20 @@ router.use('/page-views', pageViewsRoutes);
 router.use('/user-activity', userActivityRoutes);
 router.use('/settings', settingsRoutes);
 
+// Mounted once. The router used to be mounted at '/' as well, which gave every endpoint two
+// URLs and doubled the surface to reason about, while vercel.json only ever forwards /api/*.
 app.use('/api', router);
-app.use('/', router);
 
 // Error handling middleware MUST be after routes
 app.use(errorHandler);
 
 // SERVER LISTENING
 const PORT = process.env.PORT || 4000;
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+// Vercel invokes the exported app directly, and the test suite drives it through supertest;
+// binding a port in either case is at best useless and at worst a leaked handle that keeps
+// the test runner alive after the suite finishes.
+const shouldListen = process.env.NODE_ENV !== 'test' && !process.env.VERCEL;
+if (shouldListen) {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
