@@ -1,0 +1,20 @@
+# Line endings.
+#
+# Prettier writes LF and its `endOfLine` default expects LF, but a Windows clone with
+# core.autocrlf=true checks files out as CRLF — so `npm run lint` reported a "Delete ␍" error
+# on every line of every file, and the format check could not pass locally even though CI,
+# running on Linux, saw nothing wrong. Normalising here makes both agree.
+* text=auto eol=lf
+
+# Lockfiles are generated; a diff of one is noise in review.
+package-lock.json -diff linguist-generated
+
+# Binary assets: never normalise, never diff.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
