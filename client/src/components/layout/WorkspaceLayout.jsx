@@ -346,9 +346,11 @@ export function WorkspaceLayout() {
               <strong>{getPageTitle()}</strong>
             </Breadcrumb>
 
-            <Button size="sm" as={Link} to="/write">
-              <PenLine size={14} /> New Story
-            </Button>
+            {!location.pathname.startsWith('/write') && (
+              <Button size="sm" as={Link} to="/write">
+                <PenLine size={14} /> New Story
+              </Button>
+            )}
           </Topbar>
 
           <div style={{ flex: 1 }}>

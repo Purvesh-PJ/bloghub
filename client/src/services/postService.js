@@ -29,6 +29,11 @@ export const postService = {
     return response.data;
   },
 
+  getMyPosts: async () => {
+    const response = await api.get('/users/getUserPosts');
+    return response.data;
+  },
+
   deletePost: async (id) => {
     const response = await api.delete(`/posts/${id}`);
     return response.data;
