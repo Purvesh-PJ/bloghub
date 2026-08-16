@@ -14,6 +14,9 @@ import {
   Compass,
   TrendingUp,
   Eye,
+  EyeOff,
+  Globe,
+  Share2,
   CheckCircle2,
   Heart,
   BarChart2,
@@ -419,21 +422,44 @@ const TipText = styled.p`
 
 /* ── Row Component ───────────────────────────────────────────────────────── */
 
-function PostRow({ post, stats, onDelete }) {
+function PostRow({ post, stats, onDelete, onToggleVisibility }) {
   const navigate = useNavigate();
+
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}/post/${post._id}`;
+    navigator.clipboard.writeText(url);
+    toast.success('Public article link copied! 📋');
+  };
+
   const menuItems = [
     {
       label: 'Edit story',
       icon: <Pencil size={14} />,
       onClick: () => navigate(`/edit/${post._id}`),
     },
+    post.visibility !== 'public'
+      ? {
+          label: 'Publish story live',
+          icon: <Globe size={14} />,
+          onClick: () => onToggleVisibility(post, 'public'),
+        }
+      : {
+          label: 'Move to drafts',
+          icon: <EyeOff size={14} />,
+          onClick: () => onToggleVisibility(post, 'draft'),
+        },
     {
-      label: 'View live',
+      label: 'Copy public link',
+      icon: <Share2 size={14} />,
+      onClick: handleCopyLink,
+    },
+    {
+      label: 'View live story',
       icon: <ExternalLink size={14} />,
       onClick: () => navigate(`/post/${post._id}`),
     },
     {
-      label: 'Delete',
+      label: 'Delete story',
       icon: <Trash2 size={14} />,
       variant: 'danger',
       onClick: () => onDelete(post),
@@ -485,7 +511,17 @@ function PostRow({ post, stats, onDelete }) {
         </Stat>
       </EngagementCell>
 
-      <div style={{ gridArea: 'actions', display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ gridArea: 'actions', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
+        {post.visibility === 'draft' && (
+          <Button
+            size="xs"
+            variant="tonal"
+            onClick={() => onToggleVisibility(post, 'public')}
+            title="Publish this draft live immediately"
+          >
+            <Globe size={12} /> Publish
+          </Button>
+        )}
         <DropdownMenu
           trigger={
             <Button variant="ghost" size="sm" aria-label="Story actions">
@@ -528,6 +564,28 @@ export function Dashboard() {
   const { data: readingData, isLoading: readingLoading } = useQuery({
     queryKey: ['readingList'],
     queryFn: userService.getReadingList,
+  });
+
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: ({ post, newVisibility }) => {
+      return postService.updatePost(post._id, {
+        title: post.title,
+        slug: post.slug,
+        content: post.content,
+        imageURL: post.imageURL,
+        categories: (post.categories || []).map((c) => c._id || c),
+        visibility: newVisibility,
+      });
+    },
+    onSuccess: (_, { newVisibility }) => {
+      queryClient.invalidateQueries({ queryKey: ['myPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['myAnalytics'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      toast.success(newVisibility === 'public' ? 'Story published live! 🎉' : 'Story moved to drafts.');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Could not update story visibility');
+    },
   });
 
   const deleteMutation = useMutation({
@@ -690,6 +748,9 @@ export function Dashboard() {
                       post={post}
                       stats={statsByPost.get(String(post._id))}
                       onDelete={setPendingDelete}
+                      onToggleVisibility={(p, vis) =>
+                        toggleVisibilityMutation.mutate({ post: p, newVisibility: vis })
+                      }
                     />
                   ))}
                 </Rows>
@@ -734,6 +795,9 @@ export function Dashboard() {
                         post={post}
                         stats={statsByPost.get(String(post._id))}
                         onDelete={setPendingDelete}
+                        onToggleVisibility={(p, vis) =>
+                          toggleVisibilityMutation.mutate({ post: p, newVisibility: vis })
+                        }
                       />
                     ))}
                   </Rows>
