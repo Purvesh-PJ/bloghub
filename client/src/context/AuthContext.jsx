@@ -123,7 +123,15 @@ export function AuthProvider({ children }) {
     authState.setState({ ...authState.getState(), user: normalizeUser(user) });
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    // Ask the server to revoke the token pair first, but never let that failing keep someone
+    // signed in — an expired session or an offline client must still be able to sign out.
+    try {
+      const { authService } = await import('../services/authService');
+      await authService.signOut();
+    } catch {
+      // Already invalid server-side, or unreachable. Clearing locally is still correct.
+    }
     authState.logout();
   }, []);
 
