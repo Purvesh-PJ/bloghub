@@ -3,15 +3,15 @@ import styled, { css } from 'styled-components';
 import {
   LayoutDashboard,
   PenLine,
-  User,
   Settings,
   LogOut,
   Globe,
+  ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from '../ui';
-import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
+import { text, media, interactive } from '../../styles/theme/mixins';
 import { initial } from '../../utils/text';
 
 const Shell = styled.div`
@@ -143,7 +143,7 @@ const UserCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: 10px 12px;
   border-radius: ${({ theme }) => theme.radii.xl};
   background: ${({ theme }) => theme.colors.surfaceContainer};
   border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
@@ -151,11 +151,20 @@ const UserCard = styled.div`
   margin-top: auto;
 `;
 
-const UserLeft = styled.div`
+const UserProfileLink = styled(Link)`
   display: flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
+  text-decoration: none;
+  flex: 1;
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: 2px;
+  ${interactive}
+
+  &:hover span:first-child {
+    color: ${({ theme }) => theme.colors.accentText};
+  }
 `;
 
 const UserAvatar = styled.div`
@@ -178,17 +187,28 @@ const UserMeta = styled.div`
   min-width: 0;
 `;
 
+const UserNameRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
 const UserName = styled.span`
   ${text('sm', 'semibold')}
   color: ${({ theme }) => theme.colors.textPrimary};
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color ${({ theme }) => theme.transitions.fast};
 `;
 
-const UserRole = styled.span`
+const ProfileBadge = styled.span`
   ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
+  color: ${({ theme }) => theme.colors.accentText};
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
 `;
 
 const LogoutButton = styled.button`
@@ -202,6 +222,7 @@ const LogoutButton = styled.button`
   background: transparent;
   color: ${({ theme }) => theme.colors.textMuted};
   cursor: pointer;
+  flex-shrink: 0;
   ${interactive}
 
   &:hover {
@@ -288,11 +309,6 @@ export function WorkspaceLayout() {
             <NavLink to="/write" $active={location.pathname.startsWith('/write')}>
               <PenLine /> Write New Story
             </NavLink>
-            {userId && (
-              <NavLink to={`/user/${userId}`} $active={location.pathname === `/user/${userId}`}>
-                <User /> My Public Profile
-              </NavLink>
-            )}
             <NavLink to="/settings" $active={location.pathname === '/settings'}>
               <Settings /> Settings
             </NavLink>
@@ -302,13 +318,20 @@ export function WorkspaceLayout() {
           </Nav>
 
           <UserCard>
-            <UserLeft>
+            <UserProfileLink
+              to={userId ? `/user/${userId}` : '/settings'}
+              title="View Public Profile"
+            >
               <UserAvatar>{initial(user?.username || 'C')}</UserAvatar>
               <UserMeta>
-                <UserName>{user?.username || 'Creator'}</UserName>
-                <UserRole>@{user?.username?.toLowerCase() || 'creator'}</UserRole>
+                <UserNameRow>
+                  <UserName>{user?.username || 'Creator'}</UserName>
+                </UserNameRow>
+                <ProfileBadge>
+                  Public Profile <ExternalLink size={10} />
+                </ProfileBadge>
               </UserMeta>
-            </UserLeft>
+            </UserProfileLink>
             <LogoutButton onClick={logout} title="Sign Out">
               <LogOut />
             </LogoutButton>
