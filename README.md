@@ -60,15 +60,15 @@ route-level code splitting and full light/dark theming.
 
 ## Features
 
-| Area | Capabilities |
-|------|--------------|
-| **Authoring** | Markdown editor with live preview, auto-generated slugs, cover images, category assignment, enforced draft/private/public visibility |
-| **Reading** | Paginated feed, trending list ranked on the last 14 days, full article view, title search with category filtering. Drafts are hidden from the public and readable by their author |
-| **Social** | Comments with one level of replies, likes that survive a reload and are unique per user per post at the database level, follow/unfollow, public author profiles |
-| **Analytics** | Per-author views, reads and read rate, top-performing posts; site-wide totals for administrators. Scoped so one member cannot read another's figures |
+| Area               | Capabilities                                                                                                                                                                                                    |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Authoring**      | Markdown editor with live preview, auto-generated slugs, cover images, category assignment, enforced draft/private/public visibility                                                                            |
+| **Reading**        | Paginated feed, trending list ranked on the last 14 days, full article view, title search with category filtering. Drafts are hidden from the public and readable by their author                               |
+| **Social**         | Comments with one level of replies, likes that survive a reload and are unique per user per post at the database level, follow/unfollow, public author profiles                                                 |
+| **Analytics**      | Per-author views, reads and read rate, top-performing posts; site-wide totals for administrators. Scoped so one member cannot read another's figures                                                            |
 | **Administration** | Post management including drafts, category management, paginated user listing, suspend and restore, promote and demote, account deletion — all role-gated, with a guard against removing the last administrator |
-| **Accounts** | JWT authentication with separate access and refresh secrets, silent refresh, revocable sessions via `tokenVersion`, brute-force protection, profile editing, persisted preferences |
-| **Platform** | Light/dark themes, responsive from 375px, route-level code splitting, error boundary, health endpoints, security headers, rate limiting |
+| **Accounts**       | JWT authentication with separate access and refresh secrets, silent refresh, revocable sessions via `tokenVersion`, brute-force protection, profile editing, persisted preferences                              |
+| **Platform**       | Light/dark themes, responsive from 375px, route-level code splitting, error boundary, health endpoints, security headers, rate limiting                                                                         |
 
 Full catalogue with per-feature implementation status:
 **[docs/product/features.md](./docs/product/features.md)**
@@ -81,31 +81,37 @@ Full catalogue with per-feature implementation status:
 <summary><strong>View screenshots</strong></summary>
 
 ### Home
+
 Hero, featured-category carousel, post feed and trending sidebar.
 
 ![Home](./client/public/screenshots/home.png)
 
 ### Feed
+
 Category filtering with the trending and topics sidebar.
 
 ![Latest posts](./client/public/screenshots/latest-posts.png)
 
 ### Post
+
 Focused reading view with a 680px measure and engagement controls.
 
 ![Post](./client/public/screenshots/post.png)
 
 ### Editor
+
 Markdown editing with live preview, categories and publishing controls.
 
 ![Write post](./client/public/screenshots/write-post.png)
 
 ### Profile
+
 Author profile with statistics, bio and published posts.
 
 ![Profile](./client/public/screenshots/profile.png)
 
 ### Analytics
+
 Views, reads, read rate and top-performing posts.
 
 ![Analytics dashboard](./client/public/screenshots/performance-dashboard.png)
@@ -118,32 +124,32 @@ Views, reads, read rate and top-performing posts.
 
 **Frontend**
 
-| Technology | Role |
-|------------|------|
-| React 19 | UI |
-| Vite 7 | Build and dev server |
-| React Router 7 | Routing |
-| TanStack Query 5 | Server state and caching |
-| styled-components 6 | Styling and theming |
-| Axios | HTTP with auth interceptors |
-| `@uiw/react-md-editor` | Markdown authoring |
-| lucide-react | Icons |
-| react-hot-toast | Notifications |
-| date-fns | Date formatting |
+| Technology             | Role                        |
+| ---------------------- | --------------------------- |
+| React 19               | UI                          |
+| Vite 7                 | Build and dev server        |
+| React Router 7         | Routing                     |
+| TanStack Query 5       | Server state and caching    |
+| styled-components 6    | Styling and theming         |
+| Axios                  | HTTP with auth interceptors |
+| `@uiw/react-md-editor` | Markdown authoring          |
+| lucide-react           | Icons                       |
+| react-hot-toast        | Notifications               |
+| date-fns               | Date formatting             |
 
 **Backend**
 
-| Technology | Role |
-|------------|------|
-| Node.js 18+ | Runtime |
-| Express 4 | HTTP framework |
-| MongoDB 6+ | Database |
-| Mongoose 7 | ODM |
-| jsonwebtoken | Access and refresh tokens |
-| bcryptjs | Password hashing |
-| express-validator | Input validation |
-| multer | File uploads |
-| morgan | Request logging |
+| Technology        | Role                      |
+| ----------------- | ------------------------- |
+| Node.js 18+       | Runtime                   |
+| Express 4         | HTTP framework            |
+| MongoDB 6+        | Database                  |
+| Mongoose 7        | ODM                       |
+| jsonwebtoken      | Access and refresh tokens |
+| bcryptjs          | Password hashing          |
+| express-validator | Input validation          |
+| multer            | File uploads              |
+| morgan            | Request logging           |
 
 **Tooling** — ESLint 9 (flat config), Prettier 3, Vercel.
 
@@ -212,10 +218,10 @@ produces a plausible ranking rather than an empty one.
 > ⚠️ **The seeder deletes every document in every collection first.** Never run it against a
 > database you care about.
 
-| Role | Email | Password |
-|------|-------|----------|
-| Member | `john@example.com` | `password123` |
-| Administrator | `admin@bloghub.com` | `admin123` |
+| Role          | Email               | Password      |
+| ------------- | ------------------- | ------------- |
+| Member        | `john@example.com`  | `password123` |
+| Administrator | `admin@bloghub.com` | `admin123`    |
 
 > These are local demo credentials, published here on purpose so the seeded database is usable
 > immediately. Any deployment reachable from the internet must change them — they are the
@@ -332,20 +338,20 @@ Browser ── React SPA ──▶ Express API ──▶ MongoDB
 51 endpoints across 12 resources, plus `GET /health` and `GET /ready`. The router is mounted
 at both `/` and `/api`; `/api` is canonical.
 
-| Resource | Base path | Endpoints | Public |
-|----------|-----------|-----------|--------|
-| Authentication | `/api/auth` | 3 | 3 |
-| Posts | `/api/posts` | 5 | 2 |
-| Users | `/api/users` | 9 | 0 |
-| Categories | `/api/categories` | 4 | 1 |
-| Tags | `/api/tags` | 2 | 1 |
-| Comments | `/api/comments` | 3 | 1 |
-| Search | `/api/search` | 1 | 1 |
-| Likes | `/api/likes` | 4 | 2 |
-| Page views | `/api/page-views` | 4 | 4 |
-| Analytics | `/api/analytics` | 5 | 3 |
-| User activity | `/api/user-activity` | 4 | 0 |
-| Settings | `/api/settings` | 7 | 0 |
+| Resource       | Base path            | Endpoints | Public |
+| -------------- | -------------------- | --------- | ------ |
+| Authentication | `/api/auth`          | 3         | 3      |
+| Posts          | `/api/posts`         | 5         | 2      |
+| Users          | `/api/users`         | 9         | 0      |
+| Categories     | `/api/categories`    | 4         | 1      |
+| Tags           | `/api/tags`          | 2         | 1      |
+| Comments       | `/api/comments`      | 3         | 1      |
+| Search         | `/api/search`        | 1         | 1      |
+| Likes          | `/api/likes`         | 4         | 2      |
+| Page views     | `/api/page-views`    | 4         | 4      |
+| Analytics      | `/api/analytics`     | 5         | 3      |
+| User activity  | `/api/user-activity` | 4         | 0      |
+| Settings       | `/api/settings`      | 7         | 0      |
 
 Rate limited to 300 requests per 15 minutes, and 10 **failed** auth attempts per 15 minutes.
 
@@ -376,14 +382,14 @@ Topology, build pipeline, release procedure, rollback and the known deployment i
 Full set in **[docs/](docs/README.md)** — 20 documents, each subject owned by exactly one of
 them. Folders say what you came for:
 
-| Folder | You are here because | Documents |
-|--------|---------------------|-----------|
-| **[guides/](docs/guides/)** | I need to *do* something | [getting started](docs/guides/getting-started.md) · [development](docs/guides/development.md) · [code quality](docs/guides/code-quality.md) · [testing](docs/guides/testing.md) |
-| **[reference/](docs/reference/)** | I need to *look something up* | [api](docs/reference/api.md) · [configuration](docs/reference/configuration.md) · [database](docs/reference/database.md) · [design system](docs/reference/design-system.md) |
-| **[architecture/](docs/architecture/)** | Why is it built this way | [overview](docs/architecture/overview.md) · [frontend](docs/architecture/frontend.md) · [backend](docs/architecture/backend.md) |
-| **[operations/](docs/operations/)** | It's running / it broke | [deployment & CI](docs/operations/deployment.md) · [runbook](docs/operations/runbook.md) |
-| **[product/](docs/product/)** | What it does, what's planned | [features](docs/product/features.md) · [user flows](docs/product/user-flows.md) · [roadmap](docs/product/roadmap.md) |
-| **[security/](docs/security/)** | Identity and findings | [auth & permissions](docs/security/auth.md) · [checklist](docs/security/checklist.md) |
+| Folder                                  | You are here because          | Documents                                                                                                                                                                       |
+| --------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[guides/](docs/guides/)**             | I need to _do_ something      | [getting started](docs/guides/getting-started.md) · [development](docs/guides/development.md) · [code quality](docs/guides/code-quality.md) · [testing](docs/guides/testing.md) |
+| **[reference/](docs/reference/)**       | I need to _look something up_ | [api](docs/reference/api.md) · [configuration](docs/reference/configuration.md) · [database](docs/reference/database.md) · [design system](docs/reference/design-system.md)     |
+| **[architecture/](docs/architecture/)** | Why is it built this way      | [overview](docs/architecture/overview.md) · [frontend](docs/architecture/frontend.md) · [backend](docs/architecture/backend.md)                                                 |
+| **[operations/](docs/operations/)**     | It's running / it broke       | [deployment & CI](docs/operations/deployment.md) · [runbook](docs/operations/runbook.md)                                                                                        |
+| **[product/](docs/product/)**           | What it does, what's planned  | [features](docs/product/features.md) · [user flows](docs/product/user-flows.md) · [roadmap](docs/product/roadmap.md)                                                            |
+| **[security/](docs/security/)**         | Identity and findings         | [auth & permissions](docs/security/auth.md) · [checklist](docs/security/checklist.md)                                                                                           |
 
 **Start here:** [docs/README.md](docs/README.md) — index, single-source-of-truth map and
 reading paths by role.

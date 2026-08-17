@@ -10,12 +10,12 @@
 
 ## Prerequisites
 
-| Requirement | Version | Check |
-|-------------|---------|-------|
-| Node.js | 18 LTS or newer | `node --version` |
-| npm | 9 or newer | `npm --version` |
-| MongoDB | 6 or newer, local or Atlas | `mongosh --eval "db.version()"` |
-| Git | any recent | `git --version` |
+| Requirement | Version                    | Check                           |
+| ----------- | -------------------------- | ------------------------------- |
+| Node.js     | 18 LTS or newer            | `node --version`                |
+| npm         | 9 or newer                 | `npm --version`                 |
+| MongoDB     | 6 or newer, local or Atlas | `mongosh --eval "db.version()"` |
+| Git         | any recent                 | `git --version`                 |
 
 No Node version is pinned — there is no `engines` field and no `.nvmrc`. Node 18+ is required
 by Vite 7 and React 19.
@@ -91,15 +91,19 @@ Or create a free Atlas cluster, allow your IP, and paste the connection string i
 cd backend && npm run seed
 ```
 
-Creates 10 categories, 15 users, 22 published posts, plus comments, likes and views.
+Creates 10 categories, 15 accounts and 99 stories — 84 public, 10 drafts and 5 private — plus
+comments, likes, views and reads.
 
-> ⚠️ **The seeder deletes every document in every collection first.** Never run it against a
-> database you care about.
+> ⚠️ **The seeder deletes every document in every collection first.**
+>
+> It refuses to run against a non-local database unless you pass `SEED_ALLOW_REMOTE=yes`. That
+> guard exists because the difference between seeding your laptop and erasing a live deployment
+> is one environment variable you forgot was still set.
 
-| Role | Email | Password |
-|------|-------|----------|
-| Member | `john@example.com` | `password123` |
-| Administrator | `admin@bloghub.com` | `admin123` |
+| Role          | Email               | Password      |
+| ------------- | ------------------- | ------------- |
+| Member        | `john@example.com`  | `password123` |
+| Administrator | `admin@bloghub.com` | `admin123`    |
 
 ## 6. Run
 
@@ -141,24 +145,26 @@ Every endpoint also answers without the `/api` prefix locally — see
 
 ### `backend/`
 
-| Script | Purpose |
-|--------|---------|
-| `npm start` | Run without a watcher |
-| `npm run dev` | nodemon, restarts on change |
-| `npm run seed` | Reset and repopulate the database |
-| `npm run lint` / `lint:fix` | ESLint |
-| `npm run format` / `format:check` | Prettier |
-| `npm test` | **Not implemented** ([GAP-11](../product/roadmap.md#gap-11)) |
+| Script                                 | Purpose                                                                                                     |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `npm start`                            | Run without a watcher                                                                                       |
+| `npm run dev`                          | nodemon, restarts on change                                                                                 |
+| `npm run seed`                         | Reset and repopulate the database                                                                           |
+| `npm run migrate` / `migrate:dry`      | Repair an existing database in place, non-destructively. `:dry` shows what would change and changes nothing |
+| `npm run lint` / `lint:fix`            | ESLint                                                                                                      |
+| `npm run format` / `format:check`      | Prettier                                                                                                    |
+| `npm test`                             | 61 integration tests. Starts its own MongoDB in-process, so it needs no database and no `.env`              |
+| `npm run test:watch` / `test:coverage` | The same, watching or with a coverage report                                                                |
 
 ### `client/`
 
-| Script | Purpose |
-|--------|---------|
-| `npm run dev` | Vite dev server on port 3000 |
-| `npm run build` | Production bundle → `client/dist` |
-| `npm run preview` | Serve the built bundle |
-| `npm run lint` / `lint:fix` | ESLint |
-| `npm run format` / `format:check` | Prettier |
+| Script                            | Purpose                           |
+| --------------------------------- | --------------------------------- |
+| `npm run dev`                     | Vite dev server on port 3000      |
+| `npm run build`                   | Production bundle → `client/dist` |
+| `npm run preview`                 | Serve the built bundle            |
+| `npm run lint` / `lint:fix`       | ESLint                            |
+| `npm run format` / `format:check` | Prettier                          |
 
 ---
 
@@ -172,7 +178,7 @@ Extensions: **ESLint**, **Prettier**, **vscode-styled-components**.
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "prettier.requireConfig": true,
-  "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" }
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
 }
 ```
 
@@ -183,17 +189,17 @@ see [code-quality.md](code-quality.md#formatting).
 
 ## Installation troubleshooting
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| `[Config] Missing required environment variables: JWT_SECRET` | `.env` absent or incomplete | Confirm `.env` sits beside `README.md` |
-| `[Config] JWT_REFRESH_SECRET must differ from JWT_SECRET` | Both set to the same value in production | Generate a second secret |
-| `[DB] Missing MONGODB_URI / DB_URI` | No URI in `.env` | Set `MONGO_DB_URI` |
-| `MongooseServerSelectionError` | MongoDB not running, or Atlas IP allowlist | Start `mongod`; add your IP |
-| `EADDRINUSE :4000` | Port taken | Change `PORT`, and update `VITE_API_URL` |
-| Client loads, every request fails | Wrong `VITE_API_URL`, or the API is down | Vite reads `.env` **at startup** — restart the dev server |
-| CORS error in the console | `CLIENT_URL` does not match the client origin | Set `CLIENT_URL=http://localhost:3000` and restart |
-| `ERESOLVE` peer dependency error | `legacy-peer-deps` not applied | Install from inside `client/` |
-| 429 on repeated sign-in attempts | Auth rate limit — 10 failures / 15 min | Wait, or restart the API in development |
+| Symptom                                                       | Cause                                         | Fix                                                       |
+| ------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------- |
+| `[Config] Missing required environment variables: JWT_SECRET` | `.env` absent or incomplete                   | Confirm `.env` sits beside `README.md`                    |
+| `[Config] JWT_REFRESH_SECRET must differ from JWT_SECRET`     | Both set to the same value in production      | Generate a second secret                                  |
+| `[DB] Missing MONGODB_URI / DB_URI`                           | No URI in `.env`                              | Set `MONGO_DB_URI`                                        |
+| `MongooseServerSelectionError`                                | MongoDB not running, or Atlas IP allowlist    | Start `mongod`; add your IP                               |
+| `EADDRINUSE :4000`                                            | Port taken                                    | Change `PORT`, and update `VITE_API_URL`                  |
+| Client loads, every request fails                             | Wrong `VITE_API_URL`, or the API is down      | Vite reads `.env` **at startup** — restart the dev server |
+| CORS error in the console                                     | `CLIENT_URL` does not match the client origin | Set `CLIENT_URL=http://localhost:3000` and restart        |
+| `ERESOLVE` peer dependency error                              | `legacy-peer-deps` not applied                | Install from inside `client/`                             |
+| 429 on repeated sign-in attempts                              | Auth rate limit — 10 failures / 15 min        | Wait, or restart the API in development                   |
 
 Runtime problems beyond installation:
 [operations/runbook.md](../operations/runbook.md).

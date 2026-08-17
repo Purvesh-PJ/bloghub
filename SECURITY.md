@@ -5,10 +5,10 @@
 BlogHub is developed on `main`. Security fixes are applied to `main` only; there are no
 maintained release branches.
 
-| Version | Supported |
-|---------|-----------|
-| `main` | ✅ |
-| Older commits | ❌ |
+| Version       | Supported |
+| ------------- | --------- |
+| `main`        | ✅        |
+| Older commits | ❌        |
 
 ---
 
@@ -37,12 +37,12 @@ The more of this you can provide, the faster the fix:
 
 ### What to expect
 
-| Stage | Timeframe |
-|-------|-----------|
-| Acknowledgement | Within 3 days |
-| Initial assessment and severity | Within 7 days |
-| Fix or a mitigation plan | Within 30 days for high and critical severity |
-| Public disclosure | After a fix ships, coordinated with you |
+| Stage                           | Timeframe                                     |
+| ------------------------------- | --------------------------------------------- |
+| Acknowledgement                 | Within 3 days                                 |
+| Initial assessment and severity | Within 7 days                                 |
+| Fix or a mitigation plan        | Within 30 days for high and critical severity |
+| Public disclosure               | After a fix ships, coordinated with you       |
 
 This is a personal open-source project maintained in spare time. These are targets, made in
 good faith, not a contractual commitment.
@@ -62,12 +62,17 @@ Findings from the internal audit are published openly rather than kept private, 
 are already visible in the source to anyone who reads it, and because contributors need to
 know what they are working around.
 
-**[docs/security/checklist.md](./docs/security/checklist.md)** — twelve findings with severity,
-impact, affected code and the fix applied or proposed.
+**[docs/security/checklist.md](./docs/security/checklist.md)** — fifteen findings with severity,
+impact, affected code and the fix applied.
 
-**Eight are closed**, each verified by request against a running server. Four remain open:
-file-upload constraints (SEC-05), view-tracking deduplication (SEC-04), token storage and
-session revocation (SEC-08), and dependency scanning (SEC-12).
+**All fifteen are closed**, each verified by request against a running server and, where a
+request can reach it, held closed by a test in CI. Three of them (stored XSS in rendered
+Markdown, rate limiting defeated by the proxy, roles trusted from the token) were found during
+remediation rather than in the original pass.
+
+What remains is **defence in depth, not open holes**: a Content-Security-Policy, a shared
+rate-limit store so limits are exact across serverless instances, email verification, and
+password reset. Each is listed with its rationale at the end of the checklist.
 
 **Do not file a private report for something already listed there.** Fixes for known findings
 are ordinary pull requests and are very welcome — the priority table in that document says
@@ -75,9 +80,10 @@ which to take first.
 
 Deployment guidance:
 
-> BlogHub is suitable for development, demonstration and portfolio use. Before running it
-> with real user data, close the remaining findings in the checklist — and establish a test
-> suite and CI pipeline. Without them, the security fixes already made can regress silently.
+> BlogHub is suitable for development, demonstration and portfolio use. Before running it with
+> real user data: change the seeded demo credentials, add a Content-Security-Policy, move rate
+> limiting to a shared store, and add email verification and password reset. The client is also
+> still untested, so a frontend regression will not be caught by CI.
 
 ---
 

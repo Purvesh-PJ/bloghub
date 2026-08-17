@@ -36,23 +36,27 @@
   "version": 2,
   "builds": [
     { "src": "backend/index.js", "use": "@vercel/node" },
-    { "src": "client/package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
+    {
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" },
+    },
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "backend/index.js" },
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
+    { "src": "/(.*)", "dest": "/index.html" },
+  ],
 }
 ```
 
 Routes evaluate top to bottom:
 
-| Order | Rule | Effect |
-|-------|------|--------|
-| 1 | `/api/(.*)` | Everything under `/api` reaches the function |
-| 2 | `handle: filesystem` | Real static files are served directly |
-| 3 | `/(.*)` → `/index.html` | **SPA fallback** — the client router handles the path |
+| Order | Rule                    | Effect                                                |
+| ----- | ----------------------- | ----------------------------------------------------- |
+| 1     | `/api/(.*)`             | Everything under `/api` reaches the function          |
+| 2     | `handle: filesystem`    | Real static files are served directly                 |
+| 3     | `/(.*)` → `/index.html` | **SPA fallback** — the client router handles the path |
 
 The fallback closed [BUG-12](../product/roadmap.md#bug-12): the previous rule rewrote to
 `client/$1`, so `/post/abc123` mapped to a file that does not exist and every shared link,
@@ -72,10 +76,11 @@ client/           → npm install (client/.npmrc: legacy-peer-deps)
 
 No root `package.json`, so the two installs are independent.
 
-**The build is not gated** — no test, lint or type check runs before a deployment, because
-none of that automation exists yet ([GAP-12](../product/roadmap.md#gap-12)). A commit that
-fails lint deploys as readily as one that passes. That is the single biggest remaining risk in
-the pipeline.
+**Vercel itself does not gate the build** — it builds and ships whatever is on `main`. The gate
+is GitHub Actions ([Part 2](#part-2--cicd)), which runs lint, format, tests, build and a
+dependency audit on every push and pull request. The two are independent: a red CI run does not
+stop Vercel from deploying, so branch protection is what turns the check into a gate. That
+remains the open item — see [Branch protection](#branch-protection).
 
 ## Serverless considerations
 
@@ -89,11 +94,13 @@ concurrency this produces one connection per warm instance and exhausts the conn
 on a small tier. The standard remedy is a cached connection:
 
 ```js
-let cached = global._mongoose ?? (global._mongoose = { conn: null, promise: null });
+let cached =
+  global._mongoose ?? (global._mongoose = { conn: null, promise: null });
 
 async function connectDB() {
   if (cached.conn) return cached.conn;
-  if (!cached.promise) cached.promise = mongoose.connect(uri, { maxPoolSize: 10 });
+  if (!cached.promise)
+    cached.promise = mongoose.connect(uri, { maxPoolSize: 10 });
   cached.conn = await cached.promise;
   return cached.conn;
 }
@@ -111,14 +118,17 @@ across cold starts and concurrent instances. Still far better than nothing; a sh
 ### Filesystem
 
 Read-only except `/tmp`, which does not persist between invocations. The multer disk-storage
-configuration cannot work in production ([BUG-07](../product/roadmap.md#bug-07)); avatar
-upload needs object storage.
+configuration cannot work in production ([BUG-07](../product/roadmap.md#bug-07)). The upload
+middleware now keeps the file in memory and validates it, so nothing writes to disk — but a
+validated buffer still needs somewhere durable to go, which means object storage
+([GAP-17](../product/roadmap.md#gap-17)).
 
 ### Timeouts
 
-The Hobby plan caps a function at 10 seconds. `GET /posts` is now paginated and no longer
-populates every comment, which removed the most likely offender — but `GET /comments` and the
-unindexed search regex remain unbounded ([SEC-11](../security/checklist.md#sec-11)).
+The Hobby plan caps a function at 10 seconds. `GET /posts` is paginated and no longer populates
+every comment, and the unscoped `GET /comments` was removed entirely — together those were the
+most likely offenders. What remains unbounded is `GET /likes/post/:postId` and the unindexed
+search regex ([SEC-11](../security/checklist.md#sec-11)).
 
 ---
 
@@ -176,7 +186,7 @@ In a browser:
 
 ## Rollback
 
-**Immediate** — Vercel dashboard → Deployments → the last good one → *Promote to Production*.
+**Immediate** — Vercel dashboard → Deployments → the last good one → _Promote to Production_.
 Seconds, no rebuild.
 
 **By revert** — `git revert <sha> && git push origin main`.
@@ -194,10 +204,10 @@ duplicates first ([database.md](../reference/database.md#migration-note)).
 
 Vercel's serverless model fits the client well and the API less well.
 
-| Option | API host | Trade-off |
-|--------|----------|-----------|
+| Option            | API host                                                                         | Trade-off                                                                                                                                     |
+| ----------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Split hosting** | Render / Railway / Fly.io for a long-running Node process; Vercel for the client | Real connection pooling, no cold starts, a filesystem for uploads, exact rate limits. Costs an always-on instance and needs cross-origin CORS |
-| **Containers** | Docker on any orchestrator | Full control and parity; most operational overhead |
+| **Containers**    | Docker on any orchestrator                                                       | Full control and parity; most operational overhead                                                                                            |
 
 Splitting is the natural next step if uploads, background work or connection pressure become
 real problems. It requires `VITE_API_URL` set to the API's absolute origin and `CLIENT_URL`
@@ -209,129 +219,61 @@ set to the client's.
 
 ## Current state
 
-**There is no CI.** No `.github/workflows`, nothing runs on push or pull request.
+`.github/workflows/ci.yml` runs on every push to `main` and every pull request against it.
 
-| Stage | Status |
-|-------|--------|
-| Lint / format / build | ✗ Manual |
-| Tests | ✗ No runner ([GAP-11](../product/roadmap.md#gap-11)) |
-| Dependency audit | ✗ Manual |
-| Deploy | ✓ Automatic via Vercel |
+| Stage                          | Status                                            |
+| ------------------------------ | ------------------------------------------------- |
+| Lint (both workspaces)         | ✓ `npm run lint`                                  |
+| Format check (both workspaces) | ✓ `npm run format:check`                          |
+| Backend tests                  | ✓ 61 tests, `jest --runInBand`                    |
+| Client build                   | ✓ `npm run build`                                 |
+| Dependency audit               | ✓ `npm audit --audit-level=high`, both workspaces |
+| Deploy                         | ✓ Automatic via Vercel                            |
 
-**The one thing that happens automatically is shipping, and nothing verifies what is
-shipped.** Closing this is [GAP-12](../product/roadmap.md#gap-12).
+Three jobs — `backend`, `client`, `audit` — run in parallel. `concurrency` with
+`cancel-in-progress` means a new push to the same branch cancels the run it superseded.
 
-## Proposed pipeline
-
-```
-pull request → validate (backend | client, in parallel) → Vercel preview
-merge to main → validate → e2e against the preview → production deploy
-```
-
-Fast checks on every pull request; slow end-to-end tests on merge.
-
-### `.github/workflows/ci.yml`
+**The test job needs no service container.** `mongodb-memory-server` starts MongoDB inside the
+Jest process, and `tests/env.js` supplies the secrets, so there is no database to provision and
+no secret to leak into a fork's pull-request build.
 
 ```yaml
-name: CI
-on:
-  pull_request: { branches: [main] }
-  push: { branches: [main] }
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  backend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm, cache-dependency-path: backend/package-lock.json }
-      - run: npm ci
-        working-directory: backend
-      - run: npm run lint
-        working-directory: backend
-      - run: npm run format:check
-        working-directory: backend
-      - run: npm test                      # enable once a runner exists
-        working-directory: backend
-        env:
-          NODE_ENV: test
-          JWT_SECRET: ci-secret-not-for-production
-          JWT_REFRESH_SECRET: ci-refresh-secret-not-for-production
-
-  client:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm, cache-dependency-path: client/package-lock.json }
-      - run: npm ci
-        working-directory: client
-      - run: npm run lint
-        working-directory: client
-      - run: npm run format:check
-        working-directory: client
-      - run: npm run build
-        working-directory: client
-        env: { VITE_API_URL: /api }
+- name: Test
+  working-directory: backend
+  # The suite starts its own MongoDB in-process, so no service container is needed.
+  run: npm test
 ```
 
-Two jobs rather than a matrix, because only the client builds. `concurrency` cancels
-superseded runs.
-
-### Dependency audit
-
-Weekly rather than per-pull-request — an advisory published overnight should not block an
-unrelated change.
-
-```yaml
-name: Audit
-on:
-  schedule: [{ cron: '0 6 * * 1' }]
-  workflow_dispatch:
-jobs:
-  audit:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix: { workspace: [backend, client] }
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm audit --audit-level=high
-        working-directory: ${{ matrix.workspace }}
-```
-
-Pair with Dependabot for `/backend`, `/client` and `github-actions`.
+The audit job fails on **high and critical** advisories only. Moderate and below are reported by
+`npm audit` locally but do not block a merge — the alternative is a pipeline that goes red
+overnight for a transitive advisory in a build tool, which teaches people to ignore it.
 
 ## Quality gates
 
-| Gate | Blocks a merge | Rationale |
-|------|---------------|-----------|
-| Lint | Yes | Correctness rules, not style — it found two real bugs during remediation |
-| Format check | Yes | Cheap, keeps diffs clean |
-| Unit + integration tests | Yes | Where this codebase's defects actually live |
-| Build | Yes | A broken build must never reach deploy |
-| E2E | No — post-merge | Too slow to gate on |
-| Coverage threshold | Not initially | Ratchet upward once a suite exists |
-| Dependency audit | No — scheduled | Advisories are time-based, not change-based |
+| Gate               | Blocks a merge         | Rationale                                                                |
+| ------------------ | ---------------------- | ------------------------------------------------------------------------ |
+| Lint               | Yes                    | Correctness rules, not style — it found two real bugs during remediation |
+| Format check       | Yes                    | Cheap, keeps diffs clean                                                 |
+| Backend tests      | Yes                    | Where this codebase's defects actually live                              |
+| Client build       | Yes                    | A broken build must never reach deploy                                   |
+| Dependency audit   | Yes, at high and above | Below that, advisory noise outweighs the signal                          |
+| Client tests       | Not yet                | No runner ([GAP-11](../product/roadmap.md#gap-11))                       |
+| E2E                | Not yet                | No suite; would run post-merge when there is one                         |
+| Coverage threshold | Not yet                | `npm run test:coverage` reports; ratchet before enforcing                |
 
-## Rollout order
+**Line-ending note.** The repository carries a `.gitattributes` with `* text=auto eol=lf`.
+Without it, a Windows checkout with `core.autocrlf=true` commits CRLF, and `format:check` fails
+in CI with hundreds of `Delete ␍` errors on a change that touched nothing. Do not remove it.
 
-Adding everything at once produces a permanently red pipeline people learn to ignore.
+## What is still missing
 
-1. **Build and format check** — they pass today; turning them on costs nothing.
-2. **Lint** — both workspaces are currently clean, so this can be blocking **immediately**.
-   That window closes as soon as anyone commits a warning; take it now.
-3. **A test job that runs zero tests** — wire the runner in.
-4. **The first real tests** — auth and authorisation, per
-   [testing.md](../guides/testing.md#what-to-build-first).
-5. **Branch protection** once the checks are reliably green.
-6. **E2E on merge.**
-7. **Coverage reporting**, threshold a release later.
+1. **Client tests.** The `client` job proves the bundle compiles. A component can throw on
+   render and CI stays green — which is exactly how several runtime crashes reached the
+   deployed app.
+2. **Branch protection.** The checks run but nothing requires them to pass, so CI reports
+   rather than gates.
+3. **E2E on merge**, once a suite exists.
+4. **Coverage reporting**, threshold a release later.
 
 ## Branch protection
 
@@ -363,11 +305,12 @@ request can read it. Vercel deployment needs no GitHub secret; the Git integrati
 
 ## Outstanding deployment issues
 
-| Issue | Impact | Reference |
-|-------|--------|-----------|
-| No quality gate before deploy | Broken code ships as easily as working code | [GAP-12](../product/roadmap.md#gap-12) |
-| No cached database connection | Connection exhaustion under load | [above](#connection-handling) |
-| Rate limits are per-instance | Approximate enforcement on serverless | [above](#rate-limiting) |
-| Avatar upload cannot work | Read-only filesystem | [BUG-07](../product/roadmap.md#bug-07) |
-| Legacy `builds`/`routes` format | Harder to maintain | [above](#verceljson) |
-| Nothing polls the health endpoints | An outage is discovered by a user | [runbook.md](runbook.md) |
+| Issue                              | Impact                                                       | Reference                              |
+| ---------------------------------- | ------------------------------------------------------------ | -------------------------------------- |
+| CI reports but does not gate       | Branch protection is not enabled, so a red run still deploys | [above](#what-is-still-missing)        |
+| The client is untested             | A render-time crash passes CI, because CI only builds it     | [GAP-11](../product/roadmap.md#gap-11) |
+| No cached database connection      | Connection exhaustion under load                             | [above](#connection-handling)          |
+| Rate limits are per-instance       | Approximate enforcement on serverless                        | [above](#rate-limiting)                |
+| Avatar upload cannot work          | Read-only filesystem                                         | [BUG-07](../product/roadmap.md#bug-07) |
+| Legacy `builds`/`routes` format    | Harder to maintain                                           | [above](#verceljson)                   |
+| Nothing polls the health endpoints | An outage is discovered by a user                            | [runbook.md](runbook.md)               |

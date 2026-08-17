@@ -106,15 +106,15 @@ bloghub/
 
 ## Workspace boundaries
 
-| Property | `backend/` | `client/` |
-|----------|-----------|-----------|
-| Module system | CommonJS | ES modules |
-| Language | JavaScript | JavaScript + JSX |
-| Runtime | Node.js 18+ | Browser |
-| Entry point | `index.js` | `src/main.jsx` |
-| Build step | None | Vite → `client/dist` |
-| Install | `cd backend && npm install` | `cd client && npm install` |
-| Test runner | Jest + Supertest, 61 tests | **None installed** |
+| Property      | `backend/`                  | `client/`                  |
+| ------------- | --------------------------- | -------------------------- |
+| Module system | CommonJS                    | ES modules                 |
+| Language      | JavaScript                  | JavaScript + JSX           |
+| Runtime       | Node.js 18+                 | Browser                    |
+| Entry point   | `index.js`                  | `src/main.jsx`             |
+| Build step    | None                        | Vite → `client/dist`       |
+| Install       | `cd backend && npm install` | `cd client && npm install` |
+| Test runner   | Jest + Supertest, 61 tests  | **None installed**         |
 
 The two share no code. Their only contract is the HTTP API
 ([reference/api.md](../reference/api.md)).
@@ -202,16 +202,16 @@ sent back.
 
 ## Configuration files
 
-| File | Consumed by | Purpose |
-|------|-------------|---------|
-| `.env` | Both workspaces | Local configuration; git-ignored |
-| `.env.example` | Humans | Committed template |
-| `vercel.json` | Vercel | Two builds, API routing, SPA fallback |
-| `client/vite.config.js` | Vite | Port 3000, `envDir: '../'`, manual chunks |
-| `client/jsconfig.json` | Editors | Path alias, JSX hints |
-| `client/tsconfig.json` | Nothing | See [code-quality.md](../guides/code-quality.md) |
-| `*/eslint.config.js` | ESLint 9 | Flat config per workspace |
-| `*/.prettierrc` | Prettier | Formatting per workspace |
+| File                    | Consumed by     | Purpose                                          |
+| ----------------------- | --------------- | ------------------------------------------------ |
+| `.env`                  | Both workspaces | Local configuration; git-ignored                 |
+| `.env.example`          | Humans          | Committed template                               |
+| `vercel.json`           | Vercel          | Two builds, API routing, SPA fallback            |
+| `client/vite.config.js` | Vite            | Port 3000, `envDir: '../'`, manual chunks        |
+| `client/jsconfig.json`  | Editors         | Path alias, JSX hints                            |
+| `client/tsconfig.json`  | Nothing         | See [code-quality.md](../guides/code-quality.md) |
+| `*/eslint.config.js`    | ESLint 9        | Flat config per workspace                        |
+| `*/.prettierrc`         | Prettier        | Formatting per workspace                         |
 
 Both workspaces read the **single root `.env`** — the backend resolves it explicitly, Vite is
 pointed at it with `envDir: '../'`. Reference:
@@ -221,13 +221,13 @@ pointed at it with `envDir: '../'`. Reference:
 
 ## Known structural weaknesses
 
-| Observation | Consequence |
-|-------------|-------------|
-| No root `package.json` | Every command runs from a subdirectory; CI must install twice |
-| `services/` covers only two of twelve resources | Most controllers talk to models directly, so the layer is a convention rather than a rule |
-| The router is mounted at both `/` and `/api` | Two public surfaces to secure and document — see [reference/api.md](../reference/api.md#base-url) |
-| `client/tsconfig.json` alongside `jsconfig.json` | Two overlapping editor configs; the stricter one has no consumer |
-| The `@/*` alias is declared but unused, with no matching Vite alias | Using it today would break the build |
-| Page components run 400–1,000+ lines | Styled components co-located with page logic; the largest files are hard to review |
-| `errorHandler` is effectively unreachable | No controller calls `next(err)` — see [backend.md](backend.md#error-handling) |
-| No test runner | The largest risk in the repository ([GAP-11](../product/roadmap.md#gap-11)) |
+| Observation                                                         | Consequence                                                                                       |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| No root `package.json`                                              | Every command runs from a subdirectory; CI must install twice                                     |
+| `services/` covers only two of twelve resources                     | Most controllers talk to models directly, so the layer is a convention rather than a rule         |
+| The router is mounted at both `/` and `/api`                        | Two public surfaces to secure and document — see [reference/api.md](../reference/api.md#base-url) |
+| `client/tsconfig.json` alongside `jsconfig.json`                    | Two overlapping editor configs; the stricter one has no consumer                                  |
+| The `@/*` alias is declared but unused, with no matching Vite alias | Using it today would break the build                                                              |
+| Page components run 400–1,000+ lines                                | Styled components co-located with page logic; the largest files are hard to review                |
+| `errorHandler` is effectively unreachable                           | No controller calls `next(err)` — see [backend.md](backend.md#error-handling)                     |
+| No test runner                                                      | The largest risk in the repository ([GAP-11](../product/roadmap.md#gap-11))                       |

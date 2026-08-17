@@ -11,23 +11,23 @@ Notation: `→` step transition, `⇢` network call, `✗` failure branch.
 
 ## Route map
 
-| Route | Access | Page |
-|-------|--------|------|
-| `/` | Public | `Home` |
-| `/login`, `/register` | Public | `Login`, `Register` |
-| `/post/:id` | Public | `PostDetail` |
-| `/user/:userId` | Public | `UserProfile` |
-| `/search` | Public | `Search` |
-| `/dashboard` | Member | `Dashboard` — how the work performed |
-| `/stories` | Member | `Stories` — what has been written, and its management |
-| `/comments` | Member | `Responses` — what readers said back |
-| `/write`, `/edit/:id` | Member | `WritePost` |
-| `/settings` | Member | `Settings` |
-| `/admin` | Admin | `AdminDashboard` |
-| `/admin/posts` | Admin | `AdminPosts` |
-| `/admin/categories` | Admin | `AdminCategories` |
-| `/admin/users` | Admin | `AdminUsers` |
-| `*` | Public | `NotFound` |
+| Route                 | Access | Page                                                  |
+| --------------------- | ------ | ----------------------------------------------------- |
+| `/`                   | Public | `Home`                                                |
+| `/login`, `/register` | Public | `Login`, `Register`                                   |
+| `/post/:id`           | Public | `PostDetail`                                          |
+| `/user/:userId`       | Public | `UserProfile`                                         |
+| `/search`             | Public | `Search`                                              |
+| `/dashboard`          | Member | `Dashboard` — how the work performed                  |
+| `/stories`            | Member | `Stories` — what has been written, and its management |
+| `/comments`           | Member | `Responses` — what readers said back                  |
+| `/write`, `/edit/:id` | Member | `WritePost`                                           |
+| `/settings`           | Member | `Settings`                                            |
+| `/admin`              | Admin  | `AdminDashboard`                                      |
+| `/admin/posts`        | Admin  | `AdminPosts`                                          |
+| `/admin/categories`   | Admin  | `AdminCategories`                                     |
+| `/admin/users`        | Admin  | `AdminUsers`                                          |
+| `*`                   | Public | `NotFound`                                            |
 
 Member routes are wrapped in `ProtectedRoute`, admin routes in `AdminRoute`. Both redirect to
 `/login` and preserve the attempted location in router state, so the user lands where they
@@ -39,10 +39,10 @@ The workspace used to be one page that mixed statistics with post management, wh
 neither was good at its job. It is now three pages split by the question each answers, and the
 old paths redirect rather than 404:
 
-| Old route | Redirects to |
-|-----------|--------------|
-| `/profile` | `/dashboard` |
-| `/my-posts` | `/stories` |
+| Old route    | Redirects to |
+| ------------ | ------------ |
+| `/profile`   | `/dashboard` |
+| `/my-posts`  | `/stories`   |
 | `/analytics` | `/dashboard` |
 
 There is no `/admin/settings`. It was a page of toggles wired to nothing, so it was removed
@@ -386,12 +386,12 @@ enforced server-side ([security/auth.md](../security/auth.md)).
 
 ## Cross-cutting failure handling
 
-| Layer | Mechanism |
-|-------|-----------|
-| Render errors | `ErrorBoundary` wraps the tree |
-| Route not found | Catch-all renders `NotFound` |
-| Expired access token | Interceptor refreshes once and replays |
-| Refresh failure | Session cleared, hard redirect to `/login` |
-| Rate limited | 429 with a retry message |
-| Mutation failure | Error toast from `onError` |
-| Query failure | One retry, then the page's error branch |
+| Layer                | Mechanism                                  |
+| -------------------- | ------------------------------------------ |
+| Render errors        | `ErrorBoundary` wraps the tree             |
+| Route not found      | Catch-all renders `NotFound`               |
+| Expired access token | Interceptor refreshes once and replays     |
+| Refresh failure      | Session cleared, hard redirect to `/login` |
+| Rate limited         | 429 with a retry message                   |
+| Mutation failure     | Error toast from `onError`                 |
+| Query failure        | One retry, then the page's error branch    |

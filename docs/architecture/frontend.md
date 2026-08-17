@@ -11,19 +11,19 @@
 
 ## Stack
 
-| Concern | Choice | Version |
-|---------|--------|---------|
-| UI library | React | 19.2 |
-| Build tool | Vite | 7.2 |
-| Routing | React Router | 7.11 |
-| Server state | TanStack Query | 5.90 |
-| HTTP client | Axios | 1.13 |
-| Styling | styled-components | 6.2 |
-| Markdown editor | `@uiw/react-md-editor` | 4.0 |
-| Icons | lucide-react | 0.562 |
-| Notifications | react-hot-toast | 2.6 |
-| Dates | date-fns | 4.1 |
-| Dialog primitive | `@radix-ui/themes` | 3.2 |
+| Concern          | Choice                 | Version |
+| ---------------- | ---------------------- | ------- |
+| UI library       | React                  | 19.2    |
+| Build tool       | Vite                   | 7.2     |
+| Routing          | React Router           | 7.11    |
+| Server state     | TanStack Query         | 5.90    |
+| HTTP client      | Axios                  | 1.13    |
+| Styling          | styled-components      | 6.2     |
+| Markdown editor  | `@uiw/react-md-editor` | 4.0     |
+| Icons            | lucide-react           | 0.562   |
+| Notifications    | react-hot-toast        | 2.6     |
+| Dates            | date-fns               | 4.1     |
+| Dialog primitive | `@radix-ui/themes`     | 3.2     |
 
 `react-hook-form`, `@hookform/resolvers` and `zod` are installed but imported nowhere — forms
 are controlled by hand with `useState`. Either adopt them or drop them.
@@ -82,7 +82,8 @@ A single `Suspense` boundary renders a centred `Spinner` during chunk loading.
 
 ```jsx
 // ProtectedRoute
-if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
+if (!isAuthenticated)
+  return <Navigate to="/login" state={{ from: location }} replace />;
 
 // AdminRoute — additionally
 if (!isAdmin()) return <Navigate to="/" replace />;
@@ -101,11 +102,11 @@ API — see [security/auth.md](../security/auth.md#enforcement-layers).
 Four kinds of state, each with one home. Putting state in the wrong layer is the most common
 review comment on this codebase.
 
-| Kind | Owner | Examples |
-|------|-------|----------|
-| **Server state** | TanStack Query | posts, categories, comments, analytics, users |
-| **Session state** | `authState` + `AuthContext` | user, tokens, `isAuthenticated` |
-| **Theme state** | `ThemeProvider` | light/dark mode |
+| Kind               | Owner                       | Examples                                             |
+| ------------------ | --------------------------- | ---------------------------------------------------- |
+| **Server state**   | TanStack Query              | posts, categories, comments, analytics, users        |
+| **Session state**  | `authState` + `AuthContext` | user, tokens, `isAuthenticated`                      |
+| **Theme state**    | `ThemeProvider`             | light/dark mode                                      |
 | **Local UI state** | `useState` in the component | form fields, open modals, active tab, carousel index |
 
 No Redux, Zustand or Jotai, and none is needed.
@@ -159,11 +160,11 @@ Ten modules, each a plain object of async functions:
 
 ```js
 export const postService = {
-  getPosts: async (params = {}) => (await api.get('/posts', { params })).data,
+  getPosts: async (params = {}) => (await api.get("/posts", { params })).data,
   getAllPosts: async (params = {}) =>
-    (await api.get('/posts', { params: { ...params, all: 'true' } })).data,
+    (await api.get("/posts", { params: { ...params, all: "true" } })).data,
   getPost: async (id) => (await api.get(`/posts/${id}`)).data,
-  createPost: async (postData) => (await api.post('/posts', postData)).data,
+  createPost: async (postData) => (await api.post("/posts", postData)).data,
 };
 ```
 
@@ -191,25 +192,25 @@ trigger their own refresh; a shared in-flight promise would coalesce them.
 
 ### Query keys
 
-| Key | Data | Used by |
-|-----|------|---------|
-| `['posts']`, `['posts', { topic }]` | **Published** posts, paginated | Home, Search |
-| `['trendingPosts']` | The ranked list, last 14 days | Home |
-| `['allPosts']` | **All** posts incl. drafts — admin only | Admin Dashboard, Admin Posts |
-| `['post', id]` | One post with comments and likes | PostDetail, WritePost (edit) |
-| `['postComments', postId]` | One story's responses | Responses |
-| `['categories']` | Categories | Search, WritePost, Admin Categories |
-| `['myPosts', params]` | The signed-in author's own posts | Stories, Dashboard, Responses |
-| `['myAnalytics']` | The signed-in author's figures | Dashboard, Stories |
-| `['readingActivity']` | What this account has been reading | Dashboard |
-| `['currentUser']` | The signed-in user record | Header, Settings |
-| `['userSettings']` | Persisted preferences | Settings |
-| `['user', userId]` | A public author record | UserProfile |
-| `['isFollowing', userId]` | Follow state | UserProfile |
-| `['userAnalytics', userId]` | Per-author analytics, self-or-admin | UserProfile |
-| `['adminAnalytics']` | Site-wide analytics | Admin Dashboard |
-| `['admin-users', page]` | Paginated users | Admin Users |
-| `['search', query]` | Search results | Search |
+| Key                                 | Data                                    | Used by                             |
+| ----------------------------------- | --------------------------------------- | ----------------------------------- |
+| `['posts']`, `['posts', { topic }]` | **Published** posts, paginated          | Home, Search                        |
+| `['trendingPosts']`                 | The ranked list, last 14 days           | Home                                |
+| `['allPosts']`                      | **All** posts incl. drafts — admin only | Admin Dashboard, Admin Posts        |
+| `['post', id]`                      | One post with comments and likes        | PostDetail, WritePost (edit)        |
+| `['postComments', postId]`          | One story's responses                   | Responses                           |
+| `['categories']`                    | Categories                              | Search, WritePost, Admin Categories |
+| `['myPosts', params]`               | The signed-in author's own posts        | Stories, Dashboard, Responses       |
+| `['myAnalytics']`                   | The signed-in author's figures          | Dashboard, Stories                  |
+| `['readingActivity']`               | What this account has been reading      | Dashboard                           |
+| `['currentUser']`                   | The signed-in user record               | Header, Settings                    |
+| `['userSettings']`                  | Persisted preferences                   | Settings                            |
+| `['user', userId]`                  | A public author record                  | UserProfile                         |
+| `['isFollowing', userId]`           | Follow state                            | UserProfile                         |
+| `['userAnalytics', userId]`         | Per-author analytics, self-or-admin     | UserProfile                         |
+| `['adminAnalytics']`                | Site-wide analytics                     | Admin Dashboard                     |
+| `['admin-users', page]`             | Paginated users                         | Admin Users                         |
+| `['search', query]`                 | Search results                          | Search                              |
 
 Convention: resource name first, then identifiers, general to specific.
 
@@ -232,8 +233,8 @@ Mutations invalidate rather than patch:
 ```js
 useMutation({
   mutationFn: (data) => commentService.createComment(data),
-  onSuccess: () => queryClient.invalidateQueries(['post', id]),
-  onError: (error) => toast.error(error.response?.data?.message ?? 'Failed'),
+  onSuccess: () => queryClient.invalidateQueries(["post", id]),
+  onError: (error) => toast.error(error.response?.data?.message ?? "Failed"),
 });
 ```
 
@@ -253,12 +254,12 @@ components/
 └── ui/         21 token-driven primitives + a barrel index
 ```
 
-| Tier | May import | Must not |
-|------|-----------|----------|
-| `ui/` | styled-components, other primitives | services, context, router, anything domain-shaped |
-| `posts/`, `stats/`, `marketing/` (domain) | `ui/`, router links, formatting | fetch data |
-| `layout/` | `ui/`, `context/`, router | contain page logic |
-| `pages/` | everything above, plus `services/` | be imported by anything but `App.jsx` |
+| Tier                                      | May import                          | Must not                                          |
+| ----------------------------------------- | ----------------------------------- | ------------------------------------------------- |
+| `ui/`                                     | styled-components, other primitives | services, context, router, anything domain-shaped |
+| `posts/`, `stats/`, `marketing/` (domain) | `ui/`, router links, formatting     | fetch data                                        |
+| `layout/`                                 | `ui/`, `context/`, router           | contain page logic                                |
+| `pages/`                                  | everything above, plus `services/`  | be imported by anything but `App.jsx`             |
 
 Pages own the data; components below receive props.
 
@@ -266,7 +267,7 @@ Pages own the data; components below receive props.
 
 The rule is what the component is allowed to know. A `ui/` primitive knows about shape and
 state — it can be a button, a chip, a dropdown, a table — and knows nothing about posts,
-authors or analytics. A domain component knows what the thing *is*, and is built out of
+authors or analytics. A domain component knows what the thing _is_, and is built out of
 primitives.
 
 `StatTile` lives in `ui/` because it renders a label, a number and an optional trend, and does
@@ -298,16 +299,16 @@ it to an error tracker is the highest-value frontend observability work availabl
 
 ## Performance
 
-| Technique | Where | Effect |
-|-----------|-------|--------|
-| Route code splitting | `App.jsx` | Only the visited route's chunk downloads |
-| Manual vendor chunks | `vite.config.js` | `vendor`, `radix`, `editor` cache separately |
-| Query caching | `main.jsx` | Five-minute freshness, no focus refetch |
-| Conditional queries | `WritePost`, `useCurrentUser` | `enabled:` avoids a pointless fetch — and, for `useCurrentUser`, a 401 on every anonymous page load |
-| Server-side filtering | `Stories`, `Search` | Filter, sort and search are query parameters, so the browser never holds a list it then hides most of |
-| Memoised theme | `ThemeProvider` | Not rebuilt every render |
-| System fonts | `typography.js` | No web-font download or layout shift |
-| Server-side pagination | `postService` | The feed no longer downloads every post with all comments populated |
+| Technique              | Where                         | Effect                                                                                                |
+| ---------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Route code splitting   | `App.jsx`                     | Only the visited route's chunk downloads                                                              |
+| Manual vendor chunks   | `vite.config.js`              | `vendor`, `radix`, `editor` cache separately                                                          |
+| Query caching          | `main.jsx`                    | Five-minute freshness, no focus refetch                                                               |
+| Conditional queries    | `WritePost`, `useCurrentUser` | `enabled:` avoids a pointless fetch — and, for `useCurrentUser`, a 401 on every anonymous page load   |
+| Server-side filtering  | `Stories`, `Search`           | Filter, sort and search are query parameters, so the browser never holds a list it then hides most of |
+| Memoised theme         | `ThemeProvider`               | Not rebuilt every render                                                                              |
+| System fonts           | `typography.js`               | No web-font download or layout shift                                                                  |
+| Server-side pagination | `postService`                 | The feed no longer downloads every post with all comments populated                                   |
 
 **Current constraint:** the landing feed requests one page and does not paginate further
 ([GAP-07](../product/roadmap.md#gap-07)). `ui/Pagination` exists and `/stories` uses it; wiring

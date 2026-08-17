@@ -16,15 +16,15 @@
 Health and readiness endpoints exist. **Nothing polls them yet**, there is no error tracker
 and no alerting.
 
-| Signal | State |
-|--------|-------|
-| Health / readiness endpoints | ✅ `GET /health`, `GET /ready` |
-| Uptime monitoring | ❌ Nothing calls them |
-| Backend error tracking | ❌ |
-| Frontend error tracking | ❌ `ErrorBoundary` catches and discards |
-| Request metrics | Partial — Vercel dashboard aggregates |
-| Database metrics | Atlas dashboard, unmonitored |
-| Alerting | ❌ |
+| Signal                       | State                                   |
+| ---------------------------- | --------------------------------------- |
+| Health / readiness endpoints | ✅ `GET /health`, `GET /ready`          |
+| Uptime monitoring            | ❌ Nothing calls them                   |
+| Backend error tracking       | ❌                                      |
+| Frontend error tracking      | ❌ `ErrorBoundary` catches and discards |
+| Request metrics              | Partial — Vercel dashboard aggregates   |
+| Database metrics             | Atlas dashboard, unmonitored            |
+| Alerting                     | ❌                                      |
 
 The practical consequence: **the first report of an outage will come from a user.**
 
@@ -44,44 +44,44 @@ reconnaissance target.
 
 ### Availability
 
-| Check | Target | Frequency |
-|-------|--------|-----------|
-| `GET /api/health` returns 200 | 99.9% | 1 minute |
-| `GET /api/ready` returns 200 | 99.9% | 1 minute |
-| The home page returns 200 | 99.9% | 5 minutes |
+| Check                         | Target | Frequency |
+| ----------------------------- | ------ | --------- |
+| `GET /api/health` returns 200 | 99.9%  | 1 minute  |
+| `GET /api/ready` returns 200  | 99.9%  | 1 minute  |
+| The home page returns 200     | 99.9%  | 5 minutes |
 
 A free uptime service (UptimeRobot, Better Stack, Cronitor) takes minutes to configure. Alert
 on **two consecutive** failures — a single serverless cold start can exceed a tight timeout.
 
 ### Errors
 
-| Signal | Threshold |
-|--------|-----------|
-| 5xx rate | > 1% of requests over 5 minutes |
-| Unhandled promise rejection | Every occurrence |
-| Database connection failure | Every occurrence |
-| 401 rate | > 20% — suggests a token or clock problem |
-| 429 rate | Sustained — either an attack or limits set too low |
-| 403 spike | Possible probing |
+| Signal                      | Threshold                                          |
+| --------------------------- | -------------------------------------------------- |
+| 5xx rate                    | > 1% of requests over 5 minutes                    |
+| Unhandled promise rejection | Every occurrence                                   |
+| Database connection failure | Every occurrence                                   |
+| 401 rate                    | > 20% — suggests a token or clock problem          |
+| 429 rate                    | Sustained — either an attack or limits set too low |
+| 403 spike                   | Possible probing                                   |
 
 ### Latency
 
-| Endpoint class | p95 target | Note |
-|----------------|-----------|------|
-| `GET /posts` | < 300ms | Now paginated and indexed |
-| `GET /posts/:id` | < 400ms | Deep population, several round trips |
-| `POST /auth/signin` | < 800ms | bcrypt is intentionally slow |
-| Writes | < 300ms | |
-| Cold start | < 2s | Measure before optimising |
+| Endpoint class      | p95 target | Note                                 |
+| ------------------- | ---------- | ------------------------------------ |
+| `GET /posts`        | < 300ms    | Now paginated and indexed            |
+| `GET /posts/:id`    | < 400ms    | Deep population, several round trips |
+| `POST /auth/signin` | < 800ms    | bcrypt is intentionally slow         |
+| Writes              | < 300ms    |                                      |
+| Cold start          | < 2s       | Measure before optimising            |
 
 ### Database
 
-| Metric | Alert at |
-|--------|----------|
-| Connections | > 80% of the tier limit — likely the missing cached connection |
-| Storage | > 80% |
-| Slow queries | Any over 100ms |
-| Collection scans | Any — the search regex is the known offender |
+| Metric           | Alert at                                                       |
+| ---------------- | -------------------------------------------------------------- |
+| Connections      | > 80% of the tier limit — likely the missing cached connection |
+| Storage          | > 80%                                                          |
+| Slow queries     | Any over 100ms                                                 |
+| Collection scans | Any — the search regex is the known offender                   |
 
 Atlas's Performance Advisor recommends indexes from real traffic. With 13 indexes now
 declared it should have far less to say than before.
@@ -90,22 +90,22 @@ declared it should have far less to say than before.
 
 Not failures, but they reveal breakage that stays technically green:
 
-| Signal | Why |
-|--------|-----|
-| Posts created per day | A drop to zero with normal traffic means the publish path is broken |
-| Registrations per day | Same for signup |
-| Failed sign-in ratio | A spike suggests credential stuffing |
+| Signal                                         | Why                                                                               |
+| ---------------------------------------------- | --------------------------------------------------------------------------------- |
+| Posts created per day                          | A drop to zero with normal traffic means the publish path is broken               |
+| Registrations per day                          | Same for signup                                                                   |
+| Failed sign-in ratio                           | A spike suggests credential stuffing                                              |
 | **Posts visible on the feed vs posts created** | Divergence is the fingerprint of [BUG-01](../product/roadmap.md#bug-01) recurring |
 
 ## Recommended stack
 
-| Layer | Tool | Effort |
-|-------|------|--------|
-| Uptime | UptimeRobot or Better Stack | Minutes |
-| Backend errors | Sentry (`@sentry/node`) | ~1 hour |
-| Frontend errors | Sentry (`@sentry/react`) | ~1 hour |
-| Request metrics | Vercel Analytics | Built in |
-| Database | Atlas monitoring | Configure alerts |
+| Layer           | Tool                        | Effort           |
+| --------------- | --------------------------- | ---------------- |
+| Uptime          | UptimeRobot or Better Stack | Minutes          |
+| Backend errors  | Sentry (`@sentry/node`)     | ~1 hour          |
+| Frontend errors | Sentry (`@sentry/react`)    | ~1 hour          |
+| Request metrics | Vercel Analytics            | Built in         |
+| Database        | Atlas monitoring            | Configure alerts |
 
 ### Scrubbing is not optional
 
@@ -140,14 +140,14 @@ componentDidCatch(error, errorInfo) {
 
 Alert on symptoms users feel. An alert nobody acts on trains people to ignore the channel.
 
-| Alert | Condition | Urgency |
-|-------|-----------|---------|
-| Site down | Health check fails twice consecutively | Immediate |
-| Database unreachable | Readiness fails | Immediate |
-| Error spike | 5xx > 1% for 5 minutes | Immediate |
-| Latency degradation | p95 > 2× baseline for 15 minutes | Same day |
-| Connection pressure | Atlas connections > 80% | Same day |
-| New dependency advisory | Weekly audit | This week |
+| Alert                   | Condition                              | Urgency   |
+| ----------------------- | -------------------------------------- | --------- |
+| Site down               | Health check fails twice consecutively | Immediate |
+| Database unreachable    | Readiness fails                        | Immediate |
+| Error spike             | 5xx > 1% for 5 minutes                 | Immediate |
+| Latency degradation     | p95 > 2× baseline for 15 minutes       | Same day  |
+| Connection pressure     | Atlas connections > 80%                | Same day  |
+| New dependency advisory | Weekly audit                           | This week |
 
 ## Rollout
 
@@ -166,26 +166,26 @@ Steps 1–3 are an afternoon and take the project from blind to informed.
 
 ## Current state
 
-| Layer | Mechanism |
-|-------|-----------|
-| Requests | morgan — `dev` in development, `combined` otherwise |
-| Application | `console.error('[handlerName]', error)` |
-| Frontend | Nothing |
+| Layer       | Mechanism                                           |
+| ----------- | --------------------------------------------------- |
+| Requests    | morgan — `dev` in development, `combined` otherwise |
+| Application | `console.error('[handlerName]', error)`             |
+| Frontend    | Nothing                                             |
 
 Handlers touched during remediation use a `[handlerName]` prefix, which makes an error
 greppable. Debug residue (`console.log(cat)`) was removed.
 
 ### Remaining problems
 
-| Problem | Consequence |
-|---------|-------------|
-| No levels | Cannot filter to errors or raise verbosity during an incident |
-| No structure | Not machine-parseable, so not queryable |
-| No correlation id | A request's lines cannot be tied together when requests interleave |
-| No timestamps on application logs | Morgan timestamps requests; `console.error` does not |
-| Frontend errors go nowhere | `ErrorBoundary` discards |
+| Problem                           | Consequence                                                        |
+| --------------------------------- | ------------------------------------------------------------------ |
+| No levels                         | Cannot filter to errors or raise verbosity during an incident      |
+| No structure                      | Not machine-parseable, so not queryable                            |
+| No correlation id                 | A request's lines cannot be tied together when requests interleave |
+| No timestamps on application logs | Morgan timestamps requests; `console.error` does not               |
+| Frontend errors go nowhere        | `ErrorBoundary` discards                                           |
 
-`no-console` is disabled in both ESLint configs because console output *is* the logging
+`no-console` is disabled in both ESLint configs because console output _is_ the logging
 mechanism.
 
 ## Target: structured logging
@@ -195,14 +195,20 @@ not.
 
 ```js
 const logger = pino({
-  level: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
+  level:
+    process.env.LOG_LEVEL ??
+    (process.env.NODE_ENV === "production" ? "info" : "debug"),
   redact: {
     paths: [
-      'req.headers.authorization', 'req.headers.cookie',
-      'req.body.password', 'req.body.confirmPassword', 'req.body.refreshToken',
-      '*.accessToken', '*.refreshToken',
+      "req.headers.authorization",
+      "req.headers.cookie",
+      "req.body.password",
+      "req.body.confirmPassword",
+      "req.body.refreshToken",
+      "*.accessToken",
+      "*.refreshToken",
     ],
-    censor: '[redacted]',
+    censor: "[redacted]",
   },
 });
 ```
@@ -216,14 +222,14 @@ Replace morgan with `pino-http` so request and application logs share one format
 
 ### Levels
 
-| Level | Use |
-|-------|-----|
-| `fatal` | The process cannot continue |
-| `error` | An operation failed and a user is affected |
-| `warn` | Unexpected but handled — repeated failed sign-ins, rate limit hits |
-| `info` | Notable business events — server start, user registered, post published |
-| `debug` | Diagnostic detail |
-| `trace` | Very verbose — never in production |
+| Level   | Use                                                                     |
+| ------- | ----------------------------------------------------------------------- |
+| `fatal` | The process cannot continue                                             |
+| `error` | An operation failed and a user is affected                              |
+| `warn`  | Unexpected but handled — repeated failed sign-ins, rate limit hits      |
+| `info`  | Notable business events — server start, user registered, post published |
+| `debug` | Diagnostic detail                                                       |
+| `trace` | Very verbose — never in production                                      |
 
 Production runs at `info`; `LOG_LEVEL` raises verbosity during an incident without a code
 change.
@@ -238,9 +244,15 @@ When in doubt, log the identifier and look the record up.
 ### Format
 
 ```json
-{ "level": 50, "time": 1755180000000, "requestId": "8f3e…", "userId": "65a1…",
-  "route": "PUT /api/posts/:id", "msg": "Failed to update post",
-  "err": { "type": "ValidationError", "message": "…" } }
+{
+  "level": 50,
+  "time": 1755180000000,
+  "requestId": "8f3e…",
+  "userId": "65a1…",
+  "route": "PUT /api/posts/:id",
+  "msg": "Failed to update post",
+  "err": { "type": "ValidationError", "message": "…" }
+}
 ```
 
 The message is a **constant string**; variable parts are fields. `"Failed to update post"`
@@ -289,12 +301,13 @@ missing resource (404), validation (400), rate limiting (429) and server fault (
 
 Check these before investigating.
 
-| Symptom | Cause |
-|---------|-------|
-| Avatar upload fails or shows a broken image | [BUG-07](../product/roadmap.md#bug-07) — disk storage on a read-only filesystem |
-| `GET /analytics/post/:id` returns 404 for a real post | [BUG-06](../product/roadmap.md#bug-06) — `Analytics` documents are seeder-only |
-| Only 20 posts are reachable from the feed | [GAP-07](../product/roadmap.md#gap-07) — the UI does not consume pagination yet |
-| Search misses obvious matches | [GAP-05](../product/roadmap.md#gap-05) — titles only, no content search |
+| Symptom                                                | Cause                                                                                                                           |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Avatar upload fails or shows a broken image            | [BUG-07](../product/roadmap.md#bug-07) — the file is validated but has nowhere durable to be stored                             |
+| `GET /analytics/post/:id` returns 404 for a real post  | [BUG-06](../product/roadmap.md#bug-06) — `Analytics` documents are seeder-only                                                  |
+| Only the first page is reachable from the landing feed | [GAP-07](../product/roadmap.md#gap-07) — the landing page does not consume pagination; `/search` does                           |
+| Search misses obvious matches                          | [GAP-05](../product/roadmap.md#gap-05) — titles only, no content search                                                         |
+| Trending looks like "latest"                           | Correct behaviour when nothing clears the minimum-views floor in the 14-day window. The response says so: `trendedBy: 'latest'` |
 
 **Recently fixed** — if you see one of these, it is a regression and needs a test:
 posts not appearing on the feed ([BUG-01](../product/roadmap.md#bug-01)); "All fields are
@@ -318,11 +331,11 @@ replayable as an access token. Generate a second secret.
 
 ### `[DB] Missing MONGODB_URI / DB_URI environment variable`
 
-| Check | Fix |
-|-------|-----|
-| Does `.env` exist **at the repository root**? | Both workspaces read the root file |
-| Is `MONGO_DB_URI` set? | See [aliases](../reference/configuration.md#database-uri-aliases) |
-| Is the file actually named `.env`? | `.env.txt` on Windows is a common trap |
+| Check                                         | Fix                                                               |
+| --------------------------------------------- | ----------------------------------------------------------------- |
+| Does `.env` exist **at the repository root**? | Both workspaces read the root file                                |
+| Is `MONGO_DB_URI` set?                        | See [aliases](../reference/configuration.md#database-uri-aliases) |
+| Is the file actually named `.env`?            | `.env.txt` on Windows is a common trap                            |
 
 ### `MongooseServerSelectionError: connect ECONNREFUSED`
 
@@ -342,13 +355,13 @@ lsof -ti:4000 | xargs kill -9
 
 ### Every request returns 401
 
-| Cause | Check |
-|-------|-------|
-| No token attached | Network tab → request headers → `Authorization` |
-| Token expired | Decode at jwt.io → `exp` |
+| Cause                                       | Check                                                            |
+| ------------------------------------------- | ---------------------------------------------------------------- |
+| No token attached                           | Network tab → request headers → `Authorization`                  |
+| Token expired                               | Decode at jwt.io → `exp`                                         |
 | **A refresh token used as an access token** | Payload `type` must be `access` — this is now rejected by design |
-| `JWT_SECRET` changed | All existing tokens are invalid; sign in again |
-| Clock skew | A machine minutes fast rejects freshly issued tokens |
+| `JWT_SECRET` changed                        | All existing tokens are invalid; sign in again                   |
+| Clock skew                                  | A machine minutes fast rejects freshly issued tokens             |
 
 ### 429 on sign-in
 
@@ -357,15 +370,36 @@ the API in development to clear the in-memory store.
 
 ### Signed out unexpectedly
 
-The refresh attempt failed — the refresh token expired, `JWT_REFRESH_SECRET` changed, or the
-refresh endpoint returned non-2xx. Check that specific call in the network tab.
+The refresh attempt failed. In order of likelihood:
+
+| Cause                                 | Check                                                                                                                                                             |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`tokenVersion` was incremented**    | The account signed out elsewhere, changed its password, was suspended, or was demoted. This is the system working — every token issued before that moment is dead |
+| The refresh token expired             | 7 days by default                                                                                                                                                 |
+| `JWT_REFRESH_SECRET` changed          | Every refresh token is invalid; everyone signs in again                                                                                                           |
+| The refresh endpoint returned non-2xx | Check that specific call in the network tab                                                                                                                       |
+
+### Revoking a session deliberately
+
+There is no session table to delete from. Increment the account's `tokenVersion` and every
+token already issued to it stops being accepted on the next request:
+
+```js
+db.users.updateOne(
+  { email: "user@example.com" },
+  { $inc: { tokenVersion: 1 } },
+);
+```
+
+The same effect is reachable through the product: suspending the account from the admin console
+does this and blocks sign-in as well.
 
 ### Infinite redirect between `/login` and a protected route
 
 `isAuthenticated` is true while the token is unusable:
 
 ```js
-localStorage.removeItem('auth-storage');
+localStorage.removeItem("auth-storage");
 location.reload();
 ```
 
@@ -373,11 +407,11 @@ If it recurs, persisted state and token validity have diverged — worth a defec
 
 ## CORS
 
-| Cause | Fix |
-|-------|-----|
+| Cause                                          | Fix                                       |
+| ---------------------------------------------- | ----------------------------------------- |
 | `CLIENT_URL` does not match the browser origin | Set it exactly, including scheme and port |
-| API not restarted after the change | CORS is configured at boot |
-| `127.0.0.1` vs `localhost` | Different origins to a browser |
+| API not restarted after the change             | CORS is configured at boot                |
+| `127.0.0.1` vs `localhost`                     | Different origins to a browser            |
 
 Check the preflight `OPTIONS` request, not the one that appears to fail.
 
@@ -419,9 +453,10 @@ the caller's. Confirm the token subject matches.
 
 ### A slow or timing-out request
 
-`GET /posts` is paginated and indexed. The remaining unbounded endpoints are `GET /comments`,
-`GET /likes/post/:id` and `GET /page-views/post/:id`
-([SEC-11](../security/checklist.md#sec-11)), plus the unindexed search regex.
+`GET /posts` and `GET /comments/post/:postId` are paginated and indexed, and the unscoped
+`GET /comments` no longer exists. The remaining unbounded endpoint is `GET /likes/post/:id`;
+`GET /page-views/post/:id` is capped at 200 rather than paged
+([SEC-11](../security/checklist.md#sec-11)). The unindexed search regex is the other candidate.
 
 ## Database
 
@@ -430,11 +465,11 @@ the caller's. Confirm the token subject matches.
 A unique index rejecting a duplicate — working as intended. Which index the message names
 tells you what happened:
 
-| Index | Meaning |
-|-------|---------|
-| `email_1` / `username_1` | Duplicate account attempt — the API translates this to 409 |
-| `post_1_user_1` on `likes` | Duplicate like, or a like written with a null post |
-| `name_1` on `categories` | Duplicate category |
+| Index                      | Meaning                                                    |
+| -------------------------- | ---------------------------------------------------------- |
+| `email_1` / `username_1`   | Duplicate account attempt — the API translates this to 409 |
+| `post_1_user_1` on `likes` | Duplicate like, or a like written with a null post         |
+| `name_1` on `categories`   | Duplicate category                                         |
 
 ### Adding an index fails
 
@@ -442,7 +477,7 @@ Unique index creation fails while duplicates exist. Find them first:
 
 ```js
 db.users.aggregate([
-  { $group: { _id: '$email', count: { $sum: 1 }, ids: { $push: '$_id' } } },
+  { $group: { _id: "$email", count: { $sum: 1 }, ids: { $push: "$_id" } } },
   { $match: { count: { $gt: 1 } } },
 ]);
 ```
@@ -454,11 +489,16 @@ operations with no transaction. Reconcile:
 
 ```js
 db.userprofiles.find().forEach((p) => {
-  db.userprofiles.updateOne({ _id: p._id }, { $set: {
-    postCount: db.posts.countDocuments({ user: p.user }),
-    followersCount: (p.followers ?? []).length,
-    followingsCount: (p.followings ?? []).length,
-  }});
+  db.userprofiles.updateOne(
+    { _id: p._id },
+    {
+      $set: {
+        postCount: db.posts.countDocuments({ user: p.user }),
+        followersCount: (p.followers ?? []).length,
+        followingsCount: (p.followings ?? []).length,
+      },
+    },
+  );
 });
 ```
 
@@ -467,7 +507,7 @@ db.userprofiles.find().forEach((p) => {
 Confirm a scan:
 
 ```js
-db.posts.find({ visibility: 'public' }).explain('executionStats');
+db.posts.find({ visibility: "public" }).explain("executionStats");
 // COLLSCAN in winningPlan.stage confirms it
 ```
 

@@ -5,8 +5,8 @@
 > **Ye file reusable hai** — kisi bhi naye project mein ise copy karke wahi structure follow
 > kar sakte ho.
 >
-> *(Baaki saare docs English mein hain. Ye file jaan-boojh kar Hinglish mein hai kyunki ye
-> team ki internal convention guide hai, product documentation nahi.)*
+> _(Baaki saare docs English mein hain. Ye file jaan-boojh kar Hinglish mein hai kyunki ye
+> team ki internal convention guide hai, product documentation nahi.)_
 
 ---
 
@@ -24,23 +24,23 @@ isi ka detail hai.
 Ye naam industry mein instantly pehchane jaate hain. **Naye naam invent mat karo** — inhi
 mein se uthao.
 
-| File | Kis sawaal ka jawab deti hai |
-|------|------------------------------|
-| `README.md` | Ye kya hai, chalau kaise |
-| `getting-started.md` | Pehli baar setup, step by step |
-| `development.md` | Rozana ka workflow, conventions, kahan file rakhun |
-| `architecture.md` | System kaise bana hai, aur aisa kyun |
-| `api.md` | Har endpoint |
-| `configuration.md` | Har env var / setting |
-| `database.md` | Schema, relations, indexes |
-| `design-system.md` | Tokens, components, UI rules |
-| `testing.md` | Kaise test karun, kya test karun |
-| `deployment.md` | Ship kaise hota hai |
-| `troubleshooting.md` | Symptom → fix |
-| `runbook.md` | Production chal raha hai / toot gaya |
-| `roadmap.md` | Kya planned hai, kya toota hua hai |
-| `code-quality.md` | Lint, format, type tooling |
-| `adr/0001-title.md` | Ek decision, ek file |
+| File                 | Kis sawaal ka jawab deti hai                       |
+| -------------------- | -------------------------------------------------- |
+| `README.md`          | Ye kya hai, chalau kaise                           |
+| `getting-started.md` | Pehli baar setup, step by step                     |
+| `development.md`     | Rozana ka workflow, conventions, kahan file rakhun |
+| `architecture.md`    | System kaise bana hai, aur aisa kyun               |
+| `api.md`             | Har endpoint                                       |
+| `configuration.md`   | Har env var / setting                              |
+| `database.md`        | Schema, relations, indexes                         |
+| `design-system.md`   | Tokens, components, UI rules                       |
+| `testing.md`         | Kaise test karun, kya test karun                   |
+| `deployment.md`      | Ship kaise hota hai                                |
+| `troubleshooting.md` | Symptom → fix                                      |
+| `runbook.md`         | Production chal raha hai / toot gaya               |
+| `roadmap.md`         | Kya planned hai, kya toota hua hai                 |
+| `code-quality.md`    | Lint, format, type tooling                         |
+| `adr/0001-title.md`  | Ek decision, ek file                               |
 
 ### Ye naam kabhi mat use karo
 
@@ -71,7 +71,7 @@ LICENSE
 **Trigger to Stage 2:** README ~300 lines cross kar gaya, ya cheez dhoondhne ke liye scroll
 karna pad raha hai.
 
-### Stage 2 — real web app *(90% projects yahin rehte hain)*
+### Stage 2 — real web app _(90% projects yahin rehte hain)_
 
 **Flat rakho. Folders mat banao.**
 
@@ -163,11 +163,11 @@ jaata hai.
 
 Jab bugs ya gaps track karne hon, unhe stable ID do aur **sirf ek jagah** describe karo:
 
-| Prefix | Matlab | Owner file |
-|--------|--------|-----------|
-| `BUG-xx` | Behaviour galat hai | `roadmap.md` |
-| `GAP-xx` | Capability missing hai | `roadmap.md` |
-| `SEC-xx` | Security weakness | `security/checklist.md` |
+| Prefix   | Matlab                 | Owner file              |
+| -------- | ---------------------- | ----------------------- |
+| `BUG-xx` | Behaviour galat hai    | `roadmap.md`            |
+| `GAP-xx` | Capability missing hai | `roadmap.md`            |
+| `SEC-xx` | Security weakness      | `security/checklist.md` |
 
 Baaki docs sirf ID se link karein, description dobara mat likho:
 
@@ -190,15 +190,15 @@ Isse ek fix karte waqt 6 files update nahi karni padti — sirf owner file.
 Ye effectively non-negotiable hai — GitHub khud "Community Standards" checklist mein check
 karta hai:
 
-| File | Kaam |
-|------|------|
-| `README.md` | Entry point — kya hai, kaise chalao, aage kahan jao |
-| `LICENSE` | Legal |
-| `CONTRIBUTING.md` | Contribute kaise karein |
-| `CHANGELOG.md` | Kya badla — [Keep a Changelog](https://keepachangelog.com/) format |
-| `SECURITY.md` | Vulnerability report kaise karein |
-| `CODE_OF_CONDUCT.md` | Community rules |
-| `.github/` | Issue + PR templates |
+| File                 | Kaam                                                               |
+| -------------------- | ------------------------------------------------------------------ |
+| `README.md`          | Entry point — kya hai, kaise chalao, aage kahan jao                |
+| `LICENSE`            | Legal                                                              |
+| `CONTRIBUTING.md`    | Contribute kaise karein                                            |
+| `CHANGELOG.md`       | Kya badla — [Keep a Changelog](https://keepachangelog.com/) format |
+| `SECURITY.md`        | Vulnerability report kaise karein                                  |
+| `CODE_OF_CONDUCT.md` | Community rules                                                    |
+| `.github/`           | Issue + PR templates                                               |
 
 README ka pehla paragraph **plain language** mein ho — taki non-dev bhi samajh jaaye ki
 product kya karta hai.

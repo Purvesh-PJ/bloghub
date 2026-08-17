@@ -13,14 +13,14 @@
 ESLint 9 with flat config in both workspaces. No shared base — the module systems and globals
 differ.
 
-| | `backend/` | `client/` |
-|---|-----------|-----------|
-| Config | `eslint.config.js` (CommonJS) | `eslint.config.js` (ESM) |
-| Base | `eslint-plugin-prettier/recommended` | `@eslint/js` recommended |
-| Plugins | `prettier` | `react`, `react-hooks` |
-| Source type | `commonjs` | `module` |
-| Target | `.` | `src` |
-| Prettier integration | Yes — violations are lint errors | No — Prettier runs separately |
+|                      | `backend/`                           | `client/`                     |
+| -------------------- | ------------------------------------ | ----------------------------- |
+| Config               | `eslint.config.js` (CommonJS)        | `eslint.config.js` (ESM)      |
+| Base                 | `eslint-plugin-prettier/recommended` | `@eslint/js` recommended      |
+| Plugins              | `prettier`                           | `react`, `react-hooks`        |
+| Source type          | `commonjs`                           | `module`                      |
+| Target               | `.`                                  | `src`                         |
+| Prettier integration | Yes — violations are lint errors     | No — Prettier runs separately |
 
 ## Current state
 
@@ -44,10 +44,10 @@ positives**, which is enough noise that nobody reads the output.
 Enabling the recommended rule sets dropped the client from 604 problems to 26, and
 immediately surfaced two genuine defects:
 
-| Rule | Found |
-|------|-------|
+| Rule                 | Found                                                                                                                             |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `react/jsx-no-undef` | `PostDetail` rendered `<SubmitBtn>`, defined nowhere — the post-not-found screen crashed ([BUG-17](../product/roadmap.md#bug-17)) |
-| `no-undef` | Four references to a variable renamed during refactoring |
+| `no-undef`           | Four references to a variable renamed during refactoring                                                                          |
 
 ```js
 settings: { react: { version: 'detect' } },
@@ -106,13 +106,13 @@ the decision is visible and reviewed.
 
 ## Further hardening
 
-| Rule | Catches |
-|------|---------|
-| `no-await-in-loop` (warn) | Sequential awaits that should be `Promise.all` |
-| `require-atomic-updates` | Race conditions on shared state |
-| `eqeqeq`, `no-var`, `prefer-const` | Style-adjacent correctness |
-| `eslint-plugin-import` | Import ordering, unresolved paths, cycles |
-| `eslint-plugin-security` | Dynamic regex construction, unsafe filesystem paths |
+| Rule                               | Catches                                             |
+| ---------------------------------- | --------------------------------------------------- |
+| `no-await-in-loop` (warn)          | Sequential awaits that should be `Promise.all`      |
+| `require-atomic-updates`           | Race conditions on shared state                     |
+| `eqeqeq`, `no-var`, `prefer-const` | Style-adjacent correctness                          |
+| `eslint-plugin-import`             | Import ordering, unresolved paths, cycles           |
+| `eslint-plugin-security`           | Dynamic regex construction, unsafe filesystem paths |
 
 ---
 
@@ -120,14 +120,14 @@ the decision is visible and reviewed.
 
 Machine-decided. Never a review comment.
 
-| Option | `backend/` | `client/` |
-|--------|-----------|-----------|
-| `semi` | `true` | `true` |
-| `singleQuote` | `true` | `true` |
-| `tabWidth` | `2` | `2` |
-| `printWidth` | `100` | `100` |
-| `trailingComma` | **`all`** | **`es5`** | ⚠ diverges |
-| `arrowParens` | `always` | default `always` |
+| Option          | `backend/` | `client/`        |
+| --------------- | ---------- | ---------------- |
+| `semi`          | `true`     | `true`           |
+| `singleQuote`   | `true`     | `true`           |
+| `tabWidth`      | `2`        | `2`              |
+| `printWidth`    | `100`      | `100`            |
+| `trailingComma` | **`all`**  | **`es5`**        | ⚠ diverges |
+| `arrowParens`   | `always`   | default `always` |
 
 ## The `trailingComma` divergence
 
@@ -145,11 +145,11 @@ arguments are added, supported by every runtime this project targets. One reform
 
 ## Enforcement asymmetry
 
-| Layer | Backend | Client |
-|-------|---------|--------|
-| Lint | **Integrated** — formatting violations are lint errors | Not integrated |
-| Pre-commit | None | None |
-| CI | None ([GAP-12](../product/roadmap.md#gap-12)) | None |
+| Layer      | Backend                                                | Client         |
+| ---------- | ------------------------------------------------------ | -------------- |
+| Lint       | **Integrated** — formatting violations are lint errors | Not integrated |
+| Pre-commit | None                                                   | None           |
+| CI         | None ([GAP-12](../product/roadmap.md#gap-12))          | None           |
 
 A formatting mistake in `backend/` fails `npm run lint`; the same mistake in `client/` passes
 lint and is caught only by `format:check`. Resolve by either integrating Prettier into the
@@ -173,28 +173,28 @@ git config blame.ignoreRevsFile .git-blame-ignore-revs
 **BlogHub is a plain JavaScript project.** No `.ts` or `.tsx` file exists, nothing
 type-checks, and no runtime validation is in use.
 
-| Signal | State |
-|--------|-------|
-| Source files | `.js` and `.jsx` only |
-| `typescript` dependency | Present in `client/` devDependencies, **unused** |
-| `@types/react`, `@types/react-dom` | Present, unused |
-| `client/tsconfig.json` | Present, strict, **no consumer** |
-| `client/jsconfig.json` | Present, used by editors |
-| Type-check script | None |
-| Runtime validation | `zod` installed, imported nowhere |
-| Prop types | Disabled |
+| Signal                             | State                                            |
+| ---------------------------------- | ------------------------------------------------ |
+| Source files                       | `.js` and `.jsx` only                            |
+| `typescript` dependency            | Present in `client/` devDependencies, **unused** |
+| `@types/react`, `@types/react-dom` | Present, unused                                  |
+| `client/tsconfig.json`             | Present, strict, **no consumer**                 |
+| `client/jsconfig.json`             | Present, used by editors                         |
+| Type-check script                  | None                                             |
+| Runtime validation                 | `zod` installed, imported nowhere                |
+| Prop types                         | Disabled                                         |
 
 ## The configuration drift
 
 Two overlapping configs that disagree, and the stricter one is inert:
 
-| Setting | `jsconfig.json` | `tsconfig.json` |
-|---------|----------------|-----------------|
-| `target` | ES2020 | ES2022 |
-| `jsx` | react-jsx | *(unset)* |
-| `paths` | `@/* → src/*` | *(unset)* |
-| `strict` | *(unset)* | `true` |
-| `allowJs` | implied | **not set** — `.js` files are not even seen |
+| Setting   | `jsconfig.json` | `tsconfig.json`                             |
+| --------- | --------------- | ------------------------------------------- |
+| `target`  | ES2020          | ES2022                                      |
+| `jsx`     | react-jsx       | _(unset)_                                   |
+| `paths`   | `@/* → src/*`   | _(unset)_                                   |
+| `strict`  | _(unset)_       | `true`                                      |
+| `allowJs` | implied         | **not set** — `.js` files are not even seen |
 
 TypeScript prefers `tsconfig.json`, so editors read the strict config — which has no
 `allowJs`, no `jsx` and no `paths`. Consequences: the `@/*` alias is invisible to the editor
@@ -242,22 +242,23 @@ response shape genuinely varies by endpoint:
 const PostSchema = z.object({
   _id: z.string(),
   title: z.string(),
-  visibility: z.enum(['draft', 'private', 'public']),
+  visibility: z.enum(["draft", "private", "public"]),
 });
 
-export const getPost = async (id) => PostSchema.parse((await api.get(`/posts/${id}`)).data.data);
+export const getPost = async (id) =>
+  PostSchema.parse((await api.get(`/posts/${id}`)).data.data);
 ```
 
 `zod` is already installed.
 
 ## Decision record
 
-| Item | Status |
-|------|--------|
-| Adopt TypeScript | **Undecided** — this section exists to force the choice |
-| Remove the drift | **Recommended now**, regardless of that choice |
-| `zod` validation at the API boundary | **Recommended now** — dependency already installed |
-| Backend TypeScript | Deferred |
+| Item                                 | Status                                                  |
+| ------------------------------------ | ------------------------------------------------------- |
+| Adopt TypeScript                     | **Undecided** — this section exists to force the choice |
+| Remove the drift                     | **Recommended now**, regardless of that choice          |
+| `zod` validation at the API boundary | **Recommended now** — dependency already installed      |
+| Backend TypeScript                   | Deferred                                                |
 
 ---
 
@@ -265,21 +266,22 @@ export const getPost = async (id) => PostSchema.parse((await api.get(`/posts/${i
 
 Baseline recorded 2026-08-14:
 
-| Workspace | Advisories |
-|-----------|-----------|
-| `backend/` | 25 (1 critical, 17 high, 4 moderate, 3 low) |
-| `client/` | 17 (13 high, 3 moderate, 1 low) |
+The recorded baseline was 25 advisories in `backend/` (1 critical, 17 high) and 17 in
+`client/` (13 high) — including a `validator` URL-validation bypass reachable through
+`express-validator`, and a `vite` `server.fs.deny` bypass on Windows.
 
-Notable: a `validator` URL-validation bypass reachable through `express-validator`, and a
-`vite` `server.fs.deny` bypass on Windows (development-only).
+**Both workspaces now report zero.** The order mattered: `npm audit fix` on an untested project
+is a blind upgrade, so the backend suite and CI came first, and the updates were taken behind a
+green pipeline ([SEC-12](../security/checklist.md#sec-12)).
 
-**Not remediated** — running `npm audit fix` on a project with no test suite is an
-unacceptable risk. Correct order: tests, then CI, then dependency updates behind a green
-pipeline ([SEC-12](../security/checklist.md#sec-12)).
+CI keeps it that way — `npm audit --audit-level=high` runs on every push for both workspaces and
+fails the build on a high or critical advisory. Moderate and below are reported locally but do
+not block a merge; a pipeline that goes red overnight for a transitive advisory in a build tool
+is one people learn to ignore.
 
-Several packages are installed and unused: `react-hook-form`, `@hookform/resolvers`, `zod`,
-`typescript`, `@types/react`, `@types/react-dom`. Removing them shrinks the audit surface for
-free.
+Several client packages are installed and unused: `react-hook-form`, `@hookform/resolvers`,
+`zod`, and the `typescript` / `@types/*` set in an all-JavaScript project. Removing them shrinks
+the audit surface for free.
 
 ---
 
@@ -287,11 +289,11 @@ free.
 
 Lint should stop being advisory.
 
-| Stage | Mechanism | Behaviour |
-|-------|-----------|-----------|
-| Editing | Editor extension | Inline as you type |
-| Pre-commit | Husky + lint-staged | Lints staged files, blocks the commit |
-| Pull request | CI job | Blocks the merge |
+| Stage        | Mechanism           | Behaviour                             |
+| ------------ | ------------------- | ------------------------------------- |
+| Editing      | Editor extension    | Inline as you type                    |
+| Pre-commit   | Husky + lint-staged | Lints staged files, blocks the commit |
+| Pull request | CI job              | Blocks the merge                      |
 
 ```jsonc
 { "lint-staged": { "*.{js,jsx}": ["eslint --fix", "prettier --write"] } }
