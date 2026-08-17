@@ -21,8 +21,20 @@ import { userService } from '../services/userService';
 import { authService } from '../services/authService';
 import { settingsService } from '../services/settingsService';
 import { useCurrentUser } from '../hooks/useCurrentUser';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../styles/ThemeProvider';
 import { PageShell, PageHeader } from '../components/layout/PageShell';
-import { Button, Input, TextArea, Surface, Loading, Modal, Avatar, Skeleton, SkeletonText } from '../components/ui';
+import {
+  Button,
+  Input,
+  TextArea,
+  Surface,
+  Loading,
+  Modal,
+  Avatar,
+  Skeleton,
+  SkeletonText,
+} from '../components/ui';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 
 // Mirrors the server-side minimum in validators/auth.validators.js.
@@ -530,254 +542,262 @@ export function Settings() {
           ) : (
             <>
               {tab === 'profile' && (
-            <Panel>
-              <PanelHead>
-                <PanelTitle>Profile</PanelTitle>
-                <PanelNote>
-                  Your name and bio appear on your public page and beside everything you publish.
-                </PanelNote>
-              </PanelHead>
+                <Panel>
+                  <PanelHead>
+                    <PanelTitle>Profile</PanelTitle>
+                    <PanelNote>
+                      Your name and bio appear on your public page and beside everything you
+                      publish.
+                    </PanelNote>
+                  </PanelHead>
 
-              <form
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  profileMutation.mutate();
-                }}
-              >
-                {/*
+                  <form
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      profileMutation.mutate();
+                    }}
+                  >
+                    {/*
                   The API has accepted an avatar all along and getUser returns one, but there
                   was no control anywhere in the app to send it, so the feature was invisible.
                 */}
-                <AvatarRow>
-                  <Avatar src={avatarPreview || avatarUrl} name={form.username} size="xl" />
-                  <AvatarControls>
-                    <PanelNote>
-                      JPEG, PNG, WebP or GIF, up to 2 MB. Square images look best.
-                    </PanelNote>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <Button type="button" variant="secondary" size="sm" as="label">
-                        <ImagePlus size={14} /> {avatarUrl || avatarFile ? 'Replace' : 'Upload'}
-                        <HiddenFileInput
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp,image/gif"
-                          onChange={(event) => handleAvatarPick(event.target.files?.[0])}
+                    <AvatarRow>
+                      <Avatar src={avatarPreview || avatarUrl} name={form.username} size="xl" />
+                      <AvatarControls>
+                        <PanelNote>
+                          JPEG, PNG, WebP or GIF, up to 2 MB. Square images look best.
+                        </PanelNote>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          <Button type="button" variant="secondary" size="sm" as="label">
+                            <ImagePlus size={14} /> {avatarUrl || avatarFile ? 'Replace' : 'Upload'}
+                            <HiddenFileInput
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,image/gif"
+                              onChange={(event) => handleAvatarPick(event.target.files?.[0])}
+                            />
+                          </Button>
+                          {avatarFile && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={clearAvatarPick}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                        </div>
+                        {avatarFile && (
+                          <PanelNote>Not saved yet — press Save changes below.</PanelNote>
+                        )}
+                      </AvatarControls>
+                    </AvatarRow>
+
+                    <Fields>
+                      <Input
+                        label="Username"
+                        value={form.username}
+                        onChange={(event) => setForm({ ...form, username: event.target.value })}
+                        placeholder="Your name"
+                      />
+                      <Input
+                        label="Email"
+                        type="email"
+                        value={form.email}
+                        onChange={(event) => setForm({ ...form, email: event.target.value })}
+                        placeholder="you@example.com"
+                      />
+                      <div className="full">
+                        <TextArea
+                          label="Bio"
+                          value={form.bio}
+                          onChange={(event) => setForm({ ...form, bio: event.target.value })}
+                          placeholder="A sentence or two about what you write."
+                          rows={4}
+                          hint="Shown on your public profile."
                         />
+                      </div>
+                    </Fields>
+
+                    <Actions style={{ marginTop: 24 }}>
+                      <Button type="submit" isLoading={profileMutation.isPending}>
+                        Save changes
                       </Button>
-                      {avatarFile && (
-                        <Button type="button" variant="ghost" size="sm" onClick={clearAvatarPick}>
-                          Cancel
-                        </Button>
-                      )}
-                    </div>
-                    {avatarFile && <PanelNote>Not saved yet — press Save changes below.</PanelNote>}
-                  </AvatarControls>
-                </AvatarRow>
+                    </Actions>
+                  </form>
+                </Panel>
+              )}
 
-                <Fields>
-                  <Input
-                    label="Username"
-                    value={form.username}
-                    onChange={(event) => setForm({ ...form, username: event.target.value })}
-                    placeholder="Your name"
-                  />
-                  <Input
-                    label="Email"
-                    type="email"
-                    value={form.email}
-                    onChange={(event) => setForm({ ...form, email: event.target.value })}
-                    placeholder="you@example.com"
-                  />
-                  <div className="full">
-                    <TextArea
-                      label="Bio"
-                      value={form.bio}
-                      onChange={(event) => setForm({ ...form, bio: event.target.value })}
-                      placeholder="A sentence or two about what you write."
-                      rows={4}
-                      hint="Shown on your public profile."
-                    />
-                  </div>
-                </Fields>
+              {tab === 'appearance' && (
+                <Panel>
+                  <PanelHead>
+                    <PanelTitle>Appearance</PanelTitle>
+                    <PanelNote>
+                      System follows whatever your device is set to, and changes with it.
+                    </PanelNote>
+                  </PanelHead>
 
-                <Actions style={{ marginTop: 24 }}>
-                  <Button type="submit" isLoading={profileMutation.isPending}>
-                    Save changes
-                  </Button>
-                </Actions>
-              </form>
-            </Panel>
-          )}
+                  <ThemeGrid>
+                    {THEMES.map(({ id, label, icon: Icon }) => (
+                      <ThemeCard
+                        key={id}
+                        type="button"
+                        $active={preference === id}
+                        onClick={() => handleThemeChange(id)}
+                        aria-pressed={preference === id}
+                      >
+                        {preference === id && (
+                          <Tick>
+                            <Check />
+                          </Tick>
+                        )}
+                        <Icon />
+                        <ThemeName>{label}</ThemeName>
+                      </ThemeCard>
+                    ))}
+                  </ThemeGrid>
+                </Panel>
+              )}
 
-          {tab === 'appearance' && (
-            <Panel>
-              <PanelHead>
-                <PanelTitle>Appearance</PanelTitle>
-                <PanelNote>
-                  System follows whatever your device is set to, and changes with it.
-                </PanelNote>
-              </PanelHead>
+              {tab === 'notifications' && (
+                <Panel>
+                  <PanelHead>
+                    <PanelTitle>Notifications</PanelTitle>
+                    <PanelNote>What reaches you, and where.</PanelNote>
+                  </PanelHead>
 
-              <ThemeGrid>
-                {THEMES.map(({ id, label, icon: Icon }) => (
-                  <ThemeCard
-                    key={id}
-                    type="button"
-                    $active={preference === id}
-                    onClick={() => handleThemeChange(id)}
-                    aria-pressed={preference === id}
-                  >
-                    {preference === id && (
-                      <Tick>
-                        <Check />
-                      </Tick>
-                    )}
-                    <Icon />
-                    <ThemeName>{label}</ThemeName>
-                  </ThemeCard>
-                ))}
-              </ThemeGrid>
-            </Panel>
-          )}
-
-          {tab === 'notifications' && (
-            <Panel>
-              <PanelHead>
-                <PanelTitle>Notifications</PanelTitle>
-                <PanelNote>What reaches you, and where.</PanelNote>
-              </PanelHead>
-
-              <Rows>
-                <Switch
-                  label="Email notifications"
-                  note="Replies to your posts and new followers."
-                  checked={emailNotifications}
-                  onChange={handleNotifications}
-                />
-              </Rows>
-
-              <Notice>
-                <Info />
-                <span>
-                  In-app notifications, push and the weekly digest are still being built. They will
-                  appear here once they work, rather than as switches that do nothing.
-                </span>
-              </Notice>
-            </Panel>
-          )}
-
-          {tab === 'account' && (
-            <>
-              <Panel>
-                <PanelHead>
-                  <PanelTitle>Privacy</PanelTitle>
-                  <PanelNote>What other people can see on your public page.</PanelNote>
-                </PanelHead>
-
-                <Rows>
-                  <Switch
-                    label="Show my email address"
-                    note="Visitors to your profile can see it."
-                    checked={privacy.showEmail}
-                    onChange={(value) => handlePrivacy('showEmail', value)}
-                  />
-                  <Switch
-                    label="Show my activity"
-                    note="Recent posts and comments appear on your profile."
-                    checked={privacy.showActivity}
-                    onChange={(value) => handlePrivacy('showActivity', value)}
-                  />
-                </Rows>
-              </Panel>
-
-              <Panel>
-                <PanelHead>
-                  <PanelTitle>Change password</PanelTitle>
-                  <PanelNote>
-                    You will be signed out everywhere once it changes, including here — that is what
-                    makes changing it useful if the old one leaked.
-                  </PanelNote>
-                </PanelHead>
-
-                <Notice>
-                  <Info />
-                  <span>
-                    Signed in as <strong>{user?.email || form.email}</strong>. Sessions use a
-                    short-lived token that refreshes silently while you are active.
-                  </span>
-                </Notice>
-
-                <form
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    if (passwordForm.newPassword.length < MIN_PASSWORD_LENGTH) {
-                      return toast.error(
-                        `New password must be at least ${MIN_PASSWORD_LENGTH} characters`
-                      );
-                    }
-                    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-                      return toast.error('New passwords do not match');
-                    }
-                    passwordMutation.mutate(passwordForm);
-                  }}
-                >
                   <Rows>
-                    <Input
-                      label="Current password"
-                      type="password"
-                      autoComplete="current-password"
-                      value={passwordForm.currentPassword}
-                      onChange={(event) =>
-                        setPasswordForm((f) => ({ ...f, currentPassword: event.target.value }))
-                      }
-                    />
-                    <Input
-                      label="New password"
-                      type="password"
-                      autoComplete="new-password"
-                      value={passwordForm.newPassword}
-                      onChange={(event) =>
-                        setPasswordForm((f) => ({ ...f, newPassword: event.target.value }))
-                      }
-                      hint={`At least ${MIN_PASSWORD_LENGTH} characters. A passphrase beats punctuation.`}
-                    />
-                    <Input
-                      label="Confirm new password"
-                      type="password"
-                      autoComplete="new-password"
-                      value={passwordForm.confirmPassword}
-                      onChange={(event) =>
-                        setPasswordForm((f) => ({ ...f, confirmPassword: event.target.value }))
-                      }
+                    <Switch
+                      label="Email notifications"
+                      note="Replies to your posts and new followers."
+                      checked={emailNotifications}
+                      onChange={handleNotifications}
                     />
                   </Rows>
 
-                  <div style={{ marginTop: 16 }}>
-                    <Button type="submit" disabled={passwordMutation.isPending}>
-                      {passwordMutation.isPending ? 'Changing…' : 'Change password'}
+                  <Notice>
+                    <Info />
+                    <span>
+                      In-app notifications, push and the weekly digest are still being built. They
+                      will appear here once they work, rather than as switches that do nothing.
+                    </span>
+                  </Notice>
+                </Panel>
+              )}
+
+              {tab === 'account' && (
+                <>
+                  <Panel>
+                    <PanelHead>
+                      <PanelTitle>Privacy</PanelTitle>
+                      <PanelNote>What other people can see on your public page.</PanelNote>
+                    </PanelHead>
+
+                    <Rows>
+                      <Switch
+                        label="Show my email address"
+                        note="Visitors to your profile can see it."
+                        checked={privacy.showEmail}
+                        onChange={(value) => handlePrivacy('showEmail', value)}
+                      />
+                      <Switch
+                        label="Show my activity"
+                        note="Recent posts and comments appear on your profile."
+                        checked={privacy.showActivity}
+                        onChange={(value) => handlePrivacy('showActivity', value)}
+                      />
+                    </Rows>
+                  </Panel>
+
+                  <Panel>
+                    <PanelHead>
+                      <PanelTitle>Change password</PanelTitle>
+                      <PanelNote>
+                        You will be signed out everywhere once it changes, including here — that is
+                        what makes changing it useful if the old one leaked.
+                      </PanelNote>
+                    </PanelHead>
+
+                    <Notice>
+                      <Info />
+                      <span>
+                        Signed in as <strong>{user?.email || form.email}</strong>. Sessions use a
+                        short-lived token that refreshes silently while you are active.
+                      </span>
+                    </Notice>
+
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        if (passwordForm.newPassword.length < MIN_PASSWORD_LENGTH) {
+                          return toast.error(
+                            `New password must be at least ${MIN_PASSWORD_LENGTH} characters`
+                          );
+                        }
+                        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                          return toast.error('New passwords do not match');
+                        }
+                        passwordMutation.mutate(passwordForm);
+                      }}
+                    >
+                      <Rows>
+                        <Input
+                          label="Current password"
+                          type="password"
+                          autoComplete="current-password"
+                          value={passwordForm.currentPassword}
+                          onChange={(event) =>
+                            setPasswordForm((f) => ({ ...f, currentPassword: event.target.value }))
+                          }
+                        />
+                        <Input
+                          label="New password"
+                          type="password"
+                          autoComplete="new-password"
+                          value={passwordForm.newPassword}
+                          onChange={(event) =>
+                            setPasswordForm((f) => ({ ...f, newPassword: event.target.value }))
+                          }
+                          hint={`At least ${MIN_PASSWORD_LENGTH} characters. A passphrase beats punctuation.`}
+                        />
+                        <Input
+                          label="Confirm new password"
+                          type="password"
+                          autoComplete="new-password"
+                          value={passwordForm.confirmPassword}
+                          onChange={(event) =>
+                            setPasswordForm((f) => ({ ...f, confirmPassword: event.target.value }))
+                          }
+                        />
+                      </Rows>
+
+                      <div style={{ marginTop: 16 }}>
+                        <Button type="submit" disabled={passwordMutation.isPending}>
+                          {passwordMutation.isPending ? 'Changing…' : 'Change password'}
+                        </Button>
+                      </div>
+                    </form>
+                  </Panel>
+
+                  <Panel>
+                    <PanelHead>
+                      <PanelTitle>Delete account</PanelTitle>
+                      <PanelNote>
+                        Removes your account, your stories, and the comments and likes on them. This
+                        cannot be undone.
+                      </PanelNote>
+                    </PanelHead>
+
+                    <Button variant="dangerTonal" onClick={() => setConfirmDelete(true)}>
+                      <Trash2 size={16} /> Delete my account
                     </Button>
-                  </div>
-                </form>
-              </Panel>
-
-              <Panel>
-                <PanelHead>
-                  <PanelTitle>Delete account</PanelTitle>
-                  <PanelNote>
-                    Removes your account, your stories, and the comments and likes on them. This
-                    cannot be undone.
-                  </PanelNote>
-                </PanelHead>
-
-                <Button variant="dangerTonal" onClick={() => setConfirmDelete(true)}>
-                  <Trash2 size={16} /> Delete my account
-                </Button>
-              </Panel>
+                  </Panel>
+                </>
+              )}
             </>
           )}
-        </>
-      )}
-    </Panels>
-  </Layout>
+        </Panels>
+      </Layout>
 
       <Modal
         open={confirmDelete}

@@ -5,40 +5,31 @@ import styled, { keyframes } from 'styled-components';
 import {
   ArrowRight,
   PenLine,
-  BookOpen,
   Sparkles,
   Compass,
   TrendingUp,
   Flame,
-  CheckCircle2,
   Heart,
-  MessageCircle,
   BarChart2,
   Layers,
   Zap,
   Users,
   Clock,
-  Bookmark,
+  Eye,
+  MessageCircle,
   ShieldCheck,
   Globe2,
-  Coffee,
-  Cpu,
-  Palette,
-  Plane,
-  Activity,
-  Atom,
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
 import { useAuth } from '../context/AuthContext';
-import { Button, Chip, Loading, Input, Skeleton, SkeletonText } from '../components/ui';
+import { Button, Chip, Skeleton } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
 import { topicIcon } from '../components/marketing/Topics';
-import { initial } from '../utils/text';
+import { initial, readingTime } from '../utils/text';
 
 /* ── Keyframe Animations ─────────────────────────────────────────────────── */
 
@@ -278,19 +269,6 @@ const CardImageMock = styled.div`
     inset: 0;
     background: linear-gradient(180deg, transparent 40%, rgba(15, 23, 42, 0.85) 100%);
   }
-`;
-
-const ImageBadge = styled.span`
-  position: relative;
-  z-index: 1;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(8px);
-  color: #ffffff;
-  padding: 4px 10px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  font-size: 11px;
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.2);
 `;
 
 const CardTitle = styled.h3`
@@ -645,11 +623,13 @@ export function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [selectedTopic, setSelectedTopic] = useState('All');
-  const [newsletterEmail, setNewsletterEmail] = useState('');
 
-  const { data: postsResponse, isLoading } = useQuery({
-    queryKey: ['posts'],
-    queryFn: () => postService.getPosts({ limit: 12 }),
+  // Ranked by recent engagement. The response says which it managed — a real ranking, or the
+  // newest stories because too little has happened to rank anything — and the section is
+  // labelled from that rather than calling whatever came back "trending".
+  const { data: trendingResponse, isLoading } = useQuery({
+    queryKey: ['trendingPosts'],
+    queryFn: () => postService.getTrending({ limit: 12 }),
   });
 
   const { data: categoriesData } = useQuery({
@@ -657,8 +637,10 @@ export function Home() {
     queryFn: categoryService.getCategories,
   });
 
-  const posts = postsResponse?.data ?? [];
-  const categories = categoriesData?.data ?? [];
+  const posts = useMemo(() => trendingResponse?.data ?? [], [trendingResponse]);
+  const isRanked = trendingResponse?.trendedBy === 'engagement';
+  const trendingWindow = trendingResponse?.window ?? 14;
+  const categories = useMemo(() => categoriesData?.data ?? [], [categoriesData]);
 
   const startHref = isAuthenticated ? '/write' : '/register';
   const startLabel = isAuthenticated ? 'Open Creator Studio' : 'Start Publishing Free';
@@ -672,41 +654,60 @@ export function Home() {
     );
   }, [posts, selectedTopic]);
 
-  const handleNewsletter = (e) => {
-    e.preventDefault();
-    if (!newsletterEmail) return;
-    toast.success('Subscribed! Welcome to the BlogHub weekly digest.');
-    setNewsletterEmail('');
-  };
-
+  // The top-ranked story, shown in the hero with its own real figures. It used to be
+  // posts[0] — the newest post — captioned "⚡ Featured Story" beside a hardcoded
+  // "89.4% completion" that belonged to no post at all.
   const featuredPost = posts[0];
-  const featuredCategory =
-    featuredPost?.categories?.[0]?.name ?? featuredPost?.categories?.[0] ?? 'Featured';
-  const featuredAuthor = featuredPost?.user?.username ?? 'john_doe';
+  const featuredCategory = featuredPost?.categories?.[0]?.name ?? featuredPost?.categories?.[0];
+  const featuredAuthor = featuredPost?.user?.username;
+  const featuredStats = featuredPost?.trending;
 
+  /*
+    Writers with more than one story in the current ranking.
+
+    The count is of stories *in this list*, not of everything they have written — the landing
+    page has no way to know that — so it is labelled as such. It previously read
+    `…length || 7`, which meant a writer the count came out as zero for was shown as having
+    seven stories.
+  */
   const featuredWriters = useMemo(() => {
     const map = new Map();
-    posts.forEach((p) => {
-      const u = p.user;
-      if (u && (u._id || u.username) && !map.has(u.username)) {
-        map.set(u.username, {
-          id: u._id,
-          name: u.username,
-          topic: (p.categories?.[0]?.name ?? p.categories?.[0]) || 'Creator',
-          storiesCount: posts.filter((item) => item.user?.username === u.username).length || 7,
-        });
+    posts.forEach((post) => {
+      const author = post.user;
+      if (!author?.username) return;
+
+      const existing = map.get(author.username);
+      if (existing) {
+        existing.storiesCount += 1;
+        return;
       }
+
+      map.set(author.username, {
+        id: author._id,
+        name: author.username,
+        topic: post.categories?.[0]?.name ?? post.categories?.[0] ?? 'Writing',
+        storiesCount: 1,
+      });
     });
-    return Array.from(map.values()).slice(0, 4);
+
+    return Array.from(map.values())
+      .sort((a, b) => b.storiesCount - a.storiesCount)
+      .slice(0, 4);
   }, [posts]);
 
-  const DEFAULT_TOPICS = [
-    { name: 'Food', icon: Coffee },
-    { name: 'Technology', icon: Cpu },
-    { name: 'Science', icon: Atom },
-    { name: 'Design', icon: Palette },
-    { name: 'Health', icon: Activity },
-  ];
+  /*
+    The categories the platform actually has. They were fetched and then ignored in favour of
+    five hardcoded pills, so the filter offered topics that did not exist and hid ones that
+    did. Falling back to the categories present on the loaded stories keeps the bar useful
+    even if the categories request is the one that fails.
+  */
+  const topics = useMemo(() => {
+    if (categories.length > 0) return categories.map((c) => ({ name: c.name }));
+
+    const fromPosts = new Set();
+    posts.forEach((post) => (post.categories || []).forEach((c) => fromPosts.add(c?.name ?? c)));
+    return [...fromPosts].filter(Boolean).map((name) => ({ name }));
+  }, [categories, posts]);
 
   return (
     <Page>
@@ -715,17 +716,23 @@ export function Home() {
         <HeroSection>
           <HeroContent>
             <HeroBadge>
-              <Sparkles /> The Universal Publishing Platform for Writers & Readers
+              <Sparkles /> Markdown in, a clean article out
             </HeroBadge>
 
+            {/*
+              The old headline — "Where ideas in food, tech, science & culture come to life" —
+              named the seed's categories, ran to four lines, and gave a writer no reason to
+              publish here rather than anywhere else. This one leads with the thing the
+              platform actually measures and most others do not.
+            */}
             <HeroTitle>
-              Where ideas in food, tech, science & culture{' '}
-              <span className="gradient-text">come to life.</span>
+              Find out who <span className="gradient-text">finished reading.</span>
             </HeroTitle>
 
             <HeroSubtitle>
-              A clean, distraction-free reading and publishing platform. Explore diverse stories,
-              follow passionate creators, and publish your own perspective.
+              Most platforms count the click. BlogHub counts how far people actually got — so you
+              can see which pieces held attention and which lost it. Write in Markdown, keep drafts
+              private until you are ready, and publish when you are.
             </HeroSubtitle>
 
             <HeroActions>
@@ -737,82 +744,95 @@ export function Home() {
               </Button>
             </HeroActions>
 
-            <HeroSocialProof>
-              <CategoryPillsRow>
-                <MiniPill>
-                  <Coffee /> Culinary & Food
-                </MiniPill>
-                <MiniPill>
-                  <Cpu /> Tech & AI
-                </MiniPill>
-                <MiniPill>
-                  <Atom /> Space & Science
-                </MiniPill>
-                <MiniPill>
-                  <Palette /> UI/UX Design
-                </MiniPill>
-                <MiniPill>
-                  <Plane /> Travel
-                </MiniPill>
-              </CategoryPillsRow>
-            </HeroSocialProof>
+            {/*
+              The real categories, from the API. These were five hardcoded pills reading
+              "Tech & AI", "Space & Science" and "UI/UX Design" — none of which are category
+              names this platform has.
+            */}
+            {topics.length > 0 && (
+              <HeroSocialProof>
+                <CategoryPillsRow>
+                  {topics.slice(0, 5).map((topic) => {
+                    const Icon = topicIcon(topic.name);
+                    return (
+                      <MiniPill key={topic.name}>
+                        <Icon /> {topic.name}
+                      </MiniPill>
+                    );
+                  })}
+                </CategoryPillsRow>
+              </HeroSocialProof>
+            )}
           </HeroContent>
 
-          <HeroVisual>
-            <ShowcaseCard>
-              <CardHeader>
-                <AuthorInfo>
-                  <AuthorAvatar>{initial(featuredAuthor)}</AuthorAvatar>
-                  <AuthorMeta>
-                    <AuthorName>
-                      {featuredAuthor} <CheckCircle2 />
-                    </AuthorName>
-                    <AuthorHandle>
-                      @{featuredAuthor.toLowerCase()} · {featuredCategory}
-                    </AuthorHandle>
-                  </AuthorMeta>
-                </AuthorInfo>
-                <Chip size="sm" selected>
-                  {featuredCategory}
-                </Chip>
-              </CardHeader>
+          {/*
+            A real story with its own real figures, not a mock. Everything numeric here used to
+            be invented: a fixed "89.4%" completion above a bar hardcoded to 92% width, "4 min
+            read", a verification tick beside a name on a platform with no verification, an
+            @handle for a concept that does not exist, and `likes || 18` so an unliked post
+            showed eighteen. It is only rendered once there is a story to render.
+          */}
+          {featuredPost && (
+            <HeroVisual>
+              <ShowcaseCard>
+                <CardHeader>
+                  <AuthorInfo>
+                    <AuthorAvatar>{initial(featuredAuthor)}</AuthorAvatar>
+                    <AuthorMeta>
+                      <AuthorName>{featuredAuthor}</AuthorName>
+                      <AuthorHandle>
+                        {isRanked
+                          ? `Most read in the last ${trendingWindow} days`
+                          : 'Recently published'}
+                      </AuthorHandle>
+                    </AuthorMeta>
+                  </AuthorInfo>
+                  {featuredCategory && (
+                    <Chip size="sm" selected>
+                      {featuredCategory}
+                    </Chip>
+                  )}
+                </CardHeader>
 
-              <CardImageMock
-                style={{
-                  backgroundImage: `url(${featuredPost?.imageURL || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80'})`,
-                }}
-              >
-                <ImageBadge>⚡ Featured Story</ImageBadge>
-              </CardImageMock>
+                {featuredPost.imageURL && (
+                  <CardImageMock style={{ backgroundImage: `url(${featuredPost.imageURL})` }} />
+                )}
 
-              <CardTitle>
-                {featuredPost?.title ||
-                  'The Chemistry of Sourdough: Why Temperature and Hydration Rule the Crumb'}
-              </CardTitle>
+                <CardTitle as={Link} to={`/post/${featuredPost._id}`}>
+                  {featuredPost.title}
+                </CardTitle>
 
-              <ReadRateWidget>
-                <ReadRateHeader>
-                  <span>Reader Completion Rate</span>
-                  <span className="percent">89.4%</span>
-                </ReadRateHeader>
-                <ProgressBar>
-                  <div />
-                </ProgressBar>
-              </ReadRateWidget>
+                {/* Only shown when the figures exist — that is, when the ranking was real. */}
+                {featuredStats && featuredStats.views > 0 && (
+                  <ReadRateWidget>
+                    <ReadRateHeader>
+                      <span>Read to the end</span>
+                      <span className="percent">{featuredStats.readRate}%</span>
+                    </ReadRateHeader>
+                    <ProgressBar>
+                      <div style={{ width: `${featuredStats.readRate}%` }} />
+                    </ProgressBar>
+                  </ReadRateWidget>
+                )}
 
-              <CardFooterStats>
-                <StatItem $heart>
-                  <Heart /> {featuredPost?.likes?.length || 18} likes
-                </StatItem>
-                <StatItem>
-                  <MessageCircle /> {featuredPost?.comments?.length || 6} replies
-                </StatItem>
-                <StatItem>
-                  <Clock /> 4 min read
-                </StatItem>
-              </CardFooterStats>
-            </ShowcaseCard>
-          </HeroVisual>
+                <CardFooterStats>
+                  {featuredStats && (
+                    // "opens", not "reads" — the percentage above is reads as a share of
+                    // opens, so calling this one reads too made the two contradict each other.
+                    <StatItem>
+                      <Eye /> {featuredStats.views} {featuredStats.views === 1 ? 'open' : 'opens'}
+                    </StatItem>
+                  )}
+                  <StatItem $heart>
+                    <Heart /> {featuredPost.likes?.length ?? 0}
+                  </StatItem>
+                  <StatItem>
+                    <Clock /> {readingTime(featuredPost.content)} min read
+                  </StatItem>
+                </CardFooterStats>
+              </ShowcaseCard>
+            </HeroVisual>
+          )}
         </HeroSection>
       </Container>
 
@@ -826,8 +846,8 @@ export function Home() {
           >
             🔥 All Categories
           </Chip>
-          {DEFAULT_TOPICS.map((topic) => {
-            const Icon = topic.icon;
+          {topics.map((topic) => {
+            const Icon = topicIcon(topic.name);
             return (
               <Chip
                 key={topic.name}
@@ -849,18 +869,27 @@ export function Home() {
           <section>
             <SectionHead>
               <SectionLeft>
+                {/*
+                  The heading follows what the server managed to do. "Curated Discoveries" and
+                  "Trending Across All Categories" sat above the twelve newest posts — nothing
+                  was curated and nothing was trending, so publishing anything put it on top.
+                */}
                 <SectionKicker>
-                  <Flame /> Curated Discoveries
+                  <Flame /> {isRanked ? 'Most read recently' : 'Fresh from the community'}
                 </SectionKicker>
                 <SectionTitle>
-                  {selectedTopic === 'All'
-                    ? 'Trending Across All Categories'
-                    : `${selectedTopic} Stories`}
+                  {selectedTopic !== 'All'
+                    ? `${selectedTopic} stories`
+                    : isRanked
+                      ? 'Trending now'
+                      : 'Latest stories'}
                 </SectionTitle>
                 <SectionSubtitle>
                   {isLoading
-                    ? 'Discovering top stories across the community…'
-                    : `${filteredPosts.length} ${filteredPosts.length === 1 ? 'article' : 'articles'} exploring ideas, techniques, and insights.`}
+                    ? 'Loading stories…'
+                    : isRanked
+                      ? `Ranked by reads, finishes, likes and comments over the last ${trendingWindow} days.`
+                      : 'Not enough reading activity yet to rank anything, so these are the newest.'}
                 </SectionSubtitle>
               </SectionLeft>
             </SectionHead>
@@ -933,7 +962,9 @@ export function Home() {
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
                           <Skeleton $variant="circle" $width={34} $height={34} />
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+                          <div
+                            style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}
+                          >
                             <Skeleton $width="70%" $height={13} $radius="xs" />
                             <Skeleton $width="40%" $height={11} $radius="xs" />
                           </div>
@@ -948,7 +979,8 @@ export function Home() {
                           <WriterMeta>
                             <WriterName>{writer.name}</WriterName>
                             <WriterFollowers>
-                              {writer.topic} · {writer.storiesCount} stories
+                              {writer.topic} · {writer.storiesCount}{' '}
+                              {writer.storiesCount === 1 ? 'story' : 'stories'} trending
                             </WriterFollowers>
                           </WriterMeta>
                         </WriterLeft>
@@ -966,34 +998,21 @@ export function Home() {
               </div>
             </SidebarCard>
 
-            {/* Newsletter Sidebar Widget */}
-            <SidebarCard
-              style={{
-                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                borderColor: '#bae6fd',
-              }}
-            >
-              <SidebarTitle style={{ color: '#0369a1' }}>
-                <Zap /> BlogHub Weekly
+            {/*
+              A "BlogHub Weekly" signup form used to sit here. There is no newsletter: it took
+              an address, threw it away, and answered "Subscribed! Welcome to the BlogHub weekly
+              digest." Collecting an address under a promise nothing keeps is the worst kind of
+              filler, so it is gone until there is something to send.
+            */}
+            <SidebarCard>
+              <SidebarTitle>
+                <Zap /> How ranking works
               </SidebarTitle>
-              <p style={{ fontSize: 13, color: '#0369a1', lineHeight: 1.5 }}>
-                A handpicked selection of top culinary essays, scientific breakdowns, tech
-                deep-dives, and design insights.
+              <p style={{ fontSize: 13, lineHeight: 1.6, opacity: 0.85 }}>
+                Stories are ranked by what readers did in the last {trendingWindow} days — opens,
+                finishes, likes and comments — with finishing weighted highest. A new story does not
+                start at the top; it gets there by being read.
               </p>
-              <form
-                onSubmit={handleNewsletter}
-                style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-              >
-                <Input
-                  placeholder="your.email@example.com"
-                  value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
-                  required
-                />
-                <Button size="sm" type="submit">
-                  Join Newsletter
-                </Button>
-              </form>
             </SidebarCard>
           </Sidebar>
         </FeedGrid>
@@ -1004,12 +1023,11 @@ export function Home() {
         <SectionHead style={{ textAlign: 'center', justifyContent: 'center' }}>
           <SectionLeft style={{ alignItems: 'center' }}>
             <SectionKicker>
-              <Layers /> Universal Publishing Engine
+              <Layers /> What you get
             </SectionKicker>
-            <SectionTitle>Designed For Every Storyteller</SectionTitle>
+            <SectionTitle>Everything here, and nothing you did not ask for</SectionTitle>
             <SectionSubtitle style={{ textAlign: 'center' }}>
-              Whether you're sharing a signature recipe, an engineering breakthrough, or a travel
-              journal — BlogHub gives your words the stage they deserve.
+              A short list, because it is the whole list. Each of these is built and working.
             </SectionSubtitle>
           </SectionLeft>
         </SectionHead>
@@ -1019,10 +1037,10 @@ export function Home() {
             <BentoIcon>
               <Globe2 />
             </BentoIcon>
-            <BentoTitle>Universal Multi-Category Hub</BentoTitle>
+            <BentoTitle>Categories and tags</BentoTitle>
             <BentoDescription>
-              Publish across Food, Technology, Science, Travel, Design, and Health with rich tags
-              and instant cross-category discoverability.
+              Put a story under a category an administrator curates, and add up to five tags of your
+              own. Readers filter the feed by either.
             </BentoDescription>
           </BentoCard>
 
@@ -1030,10 +1048,10 @@ export function Home() {
             <BentoIcon>
               <BarChart2 />
             </BentoIcon>
-            <BentoTitle>Read-Through Completion Analytics</BentoTitle>
+            <BentoTitle>Read-through, not just clicks</BentoTitle>
             <BentoDescription>
-              Go beyond simple click counts. Understand true reader engagement with live
-              scroll-depth and completion percentage metrics.
+              Every story records opens and finishes separately, so your dashboard shows what share
+              of readers reached the end — per story and across everything you have written.
             </BentoDescription>
           </BentoCard>
 
@@ -1041,10 +1059,10 @@ export function Home() {
             <BentoIcon>
               <MessageCircle />
             </BentoIcon>
-            <BentoTitle>Engaged Reader Community</BentoTitle>
+            <BentoTitle>Replies you can moderate</BentoTitle>
             <BentoDescription>
-              Receive constructive feedback, threaded discussions, likes, bookmarks, and direct
-              subscriber notifications.
+              Readers reply, and reply to replies. Everything left on your stories collects in one
+              place in your workspace, where you can remove what does not belong.
             </BentoDescription>
           </BentoCard>
 
@@ -1052,10 +1070,10 @@ export function Home() {
             <BentoIcon>
               <ShieldCheck />
             </BentoIcon>
-            <BentoTitle>Seamless Draft, Unlisted & Public Workspaces</BentoTitle>
+            <BentoTitle>Draft, private, public</BentoTitle>
             <BentoDescription>
-              Keep works-in-progress private in your creator workspace, share unlisted peer-review
-              links, or publish globally with one click.
+              A draft is yours alone while you work on it. Private keeps a finished piece out of the
+              feed. Public publishes it. You can move a story between all three at any time.
             </BentoDescription>
           </BentoCard>
 
@@ -1063,10 +1081,10 @@ export function Home() {
             <BentoIcon>
               <Sparkles />
             </BentoIcon>
-            <BentoTitle>Clean & Clutter-Free</BentoTitle>
+            <BentoTitle>Nothing in the way</BentoTitle>
             <BentoDescription>
-              No popups, zero intrusive ads, and responsive typography tuned for maximum reading
-              comfort across all devices.
+              No popups, no ads, no paywall. Light and dark themes, and typography set for reading
+              rather than for scrolling past.
             </BentoDescription>
           </BentoCard>
         </BentoGrid>
@@ -1075,10 +1093,10 @@ export function Home() {
       {/* ── 5. Closing CTA Section ───────────────────────────────────────── */}
       <Container>
         <CtaSection>
-          <CtaTitle>Have an idea or story to share with the world?</CtaTitle>
+          <CtaTitle>Write something and find out if it lands</CtaTitle>
           <CtaSubtitle>
-            Create your account in seconds. Publish food recipes, tech tutorials, science essays, or
-            personal stories for a global audience.
+            An account takes a moment. Your first draft is private until you publish it, and from
+            the day you do you can see how many readers reached the end.
           </CtaSubtitle>
           <Button
             size="lg"

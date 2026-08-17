@@ -56,20 +56,18 @@ const TextGroup = styled.div`
   width: 100%;
 `;
 
-export function SkeletonText({ lines = 3, gap = 'sm', lineHeight = '14px', lastLineWidth = '60%' }) {
+export function SkeletonText({
+  lines = 3,
+  gap = 'sm',
+  lineHeight = '14px',
+  lastLineWidth = '60%',
+}) {
   return (
     <TextGroup $gap={gap}>
       {Array.from({ length: lines }).map((_, index) => {
         const isLast = index === lines - 1;
         const width = isLast ? lastLineWidth : index % 2 === 1 ? '92%' : '100%';
-        return (
-          <Skeleton
-            key={index}
-            $width={width}
-            $height={lineHeight}
-            $radius="xs"
-          />
-        );
+        return <Skeleton key={index} $width={width} $height={lineHeight} $radius="xs" />;
       })}
     </TextGroup>
   );

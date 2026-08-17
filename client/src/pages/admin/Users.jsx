@@ -136,7 +136,16 @@ export function AdminUsers() {
         <PageHeader title="People" subtitle="Loading directory…" />
         <Card tone="low" radius="xl" style={{ padding: 20 }}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 0',
+                borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
                 <Skeleton $variant="circle" $width={36} $height={36} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>

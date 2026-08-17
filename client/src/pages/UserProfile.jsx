@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
+import { useAuth } from '../context/AuthContext';
 import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { PageShell, Section } from '../components/layout/PageShell';

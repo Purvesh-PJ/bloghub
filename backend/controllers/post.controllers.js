@@ -5,6 +5,7 @@ const User = require('../models/user.model');
 const Profile = require('../models/user-profile.model');
 const asyncHandler = require('../middlewares/asyncHandler');
 const { createPost, updatePost } = require('../services/postService');
+const { getTrendingPosts } = require('../services/trendingService');
 const { notFound, forbidden } = require('../utils/AppError');
 
 const MAX_PAGE_SIZE = 50;
@@ -40,6 +41,46 @@ exports.getBlogs = asyncHandler(async (req, res) => {
     message: 'Posts found successfully',
     data: posts,
     pagination: { total, page, limit, pages: Math.ceil(total / limit) },
+  });
+});
+
+/**
+ * Posts ranked by recent engagement.
+ *
+ * `trendedBy: 'latest'` is not a failure — it means too little has happened in the window for
+ * a ranking to mean anything, so the newest stories are returned and the caller is told to
+ * label them as such. The landing page previously called the newest posts "trending"
+ * unconditionally, which is the thing this is designed not to do.
+ */
+exports.getTrendingPosts = asyncHandler(async (req, res) => {
+  const limit = Math.min(req.query.limit || 10, MAX_PAGE_SIZE);
+
+  const { posts, window } = await getTrendingPosts({ limit });
+
+  if (posts.length > 0) {
+    return res.status(200).json({
+      success: true,
+      message: 'Trending posts found',
+      data: posts,
+      trendedBy: 'engagement',
+      window,
+    });
+  }
+
+  const latest = await Post.find({ visibility: 'public' })
+    .populate('user', 'username')
+    .populate('categories', 'name')
+    .populate('tags', 'name')
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    message: 'Not enough recent activity to rank; returning the newest stories',
+    data: latest,
+    trendedBy: 'latest',
+    window,
   });
 });
 
