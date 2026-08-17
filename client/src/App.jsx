@@ -23,6 +23,7 @@ const UserProfile = lazyPage(() => import('./pages/UserProfile'), 'UserProfile')
 // User Pages (Protected)
 const WritePost = lazyPage(() => import('./pages/WritePost'), 'WritePost');
 const Dashboard = lazyPage(() => import('./pages/Dashboard'), 'Dashboard');
+const Responses = lazyPage(() => import('./pages/Responses'), 'Responses');
 const Settings = lazyPage(() => import('./pages/Settings'), 'Settings');
 
 // Admin Pages
@@ -61,6 +62,7 @@ function App() {
           }
         >
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="comments" element={<Responses />} />
           <Route path="write" element={<WritePost />} />
           <Route path="edit/:id" element={<WritePost />} />
           <Route path="settings" element={<Settings />} />
