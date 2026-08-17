@@ -123,6 +123,12 @@ const paginationRules = [
     .toInt(),
 ];
 
+// Public feed listing: pagination plus an optional category name.
+const feedRules = [
+  ...paginationRules,
+  query('category').optional().isString().trim().isLength({ max: 60 }),
+];
+
 // Listing controls for the author's own posts.
 const myPostsRules = [
   ...paginationRules,
@@ -138,6 +144,7 @@ module.exports = {
   commentRules,
   profileRules,
   paginationRules,
+  feedRules,
   myPostsRules,
   MAX_TITLE,
   MAX_CONTENT,

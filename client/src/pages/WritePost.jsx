@@ -310,7 +310,7 @@ export function WritePost() {
 
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
-    queryFn: categoryService.getCategories,
+    queryFn: () => categoryService.getCategories({ withEmpty: true }),
   });
 
   const { data: existingPost, isLoading: postLoading } = useQuery({

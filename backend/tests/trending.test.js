@@ -157,3 +157,71 @@ describe('GET /api/posts/trending', () => {
     expect(post.trending.score).toBe(45);
   });
 });
+
+describe('GET /api/posts?category=', () => {
+  it('queries the whole collection, not just the page the client already had', async () => {
+    const token = await signIn();
+    const Category = require('../models/category.model');
+    const topic = await Category.create({ name: 'Widgets', posts: [] });
+
+    // More stories than a single page, so a client-side filter over one page would miss some.
+    const ids = [];
+    for (let i = 0; i < 12; i += 1) {
+      ids.push(await makePost(token, `Widget story ${i}`));
+    }
+    await Post.updateMany({ _id: { $in: ids } }, { $set: { categories: [topic._id] } });
+
+    // Noise in another category, published after, so it would dominate a newest-first page.
+    for (let i = 0; i < 10; i += 1) await makePost(token, `Unrelated ${i}`);
+
+    const response = await request(app).get('/api/posts?category=Widgets&limit=20');
+
+    expect(response.status).toBe(200);
+    expect(response.body.pagination.total).toBe(12);
+    expect(response.body.data).toHaveLength(12);
+  });
+
+  it('returns nothing for a category that does not exist', async () => {
+    const token = await signIn();
+    await makePost(token, 'Something');
+
+    const response = await request(app).get('/api/posts?category=NoSuchCategory');
+
+    // Silently ignoring an unknown name would hand back the unfiltered feed instead.
+    expect(response.body.data).toHaveLength(0);
+  });
+});
+
+describe('GET /api/categories', () => {
+  it('omits categories with no published stories, and reports counts', async () => {
+    const token = await signIn();
+    const Category = require('../models/category.model');
+    const [used, unused] = await Category.create([
+      { name: 'Used', posts: [] },
+      { name: 'Unused', posts: [] },
+    ]);
+    expect(unused.name).toBe('Unused');
+
+    const id = await makePost(token, 'In a used category');
+    await Post.updateOne({ _id: id }, { $set: { categories: [used._id] } });
+
+    const response = await request(app).get('/api/categories');
+    const names = response.body.data.map((c) => c.name);
+
+    expect(names).toContain('Used');
+    // Offering it would send a reader to an empty list.
+    expect(names).not.toContain('Unused');
+    expect(response.body.data.find((c) => c.name === 'Used').postCount).toBe(1);
+  });
+
+  it('includes empty categories when asked, for the editor to choose from', async () => {
+    const Category = require('../models/category.model');
+    await Category.create({ name: 'Brand new', posts: [] });
+
+    const response = await request(app).get('/api/categories?withEmpty=true');
+    const brandNew = response.body.data.find((c) => c.name === 'Brand new');
+
+    expect(brandNew).toBeDefined();
+    expect(brandNew.postCount).toBe(0);
+  });
+});

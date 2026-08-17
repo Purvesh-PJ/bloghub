@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import styled, { keyframes } from 'styled-components';
@@ -339,15 +339,29 @@ const StatItem = styled.span`
 
 /* ── Topic Filter Slider ─────────────────────────────────────────────────── */
 
-const TopicBar = styled.section`
-  display: flex;
+const EmptyFeed = styled.p`
+  padding: ${({ theme }) => theme.spacing['3xl']} 0;
+  text-align: center;
+  ${text('md')}
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const MoreLink = styled(Link)`
+  display: inline-flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  overflow-x: auto;
-  padding: ${({ theme }) => theme.spacing.sm} 0;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
+  gap: 6px;
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  ${text('sm', 'semibold')}
+  color: ${({ theme }) => theme.colors.accentText};
+
+  svg {
+    width: 15px;
+    height: 15px;
+    transition: transform ${({ theme }) => theme.transitions.fast};
+  }
+
+  &:hover svg {
+    transform: translateX(3px);
   }
 `;
 
@@ -622,7 +636,6 @@ const CtaSubtitle = styled.p`
 export function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [selectedTopic, setSelectedTopic] = useState('All');
 
   // Ranked by recent engagement. The response says which it managed — a real ranking, or the
   // newest stories because too little has happened to rank anything — and the section is
@@ -644,15 +657,6 @@ export function Home() {
 
   const startHref = isAuthenticated ? '/write' : '/register';
   const startLabel = isAuthenticated ? 'Open Creator Studio' : 'Start Publishing Free';
-
-  const filteredPosts = useMemo(() => {
-    if (selectedTopic === 'All') return posts;
-    return posts.filter((post) =>
-      (post.categories || []).some(
-        (cat) => (cat?.name ?? cat).toLowerCase() === selectedTopic.toLowerCase()
-      )
-    );
-  }, [posts, selectedTopic]);
 
   // The top-ranked story, shown in the hero with its own real figures. It used to be
   // posts[0] — the newest post — captioned "⚡ Featured Story" beside a hardcoded
@@ -836,33 +840,6 @@ export function Home() {
         </HeroSection>
       </Container>
 
-      {/* ── 2. Topic Filter Carousel ─────────────────────────────────────── */}
-      <Container>
-        <TopicBar>
-          <Chip
-            size="md"
-            selected={selectedTopic === 'All'}
-            onClick={() => setSelectedTopic('All')}
-          >
-            🔥 All Categories
-          </Chip>
-          {topics.map((topic) => {
-            const Icon = topicIcon(topic.name);
-            return (
-              <Chip
-                key={topic.name}
-                size="md"
-                selected={selectedTopic.toLowerCase() === topic.name.toLowerCase()}
-                onClick={() => setSelectedTopic(topic.name)}
-              >
-                <Icon size={15} />
-                {topic.name}
-              </Chip>
-            );
-          })}
-        </TopicBar>
-      </Container>
-
       {/* ── 3. Main Feed & Sidebar ───────────────────────────────────────── */}
       <Container>
         <FeedGrid>
@@ -877,13 +854,7 @@ export function Home() {
                 <SectionKicker>
                   <Flame /> {isRanked ? 'Most read recently' : 'Fresh from the community'}
                 </SectionKicker>
-                <SectionTitle>
-                  {selectedTopic !== 'All'
-                    ? `${selectedTopic} stories`
-                    : isRanked
-                      ? 'Trending now'
-                      : 'Latest stories'}
-                </SectionTitle>
+                <SectionTitle>{isRanked ? 'Trending now' : 'Latest stories'}</SectionTitle>
                 <SectionSubtitle>
                   {isLoading
                     ? 'Loading stories…'
@@ -899,43 +870,53 @@ export function Home() {
                 Array.from({ length: 5 }).map((_, index) => (
                   <PostCardSkeleton key={index} layout="row" />
                 ))
-              ) : filteredPosts.length === 0 ? (
-                <div style={{ padding: '48px 0', textAlign: 'center', color: '#64748b' }}>
-                  No stories found in this topic yet.
-                </div>
+              ) : posts.length === 0 ? (
+                <EmptyFeed>
+                  Nothing has been published yet. If you have something to say, you would be first.
+                </EmptyFeed>
               ) : (
-                filteredPosts.map((post) => <PostCard key={post._id} post={post} />)
+                posts.map((post) => <PostCard key={post._id} post={post} />)
               )}
             </PostList>
+
+            {/*
+              The list is a top ten, not the archive. Without a way onward the page simply
+              stopped, which is also why the filter felt necessary — search is where browsing
+              the whole collection belongs.
+            */}
+            {!isLoading && posts.length > 0 && (
+              <MoreLink to="/search">
+                Explore all stories <ArrowRight />
+              </MoreLink>
+            )}
           </section>
 
           <Sidebar>
-            {/* Trending Topics Widget */}
+            {/*
+              Real categories, each a link into search rather than a local filter.
+
+              These were eight hardcoded names — one of them, "Architecture", is not a category
+              this platform has — wired to a filter that ran over the twelve ranked posts
+              already on the page. So picking "Programming" showed nothing while eight
+              published Programming stories sat in the database, and picking a category with no
+              stories at all was offered just the same. Browsing belongs on the search page,
+              which queries the whole collection; this points there and says how many are
+              waiting.
+            */}
             <SidebarCard>
               <SidebarTitle>
-                <TrendingUp /> Explore Topics
+                <TrendingUp /> Browse by topic
               </SidebarTitle>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {[
-                  'Food',
-                  'Technology',
-                  'Science',
-                  'Design',
-                  'Travel',
-                  'Health',
-                  'Programming',
-                  'Architecture',
-                ].map((name) => (
+                {categories.map((category) => (
                   <Chip
-                    key={name}
+                    key={category._id}
+                    as={Link}
                     size="sm"
-                    selected={selectedTopic.toLowerCase() === name.toLowerCase()}
-                    onClick={() => {
-                      setSelectedTopic(name);
-                      window.scrollTo({ top: 460, behavior: 'smooth' });
-                    }}
+                    to={`/search?topic=${encodeURIComponent(category.name)}`}
                   >
-                    {name}
+                    {category.name}
+                    {category.postCount ? ` (${category.postCount})` : ''}
                   </Chip>
                 ))}
               </div>
