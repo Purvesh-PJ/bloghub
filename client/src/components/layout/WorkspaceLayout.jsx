@@ -290,6 +290,7 @@ export function WorkspaceLayout() {
     if (location.pathname === '/dashboard') return 'Dashboard & Stories';
     if (location.pathname.startsWith('/write') || location.pathname.startsWith('/edit'))
       return 'Story Editor';
+    if (location.pathname === '/comments') return 'Responses';
     if (location.pathname === '/settings') return 'Account Settings';
     return 'Creator Studio';
   };

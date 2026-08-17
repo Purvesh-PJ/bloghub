@@ -1,6 +1,7 @@
 import * as RadixSelect from '@radix-ui/react-select';
 import styled from 'styled-components';
 import { Check, ChevronDown } from 'lucide-react';
+import { text } from '../../styles/theme/mixins';
 
 /**
  * Select — Radix Select underneath.
@@ -17,10 +18,17 @@ const Field = styled.div`
   width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
 `;
 
+/*
+  Matches Input's label exactly, via the same mixin.
+
+  This read `theme.ui.base[0]`, and `theme.ui` is the `text` scale — which has xs/sm/md/lg/xl
+  and no `base`. So the subscript ran against undefined and threw during style generation,
+  taking down any page that rendered a Select with a label. Nothing had, until now.
+*/
 const Label = styled.label`
-  font-size: ${({ theme }) => theme.ui.base[0]};
-  font-weight: ${({ theme }) => theme.weights.medium};
+  ${text('sm', 'medium')}
   color: ${({ theme }) => theme.colors.textSecondary};
+  padding-left: ${({ theme }) => theme.spacing.xs};
 `;
 
 const Trigger = styled(RadixSelect.Trigger)`

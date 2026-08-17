@@ -193,10 +193,16 @@ const Rows = styled.div`
 
 const Row = styled.div`
   display: grid;
-  grid-template-columns: 28px 1fr 200px 140px 40px;
+  /*
+    The title takes the slack. It used to sit in a 1fr beside 380px of fixed columns inside a
+    two-thirds-width panel, which left it roughly 120px — every story rendered as "The
+    Chemistry of…" and none could be told apart. The panel is full width now and these
+    columns are tighter.
+  */
+  grid-template-columns: 28px minmax(0, 1fr) 170px 110px 96px;
   grid-template-areas: 'select title rate engagement actions';
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacing.lg};
   padding: ${({ theme }) => theme.spacing.lg};
   border-radius: ${({ theme }) => theme.radii.md};
   transition: background ${({ theme }) => theme.transitions.fast};
@@ -213,17 +219,26 @@ const Row = styled.div`
   }
 
   ${media.down('lg')`
-    grid-template-columns: 28px 1fr 200px 40px;
+    grid-template-columns: 28px minmax(0, 1fr) 170px 96px;
     grid-template-areas: 'select title rate actions';
   `}
 
   ${media.down('sm')`
-    grid-template-columns: 28px 1fr 40px;
+    grid-template-columns: 28px minmax(0, 1fr) 44px;
     grid-template-areas:
       'select title  actions'
       '.      rate   rate';
     gap: ${({ theme }) => theme.spacing.md};
   `}
+`;
+
+/* Fixed width, so the publish shortcut cannot spill left over the engagement figures. */
+const ActionsCell = styled.div`
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 const SelectCell = styled.div`
@@ -354,6 +369,11 @@ const RowMeta = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xs};
   ${text('xs')}
   color: ${({ theme }) => theme.colors.textMuted};
+
+  /* "about 1 month ago" was breaking across three lines and doubling the row height. */
+  > span {
+    white-space: nowrap;
+  }
 `;
 
 const Stat = styled.span`
@@ -371,19 +391,19 @@ const Stat = styled.span`
   }
 `;
 
-const Split = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: ${({ theme }) => theme.spacing['2xl']};
-  align-items: start;
-
-  ${media.down('lg')`grid-template-columns: 1fr;`}
-`;
-
+/*
+  The insight cards sit under the table rather than in a sidebar beside it. As a column they
+  took a third of the width from the one thing this page is for — managing stories — which is
+  what squeezed every title down to an ellipsis.
+*/
 const Aside = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: ${({ theme }) => theme.spacing.xl};
+  align-items: start;
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+
+  ${media.down('md')`grid-template-columns: 1fr;`}
 `;
 
 const AsideLabel = styled.span`
@@ -526,36 +546,6 @@ function PostRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSel
     { value: 'private', label: 'Make private', icon: <Lock size={14} /> },
   ].filter((option) => option.value !== (post.visibility || 'draft'));
 
-  const menuItems = [
-    {
-      label: 'Edit story',
-      icon: <Pencil size={14} />,
-      onClick: () => navigate(`/edit/${post._id}`),
-    },
-    ...visibilityActions.map((option) => ({
-      label: option.label,
-      icon: option.icon,
-      onClick: () => onSetVisibility(post, option.value),
-    })),
-    {
-      label: isPublic ? 'Copy public link' : 'Copy private link',
-      icon: <Share2 size={14} />,
-      onClick: handleCopyLink,
-    },
-    {
-      // An unpublished story is not "live", and saying so invited the writer to believe it was.
-      label: isPublic ? 'View live story' : 'Preview as reader',
-      icon: <ExternalLink size={14} />,
-      onClick: () => navigate(`/post/${post._id}`),
-    },
-    {
-      label: 'Delete story',
-      icon: <Trash2 size={14} />,
-      variant: 'danger',
-      onClick: () => onDelete(post),
-    },
-  ];
-
   const views = stats?.views ?? post.views?.length ?? 0;
   const reads = stats?.reads ?? 0;
   const rate = stats?.readRate ?? (views > 0 ? Math.round((reads / views) * 100) : 0);
@@ -610,34 +600,55 @@ function PostRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSel
         </Stat>
       </EngagementCell>
 
-      <div
-        style={{
-          gridArea: 'actions',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          justifyContent: 'flex-end',
-        }}
-      >
-        {post.visibility !== 'public' && (
-          <Button
-            size="xs"
-            variant="tonal"
-            onClick={() => onSetVisibility(post, 'public')}
-            title="Publish this story live immediately"
-          >
-            <Globe size={12} /> Publish
-          </Button>
-        )}
+      <ActionsCell>
+        {/*
+          DropdownMenu takes children — it never had an `items` prop. Passing one meant the
+          menu rendered empty, so Edit, Delete, every visibility change, copy link and preview
+          were all unreachable: a story could be written and then never managed. Header and
+          the admin table had always used the children form; only this table had not.
+        */}
         <DropdownMenu
           trigger={
-            <Button variant="ghost" size="sm" aria-label="Story actions">
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={`Actions for ${post.title || 'Untitled'}`}
+            >
               <MoreHorizontal size={16} />
             </Button>
           }
-          items={menuItems}
-        />
-      </div>
+        >
+          <DropdownMenu.Item onSelect={() => navigate(`/edit/${post._id}`)}>
+            <Pencil size={14} /> Edit story
+          </DropdownMenu.Item>
+
+          <DropdownMenu.Item onSelect={() => navigate(`/post/${post._id}`)}>
+            <ExternalLink size={14} /> {isPublic ? 'View live story' : 'Preview as reader'}
+          </DropdownMenu.Item>
+
+          <DropdownMenu.Item onSelect={handleCopyLink}>
+            <Share2 size={14} /> {isPublic ? 'Copy public link' : 'Copy private link'}
+          </DropdownMenu.Item>
+
+          <DropdownMenu.Separator />
+          <DropdownMenu.Label>Visibility</DropdownMenu.Label>
+
+          {visibilityActions.map((option) => (
+            <DropdownMenu.Item
+              key={option.value}
+              onSelect={() => onSetVisibility(post, option.value)}
+            >
+              {option.icon} {option.label}
+            </DropdownMenu.Item>
+          ))}
+
+          <DropdownMenu.Separator />
+
+          <DropdownMenu.Item $tone="danger" onSelect={() => onDelete(post)}>
+            <Trash2 size={14} /> Delete story
+          </DropdownMenu.Item>
+        </DropdownMenu>
+      </ActionsCell>
     </Row>
   );
 }
@@ -941,235 +952,231 @@ export function Dashboard() {
         </MetricGrid>
       )}
 
-      <Split>
-        <Section title="Your Stories">
-          {/*
+      <Section title="Your Stories">
+        {/*
             The bulk bar sits above the toolbar rather than replacing it. Swapping them out
             hid which filter was active and removed any way to change it without first
             abandoning the selection.
           */}
-          {selectedIds.length > 0 && (
-            <BulkBar>
-              <BulkCount>{selectedIds.length} selected on this page</BulkCount>
-              <Button
-                size="sm"
-                variant="tonal"
-                onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'public' })}
-                disabled={bulkMutation.isPending}
-              >
-                <Globe size={14} /> Publish
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'draft' })}
-                disabled={bulkMutation.isPending}
-              >
-                <EyeOff size={14} /> To drafts
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'private' })}
-                disabled={bulkMutation.isPending}
-              >
-                <Lock size={14} /> Make private
-              </Button>
-              <Button
-                size="sm"
-                variant="dangerTonal"
-                onClick={() => setPendingBulk(selectedIds)}
-                disabled={bulkMutation.isPending}
-              >
-                <Trash2 size={14} /> Delete
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
-                Cancel
-              </Button>
-            </BulkBar>
-          )}
-
-          <Toolbar>
-            {FILTERS.map((option) => (
-              <Chip
-                key={option.id}
-                selected={filter === option.id}
-                onClick={() => resetToFirstPage(() => setFilter(option.id))}
-              >
-                {option.label}
-                {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
-              </Chip>
-            ))}
-
-            <SortSelect
-              value={sort}
-              onChange={(e) => resetToFirstPage(() => setSort(e.target.value))}
-              aria-label="Sort stories"
+        {selectedIds.length > 0 && (
+          <BulkBar>
+            <BulkCount>{selectedIds.length} selected on this page</BulkCount>
+            <Button
+              size="sm"
+              variant="tonal"
+              onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'public' })}
+              disabled={bulkMutation.isPending}
             >
-              {SORTS.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.label}
-                </option>
-              ))}
-            </SortSelect>
+              <Globe size={14} /> Publish
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'draft' })}
+              disabled={bulkMutation.isPending}
+            >
+              <EyeOff size={14} /> To drafts
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'private' })}
+              disabled={bulkMutation.isPending}
+            >
+              <Lock size={14} /> Make private
+            </Button>
+            <Button
+              size="sm"
+              variant="dangerTonal"
+              onClick={() => setPendingBulk(selectedIds)}
+              disabled={bulkMutation.isPending}
+            >
+              <Trash2 size={14} /> Delete
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
+              Cancel
+            </Button>
+          </BulkBar>
+        )}
 
-            <SearchField>
-              <Input
-                icon={<SearchIcon />}
-                placeholder="Search by title…"
-                value={query}
-                // Selection is cleared here too. Without it, selecting rows and then
-                // searching left the selection pointing at posts no longer on screen —
-                // so "Delete" acted on stories the reader could not see.
-                onChange={(e) => resetToFirstPage(() => setQuery(e.target.value))}
-              />
-            </SearchField>
-          </Toolbar>
+        <Toolbar>
+          {FILTERS.map((option) => (
+            <Chip
+              key={option.id}
+              selected={filter === option.id}
+              onClick={() => resetToFirstPage(() => setFilter(option.id))}
+            >
+              {option.label}
+              {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
+            </Chip>
+          ))}
 
-          {/*
+          <SortSelect
+            value={sort}
+            onChange={(e) => resetToFirstPage(() => setSort(e.target.value))}
+            aria-label="Sort stories"
+          >
+            {SORTS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </SortSelect>
+
+          <SearchField>
+            <Input
+              icon={<SearchIcon />}
+              placeholder="Search by title…"
+              value={query}
+              // Selection is cleared here too. Without it, selecting rows and then
+              // searching left the selection pointing at posts no longer on screen —
+              // so "Delete" acted on stories the reader could not see.
+              onChange={(e) => resetToFirstPage(() => setQuery(e.target.value))}
+            />
+          </SearchField>
+        </Toolbar>
+
+        {/*
             The failure branch comes first and is deliberate. Falling through to the empty
             state meant an outage told a writer with fifty posts that they had never written
             anything, and invited them to start.
           */}
-          {postsFailed ? (
-            <ErrorState
-              title="Your stories did not load"
-              error={postsError}
-              onRetry={() => refetchPosts()}
-            />
-          ) : posts.length === 0 ? (
-            <EmptyState
-              icon={SearchIcon}
-              title={counts.all === 0 ? 'No stories written yet' : 'No matching stories'}
-            >
-              {counts.all === 0 ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 12,
-                    marginTop: 8,
-                  }}
-                >
-                  <span>
-                    You haven't published or drafted any stories yet. Start writing today!
-                  </span>
-                  <Button as={Link} to="/write" size="sm">
-                    <PenLine size={14} /> Start Writing
-                  </Button>
-                </div>
-              ) : (
-                'No posts match that filter. Try selecting another tab or clear search.'
-              )}
-            </EmptyState>
-          ) : (
-            <Surface $tone="low" $radius="xl" $padding="sm" style={{ position: 'relative' }}>
-              {/*
+        {postsFailed ? (
+          <ErrorState
+            title="Your stories did not load"
+            error={postsError}
+            onRetry={() => refetchPosts()}
+          />
+        ) : posts.length === 0 ? (
+          <EmptyState
+            icon={SearchIcon}
+            title={counts.all === 0 ? 'No stories written yet' : 'No matching stories'}
+          >
+            {counts.all === 0 ? (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 12,
+                  marginTop: 8,
+                }}
+              >
+                <span>You haven't published or drafted any stories yet. Start writing today!</span>
+                <Button as={Link} to="/write" size="sm">
+                  <PenLine size={14} /> Start Writing
+                </Button>
+              </div>
+            ) : (
+              'No posts match that filter. Try selecting another tab or clear search.'
+            )}
+          </EmptyState>
+        ) : (
+          <Surface $tone="low" $radius="xl" $padding="sm" style={{ position: 'relative' }}>
+            {/*
                 A refetch keeps the previous rows on screen, so without this the list simply
                 sat there after a filter or a keystroke with nothing to say it was working.
               */}
-              {postsFetching && (
-                <FetchingBar role="status" aria-live="polite">
-                  <Spinner size="12px" /> Updating…
-                </FetchingBar>
-              )}
+            {postsFetching && (
+              <FetchingBar role="status" aria-live="polite">
+                <Spinner size="12px" /> Updating…
+              </FetchingBar>
+            )}
 
-              <SelectAllRow>
-                <Checkbox
-                  type="checkbox"
-                  checked={allOnPageSelected}
-                  onChange={() =>
-                    setSelectedIds(
-                      allOnPageSelected
-                        ? selectedIds.filter((id) => !visibleIds.includes(id))
-                        : [...new Set([...selectedIds, ...visibleIds])]
-                    )
+            <SelectAllRow>
+              <Checkbox
+                type="checkbox"
+                checked={allOnPageSelected}
+                onChange={() =>
+                  setSelectedIds(
+                    allOnPageSelected
+                      ? selectedIds.filter((id) => !visibleIds.includes(id))
+                      : [...new Set([...selectedIds, ...visibleIds])]
+                  )
+                }
+                aria-label="Select every story on this page"
+              />
+              <span>Select all on this page</span>
+            </SelectAllRow>
+
+            <Rows>
+              {posts.map((post) => (
+                <PostRow
+                  key={post._id}
+                  post={post}
+                  stats={statsByPost.get(String(post._id))}
+                  selected={selectedIds.includes(post._id)}
+                  onToggleSelected={toggleSelected}
+                  onDelete={setPendingDelete}
+                  onSetVisibility={(p, vis) =>
+                    setVisibilityMutation.mutate({ post: p, newVisibility: vis })
                   }
-                  aria-label="Select every story on this page"
                 />
-                <span>Select all on this page</span>
-              </SelectAllRow>
+              ))}
+            </Rows>
 
-              <Rows>
-                {posts.map((post) => (
-                  <PostRow
-                    key={post._id}
-                    post={post}
-                    stats={statsByPost.get(String(post._id))}
-                    selected={selectedIds.includes(post._id)}
-                    onToggleSelected={toggleSelected}
-                    onDelete={setPendingDelete}
-                    onSetVisibility={(p, vis) =>
-                      setVisibilityMutation.mutate({ post: p, newVisibility: vis })
-                    }
-                  />
-                ))}
-              </Rows>
+            {pagination && pagination.pages > 1 && (
+              <Pager>
+                <PagerLabel>
+                  Page {pagination.page} of {pagination.pages} · {pagination.total} stories
+                </PagerLabel>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={page <= 1}
+                    onClick={() => {
+                      setPage((n) => n - 1);
+                      setSelectedIds([]);
+                    }}
+                  >
+                    <ChevronLeft size={14} /> Previous
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={page >= pagination.pages}
+                    onClick={() => {
+                      setPage((n) => n + 1);
+                      setSelectedIds([]);
+                    }}
+                  >
+                    Next <ChevronRight size={14} />
+                  </Button>
+                </div>
+              </Pager>
+            )}
+          </Surface>
+        )}
+      </Section>
 
-              {pagination && pagination.pages > 1 && (
-                <Pager>
-                  <PagerLabel>
-                    Page {pagination.page} of {pagination.pages} · {pagination.total} stories
-                  </PagerLabel>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      disabled={page <= 1}
-                      onClick={() => {
-                        setPage((n) => n - 1);
-                        setSelectedIds([]);
-                      }}
-                    >
-                      <ChevronLeft size={14} /> Previous
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      disabled={page >= pagination.pages}
-                      onClick={() => {
-                        setPage((n) => n + 1);
-                        setSelectedIds([]);
-                      }}
-                    >
-                      Next <ChevronRight size={14} />
-                    </Button>
-                  </div>
-                </Pager>
-              )}
-            </Surface>
-          )}
-        </Section>
-
-        <Aside>
-          {topFinished.length > 0 && (
-            <Card tone="low" radius="xl">
-              <AsideLabel>
-                <TrendingUp /> Highest Completion Rate
-              </AsideLabel>
-              <div style={{ marginTop: 8 }}>
-                {topFinished.map((entry) => (
-                  <TopPost key={String(entry.postId)} to={`/post/${entry.postId}`}>
-                    <TopPostTitle>{entry.title}</TopPostTitle>
-                    <ReadRateBar views={entry.views} reads={entry.reads} rate={entry.readRate} />
-                  </TopPost>
-                ))}
-              </div>
-            </Card>
-          )}
-
+      <Aside>
+        {topFinished.length > 0 && (
           <Card tone="low" radius="xl">
             <AsideLabel>
-              <Sparkles /> Quick Creator Tip
+              <TrendingUp /> Highest Completion Rate
             </AsideLabel>
-            <TipText>
-              Articles with a clear table of contents, high-quality cover photo, and 3–5 min read
-              time achieve a <strong>24% higher completion rate</strong> on BlogHub.
-            </TipText>
+            <div style={{ marginTop: 8 }}>
+              {topFinished.map((entry) => (
+                <TopPost key={String(entry.postId)} to={`/post/${entry.postId}`}>
+                  <TopPostTitle>{entry.title}</TopPostTitle>
+                  <ReadRateBar views={entry.views} reads={entry.reads} rate={entry.readRate} />
+                </TopPost>
+              ))}
+            </div>
           </Card>
-        </Aside>
-      </Split>
+        )}
+
+        <Card tone="low" radius="xl">
+          <AsideLabel>
+            <Sparkles /> Quick Creator Tip
+          </AsideLabel>
+          <TipText>
+            Articles with a clear table of contents, high-quality cover photo, and 3–5 min read time
+            achieve a <strong>24% higher completion rate</strong> on BlogHub.
+          </TipText>
+        </Card>
+      </Aside>
 
       {/* ── Reading Activity ──────────────────────────────────────────────── */}
       <Section

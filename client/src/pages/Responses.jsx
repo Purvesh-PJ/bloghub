@@ -20,7 +20,7 @@ import {
   EmptyState,
   ErrorState,
 } from '../components/ui';
-import { text, media, clamp } from '../styles/theme/mixins';
+import { text, media } from '../styles/theme/mixins';
 
 /**
  * Responses — what readers have said, and the only place an author can moderate it.
@@ -112,7 +112,9 @@ const PostTitle = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  ${clamp(1)}
+  /* Two words that must not wrap or clip; clamping them rendered "Open sto…". */
+  white-space: nowrap;
+  flex-shrink: 0;
 `;
 
 const Count = styled.span`
