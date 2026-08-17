@@ -10,6 +10,7 @@ import {
   ExternalLink,
   MessageSquare,
   ShieldCheck,
+  FileText,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
@@ -287,11 +288,12 @@ export function WorkspaceLayout() {
   const userId = user?._id || user?.user_id;
 
   const getPageTitle = () => {
-    if (location.pathname === '/dashboard') return 'Dashboard & Stories';
-    if (location.pathname.startsWith('/write') || location.pathname.startsWith('/edit'))
-      return 'Story Editor';
+    if (location.pathname === '/dashboard') return 'Dashboard';
+    if (location.pathname === '/stories') return 'Stories';
+    if (location.pathname.startsWith('/write')) return 'New story';
+    if (location.pathname.startsWith('/edit')) return 'Editing a story';
     if (location.pathname === '/comments') return 'Responses';
-    if (location.pathname === '/settings') return 'Account Settings';
+    if (location.pathname === '/settings') return 'Settings';
     return 'Creator Studio';
   };
 
@@ -310,10 +312,16 @@ export function WorkspaceLayout() {
 
           <Nav>
             <NavLink to="/dashboard" $active={location.pathname === '/dashboard'}>
-              <LayoutDashboard /> Dashboard & Stories
+              <LayoutDashboard /> Dashboard
+            </NavLink>
+            <NavLink
+              to="/stories"
+              $active={location.pathname === '/stories' || location.pathname.startsWith('/edit')}
+            >
+              <FileText /> Stories
             </NavLink>
             <NavLink to="/write" $active={location.pathname.startsWith('/write')}>
-              <PenLine /> Write New Story
+              <PenLine /> Write
             </NavLink>
             <NavLink to="/comments" $active={location.pathname === '/comments'}>
               <MessageSquare /> Responses
