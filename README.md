@@ -43,15 +43,18 @@ BlogHub is a MERN-stack publishing platform. It serves three audiences from one 
 The API exposes 51 endpoints across 12 resources; the client is an 18-route React SPA with
 route-level code splitting and full light/dark theming.
 
-> **Project status.** An end-to-end audit found 18 functional defects and 12 security
-> findings. Remediation closed **14 defects and 8 security findings**, each verified against a
-> running server — including the one that mattered most, where post visibility was never
-> persisted so nothing published through the app ever reached the feed.
+> **Project status.** An end-to-end audit found 18 functional defects and 15 security
+> findings; remediation closed all of the security findings and every defect that a request
+> can reach — including the one that mattered most, where post visibility was never persisted
+> so nothing published through the app ever reached the feed. A **61-test backend suite** and
+> a **CI pipeline** now hold those fixes in place: lint, format, tests and a dependency audit
+> run on every push.
 >
-> **Still open, and the reason this is not production-ready:** there is no test suite and no
-> CI pipeline. Everything fixed above could regress tomorrow and nothing would catch it.
-> See [docs/product/roadmap.md](./docs/product/roadmap.md) and
-> [docs/security/checklist.md](./docs/security/checklist.md) — treat both as the release gate.
+> **Still open.** The client has no tests — CI proves it compiles, not that it behaves. Rate
+> limiting is per-instance, so it does not survive horizontal scaling. There is no email
+> verification or password reset. See
+> [docs/product/roadmap.md](./docs/product/roadmap.md) and
+> [docs/security/checklist.md](./docs/security/checklist.md).
 
 ---
 
@@ -60,11 +63,11 @@ route-level code splitting and full light/dark theming.
 | Area | Capabilities |
 |------|--------------|
 | **Authoring** | Markdown editor with live preview, auto-generated slugs, cover images, category assignment, enforced draft/private/public visibility |
-| **Reading** | Paginated category-filtered feed, trending sidebar, full article view, title search. Drafts are hidden from the public and readable by their author |
-| **Social** | Comments with one level of replies, likes that survive a reload, follow/unfollow, public author profiles |
+| **Reading** | Paginated feed, trending list ranked on the last 14 days, full article view, title search with category filtering. Drafts are hidden from the public and readable by their author |
+| **Social** | Comments with one level of replies, likes that survive a reload and are unique per user per post at the database level, follow/unfollow, public author profiles |
 | **Analytics** | Per-author views, reads and read rate, top-performing posts; site-wide totals for administrators. Scoped so one member cannot read another's figures |
-| **Administration** | Post management including drafts, category management, paginated user listing, role-gated console |
-| **Accounts** | JWT authentication with separate access and refresh secrets, silent refresh, brute-force protection, profile editing, persisted preferences |
+| **Administration** | Post management including drafts, category management, paginated user listing, suspend and restore, promote and demote, account deletion — all role-gated, with a guard against removing the last administrator |
+| **Accounts** | JWT authentication with separate access and refresh secrets, silent refresh, revocable sessions via `tokenVersion`, brute-force protection, profile editing, persisted preferences |
 | **Platform** | Light/dark themes, responsive from 375px, route-level code splitting, error boundary, health endpoints, security headers, rate limiting |
 
 Full catalogue with per-feature implementation status:
@@ -201,7 +204,10 @@ cd ../client && npm install
 cd backend && npm run seed
 ```
 
-Creates 10 categories, 15 users, 22 published posts, plus comments, likes and views.
+Creates 10 categories, 15 accounts and 99 stories — 84 public, 10 drafts and 5 private, so
+the visibility rules have something real to be wrong about — plus comments, likes, views and
+reads. The read events are what the trending ranking scores, so a freshly seeded database
+produces a plausible ranking rather than an empty one.
 
 > ⚠️ **The seeder deletes every document in every collection first.** Never run it against a
 > database you care about.
@@ -210,6 +216,10 @@ Creates 10 categories, 15 users, 22 published posts, plus comments, likes and vi
 |------|-------|----------|
 | Member | `john@example.com` | `password123` |
 | Administrator | `admin@bloghub.com` | `admin123` |
+
+> These are local demo credentials, published here on purpose so the seeded database is usable
+> immediately. Any deployment reachable from the internet must change them — they are the
+> first pair anyone would try.
 
 Optional, but it gives you content to work with immediately.
 
@@ -234,7 +244,12 @@ Detailed instructions and installation troubleshooting:
 ```bash
 npm start            # run
 npm run dev          # run with nodemon
+npm test             # jest --runInBand, against an in-process MongoDB
+npm run test:watch   # the same, in watch mode
+npm run test:coverage
 npm run seed         # reset and repopulate the database
+npm run migrate      # repair an existing database in place (--dry to preview)
+npm run migrate:dry  # show what migrate would change, and change nothing
 npm run lint         # eslint .
 npm run lint:fix     # eslint . --fix
 npm run format       # prettier --write .
@@ -253,10 +268,10 @@ npm run format       # prettier --write .
 npm run format:check # prettier --check .
 ```
 
-> **There is no test runner in either workspace** — [GAP-11](./docs/product/roadmap.md#gap-11).
-> Establishing one is the highest-value contribution available; the strategy, tooling
-> decisions and build order are in
-> [docs/guides/testing.md](./docs/guides/testing.md).
+> The backend suite is Jest + Supertest against an in-process MongoDB
+> (`mongodb-memory-server`), so `npm test` needs no database of its own. **The client has no
+> test runner** — that is the highest-value contribution available, and the tooling and build
+> order are in [docs/guides/testing.md](./docs/guides/testing.md).
 
 ---
 
@@ -280,7 +295,7 @@ bloghub/
 │       ├── config/     the Axios instance and interceptors
 │       ├── context/    authentication state
 │       ├── guards/     route access rules
-│       ├── pages/      12 routes + 5 admin routes
+│       ├── pages/      11 pages + 4 admin pages
 │       ├── services/   10 API clients
 │       └── styles/     theme, tokens, global styles
 │
@@ -394,10 +409,11 @@ git commit -m "feat(scope): describe the change"
 git push origin feature/your-feature
 ```
 
-**The most valuable contribution right now is a test suite** — there is no runner in either
-workspace, which is why the fixes described above are only as durable as the next commit.
-[docs/guides/testing.md](./docs/guides/testing.md) specifies the tooling and the
-order to build it in.
+**The most valuable contribution right now is client-side tests.** The backend is covered by
+61 integration tests; the client is covered by nothing but a lint and a build, so a component
+can break at runtime and CI will still be green.
+[docs/guides/testing.md](./docs/guides/testing.md) specifies the tooling and the order to
+build it in.
 
 After that, the tracked items in [roadmap.md](./docs/product/roadmap.md) each carry a stable ID,
 a file reference and a proposed fix.

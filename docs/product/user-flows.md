@@ -18,21 +18,35 @@ Notation: `→` step transition, `⇢` network call, `✗` failure branch.
 | `/post/:id` | Public | `PostDetail` |
 | `/user/:userId` | Public | `UserProfile` |
 | `/search` | Public | `Search` |
+| `/dashboard` | Member | `Dashboard` — how the work performed |
+| `/stories` | Member | `Stories` — what has been written, and its management |
+| `/comments` | Member | `Responses` — what readers said back |
 | `/write`, `/edit/:id` | Member | `WritePost` |
-| `/profile` | Member | `Profile` |
-| `/my-posts` | Member | `MyPosts` |
-| `/analytics` | Member | `Analytics` |
 | `/settings` | Member | `Settings` |
 | `/admin` | Admin | `AdminDashboard` |
 | `/admin/posts` | Admin | `AdminPosts` |
 | `/admin/categories` | Admin | `AdminCategories` |
 | `/admin/users` | Admin | `AdminUsers` |
-| `/admin/settings` | Admin | `AdminSettings` |
 | `*` | Public | `NotFound` |
 
 Member routes are wrapped in `ProtectedRoute`, admin routes in `AdminRoute`. Both redirect to
 `/login` and preserve the attempted location in router state, so the user lands where they
 started after signing in.
+
+### Redirects
+
+The workspace used to be one page that mixed statistics with post management, which meant
+neither was good at its job. It is now three pages split by the question each answers, and the
+old paths redirect rather than 404:
+
+| Old route | Redirects to |
+|-----------|--------------|
+| `/profile` | `/dashboard` |
+| `/my-posts` | `/stories` |
+| `/analytics` | `/dashboard` |
+
+There is no `/admin/settings`. It was a page of toggles wired to nothing, so it was removed
+rather than left to imply that the switches did something.
 
 ---
 
@@ -216,11 +230,18 @@ A post without a cover image edits normally.
 
 ---
 
-## 8. Managing your posts
+## 8. Managing your stories
+
+`/stories` answers "what have I written, and what do I want to do with it". Every control on
+it — the filter, the search, the sort, the page — is a query parameter, so the server does the
+work and a reload or a shared link reproduces the same view.
 
 ```
-/my-posts → ⇢ GET /users/getUserPosts → ["userPosts"]
-  → View, Edit, Delete per row
+/stories → ⇢ GET /users/getUserPosts?page&limit&visibility&sort&q → ["myPosts", params]
+         → ⇢ GET /analytics/me                                    → ["myAnalytics"]
+  → tabs count all / public / draft / private from `counts` in the response
+  → per row: View · Edit · Publish or Unpublish · Delete
+  → Publish/Unpublish ⇢ PUT /posts/:id { visibility }
   → Delete → confirmation modal → ⇢ DELETE /posts/:id
        ├─ 404 missing, 403 not owner or admin
        ├─ pull the id from referencing categories
@@ -228,28 +249,61 @@ A post without a cover image edits normally.
        ├─ pull from User.posts (the author's)
        ├─ delete the post
        └─ decrement the **author's** postCount
-  → invalidate ["userPosts"]
+  → selection → ⇢ POST /posts/bulk { ids, action }
+       └─ action is delete | public | draft | private; ownership is checked per id,
+          so a mixed selection cannot be used to reach someone else's post
+  → invalidate ["myPosts"], ["myAnalytics"], ["posts"]
 ```
+
+`counts` is computed server-side over the whole collection, not over the current page —
+otherwise the tab labels would change every time you paged.
 
 Deletion leaves orphaned likes, views and reads — see
 [reference/database.md](../reference/database.md#integrity).
 
 ---
 
-## 9. Analytics
+## 9. The workspace dashboard
+
+`/dashboard` answers "how is the work doing". It reads only; every action on it is a link to
+somewhere that writes.
 
 ```
-/analytics → ⇢ GET /users/getUserPosts       → ["userPosts"]
-             ⇢ GET /analytics/user/:userId   → ["userAnalytics", userId]
-                  ├─ ✗ userId is not the caller and caller is not admin → 403
-                  ├─ count views and reads for the author's posts
-                  └─ per-post rates and a top-five ranking
-  → summary tiles, per-post table, ranking
+/dashboard → ⇢ GET /analytics/me         → ["myAnalytics"]
+                  ├─ ✗ not signed in → 401
+                  ├─ count views and reads over the caller's own posts
+                  └─ totals, per-post rates, a top-five ranking
+           → ⇢ GET /users/getUserPosts?visibility=draft&limit=4&sort=updated
+                  └─ the drafts to pick back up
+           → ⇢ GET /analytics/me/reading → ["readingActivity"]
+                  └─ what this account has been reading
+  → summary tiles, top stories, unfinished drafts
+```
+
+`GET /analytics/me` derives the author from the token rather than taking a user id in the
+path. The older `GET /analytics/user/:userId` still exists for the admin console and checks
+`authorizeSelfOrAdmin`; the workspace does not use it, because an endpoint that cannot name
+anyone else's data cannot leak anyone else's data.
+
+---
+
+## 10. Responses
+
+`/comments` answers "what did readers say back", which was previously answerable only by
+opening each post in turn.
+
+```
+/comments → ⇢ GET /users/getUserPosts?limit=50&sort=newest → ["myPosts", params]
+          → select a story
+          → ⇢ GET /comments/post/:postId?limit=50          → ["postComments", id]
+  → Delete a response ⇢ DELETE /comments/:id
+       └─ allowed for the comment's author, the post's author, or an admin
+  → invalidate ["postComments", id]
 ```
 
 ---
 
-## 10. Following
+## 11. Following
 
 ```
 /user/:userId → ⇢ GET /posts (filtered client-side to this author)
@@ -266,7 +320,7 @@ leaves the relationship one-sided.
 
 ---
 
-## 11. Search
+## 12. Search
 
 ```
 header search → /search → type
@@ -282,7 +336,7 @@ an index ([GAP-05](roadmap.md#gap-05)).
 
 ---
 
-## 12. Theme switching
+## 13. Theme switching
 
 ```
 ThemeToggle → toggleTheme()
@@ -297,7 +351,7 @@ listener only auto-switches while no explicit choice is stored.
 
 ---
 
-## 13. Administration
+## 14. Administration
 
 ```
 /admin (AdminRoute: authenticated AND roles contains "admin")

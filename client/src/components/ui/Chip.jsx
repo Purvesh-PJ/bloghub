@@ -19,14 +19,16 @@ const StyledChip = styled.button`
   border-radius: ${({ theme }) => theme.radii.full};
   white-space: nowrap;
   ${({ $size }) => ($size === 'sm' ? text('xs', 'medium') : text('sm', 'medium'))}
+  transition: all ${({ theme }) => theme.transitions.fast};
   ${interactive}
 
   ${({ $selected, $interactive: clickable, theme }) =>
     $selected
       ? css`
-          background: ${theme.colors.accentSolid};
-          color: ${theme.colors.textOnAccent};
-          box-shadow: 0 2px 8px -2px rgba(14, 165, 233, 0.35);
+          background: ${theme.gradients.brand};
+          color: #ffffff;
+          box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.4);
+          font-weight: 600;
         `
       : css`
           background: ${theme.colors.surfaceContainer};
@@ -38,7 +40,9 @@ const StyledChip = styled.button`
             &:hover {
               background: ${theme.colors.accentContainer};
               color: ${theme.colors.accentText};
-              box-shadow: inset 0 0 0 1px ${theme.colors.accentLine};
+              box-shadow: inset 0 0 0 1px ${theme.colors.accentLine},
+                0 2px 8px -2px rgba(14, 165, 233, 0.2);
+              transform: translateY(-1px);
             }
           `}
         `}

@@ -1,8 +1,9 @@
 # Testing
 
 > **Scope:** the whole testing story — current state, strategy, tooling, and conventions for
-> each level. Merged from four separate documents, because three of them described tests that
-> do not exist.
+> each level. Merged from four separate documents that each described a different imagined
+> suite; what is written here as installed is installed, and what is written as proposed is
+> proposed.
 > **Excludes:** CI wiring
 > ([operations/deployment.md](../operations/deployment.md#part-2--cicd)), lint and format
 > ([code-quality.md](code-quality.md)).
@@ -11,38 +12,43 @@
 
 ## Current state
 
-**There is no working test infrastructure.** This is the single largest risk to the codebase
-([GAP-11](../product/roadmap.md#gap-11)) and, after the correctness work in Phase 1, the
-highest-value thing anyone can contribute.
+The backend has a working suite: **61 tests across six files**, run by Jest against a real
+MongoDB that `mongodb-memory-server` starts in-process. They are integration tests — Supertest
+drives the actual Express app over HTTP and the assertions read the real database — which is
+deliberate, and the reason is in [Pyramid](#pyramid) below.
 
-| Workspace | Runner | Tests | `npm test` |
-|-----------|--------|-------|-----------|
-| `backend/` | None installed | One file that cannot run | `echo "Error: no test specified" && exit 1` |
-| `client/` | None installed | None | No script |
+| Workspace | Runner | Tests | Command |
+|-----------|--------|-------|---------|
+| `backend/` | Jest + Supertest + mongodb-memory-server | 61 | `npm test` |
+| `client/` | None installed | None | Lint + build only |
 
-`backend/tests/post.test.js` requires `supertest` and Jest globals, neither installed. Even if
-it ran it would fail on its own terms — it expects 201 from a route that requires a token, and
-an `id` field the API does not return. Delete or rewrite it as part of the first real suite.
+| File | Tests | Covers |
+|------|-------|--------|
+| `auth.test.js` | 9 | Registration, sign-in, refresh, revocation via `tokenVersion`, suspended accounts |
+| `post.test.js` | 11 | CRUD, draft visibility, ownership, validation, the slug's unique index |
+| `comment.test.js` | 6 | Posting, ownership on delete, the post's visibility rule, pagination |
+| `workspace.test.js` | 14 | The author's own lists — stories, responses, stats — and their scoping |
+| `trending.test.js` | 11 | The scoring formula, the window, the minimum-views floor, the `latest` fallback |
+| `admin.test.js` | 10 | Role checks, suspension, promotion, deletion, the last-admin guard |
 
-### What this has already cost
+`--runInBand` matters and is in the script: parallel workers sharing one in-memory MongoDB
+interfere with each other. `tests/setup.js` starts and stops the server and truncates
+collections between tests; `tests/env.js` supplies the secrets, so no `.env` is needed.
 
-Every defect closed in Phase 1 is one a modest suite would have caught before merge:
+Every one of these runs on each push and pull request — see
+[Part 2 · CI/CD](../operations/deployment.md#part-2--cicd).
 
-| Defect | The test that would have caught it |
-|--------|-----------------------------------|
-| [BUG-01](../product/roadmap.md#bug-01) | Create a post with `visibility: 'public'`, read it back |
-| [BUG-02](../product/roadmap.md#bug-02) | Update a post with `imageURL: ''` |
-| [BUG-03](../product/roadmap.md#bug-03) | Like a post, assert the post payload reflects it |
-| [BUG-05](../product/roadmap.md#bug-05) | Write a setting, read it back |
-| [BUG-08](../product/roadmap.md#bug-08) | `GET /posts/<unknown>` expects 404 |
-| [BUG-16](../product/roadmap.md#bug-16) | Seed, then query likes by post |
-| [SEC-01](../security/checklist.md#sec-01) | Create a draft as A, list posts anonymously |
-| [SEC-02](../security/checklist.md#sec-02) | `POST /categories` with no token expects 401 |
+### What is not covered
 
-Those fixes were verified by hand against a running server. That verification is not
-repeatable, and nothing stops any of them regressing tomorrow.
+Being honest about the gaps matters more than the count:
 
----
+- **No client tests.** CI lints and builds the client, which catches syntax and import errors
+  but nothing about behaviour. The tooling choice below (Vitest + Testing Library) is a
+  recommendation, not something installed.
+- **No end-to-end tests.** The flows have been driven by hand against a running app, including
+  a headless-browser sweep of every page; that verification is not repeatable in CI.
+- **Coverage is not enforced.** `npm run test:coverage` reports, but no threshold gates a
+  merge.
 
 ## Pyramid
 
@@ -73,17 +79,16 @@ are thin and the mistakes are in how the layers connect.
 
 | Level | Tool | Rationale |
 |-------|------|-----------|
-| Backend unit + integration | **Jest** + **Supertest** | The app already exports without listening, so Supertest can drive it directly |
-| Backend test database | **mongodb-memory-server** | Real Mongoose semantics in process — essential, since strict-mode field dropping is only observable against a real connection |
+| Backend unit + integration | **Jest** + **Supertest** — *installed* | The app exports without listening, so Supertest drives it directly |
+| Backend test database | **mongodb-memory-server** — *installed* | Real Mongoose semantics in process — essential, since strict-mode field dropping is only observable against a real connection |
 | Frontend unit + component | **Vitest** + **React Testing Library** | Vitest reuses the existing Vite config |
 | API mocking in the client | **MSW** | Intercepts at the network layer, so `services/` and the Axios interceptors run for real |
 | End-to-end | **Playwright** | Cross-browser, auto-waiting, good tracing |
 
-```bash
-cd backend
-npm install --save-dev jest supertest mongodb-memory-server cross-env
+The backend half of this is already done. What remains is the client:
 
-cd ../client
+```bash
+cd client
 npm install --save-dev vitest @testing-library/react @testing-library/jest-dom \
   @testing-library/user-event jsdom msw
 
@@ -92,20 +97,18 @@ npx playwright install --with-deps
 ```
 
 ```jsonc
-// backend/package.json
-"test": "cross-env NODE_ENV=test jest --runInBand",
-"test:coverage": "cross-env NODE_ENV=test jest --coverage"
+// backend/package.json — present
+"test": "jest --runInBand",
+"test:watch": "jest --watch --runInBand",
+"test:coverage": "jest --coverage --runInBand"
 
-// client/package.json
+// client/package.json — proposed
 "test": "vitest run",
 "test:e2e": "playwright test"
 ```
 
-`--runInBand` matters: parallel workers sharing one in-memory MongoDB interfere with each
-other.
-
-**The prerequisite is already in place** — `index.js` skips `connectDB()` under
-`NODE_ENV=test`, so a harness can own the connection.
+`index.js` skips `connectDB()` under `NODE_ENV=test`, so the harness owns the connection and
+points Mongoose at the in-memory server instead.
 
 ---
 
@@ -431,8 +434,8 @@ lives in `localStorage["auth-storage"]`, which Playwright persists. Add `.auth/`
 
 ## Coverage
 
-A signal, not a goal. Do not gate CI on it until a real suite exists; ratchet upward instead
-of starting at a number nobody can meet.
+A signal, not a goal. `npm run test:coverage` reports it; nothing gates on it yet. Ratchet
+upward rather than starting at a number nobody can meet.
 
 | Area | Target |
 |------|--------|
@@ -450,15 +453,14 @@ of starting at a number nobody can meet.
 
 Do not chase the targets in one pass. This order maximises defects caught per hour.
 
-1. **The harness.** Install backend tooling, add the in-memory setup, delete or rewrite
-   `post.test.js`, and get one passing test — `GET /posts` returns 200 — to prove it works.
-2. **Authentication and authorisation.** Highest-risk surface, easiest to assert. Sign-up,
-   sign-in, refresh, token-type rejection, the admin gate, `authorizeSelfOrAdmin`, post
-   ownership.
-3. **A regression test per closed `BUG-xx` and `SEC-xx`.** Locks in Phase 1 permanently.
-4. **Services and pure logic.**
-5. **Client** — MSW handlers, `services/`, `ui/` primitives, auth context and guards.
-6. **End-to-end** — three journeys to start: publish, engage, admin delete.
+Steps 1 to 3 are **done** — the harness, the auth and authorisation surface, and a regression
+test for each closed `BUG-xx` and `SEC-xx` that a request can reach. The remaining order,
+which still maximises defects caught per hour:
+
+1. **Client** — MSW handlers, `services/`, `ui/` primitives, auth context and guards. This is
+   the largest untested surface, and CI currently proves only that it compiles.
+2. **End-to-end** — three journeys to start: publish, engage, admin delete.
+3. **A coverage threshold**, ratcheted from wherever `npm run test:coverage` reports today.
 
 ---
 
