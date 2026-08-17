@@ -1,18 +1,47 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
-import { Shield, ChevronLeft, ChevronRight, Users as UsersIcon } from 'lucide-react';
+import {
+  Shield,
+  ShieldOff,
+  ChevronLeft,
+  ChevronRight,
+  Users as UsersIcon,
+  MoreHorizontal,
+  Ban,
+  CircleCheck,
+  Trash2,
+} from 'lucide-react';
+import toast from 'react-hot-toast';
 
 import { userService } from '../../services/userService';
+import { useAuth } from '../../context/AuthContext';
 import { PageHeader, Section } from '../../components/layout/PageShell';
-import { Button, Card, Badge, Table, Loading, EmptyState, Alert } from '../../components/ui';
+import {
+  Button,
+  Card,
+  Badge,
+  Table,
+  Loading,
+  EmptyState,
+  ErrorState,
+  DropdownMenu,
+  Modal,
+  Input,
+  Avatar,
+} from '../../components/ui';
 import { text, media } from '../../styles/theme/mixins';
-import { initial } from '../../utils/text';
 
 /**
- * The account directory. Read-only, which the page now says outright — the previous version
- * was headed "User Management" and offered no action of any kind.
+ * The account directory, and the actions an administrator can take on one.
+ *
+ * It was read-only — a table headed "User Management" that managed nothing. The three things
+ * it can do now are deliberately different in weight:
+ *
+ *   suspend  reversible, keeps everything, ends the person's sessions at once
+ *   role     grants or revokes the console itself
+ *   delete   permanent, takes their stories with it, and asks for your own password
  */
 
 const Person = styled(Link)`
@@ -25,20 +54,6 @@ const Person = styled(Link)`
   &:hover {
     color: ${({ theme }) => theme.colors.accentText};
   }
-`;
-
-const Portrait = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  border-radius: ${({ theme }) => theme.radii.full};
-  ${text('xs', 'semibold')}
-  background: ${({ theme, $admin }) =>
-    $admin ? theme.colors.warningContainer : theme.colors.accentContainer};
-  color: ${({ theme, $admin }) => ($admin ? theme.colors.warningText : theme.colors.accentText)};
 `;
 
 const Roles = styled.div`
@@ -65,12 +80,52 @@ const PageCount = styled.span`
   font-variant-numeric: tabular-nums;
 `;
 
-export function AdminUsers() {
-  const [page, setPage] = useState(1);
+const Quiet = styled.span`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
 
-  const { data, isLoading, isError } = useQuery({
+export function AdminUsers() {
+  const queryClient = useQueryClient();
+  const { user: me } = useAuth();
+  const [page, setPage] = useState(1);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [password, setPassword] = useState('');
+
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin-users', page],
     queryFn: () => userService.getAllUsers(page),
+  });
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+
+  const suspendMutation = useMutation({
+    mutationFn: ({ id, suspended }) => userService.setUserSuspended(id, suspended),
+    onSuccess: (response) => {
+      refresh();
+      toast.success(response?.message || 'Updated');
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Could not update that account'),
+  });
+
+  const roleMutation = useMutation({
+    mutationFn: ({ id, admin }) => userService.setUserRole(id, admin),
+    onSuccess: (response) => {
+      refresh();
+      toast.success(response?.message || 'Updated');
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Could not change that role'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: ({ id, password: secret }) => userService.deleteUser(id, secret),
+    onSuccess: (response) => {
+      refresh();
+      setPendingDelete(null);
+      setPassword('');
+      toast.success(response?.message || 'Account deleted');
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Could not delete that account'),
   });
 
   if (isLoading) return <Loading text="Loading the directory…" />;
@@ -79,21 +134,20 @@ export function AdminUsers() {
     return (
       <>
         <PageHeader title="People" />
-        <Alert variant="danger">
-          The directory could not be loaded. This endpoint requires an administrator account.
-        </Alert>
+        <ErrorState title="The directory did not load" error={error} onRetry={() => refetch()} />
       </>
     );
   }
 
   const users = data?.data || [];
   const pagination = data?.pagination || { page: 1, pages: 1, total: 0 };
+  const myId = me?._id || me?.user_id;
 
   return (
     <>
       <PageHeader
         title="People"
-        subtitle={`${pagination.total} ${pagination.total === 1 ? 'account' : 'accounts'} registered. This directory is read-only.`}
+        subtitle={`${pagination.total} ${pagination.total === 1 ? 'account' : 'accounts'} registered.`}
       />
 
       <Section>
@@ -110,16 +164,20 @@ export function AdminUsers() {
                   <th>Email</th>
                   <th>Roles</th>
                   <th>Joined</th>
+                  <th aria-label="Actions" />
                 </tr>
               </Table.Head>
               <Table.Body>
                 {users.map((user) => {
                   const isUserAdmin = user.roles?.includes('admin');
+                  // Your own row is read-only here; settings is where you change your account.
+                  const isSelf = String(user._id) === String(myId);
+
                   return (
                     <tr key={user._id}>
                       <td>
                         <Person to={`/user/${user._id}`}>
-                          <Portrait $admin={isUserAdmin}>{initial(user.username)}</Portrait>
+                          <Avatar name={user.username} size="sm" />
                           {user.username}
                         </Person>
                       </td>
@@ -132,6 +190,7 @@ export function AdminUsers() {
                               {role}
                             </Badge>
                           ))}
+                          {user.suspended && <Badge variant="danger">suspended</Badge>}
                         </Roles>
                       </td>
                       <td>
@@ -140,6 +199,67 @@ export function AdminUsers() {
                           month: 'short',
                           day: 'numeric',
                         })}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        {isSelf ? (
+                          <Quiet>You</Quiet>
+                        ) : (
+                          <DropdownMenu
+                            trigger={
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                aria-label={`Actions for ${user.username}`}
+                              >
+                                <MoreHorizontal size={16} />
+                              </Button>
+                            }
+                          >
+                            {user.suspended ? (
+                              <DropdownMenu.Item
+                                onSelect={() =>
+                                  suspendMutation.mutate({ id: user._id, suspended: false })
+                                }
+                              >
+                                <CircleCheck size={14} /> Restore access
+                              </DropdownMenu.Item>
+                            ) : (
+                              <DropdownMenu.Item
+                                onSelect={() =>
+                                  suspendMutation.mutate({ id: user._id, suspended: true })
+                                }
+                              >
+                                <Ban size={14} /> Suspend account
+                              </DropdownMenu.Item>
+                            )}
+
+                            <DropdownMenu.Separator />
+                            <DropdownMenu.Label>Role</DropdownMenu.Label>
+
+                            {isUserAdmin ? (
+                              <DropdownMenu.Item
+                                onSelect={() => roleMutation.mutate({ id: user._id, admin: false })}
+                              >
+                                <ShieldOff size={14} /> Revoke administrator
+                              </DropdownMenu.Item>
+                            ) : (
+                              <DropdownMenu.Item
+                                onSelect={() => roleMutation.mutate({ id: user._id, admin: true })}
+                              >
+                                <Shield size={14} /> Make administrator
+                              </DropdownMenu.Item>
+                            )}
+
+                            <DropdownMenu.Separator />
+
+                            <DropdownMenu.Item
+                              $tone="danger"
+                              onSelect={() => setPendingDelete(user)}
+                            >
+                              <Trash2 size={14} /> Delete account
+                            </DropdownMenu.Item>
+                          </DropdownMenu>
+                        )}
                       </td>
                     </tr>
                   );
@@ -175,6 +295,43 @@ export function AdminUsers() {
           </Card>
         )}
       </Section>
+
+      <Modal
+        open={!!pendingDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingDelete(null);
+            setPassword('');
+          }
+        }}
+        title={`Delete ${pendingDelete?.username}?`}
+        description="Their account, stories, and the comments and likes on them are removed permanently. Suspending is reversible; this is not."
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!password) return toast.error('Enter your password to confirm');
+            deleteMutation.mutate({ id: pendingDelete._id, password });
+          }}
+        >
+          <Input
+            label="Confirm with your own password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            hint="Holding an admin session is not by itself authority to destroy an account."
+          />
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+            <Button type="button" variant="secondary" onClick={() => setPendingDelete(null)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="danger" disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? 'Deleting…' : 'Delete permanently'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </>
   );
 }

@@ -44,6 +44,25 @@ export const userService = {
     return response.data;
   },
 
+  /* ── Administrator actions on other accounts ───────────────────────────── */
+
+  // Reversible, keeps the person's content, and ends their sessions immediately.
+  setUserSuspended: async (userId, suspended) => {
+    const response = await api.patch(`/users/${userId}/suspension`, { suspended });
+    return response.data;
+  },
+
+  setUserRole: async (userId, isAdmin) => {
+    const response = await api.patch(`/users/${userId}/role`, { admin: isAdmin });
+    return response.data;
+  },
+
+  // Requires the administrator's own password, like deleting your own account does.
+  deleteUser: async (userId, password) => {
+    const response = await api.delete(`/users/${userId}`, { data: { password } });
+    return response.data;
+  },
+
   getAllUsers: async (page = 1) => {
     const response = await api.get('/users', { params: { page } });
     return response.data;

@@ -3,7 +3,7 @@ const Profile = require('../models/user-profile.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('../middlewares/asyncHandler');
-const { conflict, unauthorized, badRequest } = require('../utils/AppError');
+const { conflict, unauthorized, badRequest, forbidden } = require('../utils/AppError');
 
 // Refresh tokens are signed with their own secret so that a refresh token can never be
 // presented as an access token. The `type` claim makes the same intent explicit in the
@@ -96,6 +96,12 @@ exports.signIn = asyncHandler(async (req, res) => {
 
   if (!(await bcrypt.compare(password, user.password))) {
     throw invalid;
+  }
+
+  // Checked after the password, so the response cannot be used to discover which addresses
+  // belong to suspended accounts without already knowing the password.
+  if (user.suspended) {
+    throw forbidden('This account has been suspended', 'AccountSuspended');
   }
 
   const { accessToken, refreshToken } = issueTokens(user);

@@ -37,6 +37,18 @@ const UserSchema = new mongoose.Schema(
       default: 0,
     },
 
+    // A suspended account keeps all its content but cannot sign in or act. Suspending bumps
+    // tokenVersion too, so existing sessions stop working immediately rather than lasting
+    // until their access token happens to expire.
+    suspended: {
+      type: Boolean,
+      default: false,
+    },
+
+    suspendedAt: {
+      type: Date,
+    },
+
     profile: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'UserProfile',
