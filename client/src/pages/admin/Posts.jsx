@@ -24,11 +24,9 @@ import {
   Badge,
   Modal,
   Table,
-  Loading,
   EmptyState,
   DropdownMenu,
   Skeleton,
-  SkeletonText,
 } from '../../components/ui';
 import { text, clamp } from '../../styles/theme/mixins';
 

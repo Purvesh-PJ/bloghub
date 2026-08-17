@@ -4,8 +4,7 @@ import { LayoutDashboard, FileText, Users, FolderOpen, LogOut, ArrowLeft } from 
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
-import { initial } from '../../utils/text';
-import { BrandMark } from '../ui';
+import { BrandMark, Avatar } from '../ui';
 
 /**
  * Admin shell.
@@ -124,19 +123,6 @@ const Who = styled.div`
   min-width: 0;
 `;
 
-const Portrait = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentSolid};
-  color: ${({ theme }) => theme.colors.textOnAccent};
-  ${text('sm', 'semibold')}
-`;
-
 const WhoName = styled.span`
   ${text('sm', 'medium')}
   color: ${({ theme }) => theme.colors.textPrimary};
@@ -230,7 +216,7 @@ export function AdminLayout() {
 
           <Foot>
             <Who>
-              <Portrait>{initial(user?.username)}</Portrait>
+              <Avatar name={user?.username} size="sm" />
               <div style={{ minWidth: 0 }}>
                 <WhoName>{user?.username}</WhoName>
                 <WhoRole>Administrator</WhoRole>

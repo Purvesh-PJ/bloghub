@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
 import { useTheme } from '../styles/ThemeProvider';
-import { PageShell, PageHeader, Section } from '../components/layout/PageShell';
+import { PageShell, PageHeader } from '../components/layout/PageShell';
 import { topicIcon } from '../components/marketing/Topics';
 import { Button, Card, Input, Chip, Loading } from '../components/ui';
 import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';

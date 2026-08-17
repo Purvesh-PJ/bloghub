@@ -2,36 +2,17 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
-import {
-  Search as SearchIcon,
-  Compass,
-  TrendingUp,
-  X,
-  Clock,
-  Sparkles,
-  Layers,
-  ArrowRight,
-  BookOpen,
-} from 'lucide-react';
+import { Search as SearchIcon, Compass, TrendingUp, X, Clock, BookOpen } from 'lucide-react';
 
 import { searchService } from '../services/searchService';
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
-import { PageShell, PageHeader, Section } from '../components/layout/PageShell';
+import { PageShell, Section } from '../components/layout/PageShell';
 import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { topicIcon } from '../components/marketing/Topics';
-import {
-  Input,
-  Chip,
-  Loading,
-  EmptyState,
-  Card,
-  Button,
-  Skeleton,
-  SkeletonText,
-} from '../components/ui';
-import { text, display, clamp, media, interactive } from '../styles/theme/mixins';
+import { Chip, EmptyState, Card, Skeleton, SkeletonText } from '../components/ui';
+import { text, clamp, media } from '../styles/theme/mixins';
 import { excerpt, readingTime } from '../utils/text';
 
 /* ── Styled Components ───────────────────────────────────────────────────── */

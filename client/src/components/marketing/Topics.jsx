@@ -17,7 +17,7 @@ import {
   Dumbbell,
   Globe2,
 } from 'lucide-react';
-import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
+import { text, label as labelStyle, interactive } from '../../styles/theme/mixins';
 
 /**
  * Topic components.
