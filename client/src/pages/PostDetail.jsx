@@ -3,8 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import MDEditor from '@uiw/react-md-editor';
-import { format, formatDistanceToNow } from 'date-fns';
-import { Heart, MessageCircle, Share2, Pencil, Trash2, FileQuestion, Clock } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { Heart, MessageCircle, Share2, Pencil, Trash2, FileQuestion } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { postService } from '../services/postService';
@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../styles/ThemeProvider';
 import { useReadTracking, useReadingProgress } from '../hooks/useReading';
 import { markdownRehypePlugins } from '../config/markdown';
+import { AuthorByline } from '../components/posts/AuthorByline';
 import { PageShell } from '../components/layout/PageShell';
 import { ReadRateBar } from '../components/stats/ReadRateBar';
 import { Button, Card, TextArea, Chip, Modal, EmptyState, Avatar } from '../components/ui';
@@ -94,12 +95,6 @@ const Author = styled(Link)`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const AuthorName = styled.span`
-  ${text('md', 'bold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  display: block;
 `;
 
 const Meta = styled.span`
@@ -454,15 +449,13 @@ export function PostDetail() {
 
         <Byline>
           <Author to={post.user?._id ? `/user/${post.user._id}` : '#'}>
-            <Avatar name={post.author?.name || post.user?.username} size="md" />
-            <span>
-              <AuthorName>{post.author?.name || post.user?.username || 'Anonymous'}</AuthorName>
-              <Meta>
-                {post.createdAt ? format(new Date(post.createdAt), 'd MMM yyyy') : 'Recent'}
-                <Clock />
-                {readingTime(post.content)} min read
-              </Meta>
-            </span>
+            <AuthorByline
+              layout="stacked"
+              name={post.author?.name || post.user?.username}
+              at={post.createdAt}
+              dateStyle="absolute"
+              readingMinutes={readingTime(post.content)}
+            />
           </Author>
 
           {isAuthor && (

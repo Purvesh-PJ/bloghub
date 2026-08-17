@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, MessageCircle } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+
 import styled, { css } from 'styled-components';
 import { display, text, clamp, media, interactive } from '../../styles/theme/mixins';
 import { excerpt, readingTime } from '../../utils/text';
-import { Chip, Avatar } from '../ui';
+import { Chip } from '../ui';
+import { AuthorByline } from './AuthorByline';
 
 /**
  * PostCard — the feed's unit.
@@ -64,18 +65,6 @@ const Body = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const Meta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const Dot = styled.span`
-  color: ${({ theme }) => theme.colors.lineStrong};
 `;
 
 const Title = styled.h3`
@@ -170,14 +159,11 @@ export function PostCard({ post, layout = 'row' }) {
   return (
     <Card to={`/post/${post._id}`} $layout={layout}>
       <Body>
-        <Meta>
-          <Avatar name={author} size="xs" />
-          <span>{author}</span>
-          <Dot>·</Dot>
-          {isValidDate && <span>{formatDistanceToNow(created, { addSuffix: true })}</span>}
-          <Dot>·</Dot>
-          <span>{readingTime(post.content)} min read</span>
-        </Meta>
+        <AuthorByline
+          name={author}
+          at={isValidDate ? created : undefined}
+          readingMinutes={readingTime(post.content)}
+        />
 
         <Title>{post.title}</Title>
         <Excerpt>{excerpt(post.content)}</Excerpt>

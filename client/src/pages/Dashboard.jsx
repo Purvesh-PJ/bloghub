@@ -23,7 +23,16 @@ import { postService } from '../services/postService';
 import { analyticsService } from '../services/analyticsService';
 import { PageShell, Section } from '../components/layout/PageShell';
 import { ReadRateBar } from '../components/stats/ReadRateBar';
-import { Button, Card, EmptyState, ErrorState, Avatar, Badge, Skeleton } from '../components/ui';
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorState,
+  Avatar,
+  Badge,
+  Skeleton,
+  StatTile,
+} from '../components/ui';
 import { text, label as labelStyle, media, clamp, display } from '../styles/theme/mixins';
 
 /**
@@ -48,45 +57,6 @@ const MetricGrid = styled.div`
 
   ${media.down('lg')`grid-template-columns: repeat(2, 1fr);`}
   ${media.down('sm')`grid-template-columns: 1fr;`}
-`;
-
-const MetricCard = styled.div`
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  padding: ${({ theme }) => theme.spacing.xl};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
-`;
-
-const MetricHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  ${labelStyle('sm')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-weight: 600;
-
-  svg {
-    width: 18px;
-    height: 18px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-`;
-
-const MetricValue = styled.div`
-  ${display('sm')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  margin-top: 4px;
-`;
-
-const MetricSub = styled.div`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 /* ── Banner ──────────────────────────────────────────────────────────────── */
@@ -386,49 +356,30 @@ export function Dashboard() {
       ) : (
         <>
           <MetricGrid>
-            <MetricCard>
-              <MetricHeader>
-                <span>Total story views</span>
-                <Eye />
-              </MetricHeader>
-              <MetricValue>{metric(analytics?.totalViews)}</MetricValue>
-              <MetricSub>
-                {analyticsFailed ? 'Could not load' : 'Across all published stories'}
-              </MetricSub>
-            </MetricCard>
-
-            <MetricCard>
-              <MetricHeader>
-                <span>Reads finished</span>
-                <CheckCircle2 />
-              </MetricHeader>
-              <MetricValue>{metric(analytics?.totalReads)}</MetricValue>
-              <MetricSub>
-                {analyticsFailed ? 'Could not load' : 'Readers who reached the end'}
-              </MetricSub>
-            </MetricCard>
-
-            <MetricCard>
-              <MetricHeader>
-                <span>Read-through</span>
-                <BarChart2 />
-              </MetricHeader>
-              <MetricValue>{metric(analytics?.readRate, '%')}</MetricValue>
-              <MetricSub>
-                {analyticsFailed ? 'Could not load' : 'Finished as a share of opened'}
-              </MetricSub>
-            </MetricCard>
-
-            <MetricCard>
-              <MetricHeader>
-                <span>Stories</span>
-                <FileText />
-              </MetricHeader>
-              <MetricValue>{metric(analytics?.totalPosts)}</MetricValue>
-              <MetricSub>
-                {drafts.length > 0 ? `${drafts.length} unfinished` : 'All published'}
-              </MetricSub>
-            </MetricCard>
+            <StatTile
+              label="Total story views"
+              icon={Eye}
+              value={metric(analytics?.totalViews)}
+              hint={analyticsFailed ? 'Could not load' : 'Across all published stories'}
+            />
+            <StatTile
+              label="Reads finished"
+              icon={CheckCircle2}
+              value={metric(analytics?.totalReads)}
+              hint={analyticsFailed ? 'Could not load' : 'Readers who reached the end'}
+            />
+            <StatTile
+              label="Read-through"
+              icon={BarChart2}
+              value={metric(analytics?.readRate, '%')}
+              hint={analyticsFailed ? 'Could not load' : 'Finished as a share of opened'}
+            />
+            <StatTile
+              label="Stories"
+              icon={FileText}
+              value={metric(analytics?.totalPosts)}
+              hint={drafts.length > 0 ? `${drafts.length} unfinished` : 'All published'}
+            />
           </MetricGrid>
 
           {analyticsFailed && (

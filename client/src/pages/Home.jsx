@@ -26,6 +26,7 @@ import { categoryService } from '../services/categoryService';
 import { useAuth } from '../context/AuthContext';
 import { Button, Chip, Skeleton, Avatar } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
+import { AuthorByline } from '../components/posts/AuthorByline';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
 import { topicIcon } from '../components/marketing/Topics';
@@ -752,17 +753,16 @@ export function Home() {
             <HeroVisual>
               <ShowcaseCard>
                 <CardHeader>
-                  <AuthorInfo>
-                    <Avatar name={featuredAuthor} size="sm" />
-                    <AuthorMeta>
-                      <AuthorName>{featuredAuthor}</AuthorName>
-                      <AuthorHandle>
-                        {isRanked
-                          ? `Most read in the last ${trendingWindow} days`
-                          : 'Recently published'}
-                      </AuthorHandle>
-                    </AuthorMeta>
-                  </AuthorInfo>
+                  <AuthorByline
+                    layout="stacked"
+                    size="sm"
+                    name={featuredAuthor}
+                    note={
+                      isRanked
+                        ? `Most read in the last ${trendingWindow} days`
+                        : 'Recently published'
+                    }
+                  />
                   {featuredCategory && (
                     <Chip size="sm" selected>
                       {featuredCategory}

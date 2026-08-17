@@ -8,8 +8,8 @@ import { postService } from '../../services/postService';
 import { analyticsService } from '../../services/analyticsService';
 import { PageHeader, Section } from '../../components/layout/PageShell';
 import { ReadRateHeadline } from '../../components/stats/ReadRateBar';
-import { Button, Card, Surface, Badge, EmptyState, Skeleton } from '../../components/ui';
-import { text, label as labelStyle, media, clamp } from '../../styles/theme/mixins';
+import { Button, Card, Surface, Badge, EmptyState, Skeleton, StatTile } from '../../components/ui';
+import { text, media, clamp } from '../../styles/theme/mixins';
 
 /**
  * Admin overview.
@@ -35,17 +35,6 @@ const Stat = styled(Surface).attrs({ $tone: 'low', $radius: 'lg', $padding: 'xl'
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xs};
-`;
-
-const StatValue = styled.span`
-  ${text('xl', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-variant-numeric: tabular-nums;
-`;
-
-const StatLabel = styled.span`
-  ${labelStyle('sm')}
-  color: ${({ theme }) => theme.colors.textMuted};
 `;
 
 const Columns = styled.div`
@@ -177,10 +166,7 @@ export function AdminDashboard() {
 
       <Stats>
         {stats.map((stat) => (
-          <Stat key={stat.label}>
-            <StatValue>{stat.value}</StatValue>
-            <StatLabel>{stat.label}</StatLabel>
-          </Stat>
+          <StatTile key={stat.label} label={stat.label} value={stat.value} padded={false} />
         ))}
       </Stats>
 
