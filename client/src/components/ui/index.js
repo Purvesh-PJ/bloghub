@@ -16,4 +16,5 @@ export { DropdownMenu } from './DropdownMenu';
 export { Alert } from './Alert';
 export { Loading } from './Loading';
 export { EmptyState } from './EmptyState';
+export { ErrorState } from './ErrorState';
 export { Table } from './Table';
