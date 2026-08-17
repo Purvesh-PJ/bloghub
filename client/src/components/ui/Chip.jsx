@@ -40,7 +40,8 @@ const StyledChip = styled.button`
             &:hover {
               background: ${theme.colors.accentContainer};
               color: ${theme.colors.accentText};
-              box-shadow: inset 0 0 0 1px ${theme.colors.accentLine},
+              box-shadow:
+                inset 0 0 0 1px ${theme.colors.accentLine},
                 0 2px 8px -2px rgba(14, 165, 233, 0.2);
               transform: translateY(-1px);
             }

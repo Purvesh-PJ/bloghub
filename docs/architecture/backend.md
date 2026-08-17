@@ -308,10 +308,14 @@ filename is taken from user input**, which is what closes the path-traversal ris
 previous inline configuration ([SEC-05](../security/checklist.md#sec-05)).
 
 Memory rather than disk because a serverless filesystem is read-only and per-invocation:
-anything written there is unreachable by the next request. So the buffer is validated and then
-has nowhere durable to go, and avatar upload stays unfinished until object storage is wired in
-([BUG-07](../product/roadmap.md#bug-07), [GAP-17](../product/roadmap.md#gap-17)). This
-middleware is the safe half of that work, done first because the unsafe version was live.
+anything written there is unreachable by the next request. The validated buffer is stored on the
+profile document (`UserProfile.image = { data: Buffer, contentType }`) and served back as a data
+URI, which makes avatar upload work on Vercel with no external service
+([BUG-07](../product/roadmap.md#bug-07)).
+
+That is the right trade for this project and the wrong one at scale: image bytes inflate every
+document read that populates a profile, and MongoDB is not a CDN. Object storage is the proper
+destination ([GAP-17](../product/roadmap.md#gap-17)).
 
 ### Logging
 

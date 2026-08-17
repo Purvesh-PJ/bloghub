@@ -300,8 +300,9 @@ Settings now persist — see [BUG-05](../product/roadmap.md#bug-05).
 
 Plus two unauthenticated operations endpoints.
 
-Public **write** endpoints went from nine to three during remediation — the three remaining
-are the analytics and page-view trackers, which are rate-limited but still undeduplicated
+Public **write** endpoints went from nine to two during remediation. The two that remain are
+the view and read trackers, which are open by design — a reader does not sign in to be counted
+— and are rate-limited and deduplicated per visitor per post over a 6-hour window
 ([SEC-04](../security/checklist.md#sec-04)).
 
 ---

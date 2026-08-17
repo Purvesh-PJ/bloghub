@@ -395,12 +395,12 @@ All behind `router.use(authenticateUser)`.
 
 ## Remaining gaps
 
-| Pattern                                | Endpoints               | Finding                       |
-| -------------------------------------- | ----------------------- | ----------------------------- |
-| Unauthenticated, undeduplicated writes | 3 tracking routes       | [SEC-04](checklist.md#sec-04) |
-| ~~Unpaginated public reads~~           | Closed                  | [SEC-11](checklist.md#sec-11) |
-| No ownership model                     | comments, likes         | Cannot be edited or moderated |
-| ~~No session revocation~~              | Closed — `tokenVersion` | [SEC-08](checklist.md#sec-08) |
+| Pattern                                    | Endpoints               | Finding                                                 |
+| ------------------------------------------ | ----------------------- | ------------------------------------------------------- |
+| ~~Unauthenticated, undeduplicated writes~~ | Closed — visitor-keyed  | [SEC-04](checklist.md#sec-04)                           |
+| ~~Unpaginated public reads~~               | Closed                  | [SEC-11](checklist.md#sec-11)                           |
+| No edit model                              | comments                | Deletable by author, post author or admin; not editable |
+| ~~No session revocation~~                  | Closed — `tokenVersion` | [SEC-08](checklist.md#sec-08)                           |
 
 ---
 

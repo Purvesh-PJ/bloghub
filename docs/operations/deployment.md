@@ -118,10 +118,10 @@ across cold starts and concurrent instances. Still far better than nothing; a sh
 ### Filesystem
 
 Read-only except `/tmp`, which does not persist between invocations. The multer disk-storage
-configuration cannot work in production ([BUG-07](../product/roadmap.md#bug-07)). The upload
-middleware now keeps the file in memory and validates it, so nothing writes to disk — but a
-validated buffer still needs somewhere durable to go, which means object storage
-([GAP-17](../product/roadmap.md#gap-17)).
+configuration could not work in production ([BUG-07](../product/roadmap.md#bug-07)). The upload
+middleware now keeps the file in memory and stores the bytes on the profile document, so nothing
+touches the filesystem. That works on Vercel today; object storage remains the right destination
+at any real volume ([GAP-17](../product/roadmap.md#gap-17)).
 
 ### Timeouts
 

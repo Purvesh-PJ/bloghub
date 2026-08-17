@@ -273,15 +273,15 @@ application.
 
 Several relationships are stored twice, maintained by separate writes with no transaction.
 
-| Pair                                          | Maintained by                  | Risk                                                                                |
-| --------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------- |
-| `Post.comments` ↔ `Comment.post`              | `createComment`, reply handler | Both sides now written, including replies                                           |
-| `Post.likes` ↔ `likes` collection             | `createLike`, `deleteLike`     | Both sides now written                                                              |
-| `Post.views` ↔ `views` collection             | **Nothing at runtime**         | Array stays empty outside seed data                                                 |
-| `User.posts` ↔ `Post.user`                    | `createPost`, `deletePost`     | Two sources of truth for authorship; `MyPosts` reads one, analytics reads the other |
-| `Category.posts` ↔ `Post.categories`          | Category controllers           | Writes are now awaited                                                              |
-| `UserProfile.followers/followings` ↔ counters | `followUser`, `unfollowUser`   | Array and counter can disagree if one write fails                                   |
-| `UserProfile.postCount` ↔ actual count        | `postBlogs`, `deletePost`      | Now targets the post's author, not the requester                                    |
+| Pair                                          | Maintained by                  | Risk                                                                                     |
+| --------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `Post.comments` ↔ `Comment.post`              | `createComment`, reply handler | Both sides now written, including replies                                                |
+| `Post.likes` ↔ `likes` collection             | `createLike`, `deleteLike`     | Both sides now written                                                                   |
+| `Post.views` ↔ `views` collection             | **Nothing at runtime**         | Array stays empty outside seed data                                                      |
+| `User.posts` ↔ `Post.user`                    | `createPost`, `deletePost`     | Two sources of truth for authorship; the story list reads one, analytics reads the other |
+| `Category.posts` ↔ `Post.categories`          | Category controllers           | Writes are now awaited                                                                   |
+| `UserProfile.followers/followings` ↔ counters | `followUser`, `unfollowUser`   | Array and counter can disagree if one write fails                                        |
+| `UserProfile.postCount` ↔ actual count        | `postBlogs`, `deletePost`      | Now targets the post's author, not the requester                                         |
 
 **Recommended direction:** keep the child-to-parent reference (`Comment.post`, `Post.user`,
 `Like.post`) as the single source of truth, drop the parent-side arrays, and derive counts
