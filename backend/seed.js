@@ -488,6 +488,11 @@ async function seed() {
 
         const comment = new Comment({
           user: randomUser._id,
+          // The back-reference, without which the comment is reachable only by walking
+          // `post.comments`. Every post-scoped query — listing a story's responses, counting
+          // them, deleting them with their post — matches on this field, so seeded comments
+          // were invisible to all of them.
+          post: post._id,
           message: randomComment,
           likes: [],
           dislikes: [],
