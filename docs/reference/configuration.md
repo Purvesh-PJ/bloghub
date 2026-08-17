@@ -56,11 +56,12 @@ misconfiguration, so a broken deployment fails at boot rather than on a user's f
 | `PORT` | No | `4000` | `index.js` | Listening port. Ignored on Vercel |
 | `MONGO_DB_URI` | **Yes** | — | `config/db.js` | Connection string. See [aliases](#database-uri-aliases) |
 | `CLIENT_URL` | Production | — | `index.js` | CORS allowed origin. Credentials are only enabled when it is set |
-| `JWT_SECRET` | **Yes** | — | `auth.controllers.js`, `authenticateUser.js` | Signs and verifies **access** tokens |
+| `JWT_SECRET` | **Yes** | — | `auth.controllers.js`, `authenticateUser.js`, `utils/visitor.js` | Signs and verifies **access** tokens, and salts the visitor hash used to deduplicate view and read tracking |
 | `JWT_REFRESH_SECRET` | Recommended | falls back to `JWT_SECRET` | `auth.controllers.js` | Signs and verifies **refresh** tokens. Must differ — see [SEC-06](../security/checklist.md#sec-06) |
 | `JWT_ACCESS_EXPIRES_IN` | No | `15m` | `auth.controllers.js` | Access token lifetime |
 | `JWT_REFRESH_EXPIRES_IN` | No | `7d` | `auth.controllers.js` | Refresh token lifetime |
 | `VERCEL` | Auto | — | `index.js` | Set by the platform; suppresses `app.listen` |
+| `SEED_ALLOW_REMOTE` | No | — | `seed.js` | Must equal `yes` before the seeder will touch a non-local database. The seeder empties every collection first, so without this guard one careless command destroys a live deployment |
 
 ### Client
 

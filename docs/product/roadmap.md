@@ -232,14 +232,15 @@ string, and delete the disk-storage configuration. Bundle with
 [SEC-05](../security/checklist.md#sec-05).
 
 ### BUG-15
-**`setState` inside an effect in four pages.** P2 · ❌ Open
+**`setState` inside an effect.** P2 · ❌ Open
 
-`WritePost`, `Settings`, `Profile` and `UserProfile` hydrate local form state from a query
-inside `useEffect`. The pattern works but causes a cascading render, and
-`react-hooks/set-state-in-effect` flags it.
+`WritePost`, `Settings` and `UserProfile` hydrate local form state from a query inside
+`useEffect`. The pattern works but causes a cascading render, and
+`react-hooks/set-state-in-effect` flags it. (The fourth page originally listed here, `Profile`,
+no longer exists — it was folded into the workspace split.)
 
-Set to `warn` rather than `error` deliberately: refactoring form hydration across four pages
-without a test suite is how regressions get shipped. Sequence it after
+Set to `warn` rather than `error` deliberately: refactoring form hydration without any client
+test is how regressions get shipped. Sequence it after the client half of
 [GAP-11](#gap-11).
 
 ---
@@ -252,14 +253,14 @@ without a test suite is how regressions get shipped. Sequence it after
 | <a id="gap-02"></a>**GAP-02** | Email verification | P2 | ❌ Open |
 | <a id="gap-03"></a>**GAP-03** | Draft autosave and revision history | P2 | ❌ Open |
 | <a id="gap-04"></a>**GAP-04** | Tags wired into the editor | P2 | ❌ Open — model, routes and service exist |
-| <a id="gap-05"></a>**GAP-05** | Real search | P1 | ⚠️ Partial — public-only and capped; still an unindexed regex over titles |
-| <a id="gap-06"></a>**GAP-06** | Server-side session revocation | P1 | ❌ Open — sign-out is still client-only |
-| <a id="gap-07"></a>**GAP-07** | Pagination on list endpoints | P0 | ⚠️ Partial — `/posts` and `/search` done; `/comments`, `/likes`, `/page-views` remain |
+| <a id="gap-05"></a>**GAP-05** | Real search | P1 | ⚠️ Partial — server-side category filtering added; still an unindexed regex over titles |
+| <a id="gap-06"></a>**GAP-06** | Server-side session revocation | P1 | ✅ **Done** — `tokenVersion` on the account, compared on every request |
+| <a id="gap-07"></a>**GAP-07** | Pagination on list endpoints | P0 | ⚠️ Partial — `/posts`, `/search`, `/comments`, `/users` and the author's own list done; `/page-views/post/:id` is capped at 200 rather than paged; `GET /likes/post/:postId` is still unbounded |
 | <a id="gap-08"></a>**GAP-08** | Notifications | P3 | ❌ Open |
-| <a id="gap-09"></a>**GAP-09** | Account deletion | P2 | ❌ Open |
+| <a id="gap-09"></a>**GAP-09** | Account deletion | P2 | ✅ **Done** — `DELETE /users/me`, sharing `purgeAccount` with the admin path |
 | <a id="gap-10"></a>**GAP-10** | Real audit log | P2 | ❌ Open — the moderation log is synthesised from `Post.updatedAt` |
-| <a id="gap-11"></a>**GAP-11** | Automated tests | P0 | ❌ Open — **now the highest-value item** |
-| <a id="gap-12"></a>**GAP-12** | CI pipeline | P0 | ❌ Open |
+| <a id="gap-11"></a>**GAP-11** | Automated tests | P0 | ⚠️ Partial — 61 backend integration tests; **the client has none, and that is now the highest-value item** |
+| <a id="gap-12"></a>**GAP-12** | CI pipeline | P0 | ✅ **Done** — lint, format check, tests, build and a dependency audit on every push and pull request |
 | <a id="gap-13"></a>**GAP-13** | Database indexes | P0 | ✅ **Done** — 13 indexes across 8 collections |
 | <a id="gap-14"></a>**GAP-14** | Health and readiness endpoints | P1 | ✅ **Done** — `GET /health`, `GET /ready` |
 | <a id="gap-15"></a>**GAP-15** | Structured logging | P2 | ❌ Open — morgan plus `console.*` |
@@ -277,18 +278,24 @@ Twelve defects and eight security findings closed, each verified against a runni
 The application now does what it claims: posts publish, drafts stay private, edits succeed,
 likes persist, settings save, and deep links resolve.
 
-### Phase 2 — Foundations *(next)*
+### ✅ Phase 2 — Foundations *(largely complete)*
 
-Nothing else should ship before this. Every defect in Phase 1 was one a modest test suite
-would have caught before merge.
+Every defect in Phase 1 was one a modest test suite would have caught before merge, so this
+phase built the thing that stops them coming back.
 
-- [ ] [GAP-11](#gap-11) test runners and a first suite — auth, authorisation, and one
-      regression test per closed `BUG-xx`
-- [ ] [GAP-12](#gap-12) CI running lint, format check, build and tests on every pull request
-- [ ] [SEC-12](../security/checklist.md#sec-12) dependency audit in CI, then work through the
-      recorded baseline behind a green pipeline
-- [ ] [GAP-07](#gap-07) paginate the remaining list endpoints
-- [ ] [BUG-15](#bug-15) refactor form hydration, once tests make it safe
+- [x] [GAP-11](#gap-11) a backend suite — 61 integration tests over auth, authorisation,
+      posts, comments, the workspace, trending and the admin console, plus a regression test
+      for each closed `BUG-xx` and `SEC-xx` a request can reach
+- [x] [GAP-12](#gap-12) CI running lint, format check, tests, build and a dependency audit on
+      every push and pull request
+- [x] [SEC-12](../security/checklist.md#sec-12) dependency audit in CI, failing on high and
+      critical advisories
+- [x] [GAP-06](#gap-06) session revocation via `tokenVersion`
+- [x] [GAP-09](#gap-09) account deletion
+- [ ] **Client tests** — the remaining half of [GAP-11](#gap-11). CI proves the client
+      compiles, not that it behaves
+- [ ] [GAP-07](#gap-07) page `GET /likes/post/:postId`, the last unbounded list
+- [ ] [BUG-15](#bug-15) refactor form hydration, now that backend tests make the API side safe
 
 ### Phase 3 — Data model consolidation
 
@@ -304,7 +311,6 @@ would have caught before merge.
 - [ ] [GAP-17](#gap-17) image upload pipeline, closing [BUG-07](#bug-07) and
       [SEC-05](../security/checklist.md#sec-05)
 - [ ] [GAP-04](#gap-04) tags in the editor
-- [ ] [GAP-06](#gap-06) session revocation
 - [ ] [GAP-08](#gap-08) notifications
 - [ ] [GAP-16](#gap-16) SEO metadata
 
@@ -314,7 +320,7 @@ would have caught before merge.
 - [ ] [GAP-10](#gap-10) real audit log
 - [ ] [GAP-18](#gap-18) accessibility audit
 - [ ] Response caching and ETags on public reads
-- [ ] Split the oversized page components — `Home.jsx` is over 1,000 lines
+- [ ] Split the oversized page components — `Home.jsx` is still the largest
 - [ ] Decide on TypeScript — see [code-quality.md](../guides/code-quality.md)
 
 ---

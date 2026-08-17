@@ -204,5 +204,5 @@ Runtime problems beyond installation:
 
 - [development.md](development.md) — where files go and how to write them
 - [code-quality.md](code-quality.md) — linting, formatting, the TypeScript position
-- [testing.md](testing.md) — the test strategy, and why there is no runner yet
+- [testing.md](testing.md) — what the backend suite covers, and what is still untested
 - [architecture/overview.md](../architecture/overview.md) — how the repository fits together

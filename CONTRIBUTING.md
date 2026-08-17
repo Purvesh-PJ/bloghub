@@ -16,10 +16,10 @@ agree to uphold it.
 
 | Contribution | Start here |
 |--------------|-----------|
-| **Add tests** | [docs/guides/testing.md](./docs/guides/testing.md) — no runner is installed. **This is the highest-value contribution available**, and every other item is safer once it exists |
-| Set up CI | [docs/operations/deployment.md](./docs/operations/deployment.md#part-2--cicd) — workflows are written out and ready to commit. Both workspaces lint clean today, so the gate can be blocking immediately |
+| **Add client tests** | [docs/guides/testing.md](./docs/guides/testing.md) — the backend has 61 integration tests; the client has none, so CI proves it compiles and nothing more. **This is the highest-value contribution available** |
+| Extend the backend suite | [docs/guides/testing.md](./docs/guides/testing.md) — `backend/tests/`, Jest and Supertest against an in-process MongoDB. `npm test` needs no database of its own |
 | Fix a known defect | [docs/product/roadmap.md](./docs/product/roadmap.md) — every item has an ID, a file reference and a proposed fix |
-| Close a security finding | [docs/security/checklist.md](./docs/security/checklist.md) — four remain open, with the fix sketched for each |
+| Harden further | [docs/security/checklist.md](./docs/security/checklist.md) — all fifteen findings are closed; what remains is defence in depth (a CSP, a shared rate-limit store, email verification, password reset) |
 | Report a bug | [Open an issue](../../issues/new?template=bug_report.md) |
 | Propose a feature | [Open an issue](../../issues/new?template=feature_request.md) — discuss before building |
 | Improve documentation | [docs/](./docs/README.md) — check the SSOT map first so you edit the owning document |
@@ -182,14 +182,18 @@ The details live in the documentation; these are the rules that most often come 
 
 ## Testing
 
-There is no test runner installed yet ([GAP-11](./docs/product/roadmap.md#gap-11)). Until
-one exists, verify manually and describe what you did in the pull request.
+```bash
+cd backend && npm test        # 61 tests, in-process MongoDB, no setup needed
+```
 
-If you would like to establish the harness, that is the single most valuable contribution
-available — [docs/guides/testing.md](./docs/guides/testing.md)
-specifies the tooling and the order to build it in.
+**A backend bug fix ships with a regression test named for its tracking ID.** The suite exists
+precisely so a closed defect stays closed.
 
-Once the runner lands: a bug fix ships with a regression test named for its tracking ID.
+**A client change still has to be verified by hand** — there is no client runner yet
+([GAP-11](./docs/product/roadmap.md#gap-11)). Say in the pull request what you actually
+exercised, in both themes and at 375px. Establishing that runner is the most valuable
+contribution available; [docs/guides/testing.md](./docs/guides/testing.md) specifies the tooling
+and the order to build it in.
 
 ---
 
