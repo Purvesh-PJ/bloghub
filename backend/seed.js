@@ -359,10 +359,54 @@ function randomDate(daysAgo = 60) {
   return date;
 }
 
+/**
+ * Refuses to wipe anything that does not look like a local development database.
+ *
+ * The first thing seed() does is deleteMany({}) across nine collections. Against a local
+ * database that is the point; against the deployment's it destroys every real account, story
+ * and comment, with no undo. One mistyped MONGO_DB_URI is all that stands between those two
+ * outcomes, so the remote case has to be asked for explicitly.
+ */
+function assertSafeTarget() {
+  const uri = process.env.MONGODB_URI || process.env.MONGO_DB_URI || process.env.DB_URI || '';
+  const isLocal = /(localhost|127\.0\.0\.1)/.test(uri);
+
+  if (isLocal) return;
+
+  if (process.env.SEED_ALLOW_REMOTE !== 'yes') {
+    console.error(
+      [
+        '',
+        '  Refusing to seed a non-local database.',
+        '',
+        `  Target: ${uri.replace(/\/\/[^@]*@/, '//<credentials>@') || '(none set)'}`,
+        '',
+        '  Seeding DELETES every user, post, category, comment, like, profile, view,',
+        '  read and analytics document before inserting the sample data. On a deployed',
+        '  database that means every real account and everything written on it.',
+        '',
+        '  If that is genuinely what you want, re-run with:',
+        '    SEED_ALLOW_REMOTE=yes npm run seed',
+        '',
+      ].join('\n'),
+    );
+    process.exit(1);
+  }
+
+  console.warn('[seed] SEED_ALLOW_REMOTE=yes — wiping a REMOTE database in 5 seconds…');
+}
+
 async function seed() {
   try {
+    assertSafeTarget();
+
     await connectDB();
     console.log('Connected to database');
+
+    // A last pause on a remote target, so a mistake can still be interrupted.
+    if (process.env.SEED_ALLOW_REMOTE === 'yes') {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
 
     console.log('Clearing existing data...');
     await Promise.all([
