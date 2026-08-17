@@ -30,4 +30,18 @@ const updateAccountRules = [
   body('bio').optional().isString().trim().isLength({ max: 500 }),
 ];
 
-module.exports = { updateAccountRules };
+const suspendRules = [
+  body('suspended').isBoolean().withMessage('suspended must be true or false').toBoolean(),
+];
+
+const roleRules = [
+  body('admin').isBoolean().withMessage('admin must be true or false').toBoolean(),
+];
+
+// Deleting somebody else's account asks for the administrator's own password, for the same
+// reason self-deletion does: a session alone is not authority to destroy an account.
+const adminDeleteRules = [
+  body('password').isString().withMessage('Your password is required').notEmpty(),
+];
+
+module.exports = { updateAccountRules, suspendRules, roleRules, adminDeleteRules };

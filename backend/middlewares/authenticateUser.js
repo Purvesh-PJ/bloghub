@@ -23,10 +23,11 @@ const identify = async (token) => {
     typeof decoded.user === 'object' ? decoded.user.id || decoded.user._id : decoded.user;
   if (!userId) return null;
 
-  const account = await User.findById(userId).select('roles tokenVersion').lean();
+  const account = await User.findById(userId).select('roles tokenVersion suspended').lean();
   if (!account) return null; // deleted account, token still within its lifetime
 
   if ((decoded.tokenVersion ?? 0) !== (account.tokenVersion ?? 0)) return null; // revoked
+  if (account.suspended) return null; // suspended by an administrator
 
   return {
     id: userId,

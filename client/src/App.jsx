@@ -31,7 +31,6 @@ const AdminDashboard = lazyPage(() => import('./pages/admin/Dashboard'), 'AdminD
 const AdminPosts = lazyPage(() => import('./pages/admin/Posts'), 'AdminPosts');
 const AdminCategories = lazyPage(() => import('./pages/admin/Categories'), 'AdminCategories');
 const AdminUsers = lazyPage(() => import('./pages/admin/Users'), 'AdminUsers');
-const AdminSettings = lazyPage(() => import('./pages/admin/Settings'), 'AdminSettings');
 
 function App() {
   return (
@@ -91,7 +90,6 @@ function App() {
           <Route path="posts" element={<AdminPosts />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="users" element={<AdminUsers />} />
-          <Route path="settings" element={<AdminSettings />} />
         </Route>
       </Routes>
     </Suspense>

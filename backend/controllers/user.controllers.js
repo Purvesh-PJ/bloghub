@@ -3,15 +3,9 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/user.model');
 const Post = require('../models/post.model');
 const Profile = require('../models/user-profile.model');
-const Comment = require('../models/comment.model');
-const Like = require('../models/like.model');
-const View = require('../models/view.model');
-const Read = require('../models/read.model');
-const Category = require('../models/category.model');
-const Tag = require('../models/tag.model');
-const UserSettings = require('../models/user-settings.model');
 const asyncHandler = require('../middlewares/asyncHandler');
-const { notFound, conflict, badRequest, unauthorized } = require('../utils/AppError');
+const { purgeAccount } = require('../services/accountService');
+const { notFound, conflict, badRequest, unauthorized, forbidden } = require('../utils/AppError');
 
 /**
  * Renders a stored avatar as a data URI.
@@ -289,51 +283,33 @@ exports.deleteAccount = asyncHandler(async (req, res) => {
   const { password } = req.body;
   const userId = req.user.id;
 
-  const user = await User.findById(userId).select('password');
+  const user = await User.findById(userId).select('password roles');
   if (!user) throw notFound('User not found');
 
   if (!(await bcrypt.compare(password, user.password))) {
     throw unauthorized('Password is incorrect', 'InvalidPassword');
   }
 
-  const posts = await Post.find({ user: userId }).select('_id categories tags').lean();
-  const postIds = posts.map((post) => post._id);
+  // The one path that can leave the site with no administrator. The admin console refuses to
+  // act on the caller's own account, so every route through it leaves at least the actor —
+  // but nothing stops the last administrator deleting themselves from here.
+  if (user.roles?.includes('admin')) {
+    const others = await User.countDocuments({
+      _id: { $ne: userId },
+      roles: 'admin',
+      suspended: { $ne: true },
+    });
 
-  await Promise.all([
-    // The person's own content.
-    Post.deleteMany({ user: userId }),
-    Comment.deleteMany({ user: userId }),
-    Like.deleteMany({ user: userId }),
-    View.deleteMany({ user: userId }),
-    Read.deleteMany({ user: userId }),
-    Profile.deleteOne({ user: userId }),
-    UserSettings.deleteOne({ user: userId }),
+    if (others === 0) {
+      throw forbidden(
+        'You are the only administrator. Promote somebody else before deleting your account.',
+        'LastAdmin',
+      );
+    }
+  }
 
-    // Everything on their posts that belonged to other people.
-    Comment.deleteMany({ post: { $in: postIds } }),
-    Like.deleteMany({ post: { $in: postIds } }),
-
-    // References to them and their posts held elsewhere.
-    Category.updateMany({}, { $pull: { posts: { $in: postIds } } }),
-    Tag.updateMany({}, { $pull: { posts: { $in: postIds } } }),
-    Profile.updateMany(
-      { $or: [{ followers: userId }, { followings: userId }] },
-      { $pull: { followers: userId, followings: userId } },
-    ),
-  ]);
-
-  // Follower counters are derived from the arrays just trimmed, so recompute rather than
-  // guess at how far each one moved.
-  await Profile.updateMany({}, [
-    {
-      $set: {
-        followersCount: { $size: { $ifNull: ['$followers', []] } },
-        followingsCount: { $size: { $ifNull: ['$followings', []] } },
-      },
-    },
-  ]);
-
-  await User.deleteOne({ _id: userId });
+  // Shared with the administrator's version, so both clean up identically.
+  await purgeAccount(userId);
 
   res.status(200).json({
     success: true,

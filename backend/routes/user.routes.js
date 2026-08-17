@@ -5,7 +5,13 @@ const AuthUser = require('../middlewares/authenticateUser');
 const { uploadAvatar } = require('../middlewares/upload');
 const { validate, validateObjectId } = require('../middlewares/validate');
 const { paginationRules, myPostsRules } = require('../validators/content.validators');
-const { updateAccountRules } = require('../validators/user.validators');
+const AdminController = require('../controllers/admin.controllers');
+const {
+  updateAccountRules,
+  suspendRules,
+  roleRules,
+  adminDeleteRules,
+} = require('../validators/user.validators');
 const { deleteAccountRules } = require('../validators/auth.validators');
 
 router.get(
@@ -74,6 +80,38 @@ router.get(
   AuthUser.authenticateUser,
   validateObjectId('id'),
   UserController.isFollowing,
+);
+
+/* ── Administrator actions on other accounts ─────────────────────────────── */
+
+router.patch(
+  '/:id/suspension',
+  AuthUser.authenticateUser,
+  AuthUser.authorizeAdmin,
+  validateObjectId('id'),
+  suspendRules,
+  validate,
+  AdminController.setUserSuspended,
+);
+
+router.patch(
+  '/:id/role',
+  AuthUser.authenticateUser,
+  AuthUser.authorizeAdmin,
+  validateObjectId('id'),
+  roleRules,
+  validate,
+  AdminController.setUserRole,
+);
+
+router.delete(
+  '/:id',
+  AuthUser.authenticateUser,
+  AuthUser.authorizeAdmin,
+  validateObjectId('id'),
+  adminDeleteRules,
+  validate,
+  AdminController.deleteUser,
 );
 
 module.exports = router;
