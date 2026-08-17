@@ -19,8 +19,9 @@ import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
 import { PageShell, PageHeader, Section } from '../components/layout/PageShell';
 import { PostCard } from '../components/posts/PostCard';
+import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { topicIcon } from '../components/marketing/Topics';
-import { Input, Chip, Loading, EmptyState, Card, Button } from '../components/ui';
+import { Input, Chip, Loading, EmptyState, Card, Button, Skeleton, SkeletonText } from '../components/ui';
 import { text, display, clamp, media, interactive } from '../styles/theme/mixins';
 import { excerpt, readingTime } from '../utils/text';
 
@@ -340,7 +341,18 @@ export function Search() {
           }
         >
           {searching ? (
-            <Loading text="Searching BlogHub…" />
+            <ResultsGrid>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i} style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <Skeleton $width="80%" $height={22} $radius="xs" />
+                  <SkeletonText lines={3} lineHeight="14px" lastLineWidth="60%" gap="xs" />
+                  <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+                    <Skeleton $width={60} $height={14} $radius="xs" />
+                    <Skeleton $width={70} $height={14} $radius="xs" />
+                  </div>
+                </Card>
+              ))}
+            </ResultsGrid>
           ) : results.length === 0 ? (
             <EmptyState icon={SearchIcon} title="No matching stories">
               We couldn't find any stories matching “{query}”. Try searching for different keywords
@@ -373,10 +385,14 @@ export function Search() {
         <Columns>
           <Section
             title={topic ? `Stories in ${topic}` : 'Featured & Recent Stories'}
-            note={`${browsePosts.length} stories`}
+            note={loadingPosts ? 'Loading…' : `${browsePosts.length} stories`}
           >
             {loadingPosts ? (
-              <Loading text="Loading stories…" />
+              <Feed>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <PostCardSkeleton key={i} layout="row" />
+                ))}
+              </Feed>
             ) : browsePosts.length === 0 ? (
               <EmptyState
                 icon={Compass}

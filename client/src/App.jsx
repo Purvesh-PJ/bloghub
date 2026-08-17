@@ -5,14 +5,15 @@ import { WorkspaceLayout } from './components/layout/WorkspaceLayout';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { ProtectedRoute } from './guards/ProtectedRoute';
 import { AdminRoute } from './guards/AdminRoute';
-import { Spinner } from './components/ui/Spinner';
+
+import styled, { keyframes } from 'styled-components';
+import { Home } from './pages/Home';
 
 // Helper for lazy loading named exports
 const lazyPage = (importFn, name) =>
   lazy(() => importFn().then((module) => ({ default: module[name] })));
 
-// Public Pages
-const Home = lazyPage(() => import('./pages/Home'), 'Home');
+// Public Pages (Home loaded eagerly for instant landing)
 const Login = lazyPage(() => import('./pages/Login'), 'Login');
 const Register = lazyPage(() => import('./pages/Register'), 'Register');
 const PostDetail = lazyPage(() => import('./pages/PostDetail'), 'PostDetail');
@@ -33,15 +34,36 @@ const AdminPosts = lazyPage(() => import('./pages/admin/Posts'), 'AdminPosts');
 const AdminCategories = lazyPage(() => import('./pages/admin/Categories'), 'AdminCategories');
 const AdminUsers = lazyPage(() => import('./pages/admin/Users'), 'AdminUsers');
 
+const progressAnim = keyframes`
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+`;
+
+const TopProgressBar = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(14, 165, 233, 0.15);
+  overflow: hidden;
+  z-index: 9999;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, #0284c7, #38bdf8);
+    border-radius: 9999px;
+    animation: ${progressAnim} 1.2s ease-in-out infinite;
+  }
+`;
+
 function App() {
   return (
-    <Suspense
-      fallback={
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
-          <Spinner size="40px" />
-        </div>
-      }
-    >
+    <Suspense fallback={<TopProgressBar />}>
       <Routes>
         {/* Public Reader Routes */}
         <Route path="/" element={<Layout />}>

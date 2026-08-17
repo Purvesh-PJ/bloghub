@@ -33,8 +33,9 @@ import toast from 'react-hot-toast';
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
 import { useAuth } from '../context/AuthContext';
-import { Button, Chip, Loading, Input } from '../components/ui';
+import { Button, Chip, Loading, Input, Skeleton, SkeletonText } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
+import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
 import { topicIcon } from '../components/marketing/Topics';
 import { initial } from '../utils/text';
@@ -704,11 +705,8 @@ export function Home() {
     { name: 'Technology', icon: Cpu },
     { name: 'Science', icon: Atom },
     { name: 'Design', icon: Palette },
-    { name: 'Travel', icon: Plane },
     { name: 'Health', icon: Activity },
   ];
-
-  if (isLoading && posts.length === 0) return <Loading text="Loading stories…" />;
 
   return (
     <Page>
@@ -860,16 +858,25 @@ export function Home() {
                     : `${selectedTopic} Stories`}
                 </SectionTitle>
                 <SectionSubtitle>
-                  {filteredPosts.length} {filteredPosts.length === 1 ? 'article' : 'articles'}{' '}
-                  exploring ideas, techniques, and insights.
+                  {isLoading
+                    ? 'Discovering top stories across the community…'
+                    : `${filteredPosts.length} ${filteredPosts.length === 1 ? 'article' : 'articles'} exploring ideas, techniques, and insights.`}
                 </SectionSubtitle>
               </SectionLeft>
             </SectionHead>
 
             <PostList>
-              {filteredPosts.map((post) => (
-                <PostCard key={post._id} post={post} />
-              ))}
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <PostCardSkeleton key={index} layout="row" />
+                ))
+              ) : filteredPosts.length === 0 ? (
+                <div style={{ padding: '48px 0', textAlign: 'center', color: '#64748b' }}>
+                  No stories found in this topic yet.
+                </div>
+              ) : (
+                filteredPosts.map((post) => <PostCard key={post._id} post={post} />)
+              )}
             </PostList>
           </section>
 
@@ -911,28 +918,51 @@ export function Home() {
                 <Users /> Featured Creators
               </SidebarTitle>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {featuredWriters.map((writer) => (
-                  <WriterRow key={writer.name}>
-                    <WriterLeft>
-                      <WriterAvatar>{initial(writer.name)}</WriterAvatar>
-                      <WriterMeta>
-                        <WriterName>{writer.name}</WriterName>
-                        <WriterFollowers>
-                          {writer.topic} · {writer.storiesCount} stories
-                        </WriterFollowers>
-                      </WriterMeta>
-                    </WriterLeft>
-                    <Button
-                      size="sm"
-                      variant="tonal"
-                      onClick={() =>
-                        writer.id ? navigate(`/user/${writer.id}`) : navigate('/search')
-                      }
-                    >
-                      View
-                    </Button>
-                  </WriterRow>
-                ))}
+                {isLoading && featuredWriters.length === 0
+                  ? Array.from({ length: 4 }).map((_, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 12,
+                          padding: index > 0 ? '8px 0 0 0' : 0,
+                          borderTop: index > 0 ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                          <Skeleton $variant="circle" $width={34} $height={34} />
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+                            <Skeleton $width="70%" $height={13} $radius="xs" />
+                            <Skeleton $width="40%" $height={11} $radius="xs" />
+                          </div>
+                        </div>
+                        <Skeleton $width={50} $height={28} $radius="sm" />
+                      </div>
+                    ))
+                  : featuredWriters.map((writer) => (
+                      <WriterRow key={writer.name}>
+                        <WriterLeft>
+                          <WriterAvatar>{initial(writer.name)}</WriterAvatar>
+                          <WriterMeta>
+                            <WriterName>{writer.name}</WriterName>
+                            <WriterFollowers>
+                              {writer.topic} · {writer.storiesCount} stories
+                            </WriterFollowers>
+                          </WriterMeta>
+                        </WriterLeft>
+                        <Button
+                          size="sm"
+                          variant="tonal"
+                          onClick={() =>
+                            writer.id ? navigate(`/user/${writer.id}`) : navigate('/search')
+                          }
+                        >
+                          View
+                        </Button>
+                      </WriterRow>
+                    ))}
               </div>
             </SidebarCard>
 

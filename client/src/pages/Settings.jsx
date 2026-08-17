@@ -21,10 +21,8 @@ import { userService } from '../services/userService';
 import { authService } from '../services/authService';
 import { settingsService } from '../services/settingsService';
 import { useCurrentUser } from '../hooks/useCurrentUser';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../styles/ThemeProvider';
 import { PageShell, PageHeader } from '../components/layout/PageShell';
-import { Button, Input, TextArea, Surface, Loading, Modal, Avatar } from '../components/ui';
+import { Button, Input, TextArea, Surface, Loading, Modal, Avatar, Skeleton, SkeletonText } from '../components/ui';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 
 // Mirrors the server-side minimum in validators/auth.validators.js.
@@ -502,8 +500,6 @@ export function Settings() {
     privacyMutation.mutate(next);
   };
 
-  if (isLoading) return <Loading text="Loading settings…" />;
-
   return (
     <PageShell $width="wide">
       <PageHeader title="Settings" subtitle="Your account, and how BlogHub behaves for you." />
@@ -518,7 +514,22 @@ export function Settings() {
         </Nav>
 
         <Panels>
-          {tab === 'profile' && (
+          {isLoading ? (
+            <Panel aria-hidden="true">
+              <PanelHead>
+                <Skeleton $width={140} $height={24} $radius="xs" />
+                <Skeleton $width="60%" $height={14} $radius="xs" />
+              </PanelHead>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 16 }}>
+                <Skeleton $width="100%" $height={44} $radius="md" />
+                <Skeleton $width="100%" $height={44} $radius="md" />
+                <Skeleton $width="100%" $height={96} $radius="md" />
+                <Skeleton $width={120} $height={40} $radius="full" />
+              </div>
+            </Panel>
+          ) : (
+            <>
+              {tab === 'profile' && (
             <Panel>
               <PanelHead>
                 <PanelTitle>Profile</PanelTitle>
@@ -763,8 +774,10 @@ export function Settings() {
               </Panel>
             </>
           )}
-        </Panels>
-      </Layout>
+        </>
+      )}
+    </Panels>
+  </Layout>
 
       <Modal
         open={confirmDelete}

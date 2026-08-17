@@ -27,6 +27,8 @@ import {
   Loading,
   EmptyState,
   DropdownMenu,
+  Skeleton,
+  SkeletonText,
 } from '../../components/ui';
 import { text, clamp } from '../../styles/theme/mixins';
 
@@ -145,7 +147,32 @@ export function AdminPosts() {
     return list;
   }, [posts, filter, query]);
 
-  if (isLoading) return <Loading text="Loading posts…" />;
+  if (isLoading) {
+    return (
+      <div aria-hidden="true">
+        <PageHeader
+          title="Posts"
+          subtitle="Loading directory…"
+          actions={
+            <Button as={Link} to="/write">
+              <PenLine /> New post
+            </Button>
+          }
+        />
+        <Card tone="low" radius="xl" style={{ padding: 20 }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                <Skeleton $width="55%" $height={16} $radius="xs" />
+                <Skeleton $width="25%" $height={12} $radius="xs" />
+              </div>
+              <Skeleton $width={60} $height={22} $radius="pill" />
+            </div>
+          ))}
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <>

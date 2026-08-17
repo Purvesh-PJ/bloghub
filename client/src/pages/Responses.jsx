@@ -19,6 +19,8 @@ import {
   Loading,
   EmptyState,
   ErrorState,
+  Skeleton,
+  SkeletonText,
 } from '../components/ui';
 import { text, media } from '../styles/theme/mixins';
 
@@ -165,7 +167,30 @@ export function Responses() {
       toast.error(error.response?.data?.message || 'Could not remove that response'),
   });
 
-  if (postsLoading) return <Loading text="Loading your stories…" />;
+  if (postsLoading) {
+    return (
+      <PageShell>
+        <PageHeader
+          title="Responses"
+          subtitle="What readers have said on your stories, and where you moderate them."
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} aria-hidden="true">
+          <Skeleton $width="300px" $height={40} $radius="md" />
+          <Surface $tone="low" $radius="xl" $padding="md">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                <Skeleton $variant="circle" $width={36} $height={36} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Skeleton $width="140px" $height={14} $radius="xs" />
+                  <SkeletonText lines={2} lineHeight="14px" lastLineWidth="80%" gap="xs" />
+                </div>
+              </div>
+            ))}
+          </Surface>
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
@@ -197,14 +222,15 @@ export function Responses() {
                 onValueChange={setPostId}
                 options={posts.map((post) => ({
                   value: post._id,
-                  label: `${post.title || 'Untitled'}${post.visibility !== 'public' ? ' (unpublished)' : ''}`,
+                  label: post.title || 'Untitled',
                 }))}
               />
             </PostPicker>
 
             {selectedPost && (
-              <PostTitle to={`/post/${selectedPost._id}`}>
-                Open story <ExternalLink size={12} />
+              <PostTitle>
+                <span>Viewing:</span>
+                <Link to={`/post/${selectedPost._id}`}>{selectedPost.title || 'Untitled'}</Link>
               </PostTitle>
             )}
 
@@ -215,7 +241,17 @@ export function Responses() {
           </Toolbar>
 
           {commentsLoading ? (
-            <Loading text="Loading responses…" />
+            <Surface $tone="low" $radius="xl" $padding="md" aria-hidden="true">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                  <Skeleton $variant="circle" $width={36} $height={36} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <Skeleton $width="140px" $height={14} $radius="xs" />
+                    <SkeletonText lines={2} lineHeight="14px" lastLineWidth="80%" gap="xs" />
+                  </div>
+                </div>
+              ))}
+            </Surface>
           ) : commentsFailed ? (
             <ErrorState
               title="Responses did not load"

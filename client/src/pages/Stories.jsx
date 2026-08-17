@@ -37,6 +37,8 @@ import {
   ErrorState,
   DropdownMenu,
   Spinner,
+  Skeleton,
+  SkeletonText,
 } from '../components/ui';
 import { text, media, clamp } from '../styles/theme/mixins';
 
@@ -615,8 +617,28 @@ export function Stories() {
       {isError ? (
         <ErrorState title="Your stories did not load" error={error} onRetry={() => refetch()} />
       ) : isLoading ? (
-        <Surface $tone="low" $radius="xl" $padding="2xl">
-          <PagerLabel>Loading your stories…</PagerLabel>
+        <Surface $tone="low" $radius="xl" $padding="md" aria-hidden="true">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 8px',
+                borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
+                <Skeleton $width={20} $height={20} $radius="xs" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                  <Skeleton $width="60%" $height={16} $radius="xs" />
+                  <Skeleton $width="30%" $height={12} $radius="xs" />
+                </div>
+              </div>
+              <Skeleton $width={60} $height={24} $radius="pill" />
+            </div>
+          ))}
         </Surface>
       ) : posts.length === 0 ? (
         <EmptyState

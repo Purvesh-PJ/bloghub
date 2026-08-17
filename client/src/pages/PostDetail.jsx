@@ -18,6 +18,7 @@ import { markdownRehypePlugins } from '../config/markdown';
 import { PageShell } from '../components/layout/PageShell';
 import { ReadRateBar } from '../components/stats/ReadRateBar';
 import { Button, Card, TextArea, Chip, Modal, Loading, EmptyState } from '../components/ui';
+import { PostDetailSkeleton } from '../components/posts/PostDetailSkeleton';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 import { readingTime, initial } from '../utils/text';
 
@@ -432,7 +433,7 @@ export function PostDetail() {
     onError: () => toast.error('Could not register that'),
   });
 
-  if (isLoading) return <Loading text="Loading…" />;
+  if (isLoading) return <PostDetailSkeleton />;
 
   if (error || !data?.success || !post) {
     return (
