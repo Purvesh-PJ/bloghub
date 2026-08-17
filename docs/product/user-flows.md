@@ -119,18 +119,23 @@ mismatched `type` claim.
 
 ```
 / → Home mounts
-  ⇢ GET /posts        → queryKey ["posts"]   (published only, paginated, 20 per page)
-  ⇢ GET /categories   → queryKey ["categories"]
-  → hero, featured-category carousel, feature grid, feed, trending sidebar
-  → selecting a category filters the loaded page in memory
+  ⇢ GET /posts           → queryKey ["posts"]     (published only, paginated)
+  ⇢ GET /posts/trending  → queryKey ["trending"]
+  → hero, feed, trending sidebar
   → clicking a card → /post/:id
 ```
 
 The API returns only `visibility: 'public'` posts, so no browser-side filter is required.
 Responses are cached for five minutes and are not refetched on window focus.
 
-**Known limitation:** the UI requests one page and does not paginate further, so only the 20
-most recent posts are reachable from the feed ([GAP-07](roadmap.md#gap-07)).
+The landing page has **no category filter**. It had one, and it was removed: it filtered only
+the posts already in memory, so it looked like a search of the platform while actually
+searching one page, and it competed with the ranking the page exists to present. Filtering
+belongs on `/search`, where the server does it against the whole collection.
+
+**Known limitation:** the feed requests one page and does not paginate further, so only the
+most recent page is reachable from the landing page ([GAP-07](roadmap.md#gap-07)). `/search`
+is the way to reach the rest.
 
 ---
 
@@ -358,9 +363,20 @@ listener only auto-switches while no explicit choice is stored.
   ├─ Dashboard   ⇢ GET /posts?all=true → ["allPosts"], GET /analytics/admin
   ├─ Posts       ⇢ GET /posts?all=true — includes drafts and private posts
   ├─ Categories  ⇢ GET /categories; create via POST /categories (admin-only)
-  ├─ Users       ⇢ GET /users?page=n → ["admin-users", page]
-  └─ Settings    → placeholder
+  └─ Users       ⇢ GET /users?page=n → ["admin-users", page]
+                 ⇢ PATCH /users/:id/suspension { suspended }
+                 ⇢ PATCH /users/:id/role       { role }
+                 ⇢ DELETE /users/:id
 ```
+
+The user actions are the reason the console exists. Suspension and demotion both increment the
+target's `tokenVersion`, so an account loses its existing sessions the moment it is acted on
+rather than whenever its access token happens to expire. Deletion goes through the same
+`purgeAccount` service the member-facing "delete my account" uses, so there is one definition
+of what removing an account means.
+
+There is no admin Settings page. It was a screen of switches wired to nothing, and a control
+that does not control anything is worse than an absent one.
 
 `?all=true` is honoured only for an admin token; for anyone else the flag is ignored and the
 public list is returned. `AdminRoute` is a convenience — every admin resource is independently

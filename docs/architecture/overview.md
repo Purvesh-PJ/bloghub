@@ -56,12 +56,13 @@ bloghub/
 │   │   └── logger.js              # morgan, format switched by NODE_ENV
 │   ├── models/                    # 11 Mongoose schemas
 │   ├── routes/                    # 12 routers
-│   ├── services/                  # postService, commentServices
+│   ├── services/                  # post, comment, account purge, trending scoring
 │   ├── utils/                     # AppError, visitor keying
 │   ├── validators/                # express-validator chains, one module per area
 │   ├── tests/                     # jest + supertest against an in-memory MongoDB
 │   ├── index.js                   # composition root
-│   ├── seed.js                    # sample dataset
+│   ├── seed.js                    # sample dataset, guarded against remote targets
+│   ├── scripts/migrate.js         # non-destructive repair of an existing database
 │   └── package.json
 │
 ├── client/                        # React SPA · ES modules
@@ -69,13 +70,17 @@ bloghub/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── layout/            # Header, Footer, Layout, AdminLayout,
-│   │   │   │                      #   ThemeToggle, ErrorBoundary
-│   │   │   ├── posts/             # PostCard
-│   │   │   └── ui/                # 13 token-driven primitives + barrel
+│   │   │   │                      #   WorkspaceLayout, PageShell, Editorial,
+│   │   │   │                      #   ThemeToggle, SkipLink, ErrorBoundary
+│   │   │   ├── marketing/         # landing-page-only sections
+│   │   │   ├── posts/             # PostCard, AuthorByline, skeletons
+│   │   │   ├── stats/             # ReadRateBar
+│   │   │   └── ui/                # 21 token-driven primitives + barrel
 │   │   ├── config/api.js          # the single Axios instance and interceptors
 │   │   ├── context/AuthContext.jsx# authState singleton + provider + hook
 │   │   ├── guards/                # ProtectedRoute, AdminRoute
-│   │   ├── pages/                 # 12 routes + admin/ (5 more)
+│   │   ├── hooks/                 # useDebounced, useDraftRecovery, useCurrentUser, useReading
+│   │   ├── pages/                 # 11 pages + admin/ (4 more)
 │   │   ├── services/              # 10 API clients
 │   │   ├── styles/                # ThemeProvider + theme/
 │   │   ├── App.jsx                # route table, lazy loading
@@ -88,6 +93,8 @@ bloghub/
 │   └── package.json
 │
 ├── docs/
+├── .github/workflows/ci.yml       # lint · format · test · build · audit
+├── .gitattributes                 # `* text=auto eol=lf` — keeps CRLF out of the tree
 ├── .env                           # local secrets — git-ignored
 ├── .env.example
 ├── LICENSE
@@ -107,7 +114,7 @@ bloghub/
 | Entry point | `index.js` | `src/main.jsx` |
 | Build step | None | Vite → `client/dist` |
 | Install | `cd backend && npm install` | `cd client && npm install` |
-| Test runner | **None installed** | **None installed** |
+| Test runner | Jest + Supertest, 61 tests | **None installed** |
 
 The two share no code. Their only contract is the HTTP API
 ([reference/api.md](../reference/api.md)).

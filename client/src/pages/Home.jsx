@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import styled, { keyframes } from 'styled-components';
@@ -12,13 +12,9 @@ import {
   BarChart2,
   Layers,
   Clock,
-  Eye,
   MessageCircle,
   ShieldCheck,
-  Globe2,
   CheckCircle2,
-  BookOpenCheck,
-  TrendingUp,
   Feather,
 } from 'lucide-react';
 
@@ -172,29 +168,23 @@ const TopicPill = styled.button`
   gap: 6px;
   padding: 6px 12px;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme, $active }) =>
-    $active ? theme.gradients.brand : theme.colors.surfaceContainer};
-  color: ${({ theme, $active }) => ($active ? '#ffffff' : theme.colors.textSecondary)};
-  border: 1px solid
-    ${({ theme, $active }) => ($active ? 'transparent' : theme.colors.lineDefault)};
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
   ${text('xs', 'semibold')}
   transition: all ${({ theme }) => theme.transitions.fast};
-  box-shadow: ${({ $active }) =>
-    $active ? '0 4px 12px rgba(14, 165, 233, 0.35)' : 'none'};
   ${interactive}
 
   svg {
     width: 13px;
     height: 13px;
-    color: ${({ theme, $active }) => ($active ? '#ffffff' : theme.colors.accentSolid)};
+    color: ${({ theme }) => theme.colors.accentSolid};
   }
 
   &:hover {
-    background: ${({ theme, $active }) =>
-      $active ? theme.gradients.brand : theme.colors.accentContainer};
-    color: ${({ theme, $active }) => ($active ? '#ffffff' : theme.colors.accentText)};
-    border-color: ${({ theme, $active }) =>
-      $active ? 'transparent' : theme.colors.accentLine};
+    background: ${({ theme }) => theme.colors.accentContainer};
+    color: ${({ theme }) => theme.colors.accentText};
+    border-color: ${({ theme }) => theme.colors.accentLine};
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
   }
@@ -469,20 +459,6 @@ const SectionSubtitle = styled.p`
   max-width: 560px;
 `;
 
-const FilterBar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
 const PostList = styled.div`
   display: flex;
   flex-direction: column;
@@ -682,7 +658,6 @@ const CtaHighlights = styled.div`
 export function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState('all');
 
   const { data: trendingResponse, isLoading } = useQuery({
     queryKey: ['trendingPosts'],
@@ -715,24 +690,6 @@ export function Home() {
     return [...fromPosts].filter(Boolean).map((name) => ({ name }));
   }, [categories, posts]);
 
-  const filteredPosts = useMemo(() => {
-    if (selectedCategory === 'all') return posts;
-    return posts.filter((post) =>
-      post.categories?.some((c) => {
-        const name = typeof c === 'string' ? c : c?.name;
-        return name?.toLowerCase() === selectedCategory.toLowerCase();
-      })
-    );
-  }, [posts, selectedCategory]);
-
-  const handleTopicClick = (topicName) => {
-    setSelectedCategory(topicName);
-    const feedElement = document.getElementById('stories-feed');
-    if (feedElement) {
-      feedElement.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <Page>
       {/* ── 1. Hero Section ──────────────────────────────────────────────── */}
@@ -758,15 +715,7 @@ export function Home() {
               <Button size="lg" onClick={() => navigate(startHref)}>
                 <PenLine /> {startLabel}
               </Button>
-              <Button
-                size="lg"
-                variant="secondary"
-                onClick={() => {
-                  const feedEl = document.getElementById('stories-feed');
-                  if (feedEl) feedEl.scrollIntoView({ behavior: 'smooth' });
-                  else navigate('/search');
-                }}
-              >
+              <Button size="lg" variant="secondary" onClick={() => navigate('/search')}>
                 <Compass /> Explore stories
               </Button>
             </HeroActions>
@@ -779,12 +728,12 @@ export function Home() {
                 <CategoryPillsRow>
                   {topics.slice(0, 6).map((topic) => {
                     const Icon = topicIcon(topic.name);
-                    const isSelected = selectedCategory === topic.name;
                     return (
                       <TopicPill
                         key={topic.name}
-                        $active={isSelected}
-                        onClick={() => handleTopicClick(topic.name)}
+                        onClick={() =>
+                          navigate(`/search?category=${encodeURIComponent(topic.name)}`)
+                        }
                       >
                         <Icon /> {topic.name}
                       </TopicPill>
@@ -805,11 +754,7 @@ export function Home() {
                     layout="stacked"
                     size="sm"
                     name={featuredAuthor}
-                    note={
-                      isRanked
-                        ? `Most read this month`
-                        : 'Featured community story'
-                    }
+                    note={isRanked ? `Most read this month` : 'Featured community story'}
                   />
                   <SpotlightBadge>
                     <Sparkles /> Spotlight
@@ -939,77 +884,47 @@ export function Home() {
         </PillarsSection>
       </Container>
 
-      {/* ── 3. Main Feed & Filter Section ─────────────────────────────────── */}
-      <Container id="stories-feed">
+      {/* ── 3. Main Feed Section ───────────────────────────────────────────── */}
+      <Container>
         <SectionHead>
           <SectionLeft>
             <SectionKicker>
               <Flame /> {isRanked ? 'Community Favorites' : 'Fresh Discoveries'}
             </SectionKicker>
-            <SectionTitle>
-              {selectedCategory === 'all'
-                ? isRanked
-                  ? 'Trending stories right now'
-                  : 'Latest published stories'
-                : `Stories in ${selectedCategory}`}
-            </SectionTitle>
+            <SectionTitle>{isRanked ? 'Trending stories' : 'Latest stories'}</SectionTitle>
             <SectionSubtitle>
               {isLoading
                 ? 'Fetching stories…'
-                : 'Curated by genuine reader attention and engagement across our global community.'}
+                : isRanked
+                  ? `Ranked by genuine reader engagement over the last ${trendingWindow} days.`
+                  : 'Freshly published stories from across the community.'}
             </SectionSubtitle>
           </SectionLeft>
         </SectionHead>
-
-        {topics.length > 0 && (
-          <FilterBar>
-            <TopicPill
-              $active={selectedCategory === 'all'}
-              onClick={() => setSelectedCategory('all')}
-            >
-              <Flame /> All Stories
-            </TopicPill>
-            {topics.map((t) => {
-              const Icon = topicIcon(t.name);
-              const isSelected = selectedCategory === t.name;
-              return (
-                <TopicPill
-                  key={t.name}
-                  $active={isSelected}
-                  onClick={() => setSelectedCategory(t.name)}
-                >
-                  <Icon /> {t.name}
-                </TopicPill>
-              );
-            })}
-          </FilterBar>
-        )}
 
         <PostList>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, index) => (
               <PostCardSkeleton key={index} layout="row" />
             ))
-          ) : filteredPosts.length === 0 ? (
+          ) : posts.length === 0 ? (
             <EmptyFeed>
               <Feather size={36} style={{ opacity: 0.5 }} />
-              <h3>No stories found in this topic yet</h3>
-              <p>
-                Be the very first writer to share an insightful article in this category!
-              </p>
+              <h3>No stories published yet</h3>
+              <p>Be the very first writer to share an insightful article with the community!</p>
               <Button size="md" onClick={() => navigate(startHref)}>
                 <PenLine /> Write a story
               </Button>
             </EmptyFeed>
           ) : (
-            filteredPosts.map((post) => <PostCard key={post._id} post={post} layout="row" />)
+            posts.map((post) => <PostCard key={post._id} post={post} layout="row" />)
           )}
         </PostList>
 
         {!isLoading && posts.length > 0 && (
           <div style={{ textAlign: 'center' }}>
             <MoreLink to="/search">
-              Explore the entire story archive <ArrowRight />
+              Explore all stories <ArrowRight />
             </MoreLink>
           </div>
         )}

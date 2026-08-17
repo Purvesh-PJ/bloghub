@@ -145,33 +145,83 @@ Headings default to `semibold` with `tight` tracking; article bodies use `loose`
 Both themes expose an identical key set, so a component written against `theme.colors.<name>`
 works in either mode without a conditional. **Never inline a hex value.**
 
+The two themes are not two hand-written palettes. `lightTheme.js` and `darkTheme.js` each pick
+a set of **Radix colour ramps** and hand them to `createTheme(ramps, mode)`, which derives every
+token from them. One definition of what "accent solid" means, two modes.
+
+| Ramp | Light | Dark |
+|------|-------|------|
+| `neutral` | `slate` | `slateDark` |
+| `accent` | `sky` | `skyDark` |
+| `success` | `grass` | `grassDark` |
+| `warning` | `amber` | `amberDark` |
+| `danger` | `red` | `redDark` |
+| `info` | `blue` | `blueDark` |
+
+### Reading a Radix ramp
+
+Each ramp is twelve steps with fixed meanings. Getting these wrong is the single easiest way
+to ship unreadable UI:
+
+| Steps | Role |
+|-------|------|
+| 1–2 | Page and subtle backgrounds |
+| 3–5 | Component backgrounds — normal, hover, active |
+| 6–8 | Borders — subtle, normal, focus |
+| 9–10 | Solid fills — the accent itself, and its hover |
+| 11–12 | **Text.** Only these two are contrast-guaranteed |
+
+### Foreground on a solid fill is derived, not assumed
+
+Step 9 is a *fill*, and nothing about the scale promises white text will be readable on it. On
+a bright ramp — sky, amber, grass — it is not. White on `sky-9` measures **1.48:1**, so a
+primary button's label was effectively invisible.
+
+So the theme measures instead of guessing. `createTheme.js` implements WCAG 2.1 relative
+luminance and contrast ratio, and picks whichever of white or near-black actually wins:
+
+```js
+const INK = '#0f172a';
+const readableOn = (background) =>
+  contrast(background, '#ffffff') >= contrast(background, INK) ? '#ffffff' : INK;
+
+textOnAccent:  readableOn(step(a, 9)),   // sky-9  → ink,  12.04:1
+textOnDanger:  readableOn(step(d, 9)),   // red-9  → white
+textOnSuccess: readableOn(step(s, 9)),
+```
+
+Change the accent ramp to something dark and the foreground flips to white on its own. That is
+the point: the rule is stated once, so a palette change cannot quietly break legibility.
+
+### Token groups
+
 | Group | Keys |
 |-------|------|
-| Surfaces | `bgPrimary`, `bgSecondary`, `bgTertiary`, `bgElevated`, `bgHover`, `bgActive`, `bgOverlay` |
-| Text | `textPrimary`, `textSecondary`, `textMuted`, `textDisabled`, `textInverse`, `textLink`, `textLinkHover` |
-| Borders | `border`, `borderLight`, `borderHover`, `borderFocus` |
-| Brand | `accent`, `accentHover`, `accentActive`, `accentSubtle`, `accentMuted` |
-| Status | `success`, `warning`, `error`, `info` — each with `…Hover`, `…Bg`, `…Border` |
-| Buttons | `buttonPrimary*`, `buttonSecondary*`, `buttonGhostHover` |
-| Inputs | `inputBg`, `inputBorder`, `inputBorderHover`, `inputBorderFocus`, `inputPlaceholder` |
-| Cards | `cardBg`, `cardBorder`, `cardHoverBg` |
-| Chrome | `scrollbar*`, `selection`, `selectionText`, `codeBg`, `codeBorder` |
-| Badges | `badgeBg`, `badgeText`, `badgeActiveBg`, `badgeActiveText` |
+| Surfaces | `surfacePage`, `surfaceContainerLow \| Container \| ContainerHigh \| ContainerHighest`, `surfaceElevated`, `surfaceHover`, `surfaceActive`, `surfaceScrim` |
+| Text | `textPrimary`, `textSecondary`, `textMuted`, `textDisabled`, `textOnAccent`, `textOnDanger`, `textOnSuccess`, `textLink`, `textLinkHover` |
+| Lines | `lineSubtle`, `lineDefault`, `lineStrong`, `lineFocus` |
+| Accent | `accentContainer`, `accentContainerHover`, `accentLine`, `accentSolid`, `accentSolidHover`, `accentText` |
+| Status | `success`, `warning`, `danger`, `info` — each with `…Container`, `…Line`, `…Solid`, `…Text` |
 
-### Palette anchors
+Older names (`bgPrimary`, `border`, `cardBg`, `buttonPrimaryBg`, `accentSubtle` …) still
+resolve — `createTheme` aliases them onto the tokens above so nothing broke during the rename.
+**Write new code against the names in the table**; the aliases exist to be deleted.
 
-| Role | Light | Dark |
-|------|-------|------|
-| Brand accent | Indigo `#6366f1` | Violet `#8b5cf6` |
-| Page background | `#f9fafb` | `#09090b` |
-| Surface | `#ffffff` | `#18181b` |
-| Primary text | `#111827` | `#fafafa` |
-| Secondary text | `#4b5563` | `#a1a1aa` |
-| Border | `#e5e7eb` | `#3f3f46` |
-| Success / Warning / Error / Info | `#10b981` `#f59e0b` `#ef4444` `#3b82f6` | `#34d399` `#fbbf24` `#f87171` `#60a5fa` |
+### Gradients — `theme.gradients`
 
-Dark mode is warm neutral rather than pure black, with lightened status colours to hold
-contrast.
+| Token | Steps | Use |
+|-------|-------|-----|
+| `brand` | 10 → 8 | Solid surfaces: buttons, banners |
+| `brandSoft` | 4 → 6 | Tinted backgrounds behind content |
+| `brandBar` | 10 → 8, horizontal | Thin progress and accent bars |
+| `brandDeep` | 10 → 11 | Large surfaces that carry their own text |
+| `brandText` | 11 → 12 | **Gradient text only** |
+
+`brandText` exists because of a real regression: `gradient` + `background-clip: text` on a
+headline used `brand`, whose steps are fills, and the result measured **1.6:1** against the page.
+Text sits *on* the background rather than being a surface, so it needs the text steps. If you
+are clipping a gradient to text, it is `brandText` — there is no case where `brand` is right for
+that.
 
 ### Elevation — `theme.shadows`
 
@@ -188,6 +238,7 @@ Owned by `ThemeProvider`.
 | Concern | Behaviour |
 |---------|-----------|
 | Initial mode | `localStorage["theme"]` if valid, else `prefers-color-scheme`, else light |
+| Explicit vs system | Three states, not two: `light`, `dark`, or no stored preference. Only the third follows the OS |
 | Persistence | Written on every change |
 | DOM signal | `<html data-theme="light\|dark">` |
 | Mobile chrome | `<meta name="theme-color">` updated |
@@ -196,8 +247,10 @@ Owned by `ThemeProvider`.
 Consumers use `useTheme()` for `{ mode, isDark, isLight, toggleTheme, setTheme }`. Prefer
 reading `theme.colors.*` over branching on `isDark`.
 
-> The `theme-color` update writes `#0d1117`, which is not a `darkTheme` token
-> (`bgSecondary` is `#09090b`). Minor inconsistency worth aligning.
+> The `theme-color` update in `ThemeProvider.jsx` writes a literal `#0d1117` in dark mode,
+> which is not a theme token — `surfacePage` is `#070b13`. It is only the mobile browser
+> chrome, so nothing is broken, but it is the one place a colour escaped the token system and
+> is worth aligning.
 
 ---
 
@@ -209,31 +262,56 @@ reading `theme.colors.*` over branching on `isDark`.
 import { Button, Input, Card, Modal, Alert } from '../components/ui';
 ```
 
-| Component | Props | Notes |
-|-----------|-------|-------|
-| `Button` | `variant`: primary \| secondary \| outline \| ghost \| danger; `size`: sm \| md \| lg; `fullWidth`, `isLoading`, `disabled` | Heights 32 / 40 / 48px |
-| `Input` | `label`, `error`, plus native props | Label, field and error as one unit |
-| `TextArea` | Same contract as `Input` | |
-| `Select` | `options`, `label`, `error` | Native `<select>`, styled to match |
-| `Card` | `children` | `cardBg`, `cardBorder`, `radii.lg`, `shadows.card` |
-| `Badge` | `variant`, `children` | Pill using the badge group |
-| `Container` | `children` | Also exports `Box` and `Flex` |
-| `Modal` | `open`, `onOpenChange`, `title` | Radix Dialog underneath — keeps focus trapping and Escape handling |
-| `Avatar` | `src`, `name`, `size` | Falls back to the first initial |
-| `Spinner` | `size` | The route-level Suspense fallback |
-| `Tabs` | `tabs`, `active`, `onChange` | |
-| `Alert` | `variant`: success \| warning \| error \| info | Uses the matching status trio |
-| `Loading` | `text` | Centred spinner with a caption — the standard page loading state |
+**Five of them wrap Radix**, and that is deliberate. A dropdown, a dialog, a select, a tab set
+and an avatar all have keyboard, focus and screen-reader behaviour that is tedious to get right
+and easy to get subtly wrong — focus trapping, Escape, arrow-key roving, `aria-expanded`,
+returning focus to the trigger. Radix owns that; the wrapper owns only how it looks. Anything
+hand-rolled here would be an approximation of accessibility rather than the real thing.
+
+| Component | Exports | Radix | Notes |
+|-----------|---------|-------|-------|
+| `Button` | `Button`, `IconButton` | — | `variant`: primary \| secondary \| outline \| ghost \| danger; `size`: sm \| md \| lg; `fullWidth`, `isLoading`. Foreground comes from `textOnAccent` / `textOnDanger`, so it is readable by construction |
+| `Input` | `Input`, `TextArea`, `Eyebrow` | — | Label, field and error render as one unit; the error is wired with `aria-describedby` |
+| `Select` | `Select` | Select | `options`, `label`, `error`. Keyboard type-ahead and positioning come from Radix |
+| `Surface` | `Surface`, `Card` | — | `Surface` is the primitive — a panel with a background, a border and a radius. `Card` is `Surface` with the card preset |
+| `Badge` | `Badge` | — | Static status pill |
+| `Chip` | `Chip` | — | Badge-shaped but *selectable* — it takes `interactive` and `selected` and renders as a button. A badge labels; a chip is a control |
+| `Container` | `Container`, `Box`, `Flex` | — | Layout primitives |
+| `Modal` | `Modal` | Dialog | `open`, `onOpenChange`, `title`. Focus trap, Escape and scroll lock from Radix |
+| `DropdownMenu` | `DropdownMenu` | DropdownMenu | Takes a `trigger` prop and **`children`** — see the note below |
+| `Tabs` | `Tabs` | Tabs | Roving focus and `aria-selected` from Radix |
+| `Avatar` | `Avatar` | Avatar | Falls back to the first initial when the image fails |
+| `Table` | `Table` | — | `columns` and `rows`, with a horizontal scroll container so a wide table never widens the page |
+| `Pagination` | `Pagination` | — | `page`, `pages`, `onChange`. Used by `/stories` |
+| `StatTile` | `StatTile` | — | Label, value, optional trend. Knows nothing about what is being counted |
+| `Alert` | `Alert` | — | `variant`: success \| warning \| danger \| info |
+| `EmptyState` | `EmptyState` | — | Icon, headline, explanation, one action |
+| `ErrorState` | `ErrorState` | — | The failure counterpart of `EmptyState`, with a retry |
+| `Loading` | `Loading` | — | Centred spinner with a caption — the standard page loading state |
+| `Spinner` | `Spinner` | — | The route-level Suspense fallback |
+| `Skeleton` | `Skeleton`, `SkeletonText` | — | Shape-level placeholders |
+| `BrandMark` | `BrandMark` | — | The wordmark and logo, defined once |
+
+> **`DropdownMenu` takes `children`, not an `items` array.** Passing `items` renders an empty
+> menu that opens onto nothing — which is exactly how post editing and deletion silently
+> stopped working, since the controls existed but the menu was blank. There is no prop-type
+> check to catch it, so it is written down here.
 
 ### Rules for primitives
 
 1. **Transient props only** — styling props are `$`-prefixed so they are not forwarded to the
    DOM.
 2. **No business logic** — a primitive renders and reports events; it never calls a service.
-3. **Native props pass through** — spread `...props` so callers keep `type`, `aria-*`,
+3. **No domain knowledge.** A primitive may not know what a post, an author or a read rate is.
+   The moment it needs to, it belongs in a domain folder — see
+   [architecture/frontend.md](../architecture/frontend.md#the-line-between-ui-and-a-domain-component).
+4. **Native props pass through** — spread `...props` so callers keep `type`, `aria-*`,
    `onBlur`.
-4. **Token-only values.** `Button` hard-codes `#ef4444` for its danger variant and falls back
-   to literal hexes when a token is missing. That is drift to fix, not a pattern to copy.
+5. **Token-only values.** No literal hex. `textOnAccent` and friends exist so a foreground is
+   never guessed.
+6. **Reach for it before writing one.** The duplicated card, badge, table and dropdown that
+   these replaced had each drifted apart — different padding, different disabled state,
+   different focus ring, and in two cases no keyboard support at all.
 
 ---
 

@@ -193,22 +193,33 @@ trigger their own refresh; a shared in-flight promise would coalesce them.
 
 | Key | Data | Used by |
 |-----|------|---------|
-| `['posts']` | **Published** posts, paginated | Home, UserProfile |
+| `['posts']`, `['posts', { topic }]` | **Published** posts, paginated | Home, Search |
+| `['trendingPosts']` | The ranked list, last 14 days | Home |
 | `['allPosts']` | **All** posts incl. drafts — admin only | Admin Dashboard, Admin Posts |
 | `['post', id]` | One post with comments and likes | PostDetail, WritePost (edit) |
-| `['categories']` | Categories | Home, WritePost, Admin Categories |
-| `['userPosts']` | The signed-in author's posts | MyPosts, Profile, Analytics |
-| `['currentUser']` | The signed-in user record | Profile, Settings |
-| `['userAnalytics', userId]` | Per-author analytics | Analytics |
+| `['postComments', postId]` | One story's responses | Responses |
+| `['categories']` | Categories | Search, WritePost, Admin Categories |
+| `['myPosts', params]` | The signed-in author's own posts | Stories, Dashboard, Responses |
+| `['myAnalytics']` | The signed-in author's figures | Dashboard, Stories |
+| `['readingActivity']` | What this account has been reading | Dashboard |
+| `['currentUser']` | The signed-in user record | Header, Settings |
+| `['userSettings']` | Persisted preferences | Settings |
+| `['user', userId]` | A public author record | UserProfile |
+| `['isFollowing', userId]` | Follow state | UserProfile |
+| `['userAnalytics', userId]` | Per-author analytics, self-or-admin | UserProfile |
 | `['adminAnalytics']` | Site-wide analytics | Admin Dashboard |
 | `['admin-users', page]` | Paginated users | Admin Users |
 | `['search', query]` | Search results | Search |
-| `['isFollowing', userId]` | Follow state | UserProfile |
 
 Convention: resource name first, then identifiers, general to specific.
 
-`['posts']` and `['allPosts']` now hold **genuinely different data** — the public feed versus
-the moderation view. Two keys for two datasets is correct; merging them would be wrong
+**`['myPosts', params]` carries its parameters in the key**, because filtering, sorting, paging
+and searching all happen on the server. Two different filters are two different results, so
+they must be two different cache entries; leaving the parameters out would serve the wrong page
+from cache and make the tab counts lie.
+
+`['posts']` and `['allPosts']` hold **genuinely different data** — the public feed versus the
+moderation view. Two keys for two datasets is correct; merging them would be wrong
 ([BUG-13](../product/roadmap.md#bug-13)).
 
 `admin-users` is kebab-case while everything else is camelCase — inconsistent, worth
@@ -234,19 +245,39 @@ Simple and always correct, at the cost of a refetch. No optimistic updates are u
 
 ```
 components/
-├── layout/     Header, Footer, Layout, AdminLayout, ThemeToggle, ErrorBoundary
-├── posts/      PostCard
-└── ui/         13 token-driven primitives + a barrel index
+├── layout/     Header, Footer, Layout, AdminLayout, WorkspaceLayout, PageShell,
+│               Editorial, ThemeToggle, SkipLink, ErrorBoundary
+├── marketing/  FeatureGrid, Topics, Mockups, Illustrations — landing page only
+├── posts/      PostCard, PostCardSkeleton, PostDetailSkeleton, AuthorByline
+├── stats/      ReadRateBar
+└── ui/         21 token-driven primitives + a barrel index
 ```
 
 | Tier | May import | Must not |
 |------|-----------|----------|
-| `ui/` | styled-components, other primitives | services, context, router |
-| `posts/` (domain) | `ui/`, router links, formatting | fetch data |
+| `ui/` | styled-components, other primitives | services, context, router, anything domain-shaped |
+| `posts/`, `stats/`, `marketing/` (domain) | `ui/`, router links, formatting | fetch data |
 | `layout/` | `ui/`, `context/`, router | contain page logic |
 | `pages/` | everything above, plus `services/` | be imported by anything but `App.jsx` |
 
 Pages own the data; components below receive props.
+
+### The line between `ui/` and a domain component
+
+The rule is what the component is allowed to know. A `ui/` primitive knows about shape and
+state — it can be a button, a chip, a dropdown, a table — and knows nothing about posts,
+authors or analytics. A domain component knows what the thing *is*, and is built out of
+primitives.
+
+`StatTile` lives in `ui/` because it renders a label, a number and an optional trend, and does
+not care whether the number is views or users. `ReadRateBar` lives in `stats/` because it knows
+what a read rate is, what counts as good, and how to say so. Both are used by the workspace
+dashboard; only one of them would make sense in a different product.
+
+This mattered in practice: the same card, badge, table and dropdown had been rewritten inside
+several pages, each drifting slightly. Folding them back into `ui/` means one definition of a
+disabled state, one focus ring, and — since the interactive ones wrap Radix — one correct
+keyboard and screen-reader behaviour instead of five approximations.
 
 ### Styled components live with their component
 
@@ -272,13 +303,15 @@ it to an error tracker is the highest-value frontend observability work availabl
 | Route code splitting | `App.jsx` | Only the visited route's chunk downloads |
 | Manual vendor chunks | `vite.config.js` | `vendor`, `radix`, `editor` cache separately |
 | Query caching | `main.jsx` | Five-minute freshness, no focus refetch |
-| Conditional queries | `WritePost` | `enabled: isEditing` avoids a pointless fetch |
+| Conditional queries | `WritePost`, `useCurrentUser` | `enabled:` avoids a pointless fetch — and, for `useCurrentUser`, a 401 on every anonymous page load |
+| Server-side filtering | `Stories`, `Search` | Filter, sort and search are query parameters, so the browser never holds a list it then hides most of |
 | Memoised theme | `ThemeProvider` | Not rebuilt every render |
 | System fonts | `typography.js` | No web-font download or layout shift |
 | Server-side pagination | `postService` | The feed no longer downloads every post with all comments populated |
 
-**Current constraint:** the feed requests one page and does not paginate further, so only the
-20 most recent posts are reachable from the UI ([GAP-07](../product/roadmap.md#gap-07)).
+**Current constraint:** the landing feed requests one page and does not paginate further
+([GAP-07](../product/roadmap.md#gap-07)). `ui/Pagination` exists and `/stories` uses it; wiring
+it into `/search` is the remaining piece.
 
 **Known issue:** four pages hydrate form state from a query inside `useEffect`, causing a
 cascading render ([BUG-15](../product/roadmap.md#bug-15)).

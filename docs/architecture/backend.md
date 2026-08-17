@@ -46,7 +46,7 @@ CommonJS throughout.
 10 router.use(generalLimiter)                // 300 / 15 min
 11 router.use('/auth', authLimiter)          // 10 failed / 15 min
 12 router.use('/<resource>', <resource>Routes)
-13 app.use('/api', router); app.use('/', router)
+13 app.use('/api', router)                  // mounted once
 14 app.use(errorHandler)                     // terminal — must be last
 15 app.listen(PORT) unless running on Vercel
 16 module.exports = app                      // serverless handler export
@@ -59,11 +59,15 @@ CommonJS throughout.
 to boot if `JWT_REFRESH_SECRET` equals `JWT_SECRET`. A misconfigured deployment now fails at
 boot rather than on a user's first sign-in ([SEC-10](../security/checklist.md#sec-10)).
 
-### Dual mounting
+### A single mount
 
-The same router answers at `/api` and `/`. This exists because `VITE_API_URL` points at the
-API origin without a prefix while `vercel.json` forwards only `/api/*`. It is a compatibility
-shim, not a design — two surfaces to secure and document. Settle on `/api`.
+The router is mounted once, at `/api`.
+
+It used to be mounted at `/` as well, so every endpoint had two addresses. That is not a
+convenience — it doubles the surface to secure, it means a path-based rule can protect one
+address and miss the other, and it makes "what is the API's base URL" unanswerable. The bare
+mount was removed, and `config/api.js` now appends `/api` when the configured base does not
+already carry it, so an old `VITE_API_URL` keeps working without the second mount existing.
 
 ### Serverless-aware startup
 
@@ -167,19 +171,23 @@ Handlers touched during remediation use the simpler form.
 
 ### `services/`
 
-Two modules covering multi-step persistence:
+Four modules. A service exists when logic is reused across controllers, or spans more than one
+collection:
 
 | Service | Function | Steps |
 |---------|----------|-------|
 | `postService` | `createPost` | Create → load the author → push onto `User.posts` → delete the post again if the author is missing |
 | | `updatePost` | Validate required fields → `findByIdAndUpdate` with validators |
 | `commentServices` | `createComment` | Create → load the post → push onto `Post.comments` → delete the comment again if the post is missing |
+| `accountService` | `purgeAccount` | Delete the account's posts and everything attached to them, then its own comments, likes, views, reads, profile and settings, then the account |
+| `trendingService` | `scoreTrending` | Aggregate views, likes, comments and reads over a window and rank them |
 
 Services take plain values, never `req` or `res`, and signal failure by throwing. The
 compensating deletes are a manual substitute for the transactions this codebase does not use.
 
-Only two of twelve resources have a service module. Extract one when logic is reused or spans
-more than one collection.
+`purgeAccount` is the clearest case for the layer: a member deleting themselves and an admin
+deleting them must mean the same thing. With the logic in one place they cannot drift into two
+definitions of "deleted", one of which leaves data behind.
 
 ### `models/`
 
@@ -207,26 +215,28 @@ to special-case unwrapping. The per-endpoint shape is marked in
 
 ## Error handling
 
-Two mechanisms exist; one is in use.
-
-**Local `try`/`catch` — used everywhere.** Each controller catches, logs with `console.error`
-and a `[handlerName]` prefix, and responds directly. Precise status codes, at the cost of
-repetition.
-
-**`errorHandler` — effectively unreachable.** No controller calls `next(err)`, so it only
-fires for synchronous throws in middleware. It hard-codes 500 and ignores `err.status`.
-Stack traces are correctly withheld outside development.
-
-**Target pattern** — an async wrapper plus a typed error, so controllers stop catching:
+**`asyncHandler` plus a typed `AppError`.** A controller states the failure and returns; it
+does not catch:
 
 ```js
-router.get('/:id', asyncHandler(PostControllers.getSinglePost));
+router.get('/:id', validateObjectId('id'), asyncHandler(PostControllers.getSinglePost));
 
 const post = await Post.findById(req.params.id);
-if (!post) throw new ApiError(404, 'Post not found');
+if (!post) throw notFound('Post not found');
 ```
 
-with `errorHandler` honouring `err.status`.
+`utils/AppError.js` exports the class and the helpers `badRequest`, `unauthorized`, `forbidden`,
+`notFound` and `conflict`, so the status code is chosen where the failure is understood rather
+than by a `catch` block guessing later. `errorHandler` honours `err.status`, translates Mongoose
+and multer faults into 4xx, and withholds stack traces outside development.
+
+`asyncHandler` is what makes this safe: an `async` handler that rejects without it produces an
+unhandled rejection and a hung request, because Express 4 does not await handlers.
+
+**Migration is partial.** Eight of thirteen controller modules use this pattern; the rest still
+catch locally, log with a `[handlerName]` prefix and respond directly. Both behave correctly —
+the older ones are simply more repetitive, and their status codes are chosen further from the
+cause.
 
 ### Status codes
 
@@ -255,27 +265,48 @@ ownership inside the controller. Full detail in
 
 ### Input validation
 
-Only registration is validated declaratively. Elsewhere validation is ad-hoc inside
-controllers, and there is no shared identifier check — a malformed `ObjectId` usually surfaces
-as a 500 from a cast error rather than a 400. A shared `validateObjectId` middleware is the
-obvious next step.
+Declarative, in `validators/`, one module per area (`auth`, `content`, `user`). Chains are
+declared on the route and a single `validate` middleware turns any failure into a 400 with
+field-level errors, so no controller begins by re-checking its own inputs.
+
+`validateObjectId(name, source)` guards every identifier before it reaches Mongoose — a
+malformed id is a 400, not a 500 from a cast error. It matches a 24-character hex string rather
+than calling `mongoose.isValid`, which also accepts any 12-character string and would happily
+treat a short password as an id.
+
+Rules that differ between create and update come from a **factory**, `postRules(partial)`, not
+from mapping `.optional()` over a shared array. express-validator chains are mutable: calling
+`.optional()` modifies the chain in place, so deriving the update rules that way would have
+quietly made every field optional on create as well.
 
 `search.controllers.js` escapes regex metacharacters before building its query, preventing a
 ReDoS through the search path.
 
 ### Rate limiting
 
-Two limiters, both from `express-rate-limit`. The auth limiter sets
-`skipSuccessfulRequests`, so a legitimate user is never locked out by their own successful
-sign-ins. The default store is per-instance, making limits approximate on serverless; a
-shared store would make them exact.
+Two limiters, both from `express-rate-limit`: a general one at 300 requests per 15 minutes and
+an auth-specific one at 10. The auth limiter sets `skipSuccessfulRequests`, so a legitimate user
+is never locked out by their own successful sign-ins.
+
+`app.set('trust proxy', 1)` is what makes either of them work. Behind Vercel's proxy every
+request arrives from the same address, so without it all traffic shares one bucket — the limiter
+locks out the whole world at once while rate-limiting nobody in particular. With it, `req.ip` is
+the real client, which is also what the visitor key for view deduplication is built from.
+
+The store is per-instance, so limits are approximate across serverless instances. A shared store
+(Redis, Upstash) would make them exact; that is the known remaining gap.
 
 ### File uploads
 
-`multer.diskStorage` configured inline in `user.routes.js`, with no file-type filter and no
-size limit, writing to a directory that is never created and is read-only on serverless. Both
-broken and unsafe — [BUG-07](../product/roadmap.md#bug-07) and
-[SEC-05](../security/checklist.md#sec-05).
+`middlewares/upload.js` — `multer.memoryStorage()`, a 2MB cap and a MIME allowlist. **No
+filename is taken from user input**, which is what closes the path-traversal risk in the
+previous inline configuration ([SEC-05](../security/checklist.md#sec-05)).
+
+Memory rather than disk because a serverless filesystem is read-only and per-invocation:
+anything written there is unreachable by the next request. So the buffer is validated and then
+has nowhere durable to go, and avatar upload stays unfinished until object storage is wired in
+([BUG-07](../product/roadmap.md#bug-07), [GAP-17](../product/roadmap.md#gap-17)). This
+middleware is the safe half of that work, done first because the unsafe version was live.
 
 ### Logging
 
@@ -289,11 +320,11 @@ ids, no levels, no structure — [operations/runbook.md](../operations/runbook.m
 | Decision | Rationale | Trade-off |
 |----------|-----------|-----------|
 | Layered MVC-with-services | Familiar, low ceremony | The service layer is optional in practice, so responsibility drifts into controllers |
-| Stateless JWT | No session store, fits serverless | No revocation — a leaked token is valid until expiry |
+| JWT plus a `tokenVersion` counter | No session store to run, but sessions are still revocable — sign-out, a password change, a suspension or a demotion invalidate every token already issued | One extra account read per authenticated request, which is the same read authorisation already needs |
 | Separate secret per token type | A refresh token cannot be replayed as an access token | Two secrets to manage |
 | Mongoose over the raw driver | Schemas, population, validation | Strict mode silently drops undeclared fields — the root cause of [BUG-05](../product/roadmap.md#bug-05) |
 | Referenced documents plus denormalised counters | Fast reads without joins | Counters drift; no transaction keeps both sides in step |
-| Per-controller `try`/`catch` | Precise status codes | Repetition; the error middleware is dead weight |
+| `asyncHandler` plus a typed `AppError` | One `catch`, in the error middleware; a controller states the failure and stops | A rejection that escapes `asyncHandler` is still an untyped 500 |
 | 404 rather than 403 for non-public content | Does not confirm a draft exists | Slightly less informative for legitimate owners |
 
 ---
