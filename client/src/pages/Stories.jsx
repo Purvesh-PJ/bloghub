@@ -16,8 +16,6 @@ import {
   Share2,
   Heart,
   Lock,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -38,7 +36,7 @@ import {
   DropdownMenu,
   Spinner,
   Skeleton,
-  SkeletonText,
+  Pagination,
 } from '../components/ui';
 import { text, media, clamp } from '../styles/theme/mixins';
 
@@ -252,15 +250,6 @@ const FetchingBar = styled.div`
   color: ${({ theme }) => theme.colors.accentText};
   ${text('xs')}
   font-weight: 600;
-`;
-
-const Pager = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
 `;
 
 const PagerLabel = styled.span`
@@ -698,36 +687,17 @@ export function Stories() {
             ))}
           </Rows>
 
-          {pagination && pagination.pages > 1 && (
-            <Pager>
-              <PagerLabel>
-                Page {pagination.page} of {pagination.pages} · {pagination.total} stories
-              </PagerLabel>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  disabled={page <= 1}
-                  onClick={() => {
-                    setPage((n) => n - 1);
-                    setSelectedIds([]);
-                  }}
-                >
-                  <ChevronLeft size={14} /> Previous
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  disabled={page >= pagination.pages}
-                  onClick={() => {
-                    setPage((n) => n + 1);
-                    setSelectedIds([]);
-                  }}
-                >
-                  Next <ChevronRight size={14} />
-                </Button>
-              </div>
-            </Pager>
+          {pagination && (
+            <Pagination
+              page={pagination.page}
+              pages={pagination.pages}
+              total={pagination.total}
+              noun="stories"
+              onChange={(next) => {
+                setPage(next);
+                setSelectedIds([]);
+              }}
+            />
           )}
         </Surface>
       )}

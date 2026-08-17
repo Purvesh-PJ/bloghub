@@ -24,12 +24,12 @@ import {
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
 import { useAuth } from '../context/AuthContext';
-import { Button, Chip, Skeleton } from '../components/ui';
+import { Button, Chip, Skeleton, Avatar } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
 import { topicIcon } from '../components/marketing/Topics';
-import { initial, readingTime } from '../utils/text';
+import { readingTime } from '../utils/text';
 
 /* ── Keyframe Animations ─────────────────────────────────────────────────── */
 
@@ -210,20 +210,6 @@ const AuthorInfo = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
-`;
-
-const AuthorAvatar = styled.div`
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.gradients.brand};
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 13px;
-  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.3);
 `;
 
 const AuthorMeta = styled.div`
@@ -554,20 +540,6 @@ const WriterLeft = styled.div`
   min-width: 0;
 `;
 
-const WriterAvatar = styled.div`
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.gradients.brand};
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 12px;
-  flex-shrink: 0;
-`;
-
 const WriterMeta = styled.div`
   display: flex;
   flex-direction: column;
@@ -781,7 +753,7 @@ export function Home() {
               <ShowcaseCard>
                 <CardHeader>
                   <AuthorInfo>
-                    <AuthorAvatar>{initial(featuredAuthor)}</AuthorAvatar>
+                    <Avatar name={featuredAuthor} size="sm" />
                     <AuthorMeta>
                       <AuthorName>{featuredAuthor}</AuthorName>
                       <AuthorHandle>
@@ -956,7 +928,7 @@ export function Home() {
                   : featuredWriters.map((writer) => (
                       <WriterRow key={writer.name}>
                         <WriterLeft>
-                          <WriterAvatar>{initial(writer.name)}</WriterAvatar>
+                          <Avatar name={writer.name} size="sm" />
                           <WriterMeta>
                             <WriterName>{writer.name}</WriterName>
                             <WriterFollowers>

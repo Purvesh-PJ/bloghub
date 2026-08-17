@@ -4,8 +4,8 @@ import { Heart, MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import styled, { css } from 'styled-components';
 import { display, text, clamp, media, interactive } from '../../styles/theme/mixins';
-import { excerpt, readingTime, initial } from '../../utils/text';
-import { Chip } from '../ui/Chip';
+import { excerpt, readingTime } from '../../utils/text';
+import { Chip, Avatar } from '../ui';
 
 /**
  * PostCard — the feed's unit.
@@ -72,20 +72,6 @@ const Meta = styled.div`
   gap: ${({ theme }) => theme.spacing.sm};
   ${text('xs')}
   color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const AuthorDot = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.gradients.brand};
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: ${({ theme }) => theme.weights.bold};
-  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.3);
 `;
 
 const Dot = styled.span`
@@ -185,7 +171,7 @@ export function PostCard({ post, layout = 'row' }) {
     <Card to={`/post/${post._id}`} $layout={layout}>
       <Body>
         <Meta>
-          <AuthorDot>{initial(author)}</AuthorDot>
+          <Avatar name={author} size="xs" />
           <span>{author}</span>
           <Dot>·</Dot>
           {isValidDate && <span>{formatDistanceToNow(created, { addSuffix: true })}</span>}

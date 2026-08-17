@@ -17,10 +17,10 @@ import { useReadTracking, useReadingProgress } from '../hooks/useReading';
 import { markdownRehypePlugins } from '../config/markdown';
 import { PageShell } from '../components/layout/PageShell';
 import { ReadRateBar } from '../components/stats/ReadRateBar';
-import { Button, Card, TextArea, Chip, Modal, Loading, EmptyState } from '../components/ui';
+import { Button, Card, TextArea, Chip, Modal, EmptyState, Avatar } from '../components/ui';
 import { PostDetailSkeleton } from '../components/posts/PostDetailSkeleton';
 import { display, text, media, interactive } from '../styles/theme/mixins';
-import { readingTime, initial } from '../utils/text';
+import { readingTime } from '../utils/text';
 
 /**
  * The article page.
@@ -94,20 +94,6 @@ const Author = styled(Link)`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const Portrait = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 46px;
-  height: 46px;
-  flex-shrink: 0;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.gradients.brand};
-  color: #ffffff;
-  ${text('md', 'bold')}
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
 `;
 
 const AuthorName = styled.span`
@@ -259,19 +245,6 @@ const Thread = styled.div`
 const CommentRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const SmallPortrait = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentText};
-  ${text('xs', 'semibold')}
 `;
 
 const CommentBody = styled.div`
@@ -481,7 +454,7 @@ export function PostDetail() {
 
         <Byline>
           <Author to={post.user?._id ? `/user/${post.user._id}` : '#'}>
-            <Portrait>{initial(post.author?.name || post.user?.username)}</Portrait>
+            <Avatar name={post.author?.name || post.user?.username} size="md" />
             <span>
               <AuthorName>{post.author?.name || post.user?.username || 'Anonymous'}</AuthorName>
               <Meta>
@@ -601,7 +574,7 @@ export function PostDetail() {
             <Thread>
               {comments.map((entry) => (
                 <CommentRow key={entry._id}>
-                  <SmallPortrait>{initial(entry.user?.username)}</SmallPortrait>
+                  <Avatar name={entry.user?.username} size="sm" />
                   <CommentBody>
                     <CommentHead>
                       <CommentAuthor>{entry.user?.username || 'Anonymous'}</CommentAuthor>
@@ -661,7 +634,7 @@ export function PostDetail() {
                       <Replies>
                         {entry.replies.map((reply) => (
                           <CommentRow key={reply._id}>
-                            <SmallPortrait>{initial(reply.user?.username)}</SmallPortrait>
+                            <Avatar name={reply.user?.username} size="sm" />
                             <CommentBody>
                               <CommentHead>
                                 <CommentAuthor>{reply.user?.username || 'Anonymous'}</CommentAuthor>

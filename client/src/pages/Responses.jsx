@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import { formatDistanceToNow } from 'date-fns';
-import { MessageSquare, Trash2, ExternalLink } from 'lucide-react';
+import { MessageSquare, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { postService } from '../services/postService';
@@ -16,7 +16,6 @@ import {
   Select,
   Avatar,
   Modal,
-  Loading,
   EmptyState,
   ErrorState,
   Skeleton,
@@ -108,7 +107,7 @@ const Replies = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const PostTitle = styled(Link)`
+const PostTitleRow = styled.span`
   ${text('sm', 'semibold')}
   color: ${({ theme }) => theme.colors.accentText};
   display: inline-flex;
@@ -236,10 +235,10 @@ export function Responses() {
             </PostPicker>
 
             {selectedPost && (
-              <PostTitle>
+              <PostTitleRow>
                 <span>Viewing:</span>
                 <Link to={`/post/${selectedPost._id}`}>{selectedPost.title || 'Untitled'}</Link>
-              </PostTitle>
+              </PostTitleRow>
             )}
 
             <Count style={{ marginLeft: 'auto' }}>

@@ -1,9 +1,10 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import styled, { css } from 'styled-components';
-import { Search, PenLine, User, LayoutGrid, Settings, LogOut, LayoutDashboard } from 'lucide-react';
+import { Search, PenLine, User, Settings, LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { ThemeToggle } from './ThemeToggle';
-import { Button, DropdownMenu, BrandMark } from '../ui';
+import { Button, DropdownMenu, BrandMark, Avatar } from '../ui';
 import { text, media, interactive } from '../../styles/theme/mixins';
 
 /**
@@ -135,16 +136,17 @@ const Kbd = styled.kbd`
   ${media.down('sm')`display: none;`}
 `;
 
+/*
+  A button that wraps an Avatar rather than redrawing one. It used to be the sixth copy of
+  the same circle — its own gradient, its own hardcoded white, its own initial derived with
+  `username[0]` — and like the rest it could not display an uploaded picture.
+*/
 const AvatarButton = styled.button`
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.gradients.brand};
-  color: #ffffff;
-  ${text('sm', 'bold')}
+  padding: 0;
+  border: none;
+  background: none;
   box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
   ${interactive}
 
@@ -183,6 +185,7 @@ export function Header() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { isAuthenticated, user, logout, isAdmin } = useAuth();
+  const { avatarUrl } = useCurrentUser();
 
   const handleLogout = () => {
     logout();
@@ -231,7 +234,7 @@ export function Header() {
               <DropdownMenu
                 trigger={
                   <AvatarButton aria-label="Account menu">
-                    {user?.username?.[0]?.toUpperCase() ?? 'U'}
+                    <Avatar src={avatarUrl} name={user?.username} size="sm" />
                   </AvatarButton>
                 }
               >

@@ -6,7 +6,6 @@ import { AtSign, Lock } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { Button, Input, Alert } from '../components/ui';
-import { display, text, media } from '../styles/theme/mixins';
 
 /* Auth pages share this shell — see AuthShell.jsx. Only the form differs. */
 import { AuthShell, AuthHeading, AuthSubheading, AuthForm, AuthFooter } from './auth/AuthShell';

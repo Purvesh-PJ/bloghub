@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { userService } from '../services/userService';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * The signed-in account as the server knows it.
@@ -14,10 +15,16 @@ import { userService } from '../services/userService';
  * their own, and Settings can invalidate it after a save.
  */
 export function useCurrentUser() {
+  const { isAuthenticated } = useAuth();
+
   const { data, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: userService.getUser,
     staleTime: 1000 * 60 * 5,
+    // The endpoint requires a session. The header calls this hook on every page including
+    // the public ones, so without this a signed-out visitor's landing page fired an
+    // authenticated request and took a 401 on every load.
+    enabled: isAuthenticated,
   });
 
   const account = data?.User;

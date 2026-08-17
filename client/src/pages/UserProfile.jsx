@@ -11,9 +11,8 @@ import { useAuth } from '../context/AuthContext';
 import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { PageShell, Section } from '../components/layout/PageShell';
-import { Button, Card, Chip, Loading, EmptyState, Skeleton, SkeletonText } from '../components/ui';
+import { Button, Chip, EmptyState, Skeleton, SkeletonText, Avatar } from '../components/ui';
 import { display, text, label as labelStyle, media } from '../styles/theme/mixins';
-import { initial } from '../utils/text';
 
 /**
  * A person's public page — the same page whether it is yours or somebody else's.
@@ -34,29 +33,6 @@ const Head = styled.header`
     flex-direction: column;
     gap: ${({ theme }) => theme.spacing.lg};
   `}
-`;
-
-const Portrait = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 96px;
-  height: 96px;
-  flex-shrink: 0;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.gradients.brand};
-  color: #ffffff;
-  ${display('sm')}
-  font-weight: 700;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.35);
-  border: 3px solid ${({ theme }) => theme.colors.surfaceElevated};
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
 `;
 
 const Identity = styled.div`
@@ -232,13 +208,9 @@ export function UserProfile() {
   return (
     <PageShell>
       <Head>
-        <Portrait>
-          {author?.profileImage ? (
-            <img src={author.profileImage} alt={`${authorName}'s profile picture`} />
-          ) : (
-            initial(authorName)
-          )}
-        </Portrait>
+        {/* Radix decides between the image and the initials; the branch here did it by hand
+            and flashed the fallback on every render before the image resolved. */}
+        <Avatar src={author?.profileImage} name={authorName} size="2xl" />
 
         <Identity>
           <NameRow>

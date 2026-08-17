@@ -156,20 +156,6 @@ const UserProfileLink = styled(Link)`
   }
 `;
 
-const UserAvatar = styled.div`
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.gradients.brand};
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 13px;
-  flex-shrink: 0;
-`;
-
 const UserMeta = styled.div`
   display: flex;
   flex-direction: column;

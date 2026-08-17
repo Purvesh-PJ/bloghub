@@ -20,3 +20,4 @@ export { Skeleton, SkeletonText } from './Skeleton';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { Table } from './Table';
+export { Pagination } from './Pagination';

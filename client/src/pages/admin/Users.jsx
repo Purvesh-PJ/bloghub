@@ -5,8 +5,6 @@ import styled from 'styled-components';
 import {
   Shield,
   ShieldOff,
-  ChevronLeft,
-  ChevronRight,
   Users as UsersIcon,
   MoreHorizontal,
   Ban,
@@ -23,17 +21,16 @@ import {
   Card,
   Badge,
   Table,
-  Loading,
   EmptyState,
   ErrorState,
   DropdownMenu,
   Modal,
   Input,
   Skeleton,
-  SkeletonText,
   Avatar,
+  Pagination,
 } from '../../components/ui';
-import { text, media } from '../../styles/theme/mixins';
+import { text } from '../../styles/theme/mixins';
 
 /**
  * The account directory, and the actions an administrator can take on one.
@@ -62,24 +59,6 @@ const Roles = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.xs};
   flex-wrap: wrap;
-`;
-
-const Pager = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.lg};
-  padding-top: ${({ theme }) => theme.spacing.lg};
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-
-  ${media.down('sm')`flex-direction: column;`}
-`;
-
-const PageCount = styled.span`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-variant-numeric: tabular-nums;
 `;
 
 const Quiet = styled.span`
@@ -298,31 +277,15 @@ export function AdminUsers() {
               </Table.Body>
             </Table>
 
-            {pagination.pages > 1 && (
-              <Pager>
-                <PageCount>
-                  Page {pagination.page} of {pagination.pages}
-                </PageCount>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={page <= 1}
-                    onClick={() => setPage((current) => Math.max(current - 1, 1))}
-                  >
-                    <ChevronLeft /> Previous
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={page >= pagination.pages}
-                    onClick={() => setPage((current) => current + 1)}
-                  >
-                    Next <ChevronRight />
-                  </Button>
-                </div>
-              </Pager>
-            )}
+            {
+              <Pagination
+                page={pagination.page}
+                pages={pagination.pages}
+                total={pagination.total}
+                noun="accounts"
+                onChange={setPage}
+              />
+            }
           </Card>
         )}
       </Section>
