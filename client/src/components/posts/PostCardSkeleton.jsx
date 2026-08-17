@@ -98,7 +98,10 @@ export function PostCardSkeleton({ layout = 'row' }) {
 
 export function PostCardCompactSkeleton() {
   return (
-    <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 0' }} aria-hidden="true">
+    <div
+      style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 0' }}
+      aria-hidden="true"
+    >
       <Skeleton $width={24} $height={16} $radius="xs" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
         <Skeleton $width="85%" $height={14} $radius="xs" />

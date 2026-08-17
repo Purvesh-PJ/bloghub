@@ -178,7 +178,15 @@ export function Responses() {
           <Skeleton $width="300px" $height={40} $radius="md" />
           <Surface $tone="low" $radius="xl" $padding="md">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  gap: 16,
+                  padding: '16px 0',
+                  borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                }}
+              >
                 <Skeleton $variant="circle" $width={36} $height={36} />
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <Skeleton $width="140px" $height={14} $radius="xs" />
@@ -243,7 +251,15 @@ export function Responses() {
           {commentsLoading ? (
             <Surface $tone="low" $radius="xl" $padding="md" aria-hidden="true">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    gap: 16,
+                    padding: '16px 0',
+                    borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                  }}
+                >
                   <Skeleton $variant="circle" $width={36} $height={36} />
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <Skeleton $width="140px" $height={14} $radius="xs" />

@@ -14,6 +14,18 @@ export const postService = {
     return response.data;
   },
 
+  /**
+   * Posts ranked by recent engagement.
+   *
+   * The response carries `trendedBy`: 'engagement' when a real ranking was possible, or
+   * 'latest' when too little has happened in the window — the caller is expected to label
+   * the section accordingly rather than calling newest posts trending.
+   */
+  getTrending: async (params = {}) => {
+    const response = await api.get('/posts/trending', { params });
+    return response.data;
+  },
+
   getPost: async (id) => {
     const response = await api.get(`/posts/${id}`);
     return response.data;

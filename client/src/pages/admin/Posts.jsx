@@ -161,7 +161,16 @@ export function AdminPosts() {
         />
         <Card tone="low" radius="xl" style={{ padding: 20 }}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 0',
+                borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+              }}
+            >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
                 <Skeleton $width="55%" $height={16} $radius="xs" />
                 <Skeleton $width="25%" $height={12} $radius="xs" />

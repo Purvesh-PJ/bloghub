@@ -12,6 +12,9 @@ const {
 
 // Optional auth on both reads: an author (or admin) may see their own unpublished posts.
 router.get('/', paginationRules, validate, AuthUser.attachUserIfPresent, PostControllers.getBlogs);
+// Declared before '/:id' so the literal path is never read as an id.
+router.get('/trending', paginationRules, validate, PostControllers.getTrendingPosts);
+
 router.get(
   '/:id',
   validateObjectId('id'),

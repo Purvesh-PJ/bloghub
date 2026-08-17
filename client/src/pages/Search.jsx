@@ -21,7 +21,16 @@ import { PageShell, PageHeader, Section } from '../components/layout/PageShell';
 import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { topicIcon } from '../components/marketing/Topics';
-import { Input, Chip, Loading, EmptyState, Card, Button, Skeleton, SkeletonText } from '../components/ui';
+import {
+  Input,
+  Chip,
+  Loading,
+  EmptyState,
+  Card,
+  Button,
+  Skeleton,
+  SkeletonText,
+} from '../components/ui';
 import { text, display, clamp, media, interactive } from '../styles/theme/mixins';
 import { excerpt, readingTime } from '../utils/text';
 
@@ -343,7 +352,10 @@ export function Search() {
           {searching ? (
             <ResultsGrid>
               {Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i} style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <Card
+                  key={i}
+                  style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}
+                >
                   <Skeleton $width="80%" $height={22} $radius="xs" />
                   <SkeletonText lines={3} lineHeight="14px" lastLineWidth="60%" gap="xs" />
                   <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
