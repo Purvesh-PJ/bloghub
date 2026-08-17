@@ -96,14 +96,23 @@ Several relationships are stored on **both** sides — see
 |-------|------|-------------|
 | `username` | String | required, trim, **unique index** |
 | `email` | String | required, trim, lowercase, **unique index** |
-| `password` | String | required, bcrypt hash (cost 10) |
-| `roles` | [String] | default `['user']` |
+| `password` | String | required, bcrypt hash (cost 12) |
+| `roles` | [String] | enum `user \| admin`, default `['user']` |
+| `tokenVersion` | Number | default 0 — see below |
+| `suspended` | Boolean | default false; blocks sign-in and every authenticated request |
+| `suspendedAt` | Date | set when suspended, cleared when restored |
 | `profile` | ObjectId → `UserProfile` | 1:1 |
 | `settings` | ObjectId → `UserSetting` | 1:1 |
 | `posts` | [ObjectId → `Post`] | denormalised authorship list |
 
-Email normalisation is now a **schema** concern (`lowercase`, `trim`), not a controller
-concern, so every write path is consistent.
+Email normalisation is a **schema** concern (`lowercase`, `trim`), not a controller concern,
+so every write path is consistent.
+
+**`tokenVersion` is what makes sessions revocable.** Both tokens carry the value they were
+minted with and authentication compares it against the stored one, so incrementing the field
+invalidates everything already issued to that account. Sign-out, a password change, a
+suspension and a demotion all increment it. Without it the tokens were stateless in the
+unhelpful sense: nothing could be taken back before it expired.
 
 ### `UserProfile`
 
@@ -172,6 +181,16 @@ timestamps.
 Event documents: `user` → `User`, `post` → `Post`, plus timestamps. `Like` carries a
 **unique compound index on `(post, user)`**, so one like per user per post is enforced by the
 database rather than by a racy `findOne`.
+
+`View` and `Read` additionally carry **`visitorKey`** (String, indexed with `post` and
+`createdAt`). Tracking is open to anonymous readers by design, so without something to group
+requests by, one client could inflate any post's numbers by holding down refresh. The key is
+the account id when signed in (`u:<id>`) and otherwise a salted HMAC of the address and user
+agent (`a:<hash>`) — hashed rather than stored, since the analytics only need to know that two
+requests came from the same place. One row per key per post per 6-hour window.
+
+`View` and `Read` are also what the trending ranking counts; see
+[api.md](api.md#how-trending-is-ranked).
 
 ### `Analytics`
 

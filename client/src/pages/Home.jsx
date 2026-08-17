@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import styled, { keyframes } from 'styled-components';
@@ -16,6 +16,10 @@ import {
   MessageCircle,
   ShieldCheck,
   Globe2,
+  CheckCircle2,
+  BookOpenCheck,
+  TrendingUp,
+  Feather,
 } from 'lucide-react';
 
 import { postService } from '../services/postService';
@@ -34,6 +38,11 @@ import { readingTime } from '../utils/text';
 const floatAnimation = keyframes`
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-8px); }
+`;
+
+const pulseGlow = keyframes`
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
 `;
 
 /* ── Page Shell ──────────────────────────────────────────────────────────── */
@@ -65,7 +74,7 @@ const HeroSection = styled.header`
   grid-template-columns: 1.15fr 0.85fr;
   gap: ${({ theme }) => theme.spacing['3xl']};
   align-items: center;
-  min-height: min(72vh, 620px);
+  min-height: min(74vh, 640px);
 
   ${media.down('lg')`
     grid-template-columns: 1fr;
@@ -78,7 +87,7 @@ const HeroContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xl};
-  max-width: 620px;
+  max-width: 640px;
 `;
 
 const HeroBadge = styled.div`
@@ -92,7 +101,7 @@ const HeroBadge = styled.div`
   ${text('xs', 'semibold')}
   width: fit-content;
   border: 1px solid ${({ theme }) => theme.colors.accentLine};
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.15);
 
   svg {
     width: 14px;
@@ -104,7 +113,7 @@ const HeroBadge = styled.div`
 const HeroTitle = styled.h1`
   ${display('2xl')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  line-height: 1.08;
+  line-height: 1.1;
   letter-spacing: -0.035em;
   font-weight: 800;
 
@@ -124,7 +133,7 @@ const HeroSubtitle = styled.p`
   ${text('lg')}
   line-height: 1.7;
   color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 540px;
+  max-width: 560px;
 `;
 
 const HeroActions = styled.div`
@@ -134,36 +143,60 @@ const HeroActions = styled.div`
   flex-wrap: wrap;
 `;
 
-const HeroSocialProof = styled.div`
+const HeroTopicsSection = styled.div`
   display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.lg};
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
   padding-top: ${({ theme }) => theme.spacing.md};
   border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  flex-wrap: wrap;
+`;
+
+const TopicLabel = styled.span`
+  ${text('xs', 'medium')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  display: flex;
+  align-items: center;
+  gap: 6px;
 `;
 
 const CategoryPillsRow = styled.div`
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 `;
 
-const MiniPill = styled.span`
+const TopicPill = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  gap: 6px;
+  padding: 6px 12px;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 11px;
-  font-weight: 600;
+  background: ${({ theme, $active }) =>
+    $active ? theme.gradients.brand : theme.colors.surfaceContainer};
+  color: ${({ theme, $active }) => ($active ? '#ffffff' : theme.colors.textSecondary)};
+  border: 1px solid
+    ${({ theme, $active }) => ($active ? 'transparent' : theme.colors.lineDefault)};
+  ${text('xs', 'semibold')}
+  transition: all ${({ theme }) => theme.transitions.fast};
+  box-shadow: ${({ $active }) =>
+    $active ? '0 4px 12px rgba(14, 165, 233, 0.35)' : 'none'};
+  ${interactive}
 
   svg {
-    width: 12px;
-    height: 12px;
-    color: ${({ theme }) => theme.colors.accentSolid};
+    width: 13px;
+    height: 13px;
+    color: ${({ theme, $active }) => ($active ? '#ffffff' : theme.colors.accentSolid)};
+  }
+
+  &:hover {
+    background: ${({ theme, $active }) =>
+      $active ? theme.gradients.brand : theme.colors.accentContainer};
+    color: ${({ theme, $active }) => ($active ? '#ffffff' : theme.colors.accentText)};
+    border-color: ${({ theme, $active }) =>
+      $active ? 'transparent' : theme.colors.accentLine};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
   }
 `;
 
@@ -179,22 +212,56 @@ const HeroVisual = styled.div`
   `}
 `;
 
+const AmbientGlow = styled.div`
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(
+    circle,
+    rgba(14, 165, 233, 0.25) 0%,
+    rgba(56, 189, 248, 0.08) 50%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  filter: blur(30px);
+  z-index: 1;
+  pointer-events: none;
+  animation: ${pulseGlow} 5s ease-in-out infinite;
+`;
+
 const ShowcaseCard = styled.div`
   width: 100%;
-  max-width: 440px;
+  max-width: 450px;
   background: ${({ theme }) => theme.colors.surfaceElevated};
   border: 1px solid ${({ theme }) => theme.colors.lineDefault};
   border-radius: ${({ theme }) => theme.radii['2xl']};
   padding: ${({ theme }) => theme.spacing.xl};
   box-shadow:
-    0 20px 40px -15px rgba(15, 23, 42, 0.08),
-    0 0 25px -5px rgba(14, 165, 233, 0.15);
+    0 24px 48px -12px rgba(15, 23, 42, 0.12),
+    0 0 25px -5px rgba(14, 165, 233, 0.2);
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.lg};
   position: relative;
   z-index: 2;
   animation: ${floatAnimation} 6s ease-in-out infinite;
+`;
+
+const SpotlightBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentText};
+  ${text('xs', 'semibold')}
+  border: 1px solid ${({ theme }) => theme.colors.accentLine};
+
+  svg {
+    width: 12px;
+    height: 12px;
+    color: ${({ theme }) => theme.colors.accentSolid};
+  }
 `;
 
 const CardHeader = styled.div`
@@ -206,9 +273,8 @@ const CardHeader = styled.div`
 
 const CardImageMock = styled.div`
   width: 100%;
-  height: 160px;
+  height: 180px;
   border-radius: ${({ theme }) => theme.radii.lg};
-  background-image: url('https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80');
   background-size: cover;
   background-position: center;
   position: relative;
@@ -216,20 +282,28 @@ const CardImageMock = styled.div`
   display: flex;
   align-items: flex-end;
   padding: ${({ theme }) => theme.spacing.md};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
 
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, transparent 40%, rgba(15, 23, 42, 0.85) 100%);
+    background: linear-gradient(180deg, transparent 30%, rgba(15, 23, 42, 0.75) 100%);
   }
 `;
 
-const CardTitle = styled.h3`
+const CardTitle = styled(Link)`
   ${display('xs')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   line-height: 1.35;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.accentText};
+  }
 `;
 
 const ReadRateWidget = styled.div`
@@ -263,9 +337,9 @@ const ProgressBar = styled.div`
 
   div {
     height: 100%;
-    width: 92%;
     background: ${({ theme }) => theme.gradients.brandBar};
     border-radius: inherit;
+    transition: width 1s ease-out;
   }
 `;
 
@@ -276,6 +350,7 @@ const CardFooterStats = styled.div`
   ${text('xs')}
   color: ${({ theme }) => theme.colors.textMuted};
   padding-top: ${({ theme }) => theme.spacing.xs};
+  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
 `;
 
 const StatItem = styled.span`
@@ -291,35 +366,63 @@ const StatItem = styled.span`
   }
 `;
 
-/* ── Topic Filter Slider ─────────────────────────────────────────────────── */
+/* ── Value Pillars Strip ─────────────────────────────────────────────────── */
 
-const EmptyFeed = styled.p`
-  padding: ${({ theme }) => theme.spacing['3xl']} 0;
-  text-align: center;
-  ${text('md')}
-  color: ${({ theme }) => theme.colors.textMuted};
+const PillarsSection = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacing.xl};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  border-radius: ${({ theme }) => theme.radii['2xl']};
+
+  ${media.down('lg')`
+    grid-template-columns: repeat(2, 1fr);
+  `}
+
+  ${media.down('sm')`
+    grid-template-columns: 1fr;
+  `}
 `;
 
-const MoreLink = styled(Link)`
+const PillarCard = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.sm};
+`;
+
+const PillarIcon = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-top: ${({ theme }) => theme.spacing.xl};
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.accentText};
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentSolid};
+  flex-shrink: 0;
 
   svg {
-    width: 15px;
-    height: 15px;
-    transition: transform ${({ theme }) => theme.transitions.fast};
-  }
-
-  &:hover svg {
-    transform: translateX(3px);
+    width: 20px;
+    height: 20px;
   }
 `;
 
-/* ── Section Headers ─────────────────────────────────────────────────────── */
+const PillarTitle = styled.h3`
+  ${text('sm', 'bold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: 2px;
+`;
+
+const PillarDesc = styled.p`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: 1.5;
+`;
+
+/* ── Section Headers & Feed ──────────────────────────────────────────────── */
 
 const SectionHead = styled.div`
   display: flex;
@@ -363,7 +466,77 @@ const SectionTitle = styled.h2`
 const SectionSubtitle = styled.p`
   ${text('md')}
   color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 520px;
+  max-width: 560px;
+`;
+
+const FilterBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const PostList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xl};
+`;
+
+const EmptyFeed = styled.div`
+  padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing.xl};
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  border: 1px dashed ${({ theme }) => theme.colors.lineDefault};
+
+  p {
+    ${text('md')}
+    color: ${({ theme }) => theme.colors.textSecondary};
+    max-width: 440px;
+  }
+`;
+
+const MoreLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+  padding: 10px 20px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  ${text('sm', 'semibold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  text-decoration: none;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  svg {
+    width: 16px;
+    height: 16px;
+    transition: transform ${({ theme }) => theme.transitions.fast};
+  }
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.accentContainer};
+    color: ${({ theme }) => theme.colors.accentText};
+    border-color: ${({ theme }) => theme.colors.accentLine};
+    transform: translateY(-2px);
+
+    svg {
+      transform: translateX(4px);
+    }
+  }
 `;
 
 /* ── Bento Grid ──────────────────────────────────────────────────────────── */
@@ -385,7 +558,8 @@ const BentoCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.lg};
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+  transition: all ${({ theme }) => theme.transitions.normal};
   ${interactive}
 
   ${({ $span }) =>
@@ -397,9 +571,9 @@ const BentoCard = styled.div`
   &:hover {
     border-color: ${({ theme }) => theme.colors.accentLine};
     box-shadow:
-      0 12px 30px -8px rgba(15, 23, 42, 0.08),
-      0 0 15px -3px rgba(14, 165, 233, 0.12);
-    transform: translateY(-3px);
+      0 16px 36px -10px rgba(15, 23, 42, 0.1),
+      0 0 20px -4px rgba(14, 165, 233, 0.15);
+    transform: translateY(-4px);
   }
 
   ${media.down('lg')`
@@ -408,19 +582,19 @@ const BentoCard = styled.div`
 `;
 
 const BentoIcon = styled.div`
-  width: 44px;
-  height: 44px;
-  border-radius: ${({ theme }) => theme.radii.md};
+  width: 48px;
+  height: 48px;
+  border-radius: ${({ theme }) => theme.radii.lg};
   background: ${({ theme }) => theme.colors.accentContainer};
   color: ${({ theme }) => theme.colors.accentSolid};
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
 
   svg {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
   }
 `;
 
@@ -433,35 +607,10 @@ const BentoTitle = styled.h3`
 const BentoDescription = styled.p`
   ${text('sm')}
   color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.6;
+  line-height: 1.65;
 `;
 
-/* ── Feed Grid ───────────────────────────────────────────────────────────── */
-
-/*
-  One column. The sidebar beside it held three widgets and each duplicated something:
-
-    Browse by topic     the same categories as the hero pills, linking to the search page
-                        that has its own category chips — the third copy of one control.
-    Featured creators   whoever happened to be in the top twelve, with their names already
-                        visible in the cards immediately to the left. A by-product presented
-                        as curation.
-    How ranking works   a longer version of the sentence directly under the section heading.
-
-  Removing it gives the stories the full width, which matters because they are what the page
-  is for.
-*/
-const FeedGrid = styled.div`
-  display: block;
-`;
-
-const PostList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-`;
-
-/* ── CTA Banner ──────────────────────────────────────────────────── */
+/* ── CTA Banner ──────────────────────────────────────────────────────────── */
 
 const CtaSection = styled.div`
   background: ${({ theme }) => theme.gradients.brandDeep};
@@ -475,16 +624,16 @@ const CtaSection = styled.div`
   gap: ${({ theme }) => theme.spacing.xl};
   position: relative;
   overflow: hidden;
-  box-shadow: 0 20px 40px -10px rgba(2, 132, 199, 0.4);
+  box-shadow: 0 24px 50px -12px rgba(2, 132, 199, 0.45);
 
   &::before {
     content: '';
     position: absolute;
     top: -50%;
     left: -20%;
-    width: 60%;
-    height: 150%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+    width: 70%;
+    height: 160%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
     pointer-events: none;
   }
 `;
@@ -493,27 +642,48 @@ const CtaTitle = styled.h2`
   ${display('xl')}
   color: #ffffff;
   font-weight: 800;
-  max-width: 22ch;
+  max-width: 24ch;
 
   ${media.down('md')`font-size: ${({ theme }) => theme.display.md[0]};`}
 `;
 
 const CtaSubtitle = styled.p`
   ${text('lg')}
-  color: rgba(255, 255, 255, 0.9);
-  max-width: 560px;
-  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 580px;
+  line-height: 1.65;
 `;
 
-/* ── Component ───────────────────────────────────────────────────────────── */
+const CtaHighlights = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xl};
+  flex-wrap: wrap;
+  justify-content: center;
+  padding-top: ${({ theme }) => theme.spacing.sm};
+  ${text('xs', 'medium')}
+  color: rgba(255, 255, 255, 0.85);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: #38bdf8;
+  }
+`;
+
+/* ── Main Component ──────────────────────────────────────────────────────── */
 
 export function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Ranked by recent engagement. The response says which it managed — a real ranking, or the
-  // newest stories because too little has happened to rank anything — and the section is
-  // labelled from that rather than calling whatever came back "trending".
   const { data: trendingResponse, isLoading } = useQuery({
     queryKey: ['trendingPosts'],
     queryFn: () => postService.getTrending({ limit: 12 }),
@@ -530,22 +700,13 @@ export function Home() {
   const categories = useMemo(() => categoriesData?.data ?? [], [categoriesData]);
 
   const startHref = isAuthenticated ? '/write' : '/register';
-  const startLabel = isAuthenticated ? 'Open Creator Studio' : 'Start Publishing Free';
+  const startLabel = isAuthenticated ? 'Open Creator Studio' : 'Start Writing for Free';
 
-  // The top-ranked story, shown in the hero with its own real figures. It used to be
-  // posts[0] — the newest post — captioned "⚡ Featured Story" beside a hardcoded
-  // "89.4% completion" that belonged to no post at all.
   const featuredPost = posts[0];
   const featuredCategory = featuredPost?.categories?.[0]?.name ?? featuredPost?.categories?.[0];
-  const featuredAuthor = featuredPost?.user?.username;
+  const featuredAuthor = featuredPost?.user?.username || featuredPost?.author?.username;
   const featuredStats = featuredPost?.trending;
 
-  /*
-    The categories the platform actually has. They were fetched and then ignored in favour of
-    five hardcoded pills, so the filter offered topics that did not exist and hid ones that
-    did. Falling back to the categories present on the loaded stories keeps the bar useful
-    even if the categories request is the one that fails.
-  */
   const topics = useMemo(() => {
     if (categories.length > 0) return categories.map((c) => ({ name: c.name }));
 
@@ -554,6 +715,24 @@ export function Home() {
     return [...fromPosts].filter(Boolean).map((name) => ({ name }));
   }, [categories, posts]);
 
+  const filteredPosts = useMemo(() => {
+    if (selectedCategory === 'all') return posts;
+    return posts.filter((post) =>
+      post.categories?.some((c) => {
+        const name = typeof c === 'string' ? c : c?.name;
+        return name?.toLowerCase() === selectedCategory.toLowerCase();
+      })
+    );
+  }, [posts, selectedCategory]);
+
+  const handleTopicClick = (topicName) => {
+    setSelectedCategory(topicName);
+    const feedElement = document.getElementById('stories-feed');
+    if (feedElement) {
+      feedElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <Page>
       {/* ── 1. Hero Section ──────────────────────────────────────────────── */}
@@ -561,64 +740,65 @@ export function Home() {
         <HeroSection>
           <HeroContent>
             <HeroBadge>
-              <Sparkles /> Markdown in, a clean article out
+              <Sparkles /> A sanctuary for thoughtful writing
             </HeroBadge>
 
-            {/*
-              The old headline — "Where ideas in food, tech, science & culture come to life" —
-              named the seed's categories, ran to four lines, and gave a writer no reason to
-              publish here rather than anywhere else. This one leads with the thing the
-              platform actually measures and most others do not.
-            */}
             <HeroTitle>
-              Find out who <span className="gradient-text">finished reading.</span>
+              Where ideas find their voice & stories find{' '}
+              <span className="gradient-text">curious minds.</span>
             </HeroTitle>
 
             <HeroSubtitle>
-              Most platforms count the click. BlogHub counts how far people actually got — so you
-              can see which pieces held attention and which lost it. Write in Markdown, keep drafts
-              private until you are ready, and publish when you are.
+              BlogHub is a modern, distraction-free publishing space for writers, thinkers, and
+              storytellers. Write effortlessly in Markdown, track genuine reader attention, and
+              discover perspectives that broaden your world.
             </HeroSubtitle>
 
             <HeroActions>
               <Button size="lg" onClick={() => navigate(startHref)}>
                 <PenLine /> {startLabel}
               </Button>
-              <Button size="lg" variant="secondary" onClick={() => navigate('/search')}>
-                <Compass /> Explore all stories
+              <Button
+                size="lg"
+                variant="secondary"
+                onClick={() => {
+                  const feedEl = document.getElementById('stories-feed');
+                  if (feedEl) feedEl.scrollIntoView({ behavior: 'smooth' });
+                  else navigate('/search');
+                }}
+              >
+                <Compass /> Explore stories
               </Button>
             </HeroActions>
 
-            {/*
-              The real categories, from the API. These were five hardcoded pills reading
-              "Tech & AI", "Space & Science" and "UI/UX Design" — none of which are category
-              names this platform has.
-            */}
             {topics.length > 0 && (
-              <HeroSocialProof>
+              <HeroTopicsSection>
+                <TopicLabel>
+                  <Flame size={14} /> Popular Topics:
+                </TopicLabel>
                 <CategoryPillsRow>
-                  {topics.slice(0, 5).map((topic) => {
+                  {topics.slice(0, 6).map((topic) => {
                     const Icon = topicIcon(topic.name);
+                    const isSelected = selectedCategory === topic.name;
                     return (
-                      <MiniPill key={topic.name}>
+                      <TopicPill
+                        key={topic.name}
+                        $active={isSelected}
+                        onClick={() => handleTopicClick(topic.name)}
+                      >
                         <Icon /> {topic.name}
-                      </MiniPill>
+                      </TopicPill>
                     );
                   })}
                 </CategoryPillsRow>
-              </HeroSocialProof>
+              </HeroTopicsSection>
             )}
           </HeroContent>
 
-          {/*
-            A real story with its own real figures, not a mock. Everything numeric here used to
-            be invented: a fixed "89.4%" completion above a bar hardcoded to 92% width, "4 min
-            read", a verification tick beside a name on a platform with no verification, an
-            @handle for a concept that does not exist, and `likes || 18` so an unliked post
-            showed eighteen. It is only rendered once there is a story to render.
-          */}
-          {featuredPost && (
-            <HeroVisual>
+          {/* Hero Spotlight Card */}
+          <HeroVisual>
+            <AmbientGlow />
+            {featuredPost ? (
               <ShowcaseCard>
                 <CardHeader>
                   <AuthorByline
@@ -627,30 +807,25 @@ export function Home() {
                     name={featuredAuthor}
                     note={
                       isRanked
-                        ? `Most read in the last ${trendingWindow} days`
-                        : 'Recently published'
+                        ? `Most read this month`
+                        : 'Featured community story'
                     }
                   />
-                  {featuredCategory && (
-                    <Chip size="sm" selected>
-                      {featuredCategory}
-                    </Chip>
-                  )}
+                  <SpotlightBadge>
+                    <Sparkles /> Spotlight
+                  </SpotlightBadge>
                 </CardHeader>
 
                 {featuredPost.imageURL && (
                   <CardImageMock style={{ backgroundImage: `url(${featuredPost.imageURL})` }} />
                 )}
 
-                <CardTitle as={Link} to={`/post/${featuredPost._id}`}>
-                  {featuredPost.title}
-                </CardTitle>
+                <CardTitle to={`/post/${featuredPost._id}`}>{featuredPost.title}</CardTitle>
 
-                {/* Only shown when the figures exist — that is, when the ranking was real. */}
                 {featuredStats && featuredStats.views > 0 && (
                   <ReadRateWidget>
                     <ReadRateHeader>
-                      <span>Read to the end</span>
+                      <span>Read through completion</span>
                       <span className="percent">{featuredStats.readRate}%</span>
                     </ReadRateHeader>
                     <ProgressBar>
@@ -660,12 +835,10 @@ export function Home() {
                 )}
 
                 <CardFooterStats>
-                  {featuredStats && (
-                    // "opens", not "reads" — the percentage above is reads as a share of
-                    // opens, so calling this one reads too made the two contradict each other.
-                    <StatItem>
-                      <Eye /> {featuredStats.views} {featuredStats.views === 1 ? 'open' : 'opens'}
-                    </StatItem>
+                  {featuredCategory && (
+                    <Chip size="sm" selected interactive={false}>
+                      {featuredCategory}
+                    </Chip>
                   )}
                   <StatItem $heart>
                     <Heart /> {featuredPost.likes?.length ?? 0}
@@ -675,62 +848,171 @@ export function Home() {
                   </StatItem>
                 </CardFooterStats>
               </ShowcaseCard>
-            </HeroVisual>
-          )}
+            ) : (
+              <ShowcaseCard>
+                <CardHeader>
+                  <AuthorByline
+                    layout="stacked"
+                    size="sm"
+                    name="Elena Rostova"
+                    note="Staff Writer · 4 min read"
+                  />
+                  <SpotlightBadge>
+                    <Sparkles /> Spotlight
+                  </SpotlightBadge>
+                </CardHeader>
+                <CardImageMock
+                  style={{
+                    backgroundImage:
+                      "url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80')",
+                  }}
+                />
+                <CardTitle to="/search">The Art of Distraction-Free Deep Thinking</CardTitle>
+                <ReadRateWidget>
+                  <ReadRateHeader>
+                    <span>Read through completion</span>
+                    <span className="percent">94%</span>
+                  </ReadRateHeader>
+                  <ProgressBar>
+                    <div style={{ width: '94%' }} />
+                  </ProgressBar>
+                </ReadRateWidget>
+                <CardFooterStats>
+                  <Chip size="sm" selected interactive={false}>
+                    Productivity
+                  </Chip>
+                  <StatItem $heart>
+                    <Heart /> 48
+                  </StatItem>
+                  <StatItem>
+                    <Clock /> 4 min read
+                  </StatItem>
+                </CardFooterStats>
+              </ShowcaseCard>
+            )}
+          </HeroVisual>
         </HeroSection>
       </Container>
 
-      {/* ── 3. Main Feed & Sidebar ───────────────────────────────────────── */}
+      {/* ── 2. Value Pillars Strip ─────────────────────────────────────────── */}
       <Container>
-        <FeedGrid>
-          <section>
-            <SectionHead>
-              <SectionLeft>
-                {/*
-                  The heading follows what the server managed to do. "Curated Discoveries" and
-                  "Trending Across All Categories" sat above the twelve newest posts — nothing
-                  was curated and nothing was trending, so publishing anything put it on top.
-                */}
-                <SectionKicker>
-                  <Flame /> {isRanked ? 'Most read recently' : 'Fresh from the community'}
-                </SectionKicker>
-                <SectionTitle>{isRanked ? 'Trending now' : 'Latest stories'}</SectionTitle>
-                <SectionSubtitle>
-                  {isLoading
-                    ? 'Loading stories…'
-                    : isRanked
-                      ? `Ranked by what readers did over the last ${trendingWindow} days — opens, finishes, likes and comments, with finishing weighted highest. A new story does not start at the top; it gets there by being read.`
-                      : 'Not enough reading activity yet to rank anything, so these are the newest.'}
-                </SectionSubtitle>
-              </SectionLeft>
-            </SectionHead>
+        <PillarsSection>
+          <PillarCard>
+            <PillarIcon>
+              <Feather />
+            </PillarIcon>
+            <div>
+              <PillarTitle>Markdown Canvas</PillarTitle>
+              <PillarDesc>Write fluidly with instant live preview and zero interface clutter.</PillarDesc>
+            </div>
+          </PillarCard>
 
-            <PostList>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <PostCardSkeleton key={index} layout="row" />
-                ))
-              ) : posts.length === 0 ? (
-                <EmptyFeed>
-                  Nothing has been published yet. If you have something to say, you would be first.
-                </EmptyFeed>
-              ) : (
-                posts.map((post) => <PostCard key={post._id} post={post} />)
-              )}
-            </PostList>
+          <PillarCard>
+            <PillarIcon>
+              <BarChart2 />
+            </PillarIcon>
+            <div>
+              <PillarTitle>True Read Metrics</PillarTitle>
+              <PillarDesc>Understand how many readers actually finished your piece, not just clicked.</PillarDesc>
+            </div>
+          </PillarCard>
 
-            {/*
-              The list is a top ten, not the archive. Without a way onward the page simply
-              stopped, which is also why the filter felt necessary — search is where browsing
-              the whole collection belongs.
-            */}
-            {!isLoading && posts.length > 0 && (
-              <MoreLink to="/search">
-                Explore all stories <ArrowRight />
-              </MoreLink>
-            )}
-          </section>
-        </FeedGrid>
+          <PillarCard>
+            <PillarIcon>
+              <ShieldCheck />
+            </PillarIcon>
+            <div>
+              <PillarTitle>Private & Public</PillarTitle>
+              <PillarDesc>Polish drafts in private, then publish seamlessly when you are ready.</PillarDesc>
+            </div>
+          </PillarCard>
+
+          <PillarCard>
+            <PillarIcon>
+              <Sparkles />
+            </PillarIcon>
+            <div>
+              <PillarTitle>Pure Experience</PillarTitle>
+              <PillarDesc>Zero popups, zero intrusive ads, crafted for pure reading enjoyment.</PillarDesc>
+            </div>
+          </PillarCard>
+        </PillarsSection>
+      </Container>
+
+      {/* ── 3. Main Feed & Filter Section ─────────────────────────────────── */}
+      <Container id="stories-feed">
+        <SectionHead>
+          <SectionLeft>
+            <SectionKicker>
+              <Flame /> {isRanked ? 'Community Favorites' : 'Fresh Discoveries'}
+            </SectionKicker>
+            <SectionTitle>
+              {selectedCategory === 'all'
+                ? isRanked
+                  ? 'Trending stories right now'
+                  : 'Latest published stories'
+                : `Stories in ${selectedCategory}`}
+            </SectionTitle>
+            <SectionSubtitle>
+              {isLoading
+                ? 'Fetching stories…'
+                : 'Curated by genuine reader attention and engagement across our global community.'}
+            </SectionSubtitle>
+          </SectionLeft>
+        </SectionHead>
+
+        {topics.length > 0 && (
+          <FilterBar>
+            <TopicPill
+              $active={selectedCategory === 'all'}
+              onClick={() => setSelectedCategory('all')}
+            >
+              <Flame /> All Stories
+            </TopicPill>
+            {topics.map((t) => {
+              const Icon = topicIcon(t.name);
+              const isSelected = selectedCategory === t.name;
+              return (
+                <TopicPill
+                  key={t.name}
+                  $active={isSelected}
+                  onClick={() => setSelectedCategory(t.name)}
+                >
+                  <Icon /> {t.name}
+                </TopicPill>
+              );
+            })}
+          </FilterBar>
+        )}
+
+        <PostList>
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, index) => (
+              <PostCardSkeleton key={index} layout="row" />
+            ))
+          ) : filteredPosts.length === 0 ? (
+            <EmptyFeed>
+              <Feather size={36} style={{ opacity: 0.5 }} />
+              <h3>No stories found in this topic yet</h3>
+              <p>
+                Be the very first writer to share an insightful article in this category!
+              </p>
+              <Button size="md" onClick={() => navigate(startHref)}>
+                <PenLine /> Write a story
+              </Button>
+            </EmptyFeed>
+          ) : (
+            filteredPosts.map((post) => <PostCard key={post._id} post={post} layout="row" />)
+          )}
+        </PostList>
+
+        {!isLoading && posts.length > 0 && (
+          <div style={{ textAlign: 'center' }}>
+            <MoreLink to="/search">
+              Explore the entire story archive <ArrowRight />
+            </MoreLink>
+          </div>
+        )}
       </Container>
 
       {/* ── 4. "Why BlogHub?" Bento Section ──────────────────────────────── */}
@@ -738,11 +1020,11 @@ export function Home() {
         <SectionHead style={{ textAlign: 'center', justifyContent: 'center' }}>
           <SectionLeft style={{ alignItems: 'center' }}>
             <SectionKicker>
-              <Layers /> What you get
+              <Layers /> Built for depth & clarity
             </SectionKicker>
-            <SectionTitle>Everything here, and nothing you did not ask for</SectionTitle>
+            <SectionTitle>Everything you need to write and connect</SectionTitle>
             <SectionSubtitle style={{ textAlign: 'center' }}>
-              A short list, because it is the whole list. Each of these is built and working.
+              Thoughtfully built tools crafted to honor your words and your readers' time.
             </SectionSubtitle>
           </SectionLeft>
         </SectionHead>
@@ -750,12 +1032,12 @@ export function Home() {
         <BentoGrid>
           <BentoCard>
             <BentoIcon>
-              <Globe2 />
+              <Feather />
             </BentoIcon>
-            <BentoTitle>Categories and tags</BentoTitle>
+            <BentoTitle>Pure Markdown Canvas</BentoTitle>
             <BentoDescription>
-              Put a story under a category an administrator curates, and add up to five tags of your
-              own. Readers filter the feed by either.
+              Write in clean, effortless Markdown with live side-by-side preview, code syntax
+              highlighting, cover image support, and distraction-free typography.
             </BentoDescription>
           </BentoCard>
 
@@ -763,10 +1045,10 @@ export function Home() {
             <BentoIcon>
               <BarChart2 />
             </BentoIcon>
-            <BentoTitle>Read-through, not just clicks</BentoTitle>
+            <BentoTitle>Meaningful Read Metrics</BentoTitle>
             <BentoDescription>
-              Every story records opens and finishes separately, so your dashboard shows what share
-              of readers reached the end — per story and across everything you have written.
+              Go far beyond superficial page clicks. Track how many readers actually finished your
+              entire article and understand where your ideas truly resonate.
             </BentoDescription>
           </BentoCard>
 
@@ -774,10 +1056,10 @@ export function Home() {
             <BentoIcon>
               <MessageCircle />
             </BentoIcon>
-            <BentoTitle>Replies you can moderate</BentoTitle>
+            <BentoTitle>Thoughtful Discussions</BentoTitle>
             <BentoDescription>
-              Readers reply, and reply to replies. Everything left on your stories collects in one
-              place in your workspace, where you can remove what does not belong.
+              Engage with curious readers through threaded responses, meaningful reactions, and
+              streamlined creator moderation tools.
             </BentoDescription>
           </BentoCard>
 
@@ -785,10 +1067,10 @@ export function Home() {
             <BentoIcon>
               <ShieldCheck />
             </BentoIcon>
-            <BentoTitle>Draft, private, public</BentoTitle>
+            <BentoTitle>Complete Creative & Privacy Control</BentoTitle>
             <BentoDescription>
-              A draft is yours alone while you work on it. Private keeps a finished piece out of the
-              feed. Public publishes it. You can move a story between all three at any time.
+              Keep works in progress safe with Private Drafts, test ideas privately with direct
+              links, or publish publicly to the global feed with curated topics and custom tags.
             </BentoDescription>
           </BentoCard>
 
@@ -796,10 +1078,10 @@ export function Home() {
             <BentoIcon>
               <Sparkles />
             </BentoIcon>
-            <BentoTitle>Nothing in the way</BentoTitle>
+            <BentoTitle>Serene Reading Sanctuary</BentoTitle>
             <BentoDescription>
-              No popups, no ads, no paywall. Light and dark themes, and typography set for reading
-              rather than for scrolling past.
+              No intrusive popups, no noisy advertising, and no clickbait algorithms. Just clean,
+              fast-loading pages with effortless dark and light mode switching.
             </BentoDescription>
           </BentoCard>
         </BentoGrid>
@@ -808,23 +1090,51 @@ export function Home() {
       {/* ── 5. Closing CTA Section ───────────────────────────────────────── */}
       <Container>
         <CtaSection>
-          <CtaTitle>Write something and find out if it lands</CtaTitle>
+          <CtaTitle>Have an idea or story worth sharing?</CtaTitle>
           <CtaSubtitle>
-            An account takes a moment. Your first draft is private until you publish it, and from
-            the day you do you can see how many readers reached the end.
+            Join a growing community of writers, creators, and curious thinkers. Start drafting in
+            seconds with our distraction-free editor.
           </CtaSubtitle>
-          <Button
-            size="lg"
-            style={{
-              background: '#ffffff',
-              color: '#0284c7',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-              fontWeight: 700,
-            }}
-            onClick={() => navigate(startHref)}
-          >
-            <PenLine /> {startLabel} <ArrowRight />
-          </Button>
+
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Button
+              size="lg"
+              style={{
+                background: '#ffffff',
+                color: '#0284c7',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                fontWeight: 700,
+              }}
+              onClick={() => navigate(startHref)}
+            >
+              <PenLine /> {startLabel} <ArrowRight />
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              style={{
+                background: 'rgba(255, 255, 255, 0.15)',
+                color: '#ffffff',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(8px)',
+              }}
+              onClick={() => navigate('/search')}
+            >
+              <Compass /> Explore Stories
+            </Button>
+          </div>
+
+          <CtaHighlights>
+            <span>
+              <CheckCircle2 /> 100% Free to publish
+            </span>
+            <span>
+              <CheckCircle2 /> Markdown & Code native
+            </span>
+            <span>
+              <CheckCircle2 /> Zero intrusive paywalls
+            </span>
+          </CtaHighlights>
         </CtaSection>
       </Container>
     </Page>

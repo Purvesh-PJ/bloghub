@@ -73,23 +73,31 @@ enumerate accounts.
 
 ## Token contract
 
-| Property | Access token | Refresh token |
-|----------|--------------|---------------|
-| Lifetime | `JWT_ACCESS_EXPIRES_IN`, default 15m | `JWT_REFRESH_EXPIRES_IN`, default 7d |
-| Secret | `JWT_SECRET` | **`JWT_REFRESH_SECRET`** |
-| Algorithm | HS256 | HS256 |
-| Payload | `{ user, roles, type: 'access', iat, exp }` | `{ user, roles, type: 'refresh', iat, exp }` |
-| Sent on | Every API request | Only `POST /auth/refreshToken` |
-| Storage | `localStorage` | `localStorage` |
-| Revocable | No | No |
+| Property  | Access token                                       | Refresh token                                       |
+| --------- | -------------------------------------------------- | --------------------------------------------------- |
+| Lifetime  | `JWT_ACCESS_EXPIRES_IN`, default 15m               | `JWT_REFRESH_EXPIRES_IN`, default 7d                |
+| Secret    | `JWT_SECRET`                                       | **`JWT_REFRESH_SECRET`**                            |
+| Algorithm | HS256                                              | HS256                                               |
+| Payload   | `{ user, tokenVersion, type: 'access', iat, exp }` | `{ user, tokenVersion, type: 'refresh', iat, exp }` |
+| Sent on   | Every API request                                  | Only `POST /auth/refreshToken`                      |
+| Storage   | `localStorage`                                     | `localStorage`                                      |
+| Revocable | Yes — `tokenVersion`                               | Yes — `tokenVersion`                                |
 
 ```js
-const issueTokens = (user) => ({
-  accessToken: jwt.sign({ user: user.id, roles: user.roles, type: 'access' },
-    process.env.JWT_SECRET, { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' }),
-  refreshToken: jwt.sign({ user: user.id, roles: user.roles, type: 'refresh' },
-    refreshSecret(), { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }),
-});
+const issueTokens = (user) => {
+  const claims = { user: user.id, tokenVersion: user.tokenVersion ?? 0 };
+
+  return {
+    accessToken: jwt.sign(
+      { ...claims, type: "access" },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m" },
+    ),
+    refreshToken: jwt.sign({ ...claims, type: "refresh" }, refreshSecret(), {
+      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
+    }),
+  };
+};
 ```
 
 **The two types are cryptographically distinct.** Presenting a refresh token as an access
@@ -107,17 +115,24 @@ about at boot, and a hard failure in production if the two are equal.
 ```js
 if (!authHeader?.startsWith('Bearer ')) return res.status(401)...
 
-const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-if (decodedToken.type && decodedToken.type !== 'access') {
-  return res.status(401).json({ success: false, message: 'Invalid token type' });
-}
+const decoded = jwt.verify(token, process.env.JWT_SECRET);
+if (decoded.type && decoded.type !== 'access') return null;   // → 401
 
-req.user = { id: userId, _id: userId, roles: Array.isArray(decodedToken.roles) ? decodedToken.roles : ['user'] };
+// The signature alone is not enough. The account is loaded so that a deletion, a
+// suspension, a demotion or a sign-out takes effect on this request rather than whenever
+// the token happens to expire.
+const account = await User.findById(userId).select('roles tokenVersion suspended').lean();
+if (!account) return null;                                     // deleted
+if ((decoded.tokenVersion ?? 0) !== (account.tokenVersion ?? 0)) return null;  // revoked
+if (account.suspended) return null;                            // suspended
+
+req.user = { id: userId, _id: userId, roles: account.roles ?? ['user'] };
 ```
 
 Both `id` and `_id` are populated because the payload shape varied across earlier versions.
-Roles fall back to `['user']` on a missing or malformed claim — a safe default granting least
-privilege.
+Roles fall back to `['user']` when the record has none — a safe default granting least
+privilege. The cost is one indexed read per authenticated request, which is the price of
+revocation taking effect immediately.
 
 **The acting user always comes from the verified token.** No handler may read a user id from
 the request body to decide who is acting.
@@ -128,9 +143,12 @@ the request body to decide who is acting.
 It is used on public routes whose response varies for a signed-in viewer — an author reading
 their own draft, or an administrator requesting `?all=true`.
 
-**Note:** roles in a token are a snapshot from sign-in. Revoking `admin` does not take effect
-until the token expires. Without revocation ([GAP-06](../product/roadmap.md#gap-06)) there is
-no way to demote someone immediately.
+**Roles are not in the token.** They were, and `refreshToken` copied them from the presented
+payload into each new access token — so demoting an administrator changed nothing for the
+refresh token's full 7-day life, and the holder could keep minting access tokens the whole
+time. `authenticateUser` now loads the account and reads `roles` from the record, which costs
+one indexed lookup per request and is what makes a demotion take effect on the very next one.
+See [SEC-15](checklist.md#sec-15).
 
 ## Refresh
 
@@ -174,33 +192,46 @@ refresh restores the session before first paint.
 
 ### Storage trade-off
 
-| | `localStorage` (current) | httpOnly cookie |
-|---|---|---|
-| XSS exposure | **Readable by any script on the origin** | Not readable by script |
-| CSRF exposure | Immune — the token is attached explicitly | Needs SameSite plus a CSRF token |
-| Cross-origin API | Works trivially | Needs `credentials` and matching CORS |
-| Mobile client reuse | Works | Awkward |
+|                     | `localStorage` (current)                  | httpOnly cookie                       |
+| ------------------- | ----------------------------------------- | ------------------------------------- |
+| XSS exposure        | **Readable by any script on the origin**  | Not readable by script                |
+| CSRF exposure       | Immune — the token is attached explicitly | Needs SameSite plus a CSRF token      |
+| Cross-origin API    | Works trivially                           | Needs `credentials` and matching CORS |
+| Mobile client reuse | Works                                     | Awkward                               |
 
 An accepted trade-off for a bearer-token SPA. The honest statement of the risk: a successful
-XSS yields account takeover. Since [SEC-06](checklist.md#sec-06), a stolen *access* token is
-genuinely limited to 15 minutes — but the refresh token still cannot be revoked.
+XSS yields account takeover. Since [SEC-06](checklist.md#sec-06), a stolen _access_ token is
+genuinely limited to 15 minutes, and both token types can now be revoked outright — see
+[Revocation](#revocation) below.
 
 ## Sign out
 
-`authState.logout()` clears in-memory state and the persisted entry. **Client-side only** —
-no request is sent and the tokens stay valid until they expire
-([GAP-06](../product/roadmap.md#gap-06)).
+`POST /auth/signout` increments `tokenVersion` on the account, which invalidates every token
+already issued to it — this browser's and every other device's. `authState.logout()` then
+clears the local copy.
 
-Real sign-out needs server state. The lightest option:
+The client calls the endpoint first but never lets a failure keep somebody signed in: an
+expired session or an offline browser must still be able to sign out locally.
 
-```
-POST /auth/logout { refreshToken }
-  → record the token's jti in a revocation set with a TTL matching its expiry
-  → the refresh endpoint rejects any listed jti
-```
+This used to be client-side only. Nothing was sent, and the tokens stayed valid until they
+expired, so "sign out" meant "this browser forgets" rather than anything an attacker holding a
+captured token would notice.
 
-A `revokedTokens` collection with a MongoDB TTL index needs no extra infrastructure, and a
-short access lifetime keeps the check on the refresh path only.
+### Revocation
+
+One integer does all of it. Both tokens carry the `tokenVersion` they were minted with;
+`authenticateUser` compares that against the stored value and rejects a mismatch. Bumping the
+field is therefore a revocation of everything outstanding.
+
+| Event                             | Effect                                            |
+| --------------------------------- | ------------------------------------------------- |
+| `POST /auth/signout`              | Ends every session for the account                |
+| `PUT /auth/password`              | Same, including the session that made the request |
+| Administrator suspends an account | Same, and sign-in is refused while suspended      |
+| Administrator revokes `admin`     | Same, so the demoted session stops immediately    |
+
+No extra collection and no TTL index — the check rides along with the account lookup that
+authentication already performs.
 
 ---
 
@@ -208,11 +239,11 @@ short access lifetime keeps the check on the refresh path only.
 
 ## Roles
 
-| Role | Granted by | Capabilities |
-|------|-----------|--------------|
-| *(anonymous)* | No token | Read published content, register, sign in |
-| `user` | Default on registration | Author, engage, manage own content, view own analytics |
-| `admin` | Manual database edit or the seeder | Everything above, plus the console, site-wide analytics, user listing, moderation of any post |
+| Role          | Granted by                         | Capabilities                                                                                  |
+| ------------- | ---------------------------------- | --------------------------------------------------------------------------------------------- |
+| _(anonymous)_ | No token                           | Read published content, register, sign in                                                     |
+| `user`        | Default on registration            | Author, engage, manage own content, view own analytics                                        |
+| `admin`       | Manual database edit or the seeder | Everything above, plus the console, site-wide analytics, user listing, moderation of any post |
 
 There is no UI for granting a role.
 
@@ -251,8 +282,14 @@ An absent optional parameter means "me" and passes through.
 ### Ownership
 
 ```js
-if (post.user && post.user.toString() !== userId.toString() && !req.user.roles?.includes('admin')) {
-  return res.status(403).json({ success: false, message: 'Unauthorized to edit this post' });
+if (
+  post.user &&
+  post.user.toString() !== userId.toString() &&
+  !req.user.roles?.includes("admin")
+) {
+  return res
+    .status(403)
+    .json({ success: false, message: "Unauthorized to edit this post" });
 }
 ```
 
@@ -260,7 +297,7 @@ String-to-string comparison (ObjectId equality is not reference equality); admin
 bypass, enabling moderation; and the check runs **after** the existence check, so a missing
 resource returns 404 rather than leaking existence through a 403.
 
-Applied to `PUT /posts/:_id`, `DELETE /posts/:_id`, and both category-attachment endpoints.
+Applied to `PUT /posts/:id`, `DELETE /posts/:id`, and both category-attachment endpoints.
 
 ---
 
@@ -271,105 +308,106 @@ Applied to `PUT /posts/:_id`, `DELETE /posts/:_id`, and both category-attachment
 
 ### Posts
 
-| Endpoint | A | U | O | X | Enforcement |
-|----------|---|---|---|---|-------------|
-| `GET /posts` | ✓ | ✓ | ✓ | ✓ | Published only. `?all=true` honoured for admins alone |
-| `GET /posts/:id` | ✓ | ✓ | ✓ | ✓ | Non-public → 404 unless author or admin |
-| `POST /posts` | ✗ | ✓ | — | ✓ | `authenticateUser` |
-| `PUT /posts/:_id` | ✗ | ✗ | ✓ | ✓ | + ownership |
-| `DELETE /posts/:_id` | ✗ | ✗ | ✓ | ✓ | + ownership |
+| Endpoint            | A   | U   | O   | X   | Enforcement                                           |
+| ------------------- | --- | --- | --- | --- | ----------------------------------------------------- |
+| `GET /posts`        | ✓   | ✓   | ✓   | ✓   | Published only. `?all=true` honoured for admins alone |
+| `GET /posts/:id`    | ✓   | ✓   | ✓   | ✓   | Non-public → 404 unless author or admin               |
+| `POST /posts`       | ✗   | ✓   | —   | ✓   | `authenticateUser`                                    |
+| `PUT /posts/:id`    | ✗   | ✗   | ✓   | ✓   | + ownership                                           |
+| `DELETE /posts/:id` | ✗   | ✗   | ✓   | ✓   | + ownership                                           |
 
 ### Users
 
-| Endpoint | A | U | O | X | Enforcement |
-|----------|---|---|---|---|-------------|
-| `GET /users` | ✗ | ✗ | — | ✓ | `authorizeAdmin` |
-| `GET /users/getUser` | ✗ | ✓ | — | ✓ | Scoped to the token subject |
-| `PUT /users/setUser` | ✗ | ✓ | — | ✓ | Scoped |
-| `GET /users/getUserPosts` | ✗ | ✓ | — | ✓ | Scoped |
-| `POST /users/postUserProfile` | ✗ | ✓ | — | ✓ | Scoped |
-| `GET /users/getUserProfile` | ✗ | ✓ | — | ✓ | Scoped |
-| `POST /users/followUser` | ✗ | ✓ | — | ✓ | Actor from the token; 409 on self-follow |
-| `POST /users/unfollowUser` | ✗ | ✓ | — | ✓ | Actor from the token |
-| `GET /users/isFollowing/:id` | ✗ | ✓ | — | ✓ | Scoped |
+| Endpoint                      | A   | U   | O   | X   | Enforcement                              |
+| ----------------------------- | --- | --- | --- | --- | ---------------------------------------- |
+| `GET /users`                  | ✗   | ✗   | —   | ✓   | `authorizeAdmin`                         |
+| `GET /users/getUser`          | ✗   | ✓   | —   | ✓   | Scoped to the token subject              |
+| `PUT /users/setUser`          | ✗   | ✓   | —   | ✓   | Scoped                                   |
+| `GET /users/getUserPosts`     | ✗   | ✓   | —   | ✓   | Scoped                                   |
+| `POST /users/postUserProfile` | ✗   | ✓   | —   | ✓   | Scoped                                   |
+| `GET /users/getUserProfile`   | ✗   | ✓   | —   | ✓   | Scoped                                   |
+| `POST /users/followUser`      | ✗   | ✓   | —   | ✓   | Actor from the token; 409 on self-follow |
+| `POST /users/unfollowUser`    | ✗   | ✓   | —   | ✓   | Actor from the token                     |
+| `GET /users/isFollowing/:id`  | ✗   | ✓   | —   | ✓   | Scoped                                   |
 
 ### Categories and tags
 
-| Endpoint | A | U | O | X | Enforcement |
-|----------|---|---|---|---|-------------|
-| `GET /categories`, `GET /tags` | ✓ | ✓ | — | ✓ | Public read is intended |
-| `POST /categories` | ✗ | ✗ | — | ✓ | `authorizeAdmin` |
-| `POST /tags` | ✗ | ✗ | — | ✓ | `authorizeAdmin` |
-| `POST /categories/categoriesCollection` | ✗ | ✗ | ✓ | ✓ | + post ownership |
-| `PUT /categories/updateCategoriesCollection/:id` | ✗ | ✗ | ✓ | ✓ | + post ownership |
+| Endpoint                                         | A   | U   | O   | X   | Enforcement             |
+| ------------------------------------------------ | --- | --- | --- | --- | ----------------------- |
+| `GET /categories`, `GET /tags`                   | ✓   | ✓   | —   | ✓   | Public read is intended |
+| `POST /categories`                               | ✗   | ✗   | —   | ✓   | `authorizeAdmin`        |
+| `POST /tags`                                     | ✗   | ✗   | —   | ✓   | `authorizeAdmin`        |
+| `POST /categories/categoriesCollection`          | ✗   | ✗   | ✓   | ✓   | + post ownership        |
+| `PUT /categories/updateCategoriesCollection/:id` | ✗   | ✗   | ✓   | ✓   | + post ownership        |
 
 ### Comments
 
-| Endpoint | A | U | O | X | Enforcement |
-|----------|---|---|---|---|-------------|
-| `GET /comments` | ⚠ | ⚠ | — | ✓ | Unscoped and unpaginated ([SEC-11](checklist.md#sec-11)) |
-| `POST /comments` | ✗ | ✓ | — | ✓ | Author from the token |
-| `POST /comments/replies` | ✗ | ✓ | — | ✓ | Author from the token; parent validated |
+| Endpoint                     | A   | U        | O   | X   | Enforcement                              |
+| ---------------------------- | --- | -------- | --- | --- | ---------------------------------------- |
+| `GET /comments/post/:postId` | ✗   | optional | —   | ✓   | Paginated; follows the post's visibility |
+| `DELETE /comments/:id`       | ✓   | ✓        | —   | ✓   | Comment author, post author, or admin    |
+| `POST /comments`             | ✗   | ✓        | —   | ✓   | Author from the token                    |
+| `POST /comments/replies`     | ✗   | ✓        | —   | ✓   | Author from the token; parent validated  |
 
 No update or delete exists, so there is nothing to authorise — but also no way to remove a
 comment short of deleting the post.
 
 ### Likes and page views
 
-| Endpoint | A | U | O | X | Enforcement |
-|----------|---|---|---|---|-------------|
-| `POST /likes` | ✗ | ✓ | — | ✓ | Actor from the token; unique index |
-| `DELETE /likes/post/:postId` | ✗ | ✓ | — | ✓ | Deletes only the caller's own like |
-| `GET /likes/post/:postId` | ✓ | ✓ | — | ✓ | Usernames only, no emails |
-| `GET /likes/:id` | ✓ | ✓ | — | ✓ | |
-| `POST /page-views` | ⚠ | ⚠ | — | ✓ | Rate-limited, undeduplicated ([SEC-04](checklist.md#sec-04)) |
-| `GET /page-views/post/:postId` | ✓ | ✓ | — | ✓ | Usernames only |
-| `GET /page-views/post/:postId/count` | ✓ | ✓ | — | ✓ | |
+| Endpoint                             | A   | U        | O   | X   | Enforcement                                                |
+| ------------------------------------ | --- | -------- | --- | --- | ---------------------------------------------------------- |
+| `POST /likes`                        | ✗   | ✓        | —   | ✓   | Actor from the token; unique index                         |
+| `DELETE /likes/post/:postId`         | ✗   | ✓        | —   | ✓   | Deletes only the caller's own like                         |
+| `GET /likes/post/:postId`            | ✓   | ✓        | —   | ✓   | Usernames only, no emails                                  |
+| `GET /likes/:id`                     | ✓   | ✓        | —   | ✓   |                                                            |
+| `POST /analytics/view/:postId`       | ✗   | optional | —   | ✓   | One row per visitor per 6h ([SEC-04](checklist.md#sec-04)) |
+| `GET /page-views/post/:postId`       | ✓   | ✓        | —   | ✓   | Usernames only                                             |
+| `GET /page-views/post/:postId/count` | ✓   | ✓        | —   | ✓   |                                                            |
 
 ### Analytics and activity
 
-| Endpoint | A | U | O | X | Enforcement |
-|----------|---|---|---|---|-------------|
-| `GET /analytics/post/:id` | ✓ | ✓ | — | ✓ | Counters only |
-| `GET /analytics/user/:userId` | ✗ | ✗ | ✓ | ✓ | `authorizeSelfOrAdmin` |
-| `GET /analytics/admin` | ✗ | ✗ | — | ✓ | `authorizeAdmin` |
-| `POST /analytics/view/:postId` | ⚠ | ⚠ | — | ✓ | Rate-limited only |
-| `POST /analytics/read/:postId` | ⚠ | ⚠ | — | ✓ | Rate-limited only |
-| `GET /user-activity/all` | ✗ | ✗ | — | ✓ | `authorizeAdmin` |
-| `GET /user-activity/user/:userId` | ✗ | ✗ | ✓ | ✓ | `authorizeSelfOrAdmin` |
-| `GET /user-activity/timeline/:userId` | ✗ | ✗ | ✓ | ✓ | `authorizeSelfOrAdmin` |
-| `GET /user-activity/moderation-log` | ✗ | ✗ | — | ✓ | `authorizeAdmin` |
+| Endpoint                              | A   | U   | O   | X   | Enforcement            |
+| ------------------------------------- | --- | --- | --- | --- | ---------------------- |
+| `GET /analytics/post/:id`             | ✓   | ✓   | —   | ✓   | Counters only          |
+| `GET /analytics/user/:userId`         | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin` |
+| `GET /analytics/admin`                | ✗   | ✗   | —   | ✓   | `authorizeAdmin`       |
+| `POST /analytics/view/:postId`        | ⚠   | ⚠   | —   | ✓   | Rate-limited only      |
+| `POST /analytics/read/:postId`        | ⚠   | ⚠   | —   | ✓   | Rate-limited only      |
+| `GET /user-activity/all`              | ✗   | ✗   | —   | ✓   | `authorizeAdmin`       |
+| `GET /user-activity/user/:userId`     | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin` |
+| `GET /user-activity/timeline/:userId` | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin` |
+| `GET /user-activity/moderation-log`   | ✗   | ✗   | —   | ✓   | `authorizeAdmin`       |
 
 ### Settings
 
 All behind `router.use(authenticateUser)`.
 
-| Endpoint | A | U | O | X | Enforcement |
-|----------|---|---|---|---|-------------|
-| `GET`/`PUT /settings/user` | ✗ | ✓ | — | ✓ | Scoped |
-| `GET /settings/profile/:userId?` | ✗ | ✗ | ✓ | ✓ | `authorizeSelfOrAdmin` |
-| `PUT /settings/profile` | ✗ | ✓ | — | ✓ | Scoped |
-| `PUT /settings/security` | ✗ | ✓ | — | ✓ | Returns 501 |
-| `PUT /settings/privacy` | ✗ | ✓ | — | ✓ | Scoped |
-| `PUT /settings/appearance` | ✗ | ✓ | — | ✓ | Scoped |
+| Endpoint                         | A   | U   | O   | X   | Enforcement            |
+| -------------------------------- | --- | --- | --- | --- | ---------------------- |
+| `GET`/`PUT /settings/user`       | ✗   | ✓   | —   | ✓   | Scoped                 |
+| `GET /settings/profile/:userId?` | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin` |
+| `PUT /settings/profile`          | ✗   | ✓   | —   | ✓   | Scoped                 |
+| `PUT /settings/security`         | ✗   | ✓   | —   | ✓   | Returns 501            |
+| `PUT /settings/privacy`          | ✗   | ✓   | —   | ✓   | Scoped                 |
+| `PUT /settings/appearance`       | ✗   | ✓   | —   | ✓   | Scoped                 |
 
 ---
 
 ## Remaining gaps
 
-| Pattern | Endpoints | Finding |
-|---------|-----------|---------|
-| Unauthenticated, undeduplicated writes | 3 tracking routes | [SEC-04](checklist.md#sec-04) |
-| Unpaginated public reads | `GET /comments`, two list routes | [SEC-11](checklist.md#sec-11) |
-| No ownership model | comments, likes | Cannot be edited or moderated |
-| No session revocation | all | [GAP-06](../product/roadmap.md#gap-06) |
+| Pattern                                | Endpoints               | Finding                       |
+| -------------------------------------- | ----------------------- | ----------------------------- |
+| Unauthenticated, undeduplicated writes | 3 tracking routes       | [SEC-04](checklist.md#sec-04) |
+| ~~Unpaginated public reads~~           | Closed                  | [SEC-11](checklist.md#sec-11) |
+| No ownership model                     | comments, likes         | Cannot be edited or moderated |
+| ~~No session revocation~~              | Closed — `tokenVersion` | [SEC-08](checklist.md#sec-08) |
 
 ---
 
 ## Rules for new endpoints
 
 1. **Authenticated by default.** Public needs a written reason.
-2. **Authenticate, then authorise.** A valid token answers *who*, never *whether*.
+2. **Authenticate, then authorise.** A valid token answers _who_, never _whether_.
 3. **Scope by the token, not the parameter.** Use `authorizeSelfOrAdmin(param)`.
 4. **Check existence before permission.** 404 before 403; 404 for non-public content.
 5. **Filter reads by visibility**, not only writes by ownership.
@@ -385,11 +423,11 @@ All behind `router.use(authenticateUser)`.
 The two-role scheme is adequate today. If moderation grows, promote it to explicit
 permissions rather than adding roles:
 
-| Role | Permissions |
-|------|-------------|
-| `user` | `post:create`, `post:edit:own`, `post:delete:own`, `comment:create`, `like:toggle` |
-| `moderator` | + `post:delete:any`, `comment:delete:any` |
-| `admin` | + `user:list`, `user:role:assign`, `analytics:read:site` |
+| Role        | Permissions                                                                        |
+| ----------- | ---------------------------------------------------------------------------------- |
+| `user`      | `post:create`, `post:edit:own`, `post:delete:own`, `comment:create`, `like:toggle` |
+| `moderator` | + `post:delete:any`, `comment:delete:any`                                          |
+| `admin`     | + `user:list`, `user:role:assign`, `analytics:read:site`                           |
 
 Then `requirePermission('post:delete:any')` replaces `authorizeAdmin`. Make this refactor
 when the third role appears, not before.
@@ -398,13 +436,13 @@ when the third role appears, not before.
 
 ## Hardening priority
 
-| # | Action | Effort | Status |
-|---|--------|--------|--------|
-| 1 | Separate refresh secret + type claim | Low | ✅ Done |
-| 2 | Rate-limit `/auth` | Low | ✅ Done |
-| 3 | Unique indexes on identity fields | Low | ✅ Done |
-| 4 | Scope `:userId` routes to the caller | Low | ✅ Done |
-| 5 | Server-side revocation with a TTL collection | Medium | ❌ Open |
-| 6 | Refresh-token rotation with reuse detection | Medium | ❌ Open |
-| 7 | Password strength beyond 6 characters | Low | ❌ Open |
-| 8 | Content-Security-Policy header | Medium | ❌ Open |
+| #   | Action                                      | Effort | Status                                               |
+| --- | ------------------------------------------- | ------ | ---------------------------------------------------- |
+| 1   | Separate refresh secret + type claim        | Low    | ✅ Done                                              |
+| 2   | Rate-limit `/auth`                          | Low    | ✅ Done                                              |
+| 3   | Unique indexes on identity fields           | Low    | ✅ Done                                              |
+| 4   | Scope `:userId` routes to the caller        | Low    | ✅ Done                                              |
+| 5   | ~~Server-side revocation~~                  | Medium | ✅ Done — `tokenVersion`, no extra collection needed |
+| 6   | Refresh-token rotation with reuse detection | Medium | ❌ Open                                              |
+| 7   | Password strength beyond 6 characters       | Low    | ❌ Open                                              |
+| 8   | Content-Security-Policy header              | Medium | ❌ Open                                              |

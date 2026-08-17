@@ -22,11 +22,11 @@ const Wrapper = styled.header`
   top: 0;
   z-index: ${({ theme }) => theme.zIndices.sticky};
   background: ${({ theme }) =>
-    theme.mode === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(11, 15, 23, 0.85)'};
+    theme.mode === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(7, 11, 19, 0.85)'};
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
-  border-bottom: none;
-  box-shadow: none;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 `;
 
 const Bar = styled.div`

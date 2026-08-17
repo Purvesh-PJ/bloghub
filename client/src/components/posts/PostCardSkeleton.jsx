@@ -10,7 +10,7 @@ const Card = styled.div`
   border-radius: ${({ theme }) => theme.radii.xl};
   background: ${({ theme }) => theme.colors.surfaceElevated};
   border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
 
   ${({ $layout }) =>
     $layout === 'stacked'
@@ -19,7 +19,11 @@ const Card = styled.div`
           gap: ${({ theme }) => theme.spacing.lg};
         `
       : css`
-          grid-template-columns: 1fr auto;
+          grid-template-columns: 1fr 220px;
+
+          ${media.down('md')`
+            grid-template-columns: 1fr 180px;
+          `}
 
           ${media.down('sm')`
             grid-template-columns: 1fr;
@@ -58,9 +62,13 @@ const Thumb = styled(Skeleton)`
           order: -1;
         `
       : css`
-          width: 200px;
-          aspect-ratio: 4 / 3;
+          width: 220px;
+          aspect-ratio: 16 / 10;
           height: auto;
+
+          ${media.down('md')`
+            width: 180px;
+          `}
 
           ${media.down('sm')`
             width: 100%;

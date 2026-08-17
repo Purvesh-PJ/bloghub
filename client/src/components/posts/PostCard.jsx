@@ -1,47 +1,56 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageCircle, BookOpenCheck } from 'lucide-react';
-
+import { Heart, MessageCircle, BookOpenCheck, Sparkles } from 'lucide-react';
 import styled, { css } from 'styled-components';
+
 import { display, text, clamp, media, interactive } from '../../styles/theme/mixins';
 import { excerpt, readingTime } from '../../utils/text';
 import { Chip } from '../ui';
 import { AuthorByline } from './AuthorByline';
 
 /**
- * PostCard — the feed's unit.
+ * PostCard — elevated editorial story card.
  *
- * One component, two layouts: `row` for the main feed and `compact` for sidebars and
- * related lists. Everything else in the application should use this rather than rebuilding
- * a post row.
+ * Supports `row` for main feed / search and `stacked` for grids / profile views.
  */
 
-/*
-  Two arrangements of the same card.
-
-  `row` is the feed: text on the left, a fixed 200px cover on the right. `stacked` is for
-  grids of cards, where a row layout squeezes the text into whatever the column has left —
-  in a 300px grid track that left the title clamped after two words.
-*/
 const Card = styled(Link)`
+  position: relative;
   display: grid;
   gap: ${({ theme }) => theme.spacing.xl};
   align-items: start;
-
   padding: ${({ theme }) => theme.spacing.xl};
   border-radius: ${({ theme }) => theme.radii.xl};
   background: ${({ theme }) => theme.colors.surfaceElevated};
   border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+  transition: all ${({ theme }) => theme.transitions.normal};
+  text-decoration: none;
+  overflow: hidden;
   ${interactive}
 
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: ${({ theme }) => theme.gradients.brandBar};
+    opacity: 0;
+    transition: opacity ${({ theme }) => theme.transitions.fast};
+  }
+
   &:hover {
-    background: ${({ theme }) => theme.colors.surfaceElevated};
     border-color: ${({ theme }) => theme.colors.accentLine};
     box-shadow:
-      0 10px 25px -5px rgba(15, 23, 42, 0.06),
-      0 0 15px -3px rgba(14, 165, 233, 0.15);
-    transform: translateY(-2px);
+      0 14px 32px -8px rgba(15, 23, 42, 0.09),
+      0 0 20px -4px rgba(14, 165, 233, 0.16);
+    transform: translateY(-3px);
+
+    &::before {
+      opacity: 1;
+    }
   }
 
   ${({ $layout }) =>
@@ -51,7 +60,11 @@ const Card = styled(Link)`
           gap: ${({ theme }) => theme.spacing.lg};
         `
       : css`
-          grid-template-columns: 1fr auto;
+          grid-template-columns: 1fr 220px;
+
+          ${media.down('md')`
+            grid-template-columns: 1fr 180px;
+          `}
 
           ${media.down('sm')`
             grid-template-columns: 1fr;
@@ -65,10 +78,20 @@ const Body = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
+  height: 100%;
+  justify-content: space-between;
+`;
+
+const ContentWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 const Title = styled.h3`
   ${display('xs')}
+  font-weight: 700;
+  line-height: 1.35;
   color: ${({ theme }) => theme.colors.textPrimary};
   ${clamp(2)}
   transition: color ${({ theme }) => theme.transitions.fast};
@@ -80,7 +103,7 @@ const Title = styled.h3`
 
 const Excerpt = styled.p`
   ${text('sm')}
-  line-height: 1.6;
+  line-height: 1.65;
   color: ${({ theme }) => theme.colors.textSecondary};
   ${clamp(2)}
 `;
@@ -88,28 +111,73 @@ const Excerpt = styled.p`
 const Footer = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.lg};
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
   margin-top: ${({ theme }) => theme.spacing.xs};
+  padding-top: ${({ theme }) => theme.spacing.sm};
+  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  flex-wrap: wrap;
 `;
 
-const Stat = styled.span`
+const FooterLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+`;
+
+const StatsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const StatBadge = styled.span`
   display: inline-flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  ${text('xs', 'medium')}
+  transition: all ${({ theme }) => theme.transitions.fast};
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
   }
+
+  ${({ $tone, theme }) =>
+    $tone === 'accent' &&
+    css`
+      background: ${theme.colors.accentContainer};
+      color: ${theme.colors.accentText};
+      font-weight: 600;
+      border: 1px solid ${theme.colors.accentLine};
+
+      svg {
+        color: ${theme.colors.accentSolid};
+      }
+    `}
+
+  ${({ $tone }) =>
+    $tone === 'love' &&
+    css`
+      svg {
+        color: #ef4444;
+        fill: #ef4444;
+      }
+    `}
 `;
 
 const Thumb = styled.div`
+  position: relative;
   border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
   background: ${({ theme }) => theme.colors.surfaceContainer};
   border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   flex-shrink: 0;
 
   img {
@@ -120,7 +188,7 @@ const Thumb = styled.div`
   }
 
   ${Card}:hover & img {
-    transform: scale(1.03);
+    transform: scale(1.05);
   }
 
   ${({ $layout }) =>
@@ -131,8 +199,12 @@ const Thumb = styled.div`
           order: -1;
         `
       : css`
-          width: 200px;
-          aspect-ratio: 4 / 3;
+          width: 220px;
+          aspect-ratio: 16 / 10;
+
+          ${media.down('md')`
+            width: 180px;
+          `}
 
           ${media.down('sm')`
             width: 100%;
@@ -143,7 +215,6 @@ const Thumb = styled.div`
 `;
 
 export function PostCard({ post, layout = 'row' }) {
-  /* A cover image that 404s should collapse the column, not leave an empty grey box. */
   const [imageFailed, setImageFailed] = useState(false);
 
   if (!post) return null;
@@ -151,11 +222,9 @@ export function PostCard({ post, layout = 'row' }) {
   const category = post.categories?.[0]?.name ?? post.categories?.[0];
   const author = post.author?.name || post.author?.username || post.user?.username || 'Anonymous';
   const created = post.createdAt ? new Date(post.createdAt) : null;
-  const isValidDate = created && !isNaN(created.getTime());
+  const isValidDate = created && !Number.isNaN(created.getTime());
   const showThumb = Boolean(post.imageURL) && !imageFailed;
   const likesCount = post.likesCount ?? post.likes?.length ?? 0;
-  // Present only on posts that came from the trending endpoint, and only meaningful once
-  // somebody has opened the story.
   const readRate =
     post.trending?.views > 0 && typeof post.trending?.readRate === 'number'
       ? post.trending.readRate
@@ -165,49 +234,46 @@ export function PostCard({ post, layout = 'row' }) {
   return (
     <Card to={`/post/${post._id}`} $layout={layout}>
       <Body>
-        <AuthorByline
-          name={author}
-          at={isValidDate ? created : undefined}
-          readingMinutes={readingTime(post.content)}
-        />
+        <ContentWrap>
+          <AuthorByline
+            name={author}
+            at={isValidDate ? created : undefined}
+            readingMinutes={readingTime(post.content)}
+          />
 
-        <Title>{post.title}</Title>
-        <Excerpt>{excerpt(post.content)}</Excerpt>
+          <Title>{post.title}</Title>
+          <Excerpt>{excerpt(post.content)}</Excerpt>
+        </ContentWrap>
 
         <Footer>
-          {category && (
-            <Chip size="sm" interactive={false} as="span">
-              {category}
-            </Chip>
-          )}
-          {/*
-            The read-through, where the list carries it. The landing page promises "find out
-            who finished reading" and then showed cards of likes and comments like anywhere
-            else — the one figure that makes this platform different was missing from the very
-            list meant to demonstrate it. Only rendered when the story has been opened, since
-            a percentage of nothing means nothing.
-          */}
-          {readRate !== null && (
-            <Stat title={`${readRate}% of readers reached the end`}>
-              <BookOpenCheck /> {readRate}% finished
-            </Stat>
-          )}
-          <Stat>
-            <Heart /> {likesCount}
-          </Stat>
-          <Stat>
-            <MessageCircle /> {commentsCount}
-          </Stat>
+          <FooterLeft>
+            {category && (
+              <Chip size="sm" interactive={false} as="span">
+                {category}
+              </Chip>
+            )}
+
+            {readRate !== null && (
+              <StatBadge $tone="accent" title={`${readRate}% of readers reached the end`}>
+                <BookOpenCheck /> {readRate}% finished
+              </StatBadge>
+            )}
+          </FooterLeft>
+
+          <StatsRow>
+            <StatBadge $tone={likesCount > 0 ? 'love' : undefined} title={`${likesCount} likes`}>
+              <Heart /> {likesCount}
+            </StatBadge>
+
+            <StatBadge title={`${commentsCount} comments`}>
+              <MessageCircle /> {commentsCount}
+            </StatBadge>
+          </StatsRow>
         </Footer>
       </Body>
 
       {showThumb && (
         <Thumb $layout={layout}>
-          {/*
-            The card is a link whose accessible name is already the post title, so naming the
-            thumbnail again would make a screen reader read the same words twice. Empty alt is
-            correct here — unlike the full-size cover on the post page, which carries meaning.
-          */}
           <img src={post.imageURL} alt="" loading="lazy" onError={() => setImageFailed(true)} />
         </Thumb>
       )}
@@ -224,18 +290,28 @@ const CompactCard = styled(Link)`
   padding: ${({ theme }) => theme.spacing.md};
   margin: 0 calc(-1 * ${({ theme }) => theme.spacing.md});
   border-radius: ${({ theme }) => theme.radii.md};
+  text-decoration: none;
+  transition: all ${({ theme }) => theme.transitions.fast};
   ${interactive}
 
   &:hover {
     background: ${({ theme }) => theme.colors.surfaceContainer};
+    transform: translateX(2px);
   }
 `;
 
 const Rank = styled.span`
   ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.lineStrong};
+  color: ${({ theme }) => theme.colors.accentText};
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentContainer};
 `;
 
 const CompactTitle = styled.p`
