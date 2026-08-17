@@ -11,9 +11,10 @@ Entry types: `Added` · `Changed` · `Deprecated` · `Removed` · `Fixed` · `Se
 
 ## [Unreleased]
 
-An end-to-end audit produced a register of 18 functional defects, 18 capability gaps and 12
-security findings. This release closes **14 defects and 8 security findings**, each verified
-by request against a running server.
+An end-to-end audit produced a register of 18 functional defects, 18 capability gaps and 15
+security findings — three of the security findings were discovered during remediation itself.
+This release closes **every security finding** and every defect a request can reach, each
+verified against a running server, and adds the test suite and pipeline that keep them closed.
 
 ### Security
 
@@ -37,6 +38,36 @@ by request against a running server.
 - Required configuration is validated at boot. A missing `JWT_SECRET`, an absent `CLIENT_URL`
   in production, a secret under 32 characters, or a refresh secret equal to the access secret
   now stops the server with a named error (SEC-10).
+- Sessions are now revocable. Both tokens carry the `tokenVersion` they were minted with, and
+  every authenticated request compares it against the account. Sign-out, a password change, a
+  suspension and a demotion each increment it, so tokens already issued stop working
+  immediately rather than at expiry (SEC-08, GAP-06).
+- Roles are read from the account on every request instead of being trusted from the token
+  payload. A token minted before a demotion no longer carries administrator authority until it
+  expires (SEC-15).
+- Rendered Markdown is sanitised with `rehype-sanitize`, closing a stored XSS: post content was
+  passed to the renderer with raw HTML enabled, so a `<script>` or an `onerror` attribute in a
+  published post executed in every reader's browser (SEC-13).
+- `app.set('trust proxy', 1)`. Behind Vercel's proxy every request appeared to come from one
+  address, so both rate limiters shared a single bucket — locking out all traffic at once while
+  limiting no individual client. They are now keyed to the real caller (SEC-14).
+- File uploads moved to `multer.memoryStorage()` with a 2 MB cap and a MIME allowlist, and **no
+  filename derived from user input**, closing the path-traversal risk in the previous inline
+  disk configuration (SEC-05).
+- View and read tracking are deduplicated per visitor per post over a 6-hour window. The visitor
+  key is the account id when signed in, otherwise a salted HMAC of address and user agent —
+  hashed, not stored, since the analytics only need to know two requests came from the same
+  place (SEC-04).
+- The unscoped `GET /comments`, which returned every comment in the database to anonymous
+  callers, was removed. `GET /comments/post/:postId` replaces it, paginated and following the
+  post's own visibility rule (SEC-11).
+- Declarative validation across every write path, with a shared `validateObjectId` that matches
+  a 24-character hex string rather than `mongoose.isValid` — which also accepts any 12-character
+  string, so a short password could be passed as an id.
+- The API is served from a single `/api` mount. It had also been mounted at `/`, giving every
+  endpoint two addresses and doubling the surface any path-based rule has to cover.
+- Every dependency advisory cleared. Both workspaces now report zero, and CI fails on any new
+  high or critical advisory (SEC-12).
 - `GET /posts` and `GET /search/:query` are paginated and capped, removing the two largest
   unbounded reads (SEC-11).
 
@@ -80,10 +111,35 @@ by request against a running server.
 - `attachUserIfPresent` middleware for public routes whose response varies for a signed-in
   viewer.
 - `postService.getAllPosts()` on the client for the admin moderation view.
-- Complete technical documentation under `docs/` — 19 documents with a single-source-of-truth
+- Complete technical documentation under `docs/` — 20 documents with a single-source-of-truth
   map and stable issue identifiers.
 - Repository community files: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, this
   changelog, and GitHub issue and pull request templates.
+- **A backend test suite** — 61 integration tests over auth, posts, comments, the workspace,
+  trending and the admin console. Jest and Supertest drive the real Express app against a
+  MongoDB that `mongodb-memory-server` starts in-process, so `npm test` needs no database and no
+  `.env` (GAP-11).
+- **A CI pipeline** — lint, format check, tests, client build and a dependency audit on every
+  push and pull request, in three parallel jobs (GAP-12).
+- A trending ranking. Score is `views + likes×3 + comments×5 + reads×5` over a 14-day window,
+  with a minimum-views floor so a single-view post cannot outrank a widely read one. When
+  nothing qualifies the response falls back to newest and says so, rather than presenting
+  "latest" as though it were "trending".
+- Read tracking is now actually recorded. `trackPostRead` existed in the client service layer
+  with nothing calling it, so no `Read` document was ever written; `useReading` now records one
+  on real scroll depth and dwell.
+- Account deletion — `DELETE /users/me`, password-confirmed, sharing one `purgeAccount` service
+  with the admin path so both mean the same thing (GAP-09).
+- Admin user management: suspend and restore, promote and demote, delete. Suspension and
+  demotion revoke live sessions; a guard prevents removing the last administrator.
+- `GET /analytics/me` and `GET /analytics/me/reading`, which derive the author from the token.
+  An endpoint that cannot name another user's data cannot leak it.
+- `backend/scripts/migrate.js` — non-destructive repair of an existing database, with `--dry`.
+- A `SEED_ALLOW_REMOTE=yes` guard on the seeder, which empties every collection it can reach.
+- Draft recovery in the editor, plus navigation guarding on unsaved changes.
+- A skip link, image alternative text, and `aria-describedby` wiring on form errors.
+- `.gitattributes` with `* text=auto eol=lf`. Without it a Windows checkout commits CRLF and the
+  format check fails in CI with hundreds of `Delete ␍` errors on a change that touched nothing.
 
 ### Changed
 
@@ -93,6 +149,24 @@ by request against a running server.
   rule sets. This removed roughly 600 false-positive warnings and surfaced two real defects.
   Client lint went from 604 problems to 26 warnings and 0 errors.
 - Email normalisation moved from the controller to the `User` schema (`lowercase`, `trim`).
+- Password hashing cost raised from 10 to 12.
+- **The workspace was split into three pages by the question each answers**: `/dashboard` (how
+  the work is doing), `/stories` (what has been written and how to manage it), `/comments` (what
+  readers said back). It had been one page mixing statistics with post management, which meant
+  neither was good at its job. The old paths redirect rather than 404.
+- Story management filters, sorts, searches and pages **on the server**, with the parameters in
+  the query key, so a reload or a shared link reproduces the same view and the tab counts are
+  computed over the whole collection rather than the current page.
+- Both themes are now derived by `createTheme(ramps, mode)` from Radix colour ramps instead of
+  being two hand-maintained palettes.
+- **Foreground colour on a solid fill is measured, not assumed.** The theme implements WCAG 2.1
+  contrast and picks whichever of white or near-black wins. White on `sky-9` measures 1.48:1,
+  which is why primary button labels were effectively invisible; it is now 12.04:1.
+- Duplicated base components — card, badge, table, dropdown, empty state — were folded back into
+  `ui/`, which grew from 13 to 21 primitives. The interactive ones wrap Radix, so keyboard and
+  screen-reader behaviour is the real thing rather than five approximations of it.
+- Controllers migrated to `asyncHandler` plus a typed `AppError`, so the status code is chosen
+  where the failure is understood. Eight of thirteen modules are converted.
 
 ### Removed
 
@@ -100,18 +174,31 @@ by request against a running server.
   code, imported nowhere.
 - The `/uploads/(.*)` route from `vercel.json`, which pointed at a directory that never exists
   in a deployment.
+- The admin Settings page — a screen of switches wired to nothing. A control that does not
+  control anything is worse than an absent one.
+- The landing page's category filter, "browse by topics" strip and "featured creators" panel.
+  The filter searched only the posts already in memory while looking like a search of the
+  platform, and the two widgets restated what the feed below them already showed. Category
+  filtering now lives on `/search`, where the server applies it to the whole collection.
+- The duplicate filter panel on the explore page, which did the same job as the one above it.
 
 ### Known limitations
 
-Not fixed in this release, and the reason this is not production-ready:
+Not fixed in this release:
 
-- **No test suite and no CI pipeline** (GAP-11, GAP-12). Every fix above is verified by hand
-  and could regress unnoticed.
-- Avatar upload remains broken and unconstrained (BUG-07, SEC-05).
-- View tracking is rate-limited but still undeduplicated (SEC-04).
-- Sign-out remains client-side only; there is no session revocation (GAP-06).
-- Dependency advisories are recorded but not remediated — correct order is tests, then CI,
-  then updates behind a green pipeline (SEC-12).
+- **The client has no tests** (GAP-11). CI lints and builds it, which proves it compiles and
+  nothing more — a component can throw on render and the pipeline stays green.
+- **CI reports but does not gate.** Branch protection is not enabled, so a red run still
+  deploys.
+- Avatar upload is now safe but still unfinished: the file is validated in memory and has
+  nowhere durable to go until object storage is wired in (BUG-07, GAP-17).
+- Rate-limit counters live in each instance's memory, so limits are approximate across
+  serverless instances. A shared store would make them exact.
+- No Content-Security-Policy, no email verification, no password reset (GAP-01, GAP-02).
+- Search is still an unindexed regex over titles (GAP-05).
+- `GET /likes/post/:postId` is the last unbounded list endpoint (GAP-07).
+- The seeded demo credentials in the README are published deliberately for local use and must
+  be changed before any deployment holding real data.
 
 Full registers: [docs/product/roadmap.md](./docs/product/roadmap.md) and
 [docs/security/checklist.md](./docs/security/checklist.md).
@@ -180,7 +267,7 @@ from Git history; dates are omitted where they were not recorded.
 - Add entries under `[Unreleased]` as changes land, not at release time.
 - One line per user-visible change; implementation detail belongs in the commit.
 - Reference the tracking ID where one exists — `Fixed: post visibility is now persisted
-  (BUG-01)`.
+(BUG-01)`.
 - On release, rename `[Unreleased]` to the version with its date and open a fresh
   `[Unreleased]` section.
 - `Security` entries are mandatory for any change that closes a `SEC-xx` finding.

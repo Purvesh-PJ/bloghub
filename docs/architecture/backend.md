@@ -10,20 +10,20 @@
 
 ## Stack
 
-| Concern | Choice | Version |
-|---------|--------|---------|
-| Runtime | Node.js | Unpinned — no `engines`, no `.nvmrc` |
-| Framework | Express | 4.18 |
-| ODM | Mongoose | 7.2 |
-| Authentication | jsonwebtoken | 9.0 |
-| Password hashing | bcryptjs | 2.4 |
-| Validation | express-validator | 7.0 |
-| Security headers | helmet | 8.3 |
-| Rate limiting | express-rate-limit | 8.6 |
-| Uploads | multer | 1.4 LTS |
-| Request logging | morgan | 1.10 |
-| CORS | cors | 2.8 |
-| Configuration | dotenv | 16.4 |
+| Concern          | Choice             | Version                              |
+| ---------------- | ------------------ | ------------------------------------ |
+| Runtime          | Node.js            | Unpinned — no `engines`, no `.nvmrc` |
+| Framework        | Express            | 4.18                                 |
+| ODM              | Mongoose           | 7.2                                  |
+| Authentication   | jsonwebtoken       | 9.0                                  |
+| Password hashing | bcryptjs           | 2.4                                  |
+| Validation       | express-validator  | 7.0                                  |
+| Security headers | helmet             | 8.3                                  |
+| Rate limiting    | express-rate-limit | 8.6                                  |
+| Uploads          | multer             | 1.4 LTS                              |
+| Request logging  | morgan             | 1.10                                 |
+| CORS             | cors               | 2.8                                  |
+| Configuration    | dotenv             | 16.4                                 |
 
 CommonJS throughout.
 
@@ -72,7 +72,8 @@ already carry it, so an old `VITE_API_URL` keeps working without the second moun
 ### Serverless-aware startup
 
 ```js
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) app.listen(PORT);
+if (process.env.NODE_ENV !== "production" || !process.env.VERCEL)
+  app.listen(PORT);
 module.exports = app;
 ```
 
@@ -136,8 +137,8 @@ Model ────────────── Mongoose query → MongoDB
 Twelve routers declaring paths and their middleware chain. No logic.
 
 ```js
-router.get('/', AuthUser.attachUserIfPresent, PostControllers.getBlogs);
-router.post('/', AuthUser.authenticateUser, PostControllers.postBlogs);
+router.get("/", AuthUser.attachUserIfPresent, PostControllers.getBlogs);
+router.post("/", AuthUser.authenticateUser, PostControllers.postBlogs);
 ```
 
 `settings.routes.js` applies `router.use(authenticateUser)` to guard every path in the file —
@@ -145,18 +146,18 @@ the right pattern when a whole resource is authenticated.
 
 ### `middlewares/`
 
-| Middleware | Responsibility |
-|------------|----------------|
-| `authenticateUser` | Verifies the bearer token, rejects a non-`access` type, then loads the account to confirm it still exists and its `tokenVersion` matches. `req.user = { id, _id, roles }`, with roles read from the record rather than the payload |
-| `attachUserIfPresent` | Same population, but never rejects — for public routes whose response varies for a signed-in viewer |
-| `authorizeAdmin` | Requires `admin` in `req.user.roles` |
-| `authorizeSelfOrAdmin(param)` | Requires `req.params[param]` to be the caller, unless admin. An absent optional parameter means "me" |
-| `validate` | Terminates an `express-validator` chain, collecting failures into one 400 |
-| `validateObjectId(name, source)` | Rejects a malformed or non-string id before it reaches a query |
-| `asyncHandler(fn)` | Wraps an async handler so a rejection reaches `errorHandler` instead of becoming an unhandled rejection |
-| `uploadAvatar` | Multer, memory storage, single file, 2 MB cap, image MIME allowlist |
-| `errorHandler` | Terminal error middleware. Reports the status an error carries and translates Mongoose/multer faults to 4xx |
-| `logger` | Morgan — `dev` in development, `combined` otherwise, silent under test |
+| Middleware                       | Responsibility                                                                                                                                                                                                                     |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `authenticateUser`               | Verifies the bearer token, rejects a non-`access` type, then loads the account to confirm it still exists and its `tokenVersion` matches. `req.user = { id, _id, roles }`, with roles read from the record rather than the payload |
+| `attachUserIfPresent`            | Same population, but never rejects — for public routes whose response varies for a signed-in viewer                                                                                                                                |
+| `authorizeAdmin`                 | Requires `admin` in `req.user.roles`                                                                                                                                                                                               |
+| `authorizeSelfOrAdmin(param)`    | Requires `req.params[param]` to be the caller, unless admin. An absent optional parameter means "me"                                                                                                                               |
+| `validate`                       | Terminates an `express-validator` chain, collecting failures into one 400                                                                                                                                                          |
+| `validateObjectId(name, source)` | Rejects a malformed or non-string id before it reaches a query                                                                                                                                                                     |
+| `asyncHandler(fn)`               | Wraps an async handler so a rejection reaches `errorHandler` instead of becoming an unhandled rejection                                                                                                                            |
+| `uploadAvatar`                   | Multer, memory storage, single file, 2 MB cap, image MIME allowlist                                                                                                                                                                |
+| `errorHandler`                   | Terminal error middleware. Reports the status an error carries and translates Mongoose/multer faults to 4xx                                                                                                                        |
+| `logger`                         | Morgan — `dev` in development, `combined` otherwise, silent under test                                                                                                                                                             |
 
 ### `controllers/`
 
@@ -174,13 +175,13 @@ Handlers touched during remediation use the simpler form.
 Four modules. A service exists when logic is reused across controllers, or spans more than one
 collection:
 
-| Service | Function | Steps |
-|---------|----------|-------|
-| `postService` | `createPost` | Create → load the author → push onto `User.posts` → delete the post again if the author is missing |
-| | `updatePost` | Validate required fields → `findByIdAndUpdate` with validators |
-| `commentServices` | `createComment` | Create → load the post → push onto `Post.comments` → delete the comment again if the post is missing |
-| `accountService` | `purgeAccount` | Delete the account's posts and everything attached to them, then its own comments, likes, views, reads, profile and settings, then the account |
-| `trendingService` | `scoreTrending` | Aggregate views, likes, comments and reads over a window and rank them |
+| Service           | Function        | Steps                                                                                                                                          |
+| ----------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `postService`     | `createPost`    | Create → load the author → push onto `User.posts` → delete the post again if the author is missing                                             |
+|                   | `updatePost`    | Validate required fields → `findByIdAndUpdate` with validators                                                                                 |
+| `commentServices` | `createComment` | Create → load the post → push onto `Post.comments` → delete the comment again if the post is missing                                           |
+| `accountService`  | `purgeAccount`  | Delete the account's posts and everything attached to them, then its own comments, likes, views, reads, profile and settings, then the account |
+| `trendingService` | `scoreTrending` | Aggregate views, likes, comments and reads over a window and rank them                                                                         |
 
 Services take plain values, never `req` or `res`, and signal failure by throwing. The
 compensating deletes are a manual substitute for the transactions this codebase does not use.
@@ -219,10 +220,14 @@ to special-case unwrapping. The per-endpoint shape is marked in
 does not catch:
 
 ```js
-router.get('/:id', validateObjectId('id'), asyncHandler(PostControllers.getSinglePost));
+router.get(
+  "/:id",
+  validateObjectId("id"),
+  asyncHandler(PostControllers.getSinglePost),
+);
 
 const post = await Post.findById(req.params.id);
-if (!post) throw notFound('Post not found');
+if (!post) throw notFound("Post not found");
 ```
 
 `utils/AppError.js` exports the class and the helpers `badRequest`, `unauthorized`, `forbidden`,
@@ -240,17 +245,17 @@ cause.
 
 ### Status codes
 
-| Code | Meaning here |
-|------|--------------|
-| 200 / 201 | Success / created |
-| 400 | Validation failure, invalid identifier |
-| 401 | Missing, malformed, expired or wrong-type token; bad credentials |
-| 403 | Authenticated but not permitted |
-| 404 | Not found — also returned for a non-public post, so existence is not confirmed |
-| 409 | Conflict — duplicate account or category, self-follow |
-| 429 | Rate limited |
-| 500 | Unhandled failure |
-| 501 | Endpoint exists, capability not implemented (`PUT /settings/security`) |
+| Code      | Meaning here                                                                   |
+| --------- | ------------------------------------------------------------------------------ |
+| 200 / 201 | Success / created                                                              |
+| 400       | Validation failure, invalid identifier                                         |
+| 401       | Missing, malformed, expired or wrong-type token; bad credentials               |
+| 403       | Authenticated but not permitted                                                |
+| 404       | Not found — also returned for a non-public post, so existence is not confirmed |
+| 409       | Conflict — duplicate account or category, self-follow                          |
+| 429       | Rate limited                                                                   |
+| 500       | Unhandled failure                                                              |
+| 501       | Endpoint exists, capability not implemented (`PUT /settings/security`)         |
 
 ---
 
@@ -317,15 +322,15 @@ ids, no levels, no structure — [operations/runbook.md](../operations/runbook.m
 
 ## Architectural decisions
 
-| Decision | Rationale | Trade-off |
-|----------|-----------|-----------|
-| Layered MVC-with-services | Familiar, low ceremony | The service layer is optional in practice, so responsibility drifts into controllers |
-| JWT plus a `tokenVersion` counter | No session store to run, but sessions are still revocable — sign-out, a password change, a suspension or a demotion invalidate every token already issued | One extra account read per authenticated request, which is the same read authorisation already needs |
-| Separate secret per token type | A refresh token cannot be replayed as an access token | Two secrets to manage |
-| Mongoose over the raw driver | Schemas, population, validation | Strict mode silently drops undeclared fields — the root cause of [BUG-05](../product/roadmap.md#bug-05) |
-| Referenced documents plus denormalised counters | Fast reads without joins | Counters drift; no transaction keeps both sides in step |
-| `asyncHandler` plus a typed `AppError` | One `catch`, in the error middleware; a controller states the failure and stops | A rejection that escapes `asyncHandler` is still an untyped 500 |
-| 404 rather than 403 for non-public content | Does not confirm a draft exists | Slightly less informative for legitimate owners |
+| Decision                                        | Rationale                                                                                                                                                 | Trade-off                                                                                               |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Layered MVC-with-services                       | Familiar, low ceremony                                                                                                                                    | The service layer is optional in practice, so responsibility drifts into controllers                    |
+| JWT plus a `tokenVersion` counter               | No session store to run, but sessions are still revocable — sign-out, a password change, a suspension or a demotion invalidate every token already issued | One extra account read per authenticated request, which is the same read authorisation already needs    |
+| Separate secret per token type                  | A refresh token cannot be replayed as an access token                                                                                                     | Two secrets to manage                                                                                   |
+| Mongoose over the raw driver                    | Schemas, population, validation                                                                                                                           | Strict mode silently drops undeclared fields — the root cause of [BUG-05](../product/roadmap.md#bug-05) |
+| Referenced documents plus denormalised counters | Fast reads without joins                                                                                                                                  | Counters drift; no transaction keeps both sides in step                                                 |
+| `asyncHandler` plus a typed `AppError`          | One `catch`, in the error middleware; a controller states the failure and stops                                                                           | A rejection that escapes `asyncHandler` is still an untyped 500                                         |
+| 404 rather than 403 for non-public content      | Does not confirm a draft exists                                                                                                                           | Slightly less informative for legitimate owners                                                         |
 
 ---
 

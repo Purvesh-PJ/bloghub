@@ -14,15 +14,15 @@ agree to uphold it.
 
 ## Ways to contribute
 
-| Contribution | Start here |
-|--------------|-----------|
-| **Add client tests** | [docs/guides/testing.md](./docs/guides/testing.md) — the backend has 61 integration tests; the client has none, so CI proves it compiles and nothing more. **This is the highest-value contribution available** |
-| Extend the backend suite | [docs/guides/testing.md](./docs/guides/testing.md) — `backend/tests/`, Jest and Supertest against an in-process MongoDB. `npm test` needs no database of its own |
-| Fix a known defect | [docs/product/roadmap.md](./docs/product/roadmap.md) — every item has an ID, a file reference and a proposed fix |
-| Harden further | [docs/security/checklist.md](./docs/security/checklist.md) — all fifteen findings are closed; what remains is defence in depth (a CSP, a shared rate-limit store, email verification, password reset) |
-| Report a bug | [Open an issue](../../issues/new?template=bug_report.md) |
-| Propose a feature | [Open an issue](../../issues/new?template=feature_request.md) — discuss before building |
-| Improve documentation | [docs/](./docs/README.md) — check the SSOT map first so you edit the owning document |
+| Contribution             | Start here                                                                                                                                                                                                      |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Add client tests**     | [docs/guides/testing.md](./docs/guides/testing.md) — the backend has 61 integration tests; the client has none, so CI proves it compiles and nothing more. **This is the highest-value contribution available** |
+| Extend the backend suite | [docs/guides/testing.md](./docs/guides/testing.md) — `backend/tests/`, Jest and Supertest against an in-process MongoDB. `npm test` needs no database of its own                                                |
+| Fix a known defect       | [docs/product/roadmap.md](./docs/product/roadmap.md) — every item has an ID, a file reference and a proposed fix                                                                                                |
+| Harden further           | [docs/security/checklist.md](./docs/security/checklist.md) — all fifteen findings are closed; what remains is defence in depth (a CSP, a shared rate-limit store, email verification, password reset)           |
+| Report a bug             | [Open an issue](../../issues/new?template=bug_report.md)                                                                                                                                                        |
+| Propose a feature        | [Open an issue](../../issues/new?template=feature_request.md) — discuss before building                                                                                                                         |
+| Improve documentation    | [docs/](./docs/README.md) — check the SSOT map first so you edit the owning document                                                                                                                            |
 
 **Good first issues:** [BUG-15](./docs/product/roadmap.md#bug-15) (form hydration — do this
 after tests exist), [GAP-04](./docs/product/roadmap.md#gap-04) (wire tags into the editor; the
@@ -82,17 +82,17 @@ Then run the API and the client in separate terminals with `npm run dev`.
 <type>(<scope>): <subject>
 ```
 
-| Type | Use |
-|------|-----|
-| `feat` | New capability |
-| `fix` | Defect repair |
-| `refactor` | Behaviour-preserving change |
-| `perf` | Performance |
-| `style` | Formatting only |
-| `docs` | Documentation |
-| `test` | Tests |
-| `build` | Build system or dependencies |
-| `chore` | Maintenance |
+| Type       | Use                          |
+| ---------- | ---------------------------- |
+| `feat`     | New capability               |
+| `fix`      | Defect repair                |
+| `refactor` | Behaviour-preserving change  |
+| `perf`     | Performance                  |
+| `style`    | Formatting only              |
+| `docs`     | Documentation                |
+| `test`     | Tests                        |
+| `build`    | Build system or dependencies |
+| `chore`    | Maintenance                  |
 
 Rules: imperative mood, lowercase subject, no trailing period, reference the tracking ID when
 one exists.
@@ -113,11 +113,11 @@ test(auth): cover sign-in failure paths
 One concern per pull request. Formatting-only changes go in a separate commit or pull request
 so the real diff stays reviewable.
 
-| Lines changed | Expectation |
-|---------------|-------------|
-| < 100 | Ideal |
-| 100–400 | Fine with a clear description |
-| > 400 | Split it, unless it is a move or a reformat — say so in the title |
+| Lines changed | Expectation                                                       |
+| ------------- | ----------------------------------------------------------------- |
+| < 100         | Ideal                                                             |
+| 100–400       | Fine with a clear description                                     |
+| > 400         | Split it, unless it is a move or a reformat — say so in the title |
 
 ### Description
 
@@ -130,12 +130,12 @@ Reviewers use the checklist in
 [docs/guides/development.md](./docs/guides/development.md) and prefix comments
 by severity:
 
-| Prefix | Meaning |
-|--------|---------|
-| `blocking:` | Must change before merge |
-| `question:` | Needs clarification |
-| `suggestion:` | Better, but your call |
-| `nit:` | Trivial preference |
+| Prefix        | Meaning                  |
+| ------------- | ------------------------ |
+| `blocking:`   | Must change before merge |
+| `question:`   | Needs clarification      |
+| `suggestion:` | Better, but your call    |
+| `nit:`        | Trivial preference       |
 
 Formatting is never a review comment — Prettier decides it.
 
@@ -159,12 +159,14 @@ Formatting is never a review comment — Prettier decides it.
 The details live in the documentation; these are the rules that most often come up in review.
 
 **Both workspaces**
+
 - `const` by default, `async`/`await`, strict equality
 - Names say what things are — no `data`, `temp`, `obj`
-- Comments explain *why*, not *what*
+- Comments explain _why_, not _what_
 - Delete commented-out code; Git remembers it
 
 **Backend** — [docs/architecture/backend.md](./docs/architecture/backend.md)
+
 - The acting user comes from `req.user`, never from the request body
 - Authorise the resource, not just the request
 - Services never touch `req` or `res`
@@ -172,6 +174,7 @@ The details live in the documentation; these are the rules that most often come 
 - Project queries — never return a password hash or a private email address
 
 **Frontend** — [docs/architecture/frontend.md](./docs/architecture/frontend.md)
+
 - Server state belongs in TanStack Query, never `useState` + `useEffect`
 - All values come from theme tokens — no inline hex or px
 - `components/ui/` primitives never fetch data

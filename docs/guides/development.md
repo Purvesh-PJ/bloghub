@@ -17,21 +17,22 @@ comment.
 
 ## Backend
 
-| You are adding | Location | File name | Export |
-|----------------|----------|-----------|--------|
-| A collection | `backend/models/` | `<resource>.model.js` | `mongoose.model('Name', Schema)` |
-| Handlers for a resource | `backend/controllers/` | `<resource>.controllers.js` | Named `exports.<action>` |
-| Paths for a resource | `backend/routes/` | `<resource>.routes.js` | The `router` |
-| Multi-step or reused persistence | `backend/services/` | `<resource>Service.js` | Named async functions |
-| Something on every request | `backend/middlewares/` | `<concern>.js` | The middleware function |
-| A validation rule set | `backend/middlewares/` | `<Resource>Validation.js` | Array of `express-validator` chains |
-| Infrastructure wiring | `backend/config/` | `<concern>.js` | Named setup functions |
-| A one-off script | `backend/` | `<verb>.js` + a package script | — |
+| You are adding                   | Location               | File name                      | Export                                                                                 |
+| -------------------------------- | ---------------------- | ------------------------------ | -------------------------------------------------------------------------------------- |
+| A collection                     | `backend/models/`      | `<resource>.model.js`          | `mongoose.model('Name', Schema)`                                                       |
+| Handlers for a resource          | `backend/controllers/` | `<resource>.controllers.js`    | Named `exports.<action>`                                                               |
+| Paths for a resource             | `backend/routes/`      | `<resource>.routes.js`         | The `router`                                                                           |
+| Multi-step or reused persistence | `backend/services/`    | `<resource>Service.js`         | Named async functions                                                                  |
+| Something on every request       | `backend/middlewares/` | `<concern>.js`                 | The middleware function                                                                |
+| A validation rule set            | `backend/validators/`  | `<area>.validators.js`         | Named arrays of `express-validator` chains, or a factory when create and update differ |
+| Infrastructure wiring            | `backend/config/`      | `<concern>.js`                 | Named setup functions                                                                  |
+| A test                           | `backend/tests/`       | `<area>.test.js`               | —                                                                                      |
+| A one-off script                 | `backend/scripts/`     | `<verb>.js` + a package script | —                                                                                      |
 
 New resources are registered in `index.js`:
 
 ```js
-router.use('/widgets', widgetRoutes);
+router.use("/widgets", widgetRoutes);
 ```
 
 **Naming:** models, controllers and routes are singular (`post.model.js`,
@@ -45,21 +46,23 @@ singular PascalCase.
 
 ## Frontend
 
-| You are adding | Location | File name | Export |
-|----------------|----------|-----------|--------|
-| A route-level screen | `client/src/pages/` | `<Name>.jsx` | Named |
-| An admin screen | `client/src/pages/admin/` | `<Name>.jsx` | Named, `Admin` prefix |
-| A generic primitive | `client/src/components/ui/` | `<Name>.jsx` | Named + add to `index.js` |
-| A domain component | `client/src/components/<domain>/` | `<Name>.jsx` | Named |
-| Page chrome or a shell | `client/src/components/layout/` | `<Name>.jsx` | Named |
-| A route access rule | `client/src/guards/` | `<Name>Route.jsx` | Named |
-| Calls to a backend resource | `client/src/services/` | `<resource>Service.js` | Named object of async functions |
-| Global client state | `client/src/context/` | `<Name>Context.jsx` | Provider + `use<Name>` hook |
-| A design token | `client/src/styles/theme/` | existing files | Named |
-| A reusable hook | `client/src/hooks/` *(create it)* | `use<Name>.js` | Named |
-| A pure helper | `client/src/utils/` *(create it)* | `<domain>.js` | Named |
+| You are adding              | Location                          | File name              | Export                          |
+| --------------------------- | --------------------------------- | ---------------------- | ------------------------------- |
+| A route-level screen        | `client/src/pages/`               | `<Name>.jsx`           | Named                           |
+| An admin screen             | `client/src/pages/admin/`         | `<Name>.jsx`           | Named, `Admin` prefix           |
+| A generic primitive         | `client/src/components/ui/`       | `<Name>.jsx`           | Named + add to `index.js`       |
+| A domain component          | `client/src/components/<domain>/` | `<Name>.jsx`           | Named                           |
+| Page chrome or a shell      | `client/src/components/layout/`   | `<Name>.jsx`           | Named                           |
+| A route access rule         | `client/src/guards/`              | `<Name>Route.jsx`      | Named                           |
+| Calls to a backend resource | `client/src/services/`            | `<resource>Service.js` | Named object of async functions |
+| Global client state         | `client/src/context/`             | `<Name>Context.jsx`    | Provider + `use<Name>` hook     |
+| A design token              | `client/src/styles/theme/`        | existing files         | Named                           |
+| A reusable hook             | `client/src/hooks/`               | `use<Name>.js`         | Named                           |
+| A pure helper               | `client/src/utils/`               | `<domain>.js`          | Named                           |
 
-`hooks/` and `utils/` do not exist yet. Create them at the **second** consumer, not the first.
+`hooks/` and `utils/` now exist (`useDebounced`, `useDraftRecovery`, `useCurrentUser`,
+`useReading`; `text.js`). The rule that created them still applies: extract at the **second**
+consumer, not the first.
 
 **Naming:** components are PascalCase `.jsx` with named exports; non-component modules are
 camelCase `.js`; hooks take a `use` prefix; boolean props take `is`/`has`; styling props take
@@ -74,28 +77,36 @@ Does it know a domain concept?            → components/<domain>/
 Generic, styling-only, reusable anywhere? → components/ui/ + export from index.js
 ```
 
+The test is **what the component is allowed to know**. `StatTile` is a primitive: a label, a
+number, an optional trend, and no opinion about whether the number is views or users.
+`ReadRateBar` is a domain component: it knows what a read rate is and what counts as a good one.
+Both appear on the workspace dashboard; only one would make sense in a different product.
+
+Before writing a new primitive, check `components/ui/index.js` — there are 21, and the ones that
+are interactive wrap Radix so keyboard and screen-reader behaviour comes for free.
+
 The tier determines what the file may import:
 
-| Tier | May import | Must never import |
-|------|-----------|-------------------|
-| `ui/` | styled-components, other primitives | services, context, router |
-| `<domain>/` | `ui/`, router links, formatting | services — data arrives as props |
-| `layout/` | `ui/`, `context/`, router | page components |
-| `pages/` | everything above, plus `services/` | another page |
+| Tier        | May import                          | Must never import                             |
+| ----------- | ----------------------------------- | --------------------------------------------- |
+| `ui/`       | styled-components, other primitives | services, context, router, any domain concept |
+| `<domain>/` | `ui/`, router links, formatting     | services — data arrives as props              |
+| `layout/`   | `ui/`, `context/`, router           | page components                               |
+| `pages/`    | everything above, plus `services/`  | another page                                  |
 
 A primitive that needs to fetch is not a primitive.
 
 ## Where things must not go
 
-| Temptation | Why not | Instead |
-|-----------|---------|---------|
-| Logic in `routes/` | Routes are a wiring table; logic there is untestable | `controllers/` or `services/` |
-| `req`/`res` in `services/` | Couples persistence to HTTP | Plain values in and out; throw on failure |
-| A direct `axios` call in a component | Bypasses the auth and refresh interceptors | Add a service function |
-| A raw hex or px value in a page | Breaks theming and both-mode support | A theme token |
-| A shared component in `pages/` | Nothing but `App.jsx` may import a page | `components/` at the right tier |
-| A `.env` inside a workspace | Both read the root `.env` | Add the key to the root file and `.env.example` |
-| A second Axios instance | Two auth paths, two refresh behaviours | `client/src/config/api.js` |
+| Temptation                           | Why not                                              | Instead                                         |
+| ------------------------------------ | ---------------------------------------------------- | ----------------------------------------------- |
+| Logic in `routes/`                   | Routes are a wiring table; logic there is untestable | `controllers/` or `services/`                   |
+| `req`/`res` in `services/`           | Couples persistence to HTTP                          | Plain values in and out; throw on failure       |
+| A direct `axios` call in a component | Bypasses the auth and refresh interceptors           | Add a service function                          |
+| A raw hex or px value in a page      | Breaks theming and both-mode support                 | A theme token                                   |
+| A shared component in `pages/`       | Nothing but `App.jsx` may import a page              | `components/` at the right tier                 |
+| A `.env` inside a workspace          | Both read the root `.env`                            | Add the key to the root file and `.env.example` |
+| A second Axios instance              | Two auth paths, two refresh behaviours               | `client/src/config/api.js`                      |
 
 ## Import order
 
@@ -116,13 +127,13 @@ Backend files follow the same idea with `require`: packages, models, services, m
 
 ## JavaScript
 
-| Rule | Detail |
-|------|--------|
+| Rule          | Detail                                                                        |
+| ------------- | ----------------------------------------------------------------------------- |
 | Module system | CommonJS in `backend/`, ES modules in `client/`. Never mix within a workspace |
-| Declarations | `const` by default, `let` when reassignment is real, never `var` |
-| Async | `async`/`await`; no raw `.then()` chains in new code |
-| Equality | `===` and `!==` always |
-| Strings | Single quotes; template literals for interpolation |
+| Declarations  | `const` by default, `let` when reassignment is real, never `var`              |
+| Async         | `async`/`await`; no raw `.then()` chains in new code                          |
+| Equality      | `===` and `!==` always                                                        |
+| Strings       | Single quotes; template literals for interpolation                            |
 
 ### Preferred idioms
 
@@ -160,16 +171,25 @@ the root cause of [BUG-05](../product/roadmap.md#bug-05).
 ```js
 exports.getPost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id).populate('user', 'username');
+    const post = await Post.findById(req.params.id).populate(
+      "user",
+      "username",
+    );
 
     if (!post) {
-      return res.status(404).json({ success: false, message: 'Post not found', error: 'NotFound' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found", error: "NotFound" });
     }
 
-    return res.status(200).json({ success: true, message: 'Post found', data: post });
+    return res
+      .status(200)
+      .json({ success: true, message: "Post found", data: post });
   } catch (error) {
-    console.error('[getPost]', error);
-    return res.status(500).json({ success: false, message: 'An internal error occurred' });
+    console.error("[getPost]", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "An internal error occurred" });
   }
 };
 ```
@@ -181,9 +201,19 @@ log with the handler name.
 ### Service
 
 ```js
-exports.createPost = async (userId, { title, slug, content, imageURL, visibility }) => {
-  if (!userId) throw new Error('userId is required');
-  const post = await Post.create({ user: userId, title, slug, content, imageURL, visibility });
+exports.createPost = async (
+  userId,
+  { title, slug, content, imageURL, visibility },
+) => {
+  if (!userId) throw new Error("userId is required");
+  const post = await Post.create({
+    user: userId,
+    title,
+    slug,
+    content,
+    imageURL,
+    visibility,
+  });
   await User.updateOne({ _id: userId }, { $push: { posts: post._id } });
   return post;
 };
@@ -196,9 +226,13 @@ Plain values in and out; never touch `req` or `res`; throw on failure.
 ```js
 const PostSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     title: { type: String, required: true, trim: true },
-    visibility: { type: String, enum: ['draft', 'private', 'public'], default: 'draft' },
+    visibility: {
+      type: String,
+      enum: ["draft", "private", "public"],
+      default: "draft",
+    },
   },
   { timestamps: true },
 );
@@ -213,10 +247,10 @@ field the application writes.** Declare every index the queries need.
 
 ```jsx
 export function PostList() {
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState("all");
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['posts'],
+    queryKey: ["posts"],
     queryFn: () => postService.getPosts(),
   });
 
@@ -243,10 +277,11 @@ clean up every subscription and timer.
 const mutation = useMutation({
   mutationFn: postService.createPost,
   onSuccess: () => {
-    toast.success('Post created');
-    queryClient.invalidateQueries({ queryKey: ['posts'] });
+    toast.success("Post created");
+    queryClient.invalidateQueries({ queryKey: ["posts"] });
   },
-  onError: (error) => toast.error(error.response?.data?.message ?? 'Something went wrong'),
+  onError: (error) =>
+    toast.error(error.response?.data?.message ?? "Something went wrong"),
 });
 ```
 
@@ -255,15 +290,15 @@ dependent queries with `enabled`. Always define `onError`.
 
 ## Naming
 
-| Kind | Convention | Example |
-|------|-----------|---------|
-| Variable, function | camelCase | `postCount`, `createPost` |
-| Component, model | PascalCase | `PostCard`, `UserProfile` |
-| Constant | SCREAMING_SNAKE_CASE | `AUTH_STORAGE_KEY` |
-| Boolean | `is` / `has` / `should` | `isLoading` |
-| Handler | `handle` prefix | `handleSubmit` |
-| Handler prop | `on` prefix | `onToggle` |
-| Environment variable | SCREAMING_SNAKE_CASE | `JWT_SECRET` |
+| Kind                 | Convention              | Example                   |
+| -------------------- | ----------------------- | ------------------------- |
+| Variable, function   | camelCase               | `postCount`, `createPost` |
+| Component, model     | PascalCase              | `PostCard`, `UserProfile` |
+| Constant             | SCREAMING_SNAKE_CASE    | `AUTH_STORAGE_KEY`        |
+| Boolean              | `is` / `has` / `should` | `isLoading`               |
+| Handler              | `handle` prefix         | `handleSubmit`            |
+| Handler prop         | `on` prefix             | `onToggle`                |
+| Environment variable | SCREAMING_SNAKE_CASE    | `JWT_SECRET`              |
 
 Say what a thing is. `data`, `info`, `obj`, `temp` are not names.
 
@@ -275,7 +310,7 @@ Comment the **why**, never the **what**.
 // ✓
 // Escape regex metacharacters — an unescaped query lets a user build a catastrophically
 // backtracking pattern and stall the event loop.
-const sanitized = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const sanitized = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 ```
 
 Delete commented-out code. Tag deliberate temporary work as `// TODO(BUG-01): …`.
@@ -305,23 +340,23 @@ Delete commented-out code. Tag deliberate temporary work as `// TODO(BUG-01): �
 4. Say **how you verified it**. "Should work" is not verification.
 5. Update the owning document — see the [SSOT map](../README.md#single-source-of-truth).
 
-| Lines changed | Expectation |
-|---------------|-------------|
-| < 100 | Ideal |
-| 100–400 | Fine with a clear description |
-| > 400 | Split it, unless it is a move or a reformat — say so in the title |
+| Lines changed | Expectation                                                       |
+| ------------- | ----------------------------------------------------------------- |
+| < 100         | Ideal                                                             |
+| 100–400       | Fine with a clear description                                     |
+| > 400         | Split it, unless it is a move or a reformat — say so in the title |
 
 ## Reviewer responsibilities
 
 Turnaround within one working day. Prefix every comment by severity:
 
-| Prefix | Meaning | Blocks |
-|--------|---------|--------|
-| `blocking:` | Must change before merge | Yes |
-| `question:` | Needs clarification | Until answered |
-| `suggestion:` | Better, but your call | No |
-| `nit:` | Trivial preference | No |
-| `praise:` | This is good — say so | No |
+| Prefix        | Meaning                  | Blocks         |
+| ------------- | ------------------------ | -------------- |
+| `blocking:`   | Must change before merge | Yes            |
+| `question:`   | Needs clarification      | Until answered |
+| `suggestion:` | Better, but your call    | No             |
+| `nit:`        | Trivial preference       | No             |
+| `praise:`     | This is good — say so    | No             |
 
 Approving with outstanding `suggestion:` and `nit:` comments is normal.
 
@@ -330,11 +365,13 @@ Approving with outstanding `suggestion:` and `nit:` comments is normal.
 Correctness first — style is already automated.
 
 **Correctness**
+
 - [ ] Does it do what the description says?
 - [ ] Are not-found, unauthorised, empty and network-error paths handled?
 - [ ] Is every async operation awaited? Any unawaited `map(async …)`?
 
 **Security** — anything here is `blocking:` by default
+
 - [ ] Acting user from `req.user`, never from the body or a path parameter?
 - [ ] Should the route be authenticated?
 - [ ] Is resource **ownership** checked, not just authentication?
@@ -343,6 +380,7 @@ Correctness first — style is already automated.
 - [ ] Is anything interpolated into a regex escaped?
 
 **Data**
+
 - [ ] Does a new query path have an index?
 - [ ] Are new schema fields **declared**? Mongoose drops undeclared fields silently
 - [ ] Are list endpoints paginated with a capped limit?
@@ -350,11 +388,13 @@ Correctness first — style is already automated.
 - [ ] Any N+1 queries in a loop?
 
 **API contract**
+
 - [ ] Correct status code — 404 missing, 403 forbidden, 409 conflict, 501 unimplemented?
 - [ ] Does the response use the envelope?
 - [ ] Is [reference/api.md](../reference/api.md) updated?
 
 **Frontend**
+
 - [ ] Loading, error and empty states handled?
 - [ ] Server state in React Query rather than `useState` + `useEffect`?
 - [ ] Do mutations invalidate what they changed?
@@ -364,13 +404,15 @@ Correctness first — style is already automated.
 - [ ] Stable list keys?
 
 **Architecture**
+
 - [ ] Right layer — see [dependency rules](../architecture/overview.md#dependency-rules)
 - [ ] Does a service touch `req`/`res`? Does a `ui/` primitive fetch?
-- [ ] Is duplicated logic on its *second* occurrence, not a speculative first?
+- [ ] Is duplicated logic on its _second_ occurrence, not a speculative first?
 
 **Maintainability**
+
 - [ ] Do names say what things are?
-- [ ] Comments explain *why*?
+- [ ] Comments explain _why_?
 - [ ] No commented-out code, no stray `console.log`, no dead exports?
 - [ ] TODOs tagged with a tracking ID?
 
@@ -388,14 +430,14 @@ explicitly deferred and tracked with an ID.
 
 ## Special cases
 
-| Change | Extra scrutiny |
-|--------|----------------|
-| Authentication or authorisation | Two reviewers; trace every attacker path |
-| Schema change | Migration for existing documents; index implications. **Adding a unique index to a collection with duplicates fails** |
-| Dependency addition | Needed? Maintained? Bundle cost? Duplicates something installed? |
-| Deployment or `vercel.json` | Rollback plan; verify on a preview deployment |
-| Reformat | Verify the diff is *only* formatting; add the SHA to `.git-blame-ignore-revs` |
-| Documentation | Check the [SSOT map](../README.md#single-source-of-truth) for duplication |
+| Change                          | Extra scrutiny                                                                                                        |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Authentication or authorisation | Two reviewers; trace every attacker path                                                                              |
+| Schema change                   | Migration for existing documents; index implications. **Adding a unique index to a collection with duplicates fails** |
+| Dependency addition             | Needed? Maintained? Bundle cost? Duplicates something installed?                                                      |
+| Deployment or `vercel.json`     | Rollback plan; verify on a preview deployment                                                                         |
+| Reformat                        | Verify the diff is _only_ formatting; add the SHA to `.git-blame-ignore-revs`                                         |
+| Documentation                   | Check the [SSOT map](../README.md#single-source-of-truth) for duplication                                             |
 
 ---
 

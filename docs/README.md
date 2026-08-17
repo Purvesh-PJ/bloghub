@@ -28,50 +28,50 @@ How this structure is chosen and when to grow it:
 
 ### guides/ — how to do things
 
-| Document | Contents |
-|----------|----------|
-| [getting-started.md](guides/getting-started.md) | Prerequisites, install, run, seed, verify |
-| [development.md](guides/development.md) | Where files go, how to write them, how they are reviewed |
-| [code-quality.md](guides/code-quality.md) | ESLint, Prettier, the TypeScript position, dependency health |
-| [testing.md](guides/testing.md) | Strategy, tooling and conventions for every level |
+| Document                                        | Contents                                                     |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| [getting-started.md](guides/getting-started.md) | Prerequisites, install, run, seed, verify                    |
+| [development.md](guides/development.md)         | Where files go, how to write them, how they are reviewed     |
+| [code-quality.md](guides/code-quality.md)       | ESLint, Prettier, the TypeScript position, dependency health |
+| [testing.md](guides/testing.md)                 | Strategy, tooling and conventions for every level            |
 
 ### reference/ — look things up
 
-| Document | Contents |
-|----------|----------|
-| [api.md](reference/api.md) | Complete endpoint catalogue and API design rules |
-| [configuration.md](reference/configuration.md) | Complete environment variable reference |
-| [database.md](reference/database.md) | Collections, relationships, indexes, integrity |
+| Document                                       | Contents                                          |
+| ---------------------------------------------- | ------------------------------------------------- |
+| [api.md](reference/api.md)                     | Complete endpoint catalogue and API design rules  |
+| [configuration.md](reference/configuration.md) | Complete environment variable reference           |
+| [database.md](reference/database.md)           | Collections, relationships, indexes, integrity    |
 | [design-system.md](reference/design-system.md) | Tokens, themes, primitives, layout, accessibility |
 
 ### architecture/ — why it is built this way
 
-| Document | Contents |
-|----------|----------|
+| Document                                | Contents                                       |
+| --------------------------------------- | ---------------------------------------------- |
 | [overview.md](architecture/overview.md) | System shape, annotated tree, dependency rules |
 | [frontend.md](architecture/frontend.md) | Providers, routing, state ownership, data flow |
-| [backend.md](architecture/backend.md) | Request lifecycle, layering, error handling |
+| [backend.md](architecture/backend.md)   | Request lifecycle, layering, error handling    |
 
 ### operations/ — running it
 
-| Document | Contents |
-|----------|----------|
+| Document                                  | Contents                                  |
+| ----------------------------------------- | ----------------------------------------- |
 | [deployment.md](operations/deployment.md) | Vercel topology, release, rollback, CI/CD |
-| [runbook.md](operations/runbook.md) | Monitoring, logging, troubleshooting |
+| [runbook.md](operations/runbook.md)       | Monitoring, logging, troubleshooting      |
 
 ### product/ — what it does
 
-| Document | Contents |
-|----------|----------|
-| [features.md](product/features.md) | Capability catalogue with per-feature status |
-| [user-flows.md](product/user-flows.md) | Step-by-step journeys, including failure branches |
-| [roadmap.md](product/roadmap.md) | Defect and gap backlog (`BUG-xx`, `GAP-xx`), phased plan |
+| Document                               | Contents                                                 |
+| -------------------------------------- | -------------------------------------------------------- |
+| [features.md](product/features.md)     | Capability catalogue with per-feature status             |
+| [user-flows.md](product/user-flows.md) | Step-by-step journeys, including failure branches        |
+| [roadmap.md](product/roadmap.md)       | Defect and gap backlog (`BUG-xx`, `GAP-xx`), phased plan |
 
 ### security/
 
-| Document | Contents |
-|----------|----------|
-| [auth.md](security/auth.md) | Token lifecycle, roles, permission matrix |
+| Document                              | Contents                                             |
+| ------------------------------------- | ---------------------------------------------------- |
+| [auth.md](security/auth.md)           | Token lifecycle, roles, permission matrix            |
 | [checklist.md](security/checklist.md) | Findings (`SEC-xx`), hardening and review checklists |
 
 ---
@@ -81,54 +81,57 @@ How this structure is chosen and when to grow it:
 Each subject has one owning document. To write about one of these, edit the owner and link to
 it — do not restate it.
 
-| Subject | Owner |
-|---------|-------|
-| Feature catalogue and status | [product/features.md](product/features.md) |
-| Product journeys | [product/user-flows.md](product/user-flows.md) |
-| Defect and gap backlog | [product/roadmap.md](product/roadmap.md) |
-| Repository tree and dependency rules | [architecture/overview.md](architecture/overview.md) |
-| Data model and indexes | [reference/database.md](reference/database.md) |
-| Endpoint reference | [reference/api.md](reference/api.md) |
-| Design tokens and UI rules | [reference/design-system.md](reference/design-system.md) |
-| File placement and code conventions | [guides/development.md](guides/development.md) |
-| Install and run instructions | [guides/getting-started.md](guides/getting-started.md) |
-| Environment variables | [reference/configuration.md](reference/configuration.md) |
-| Deployment and CI | [operations/deployment.md](operations/deployment.md) |
-| Token lifecycle and permissions | [security/auth.md](security/auth.md) |
-| Security findings | [security/checklist.md](security/checklist.md) |
+| Subject                              | Owner                                                    |
+| ------------------------------------ | -------------------------------------------------------- |
+| Feature catalogue and status         | [product/features.md](product/features.md)               |
+| Product journeys                     | [product/user-flows.md](product/user-flows.md)           |
+| Defect and gap backlog               | [product/roadmap.md](product/roadmap.md)                 |
+| Repository tree and dependency rules | [architecture/overview.md](architecture/overview.md)     |
+| Data model and indexes               | [reference/database.md](reference/database.md)           |
+| Endpoint reference                   | [reference/api.md](reference/api.md)                     |
+| Design tokens and UI rules           | [reference/design-system.md](reference/design-system.md) |
+| File placement and code conventions  | [guides/development.md](guides/development.md)           |
+| Install and run instructions         | [guides/getting-started.md](guides/getting-started.md)   |
+| Environment variables                | [reference/configuration.md](reference/configuration.md) |
+| Deployment and CI                    | [operations/deployment.md](operations/deployment.md)     |
+| Token lifecycle and permissions      | [security/auth.md](security/auth.md)                     |
+| Security findings                    | [security/checklist.md](security/checklist.md)           |
 
 ## Issue identifiers
 
 Findings carry stable IDs so documents reference them precisely instead of duplicating the
 description. Use them in commit messages and pull request titles.
 
-| Prefix | Meaning | Owner |
-|--------|---------|-------|
-| `BUG-xx` | Implemented behaviour is incorrect | [product/roadmap.md](product/roadmap.md) |
-| `GAP-xx` | Capability is absent | [product/roadmap.md](product/roadmap.md) |
-| `SEC-xx` | Security weakness | [security/checklist.md](security/checklist.md) |
+| Prefix   | Meaning                            | Owner                                          |
+| -------- | ---------------------------------- | ---------------------------------------------- |
+| `BUG-xx` | Implemented behaviour is incorrect | [product/roadmap.md](product/roadmap.md)       |
+| `GAP-xx` | Capability is absent               | [product/roadmap.md](product/roadmap.md)       |
+| `SEC-xx` | Security weakness                  | [security/checklist.md](security/checklist.md) |
 
 ---
 
 ## Current state
 
-An end-to-end audit in August 2026 found 18 functional defects, 18 capability gaps and 12
-security findings. Remediation closed **14 defects and 8 security findings**, each verified
-against a running server.
+An end-to-end audit in August 2026 found 18 functional defects, 18 capability gaps and 15
+security findings. Remediation closed **every security finding** and every defect a request can
+reach, each verified against a running server.
 
-| Area | Status |
-|------|--------|
-| Core journeys — publish, read, edit, engage, configure | ✅ Working |
-| Critical and High security findings | ✅ 6 of 8 closed |
-| Database indexes | ✅ 13 across 8 collections |
-| Health endpoints, security headers, rate limiting | ✅ In place |
-| **Automated tests** | ❌ **None — the largest remaining risk** |
-| **CI pipeline** | ❌ **None** |
-| Avatar upload, view deduplication, session revocation | ❌ Open |
+| Area                                                             | Status                                         |
+| ---------------------------------------------------------------- | ---------------------------------------------- |
+| Core journeys — publish, read, edit, engage, moderate, configure | ✅ Working                                     |
+| Security findings                                                | ✅ 15 of 15 closed                             |
+| Database indexes                                                 | ✅ 13 across 8 collections                     |
+| Health endpoints, security headers, rate limiting                | ✅ In place                                    |
+| Session revocation, account deletion, view deduplication         | ✅ Done                                        |
+| Backend tests                                                    | ✅ 61 integration tests, run in CI             |
+| CI pipeline                                                      | ✅ Lint · format · test · build · audit        |
+| **Client tests**                                                 | ❌ **None — the largest remaining risk**       |
+| Branch protection                                                | ❌ CI reports, but nothing requires it to pass |
+| Avatar upload                                                    | ❌ Needs object storage                        |
 
 Read [product/roadmap.md](product/roadmap.md) and
-[security/checklist.md](security/checklist.md) before deploying. Phase 2 — tests and CI — is
-the next work, and nothing else should ship before it.
+[security/checklist.md](security/checklist.md) before deploying. The next work is client tests
+and branch protection — everything else is built on top of a gate that does not yet block.
 
 ---
 

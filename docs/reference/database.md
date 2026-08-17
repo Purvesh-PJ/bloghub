@@ -23,19 +23,19 @@ and `updatedAt` automatically.
 Eleven models. Two dead ones — `Setting` and the unused `categoryServices` — were deleted
 during remediation.
 
-| Model | Collection | Purpose | Status |
-|-------|-----------|---------|--------|
-| `User` | `users` | Account and credentials | Active |
-| `UserProfile` | `userprofiles` | Bio, avatar, social graph, counters | Active |
-| `UserSetting` | `usersettings` | Preferences | Active |
-| `Post` | `posts` | Article content | Active |
-| `Comment` | `comments` | Comments and replies | Active |
-| `Category` | `categories` | Editorial grouping | Active |
-| `Tag` | `tags` | Keyword grouping | Declared, unused by the UI |
-| `Like` | `likes` | One like event | Active |
-| `View` | `views` | One page-view event | Active |
-| `Read` | `reads` | One read-completion event | Active, rarely written |
-| `Analytics` | `analytics` | Per-post counters | **Stale** — seeder only ([BUG-06](../product/roadmap.md#bug-06)) |
+| Model         | Collection     | Purpose                             | Status                                                           |
+| ------------- | -------------- | ----------------------------------- | ---------------------------------------------------------------- |
+| `User`        | `users`        | Account and credentials             | Active                                                           |
+| `UserProfile` | `userprofiles` | Bio, avatar, social graph, counters | Active                                                           |
+| `UserSetting` | `usersettings` | Preferences                         | Active                                                           |
+| `Post`        | `posts`        | Article content                     | Active                                                           |
+| `Comment`     | `comments`     | Comments and replies                | Active                                                           |
+| `Category`    | `categories`   | Editorial grouping                  | Active                                                           |
+| `Tag`         | `tags`         | Keyword grouping                    | Declared, unused by the UI                                       |
+| `Like`        | `likes`        | One like event                      | Active                                                           |
+| `View`        | `views`        | One page-view event                 | Active                                                           |
+| `Read`        | `reads`        | One read-completion event           | Active, rarely written                                           |
+| `Analytics`   | `analytics`    | Per-post counters                   | **Stale** — seeder only ([BUG-06](../product/roadmap.md#bug-06)) |
 
 ---
 
@@ -92,18 +92,18 @@ Several relationships are stored on **both** sides — see
 
 ### `User`
 
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `username` | String | required, trim, **unique index** |
-| `email` | String | required, trim, lowercase, **unique index** |
-| `password` | String | required, bcrypt hash (cost 12) |
-| `roles` | [String] | enum `user \| admin`, default `['user']` |
-| `tokenVersion` | Number | default 0 — see below |
-| `suspended` | Boolean | default false; blocks sign-in and every authenticated request |
-| `suspendedAt` | Date | set when suspended, cleared when restored |
-| `profile` | ObjectId → `UserProfile` | 1:1 |
-| `settings` | ObjectId → `UserSetting` | 1:1 |
-| `posts` | [ObjectId → `Post`] | denormalised authorship list |
+| Field          | Type                     | Constraints                                                   |
+| -------------- | ------------------------ | ------------------------------------------------------------- |
+| `username`     | String                   | required, trim, **unique index**                              |
+| `email`        | String                   | required, trim, lowercase, **unique index**                   |
+| `password`     | String                   | required, bcrypt hash (cost 12)                               |
+| `roles`        | [String]                 | enum `user \| admin`, default `['user']`                      |
+| `tokenVersion` | Number                   | default 0 — see below                                         |
+| `suspended`    | Boolean                  | default false; blocks sign-in and every authenticated request |
+| `suspendedAt`  | Date                     | set when suspended, cleared when restored                     |
+| `profile`      | ObjectId → `UserProfile` | 1:1                                                           |
+| `settings`     | ObjectId → `UserSetting` | 1:1                                                           |
+| `posts`        | [ObjectId → `Post`]      | denormalised authorship list                                  |
 
 Email normalisation is a **schema** concern (`lowercase`, `trim`), not a controller concern,
 so every write path is consistent.
@@ -116,14 +116,14 @@ unhelpful sense: nothing could be taken back before it expired.
 
 ### `UserProfile`
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `user` | ObjectId → `User` | required, **unique index** |
-| `image.data` / `image.contentType` | Buffer / String | Receives a path string today ([BUG-07](../product/roadmap.md#bug-07)) |
-| `bio`, `fullName`, `location`, `website` | String | trimmed |
-| `socialLinks` | `{ twitter, github, linkedin }` | |
-| `followers` / `followings` | [ObjectId → `User`] | |
-| `postCount`, `followersCount`, `followingsCount` | Number | default 0 |
+| Field                                            | Type                            | Notes                                                                 |
+| ------------------------------------------------ | ------------------------------- | --------------------------------------------------------------------- |
+| `user`                                           | ObjectId → `User`               | required, **unique index**                                            |
+| `image.data` / `image.contentType`               | Buffer / String                 | Receives a path string today ([BUG-07](../product/roadmap.md#bug-07)) |
+| `bio`, `fullName`, `location`, `website`         | String                          | trimmed                                                               |
+| `socialLinks`                                    | `{ twitter, github, linkedin }` |                                                                       |
+| `followers` / `followings`                       | [ObjectId → `User`]             |                                                                       |
+| `postCount`, `followersCount`, `followingsCount` | Number                          | default 0                                                             |
 
 The extended profile fields were added during remediation — the settings controller had been
 writing them to a schema that did not declare them, so Mongoose discarded every one
@@ -131,45 +131,45 @@ writing them to a schema that did not declare them, so Mongoose discarded every 
 
 ### `UserSetting`
 
-| Field | Type | Default |
-|-------|------|---------|
-| `user` | ObjectId → `User` | required, unique |
-| `theme` | `light \| dark \| system` | `system` |
-| `emailNotifications` | Boolean | `true` |
-| `privacySettings.showEmail` | Boolean | `false` |
-| `privacySettings.showActivity` | Boolean | `true` |
-| `appearance.fontSize` | `sm \| md \| lg` | `md` |
-| `appearance.colorScheme` | String | `default` |
+| Field                          | Type                      | Default          |
+| ------------------------------ | ------------------------- | ---------------- |
+| `user`                         | ObjectId → `User`         | required, unique |
+| `theme`                        | `light \| dark \| system` | `system`         |
+| `emailNotifications`           | Boolean                   | `true`           |
+| `privacySettings.showEmail`    | Boolean                   | `false`          |
+| `privacySettings.showActivity` | Boolean                   | `true`           |
+| `appearance.fontSize`          | `sm \| md \| lg`          | `md`             |
+| `appearance.colorScheme`       | String                    | `default`        |
 
 Previously `new mongoose.Schema({})` — an empty schema that silently discarded every write.
 
 ### `Post`
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `user` | ObjectId → `User` | author |
-| `title` | String | required |
-| `slug` | String | required, indexed |
-| `content` | String | required, Markdown |
-| `imageURL` | String | optional cover image |
+| Field        | Type                         | Notes                                   |
+| ------------ | ---------------------------- | --------------------------------------- |
+| `user`       | ObjectId → `User`            | author                                  |
+| `title`      | String                       | required                                |
+| `slug`       | String                       | required, indexed                       |
+| `content`    | String                       | required, Markdown                      |
+| `imageURL`   | String                       | optional cover image                    |
 | `visibility` | `draft \| private \| public` | default `draft`, **written by the API** |
-| `tags` | [ObjectId → `Tag`] | never populated by the UI |
-| `categories` | [ObjectId → `Category`] | |
-| `views` | [ObjectId → `View`] | seeder only |
-| `likes` | [ObjectId → `Like`] | maintained at runtime |
-| `comments` | [ObjectId → `Comment`] | maintained at runtime |
+| `tags`       | [ObjectId → `Tag`]           | never populated by the UI               |
+| `categories` | [ObjectId → `Category`]      |                                         |
+| `views`      | [ObjectId → `View`]          | seeder only                             |
+| `likes`      | [ObjectId → `Like`]          | maintained at runtime                   |
+| `comments`   | [ObjectId → `Comment`]       | maintained at runtime                   |
 
 ### `Comment`
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `user` | ObjectId → `User` | author |
-| `post` | ObjectId → `Post` | set on replies too |
-| `message` | String | |
-| `replies` | [ObjectId → `Comment`] | self-reference, one level in the UI |
-| `replyCount` | Number | default 0 |
-| `likes` / `dislikes` | [ObjectId → `User`] | no endpoint writes these |
-| `date` | Date | redundant with `createdAt` |
+| Field                | Type                   | Notes                               |
+| -------------------- | ---------------------- | ----------------------------------- |
+| `user`               | ObjectId → `User`      | author                              |
+| `post`               | ObjectId → `Post`      | set on replies too                  |
+| `message`            | String                 |                                     |
+| `replies`            | [ObjectId → `Comment`] | self-reference, one level in the UI |
+| `replyCount`         | Number                 | default 0                           |
+| `likes` / `dislikes` | [ObjectId → `User`]    | no endpoint writes these            |
+| `date`               | Date                   | redundant with `createdAt`          |
 
 ### `Category` and `Tag`
 
@@ -204,22 +204,22 @@ plus `totalPageViews`, `totalLikes`, `totalComments`. Written only by the seeder
 Thirteen indexes across eight collections, all declared in the schema files so they travel
 with the model.
 
-| Collection | Index | Purpose |
-|------------|-------|---------|
-| `users` | `{ email: 1 }` unique | Sign-in lookup; prevents duplicate accounts |
-| `users` | `{ username: 1 }` unique | Same |
-| `posts` | `{ visibility: 1, createdAt: -1 }` | The public feed |
-| `posts` | `{ user: 1, createdAt: -1 }` | Author feeds and My Posts |
-| `posts` | `{ slug: 1 }` | Slug lookups |
-| `comments` | `{ post: 1, createdAt: -1 }` | Comment threads |
-| `comments` | `{ user: 1, createdAt: -1 }` | Activity and timeline |
-| `likes` | `{ post: 1, user: 1 }` unique | Prevents duplicate likes |
-| `likes` | `{ user: 1, createdAt: -1 }` | Activity feed |
-| `views` | `{ post: 1, createdAt: -1 }` | Analytics counts |
-| `views` | `{ user: 1, createdAt: -1 }` | Activity feed |
-| `reads` | `{ post: 1, createdAt: -1 }`, `{ user: 1, createdAt: -1 }` | Read-rate calculation |
-| `userprofiles` | `{ user: 1 }` unique | Looked up on nearly every authenticated request |
-| `categories` / `tags` | `{ name: 1 }` unique | Lookups are by name |
+| Collection            | Index                                                      | Purpose                                         |
+| --------------------- | ---------------------------------------------------------- | ----------------------------------------------- |
+| `users`               | `{ email: 1 }` unique                                      | Sign-in lookup; prevents duplicate accounts     |
+| `users`               | `{ username: 1 }` unique                                   | Same                                            |
+| `posts`               | `{ visibility: 1, createdAt: -1 }`                         | The public feed                                 |
+| `posts`               | `{ user: 1, createdAt: -1 }`                               | Author feeds and My Posts                       |
+| `posts`               | `{ slug: 1 }`                                              | Slug lookups                                    |
+| `comments`            | `{ post: 1, createdAt: -1 }`                               | Comment threads                                 |
+| `comments`            | `{ user: 1, createdAt: -1 }`                               | Activity and timeline                           |
+| `likes`               | `{ post: 1, user: 1 }` unique                              | Prevents duplicate likes                        |
+| `likes`               | `{ user: 1, createdAt: -1 }`                               | Activity feed                                   |
+| `views`               | `{ post: 1, createdAt: -1 }`                               | Analytics counts                                |
+| `views`               | `{ user: 1, createdAt: -1 }`                               | Activity feed                                   |
+| `reads`               | `{ post: 1, createdAt: -1 }`, `{ user: 1, createdAt: -1 }` | Read-rate calculation                           |
+| `userprofiles`        | `{ user: 1 }` unique                                       | Looked up on nearly every authenticated request |
+| `categories` / `tags` | `{ name: 1 }` unique                                       | Lookups are by name                             |
 
 **Not indexed:** the search regex. `GET /search/:query` still performs a collection scan —
 adding a text index would change matching from substring to whole-word, which is a UX
@@ -231,7 +231,7 @@ Adding unique indexes to a database with existing duplicates fails. Resolve dupl
 
 ```js
 db.users.aggregate([
-  { $group: { _id: '$email', count: { $sum: 1 }, ids: { $push: '$_id' } } },
+  { $group: { _id: "$email", count: { $sum: 1 }, ids: { $push: "$_id" } } },
   { $match: { count: { $gt: 1 } } },
 ]);
 ```
@@ -273,15 +273,15 @@ application.
 
 Several relationships are stored twice, maintained by separate writes with no transaction.
 
-| Pair | Maintained by | Risk |
-|------|---------------|------|
-| `Post.comments` ↔ `Comment.post` | `createComment`, reply handler | Both sides now written, including replies |
-| `Post.likes` ↔ `likes` collection | `createLike`, `deleteLike` | Both sides now written |
-| `Post.views` ↔ `views` collection | **Nothing at runtime** | Array stays empty outside seed data |
-| `User.posts` ↔ `Post.user` | `createPost`, `deletePost` | Two sources of truth for authorship; `MyPosts` reads one, analytics reads the other |
-| `Category.posts` ↔ `Post.categories` | Category controllers | Writes are now awaited |
-| `UserProfile.followers/followings` ↔ counters | `followUser`, `unfollowUser` | Array and counter can disagree if one write fails |
-| `UserProfile.postCount` ↔ actual count | `postBlogs`, `deletePost` | Now targets the post's author, not the requester |
+| Pair                                          | Maintained by                  | Risk                                                                                |
+| --------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------- |
+| `Post.comments` ↔ `Comment.post`              | `createComment`, reply handler | Both sides now written, including replies                                           |
+| `Post.likes` ↔ `likes` collection             | `createLike`, `deleteLike`     | Both sides now written                                                              |
+| `Post.views` ↔ `views` collection             | **Nothing at runtime**         | Array stays empty outside seed data                                                 |
+| `User.posts` ↔ `Post.user`                    | `createPost`, `deletePost`     | Two sources of truth for authorship; `MyPosts` reads one, analytics reads the other |
+| `Category.posts` ↔ `Post.categories`          | Category controllers           | Writes are now awaited                                                              |
+| `UserProfile.followers/followings` ↔ counters | `followUser`, `unfollowUser`   | Array and counter can disagree if one write fails                                   |
+| `UserProfile.postCount` ↔ actual count        | `postBlogs`, `deletePost`      | Now targets the post's author, not the requester                                    |
 
 **Recommended direction:** keep the child-to-parent reference (`Comment.post`, `Post.user`,
 `Like.post`) as the single source of truth, drop the parent-side arrays, and derive counts
@@ -295,12 +295,12 @@ script. Tracked in [Phase 3](../product/roadmap.md#phase-3--data-model-consolida
 
 No referential integrity at the database level; the only cascade is manual.
 
-| Operation | Cascade behaviour |
-|-----------|-------------------|
-| Delete a post | Pulls the id from referencing categories, deletes attached comments, pulls from the author's `User.posts`, decrements the author's `postCount`. **Leaves orphaned** likes, views and reads |
-| Delete a user | **Not implemented** ([GAP-09](../product/roadmap.md#gap-09)) |
-| Delete a category | **Not implemented** — would leave dangling ids in `Post.categories` |
-| Delete a comment | Only as part of post deletion; replies are not removed |
+| Operation         | Cascade behaviour                                                                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Delete a post     | Pulls the id from referencing categories, deletes attached comments, pulls from the author's `User.posts`, decrements the author's `postCount`. **Leaves orphaned** likes, views and reads |
+| Delete a user     | **Not implemented** ([GAP-09](../product/roadmap.md#gap-09))                                                                                                                               |
+| Delete a category | **Not implemented** — would leave dangling ids in `Post.categories`                                                                                                                        |
+| Delete a comment  | Only as part of post deletion; replies are not removed                                                                                                                                     |
 
 No multi-document transactions are used, although MongoDB Atlas replica sets support them.
 `createPost` and `createComment` approximate one with a compensating delete.
@@ -313,10 +313,10 @@ No multi-document transactions are used, although MongoDB Atlas replica sets sup
 10 categories, 15 users (14 members and 1 administrator), 22 public posts, ~112 comments,
 ~170 likes, ~671 views, and one `Analytics` document per post.
 
-| Role | Email | Password |
-|------|-------|----------|
-| Member | `john@example.com` | `password123` |
-| Administrator | `admin@bloghub.com` | `admin123` |
+| Role          | Email               | Password      |
+| ------------- | ------------------- | ------------- |
+| Member        | `john@example.com`  | `password123` |
+| Administrator | `admin@bloghub.com` | `admin123`    |
 
 Two things to know:
 

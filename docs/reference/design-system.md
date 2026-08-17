@@ -69,14 +69,14 @@ const Card = styled.div`
 
 ### Radii — `theme.radii`
 
-| Token | Value | Use |
-|-------|-------|-----|
-| `sm` | 6px | Badges, inline code |
-| `md` | 8px | Buttons, inputs |
-| `lg` | 12px | Cards, images |
-| `xl` | 16px | Modals |
-| `2xl` | 20px | Hero surfaces |
-| `full` | 9999px | Avatars, pills |
+| Token  | Value  | Use                 |
+| ------ | ------ | ------------------- |
+| `sm`   | 6px    | Badges, inline code |
+| `md`   | 8px    | Buttons, inputs     |
+| `lg`   | 12px   | Cards, images       |
+| `xl`   | 16px   | Modals              |
+| `2xl`  | 20px   | Hero surfaces       |
+| `full` | 9999px | Avatars, pills      |
 
 ### Breakpoints — `theme.breakpoints`
 
@@ -91,12 +91,12 @@ Never write a raw z-index. Add a rung to the ladder if one is missing.
 
 ### Layout — `theme.layout`
 
-| Token | Value | Meaning |
-|-------|-------|---------|
-| `headerHeight` | 60px | Fixed header offset |
-| `sidebarWidth` | 260px | Admin sidebar |
-| `maxContentWidth` | 1200px | Page container ceiling |
-| `contentWidth` | 680px | Reading measure for article bodies |
+| Token             | Value  | Meaning                            |
+| ----------------- | ------ | ---------------------------------- |
+| `headerHeight`    | 60px   | Fixed header offset                |
+| `sidebarWidth`    | 260px  | Admin sidebar                      |
+| `maxContentWidth` | 1200px | Page container ceiling             |
+| `contentWidth`    | 680px  | Reading measure for article bodies |
 
 ### Transitions — `theme.transitions`
 
@@ -109,25 +109,25 @@ Never write a raw z-index. Add a rung to the ladder if one is missing.
 
 System font stacks — no web fonts, so no font-loading shift.
 
-| Role | Stack |
-|------|-------|
-| `fonts.body` | `-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, …` |
+| Role            | Stack                                                                        |
+| --------------- | ---------------------------------------------------------------------------- |
+| `fonts.body`    | `-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, …`    |
 | `fonts.heading` | `-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, …` |
-| `fonts.mono` | `"SF Mono", "Fira Code", Menlo, Monaco, Consolas, monospace` |
+| `fonts.mono`    | `"SF Mono", "Fira Code", Menlo, Monaco, Consolas, monospace`                 |
 
 > `index.html` still preconnects to `fonts.googleapis.com` although no Google font is
 > requested. Dead markup, safe to remove.
 
 ### Scale — `theme.fontSizes`
 
-| Token | rem / px | | Token | rem / px |
-|-------|----------|---|-------|----------|
-| `xs` | 0.75 / 12 | | `2xl` | 1.5 / 24 |
-| `sm` | 0.8125 / 13 | | `3xl` | 1.875 / 30 |
-| `md` | 0.9375 / 15 | | `4xl` | 2.25 / 36 |
-| `base` | 1 / 16 | | `5xl` | 2.75 / 44 |
-| `lg` | 1.125 / 18 | | | |
-| `xl` | 1.25 / 20 | | | |
+| Token  | rem / px    |     | Token | rem / px   |
+| ------ | ----------- | --- | ----- | ---------- |
+| `xs`   | 0.75 / 12   |     | `2xl` | 1.5 / 24   |
+| `sm`   | 0.8125 / 13 |     | `3xl` | 1.875 / 30 |
+| `md`   | 0.9375 / 15 |     | `4xl` | 2.25 / 36  |
+| `base` | 1 / 16      |     | `5xl` | 2.75 / 44  |
+| `lg`   | 1.125 / 18  |     |       |            |
+| `xl`   | 1.25 / 20   |     |       |            |
 
 Body copy defaults to `md` (15px); article bodies step up to `lg` (18px).
 
@@ -149,31 +149,31 @@ The two themes are not two hand-written palettes. `lightTheme.js` and `darkTheme
 a set of **Radix colour ramps** and hand them to `createTheme(ramps, mode)`, which derives every
 token from them. One definition of what "accent solid" means, two modes.
 
-| Ramp | Light | Dark |
-|------|-------|------|
+| Ramp      | Light   | Dark        |
+| --------- | ------- | ----------- |
 | `neutral` | `slate` | `slateDark` |
-| `accent` | `sky` | `skyDark` |
+| `accent`  | `sky`   | `skyDark`   |
 | `success` | `grass` | `grassDark` |
 | `warning` | `amber` | `amberDark` |
-| `danger` | `red` | `redDark` |
-| `info` | `blue` | `blueDark` |
+| `danger`  | `red`   | `redDark`   |
+| `info`    | `blue`  | `blueDark`  |
 
 ### Reading a Radix ramp
 
 Each ramp is twelve steps with fixed meanings. Getting these wrong is the single easiest way
 to ship unreadable UI:
 
-| Steps | Role |
-|-------|------|
-| 1–2 | Page and subtle backgrounds |
-| 3–5 | Component backgrounds — normal, hover, active |
-| 6–8 | Borders — subtle, normal, focus |
-| 9–10 | Solid fills — the accent itself, and its hover |
+| Steps | Role                                             |
+| ----- | ------------------------------------------------ |
+| 1–2   | Page and subtle backgrounds                      |
+| 3–5   | Component backgrounds — normal, hover, active    |
+| 6–8   | Borders — subtle, normal, focus                  |
+| 9–10  | Solid fills — the accent itself, and its hover   |
 | 11–12 | **Text.** Only these two are contrast-guaranteed |
 
 ### Foreground on a solid fill is derived, not assumed
 
-Step 9 is a *fill*, and nothing about the scale promises white text will be readable on it. On
+Step 9 is a _fill_, and nothing about the scale promises white text will be readable on it. On
 a bright ramp — sky, amber, grass — it is not. White on `sky-9` measures **1.48:1**, so a
 primary button's label was effectively invisible.
 
@@ -195,13 +195,13 @@ the point: the rule is stated once, so a palette change cannot quietly break leg
 
 ### Token groups
 
-| Group | Keys |
-|-------|------|
+| Group    | Keys                                                                                                                                                       |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Surfaces | `surfacePage`, `surfaceContainerLow \| Container \| ContainerHigh \| ContainerHighest`, `surfaceElevated`, `surfaceHover`, `surfaceActive`, `surfaceScrim` |
-| Text | `textPrimary`, `textSecondary`, `textMuted`, `textDisabled`, `textOnAccent`, `textOnDanger`, `textOnSuccess`, `textLink`, `textLinkHover` |
-| Lines | `lineSubtle`, `lineDefault`, `lineStrong`, `lineFocus` |
-| Accent | `accentContainer`, `accentContainerHover`, `accentLine`, `accentSolid`, `accentSolidHover`, `accentText` |
-| Status | `success`, `warning`, `danger`, `info` — each with `…Container`, `…Line`, `…Solid`, `…Text` |
+| Text     | `textPrimary`, `textSecondary`, `textMuted`, `textDisabled`, `textOnAccent`, `textOnDanger`, `textOnSuccess`, `textLink`, `textLinkHover`                  |
+| Lines    | `lineSubtle`, `lineDefault`, `lineStrong`, `lineFocus`                                                                                                     |
+| Accent   | `accentContainer`, `accentContainerHover`, `accentLine`, `accentSolid`, `accentSolidHover`, `accentText`                                                   |
+| Status   | `success`, `warning`, `danger`, `info` — each with `…Container`, `…Line`, `…Solid`, `…Text`                                                                |
 
 Older names (`bgPrimary`, `border`, `cardBg`, `buttonPrimaryBg`, `accentSubtle` …) still
 resolve — `createTheme` aliases them onto the tokens above so nothing broke during the rename.
@@ -209,17 +209,17 @@ resolve — `createTheme` aliases them onto the tokens above so nothing broke du
 
 ### Gradients — `theme.gradients`
 
-| Token | Steps | Use |
-|-------|-------|-----|
-| `brand` | 10 → 8 | Solid surfaces: buttons, banners |
-| `brandSoft` | 4 → 6 | Tinted backgrounds behind content |
-| `brandBar` | 10 → 8, horizontal | Thin progress and accent bars |
-| `brandDeep` | 10 → 11 | Large surfaces that carry their own text |
-| `brandText` | 11 → 12 | **Gradient text only** |
+| Token       | Steps              | Use                                      |
+| ----------- | ------------------ | ---------------------------------------- |
+| `brand`     | 10 → 8             | Solid surfaces: buttons, banners         |
+| `brandSoft` | 4 → 6              | Tinted backgrounds behind content        |
+| `brandBar`  | 10 → 8, horizontal | Thin progress and accent bars            |
+| `brandDeep` | 10 → 11            | Large surfaces that carry their own text |
+| `brandText` | 11 → 12            | **Gradient text only**                   |
 
 `brandText` exists because of a real regression: `gradient` + `background-clip: text` on a
 headline used `brand`, whose steps are fills, and the result measured **1.6:1** against the page.
-Text sits *on* the background rather than being a surface, so it needs the text steps. If you
+Text sits _on_ the background rather than being a surface, so it needs the text steps. If you
 are clipping a gradient to text, it is `brandText` — there is no case where `brand` is right for
 that.
 
@@ -235,14 +235,14 @@ shadows are deeper to stay visible. `focusRing` is a two-layer ring applied glob
 
 Owned by `ThemeProvider`.
 
-| Concern | Behaviour |
-|---------|-----------|
-| Initial mode | `localStorage["theme"]` if valid, else `prefers-color-scheme`, else light |
+| Concern            | Behaviour                                                                                      |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| Initial mode       | `localStorage["theme"]` if valid, else `prefers-color-scheme`, else light                      |
 | Explicit vs system | Three states, not two: `light`, `dark`, or no stored preference. Only the third follows the OS |
-| Persistence | Written on every change |
-| DOM signal | `<html data-theme="light\|dark">` |
-| Mobile chrome | `<meta name="theme-color">` updated |
-| System changes | A `matchMedia` listener switches only while no explicit choice is stored |
+| Persistence        | Written on every change                                                                        |
+| DOM signal         | `<html data-theme="light\|dark">`                                                              |
+| Mobile chrome      | `<meta name="theme-color">` updated                                                            |
+| System changes     | A `matchMedia` listener switches only while no explicit choice is stored                       |
 
 Consumers use `useTheme()` for `{ mode, isDark, isLight, toggleTheme, setTheme }`. Prefer
 reading `theme.colors.*` over branching on `isDark`.
@@ -259,7 +259,7 @@ reading `theme.colors.*` over branching on `isDark`.
 `client/src/components/ui/`, all re-exported from `index.js`:
 
 ```js
-import { Button, Input, Card, Modal, Alert } from '../components/ui';
+import { Button, Input, Card, Modal, Alert } from "../components/ui";
 ```
 
 **Five of them wrap Radix**, and that is deliberate. A dropdown, a dialog, a select, a tab set
@@ -268,29 +268,29 @@ and easy to get subtly wrong — focus trapping, Escape, arrow-key roving, `aria
 returning focus to the trigger. Radix owns that; the wrapper owns only how it looks. Anything
 hand-rolled here would be an approximation of accessibility rather than the real thing.
 
-| Component | Exports | Radix | Notes |
-|-----------|---------|-------|-------|
-| `Button` | `Button`, `IconButton` | — | `variant`: primary \| secondary \| outline \| ghost \| danger; `size`: sm \| md \| lg; `fullWidth`, `isLoading`. Foreground comes from `textOnAccent` / `textOnDanger`, so it is readable by construction |
-| `Input` | `Input`, `TextArea`, `Eyebrow` | — | Label, field and error render as one unit; the error is wired with `aria-describedby` |
-| `Select` | `Select` | Select | `options`, `label`, `error`. Keyboard type-ahead and positioning come from Radix |
-| `Surface` | `Surface`, `Card` | — | `Surface` is the primitive — a panel with a background, a border and a radius. `Card` is `Surface` with the card preset |
-| `Badge` | `Badge` | — | Static status pill |
-| `Chip` | `Chip` | — | Badge-shaped but *selectable* — it takes `interactive` and `selected` and renders as a button. A badge labels; a chip is a control |
-| `Container` | `Container`, `Box`, `Flex` | — | Layout primitives |
-| `Modal` | `Modal` | Dialog | `open`, `onOpenChange`, `title`. Focus trap, Escape and scroll lock from Radix |
-| `DropdownMenu` | `DropdownMenu` | DropdownMenu | Takes a `trigger` prop and **`children`** — see the note below |
-| `Tabs` | `Tabs` | Tabs | Roving focus and `aria-selected` from Radix |
-| `Avatar` | `Avatar` | Avatar | Falls back to the first initial when the image fails |
-| `Table` | `Table` | — | `columns` and `rows`, with a horizontal scroll container so a wide table never widens the page |
-| `Pagination` | `Pagination` | — | `page`, `pages`, `onChange`. Used by `/stories` |
-| `StatTile` | `StatTile` | — | Label, value, optional trend. Knows nothing about what is being counted |
-| `Alert` | `Alert` | — | `variant`: success \| warning \| danger \| info |
-| `EmptyState` | `EmptyState` | — | Icon, headline, explanation, one action |
-| `ErrorState` | `ErrorState` | — | The failure counterpart of `EmptyState`, with a retry |
-| `Loading` | `Loading` | — | Centred spinner with a caption — the standard page loading state |
-| `Spinner` | `Spinner` | — | The route-level Suspense fallback |
-| `Skeleton` | `Skeleton`, `SkeletonText` | — | Shape-level placeholders |
-| `BrandMark` | `BrandMark` | — | The wordmark and logo, defined once |
+| Component      | Exports                        | Radix        | Notes                                                                                                                                                                                                     |
+| -------------- | ------------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Button`       | `Button`, `IconButton`         | —            | `variant`: primary \| secondary \| outline \| ghost \| danger; `size`: sm \| md \| lg; `fullWidth`, `isLoading`. Foreground comes from `textOnAccent` / `textOnDanger`, so it is readable by construction |
+| `Input`        | `Input`, `TextArea`, `Eyebrow` | —            | Label, field and error render as one unit; the error is wired with `aria-describedby`                                                                                                                     |
+| `Select`       | `Select`                       | Select       | `options`, `label`, `error`. Keyboard type-ahead and positioning come from Radix                                                                                                                          |
+| `Surface`      | `Surface`, `Card`              | —            | `Surface` is the primitive — a panel with a background, a border and a radius. `Card` is `Surface` with the card preset                                                                                   |
+| `Badge`        | `Badge`                        | —            | Static status pill                                                                                                                                                                                        |
+| `Chip`         | `Chip`                         | —            | Badge-shaped but _selectable_ — it takes `interactive` and `selected` and renders as a button. A badge labels; a chip is a control                                                                        |
+| `Container`    | `Container`, `Box`, `Flex`     | —            | Layout primitives                                                                                                                                                                                         |
+| `Modal`        | `Modal`                        | Dialog       | `open`, `onOpenChange`, `title`. Focus trap, Escape and scroll lock from Radix                                                                                                                            |
+| `DropdownMenu` | `DropdownMenu`                 | DropdownMenu | Takes a `trigger` prop and **`children`** — see the note below                                                                                                                                            |
+| `Tabs`         | `Tabs`                         | Tabs         | Roving focus and `aria-selected` from Radix                                                                                                                                                               |
+| `Avatar`       | `Avatar`                       | Avatar       | Falls back to the first initial when the image fails                                                                                                                                                      |
+| `Table`        | `Table`                        | —            | `columns` and `rows`, with a horizontal scroll container so a wide table never widens the page                                                                                                            |
+| `Pagination`   | `Pagination`                   | —            | `page`, `pages`, `onChange`. Used by `/stories`                                                                                                                                                           |
+| `StatTile`     | `StatTile`                     | —            | Label, value, optional trend. Knows nothing about what is being counted                                                                                                                                   |
+| `Alert`        | `Alert`                        | —            | `variant`: success \| warning \| danger \| info                                                                                                                                                           |
+| `EmptyState`   | `EmptyState`                   | —            | Icon, headline, explanation, one action                                                                                                                                                                   |
+| `ErrorState`   | `ErrorState`                   | —            | The failure counterpart of `EmptyState`, with a retry                                                                                                                                                     |
+| `Loading`      | `Loading`                      | —            | Centred spinner with a caption — the standard page loading state                                                                                                                                          |
+| `Spinner`      | `Spinner`                      | —            | The route-level Suspense fallback                                                                                                                                                                         |
+| `Skeleton`     | `Skeleton`, `SkeletonText`     | —            | Shape-level placeholders                                                                                                                                                                                  |
+| `BrandMark`    | `BrandMark`                    | —            | The wordmark and logo, defined once                                                                                                                                                                       |
 
 > **`DropdownMenu` takes `children`, not an `items` array.** Passing `items` renders an empty
 > menu that opens onto nothing — which is exactly how post editing and deletion silently
@@ -319,10 +319,10 @@ hand-rolled here would be an approximation of accessibility rather than the real
 
 ## Layout
 
-| Shell | Component | Structure |
-|-------|-----------|-----------|
-| Public / member | `Layout` | Fixed `Header` (60px) → `<Outlet />` → `Footer` |
-| Admin | `AdminLayout` | Fixed 260px sidebar → content area |
+| Shell           | Component     | Structure                                       |
+| --------------- | ------------- | ----------------------------------------------- |
+| Public / member | `Layout`      | Fixed `Header` (60px) → `<Outlet />` → `Footer` |
+| Admin           | `AdminLayout` | Fixed 260px sidebar → content area              |
 
 ```
 ┌──────────────────────────────────────────────┐   ┌───────────┬──────────────┐
@@ -341,9 +341,9 @@ for admin accounts. Signed-out visitors see `Sign in` and `Get started` instead.
 
 ### Widths
 
-| Content | Width | Token |
-|---------|-------|-------|
-| Article body | 680px | `layout.contentWidth` |
+| Content        | Width  | Token                    |
+| -------------- | ------ | ------------------------ |
+| Article body   | 680px  | `layout.contentWidth`    |
 | Page container | 1200px | `layout.maxContentWidth` |
 
 Never let a paragraph exceed `contentWidth` — 680px is roughly 70–80 characters, the readable
@@ -358,11 +358,11 @@ dropping to `md` on mobile; related controls `sm` apart, unrelated groups `lg` a
 
 Mobile-first; add `max-width` queries only where the layout genuinely breaks.
 
-| Range | Expectation |
-|-------|-------------|
-| < 640px | Single column, full-bleed cards, collapsed nav, no hover-only affordances |
-| 640–1024px | Two-column grids, sidebars stack below content |
-| > 1024px | Full layout, sidebars beside content |
+| Range      | Expectation                                                               |
+| ---------- | ------------------------------------------------------------------------- |
+| < 640px    | Single column, full-bleed cards, collapsed nav, no hover-only affordances |
+| 640–1024px | Two-column grids, sidebars stack below content                            |
+| > 1024px   | Full layout, sidebars beside content                                      |
 
 `GlobalStyles` provides `.hide-mobile` and `.hide-desktop`. Use sparingly — reflowing beats
 hiding.
@@ -371,28 +371,28 @@ hiding.
 
 Every interactive element defines all five.
 
-| State | Convention |
-|-------|-----------|
-| Default | Token colours at rest |
-| Hover | `bgHover` / `…Hover` token; `transitions.fast` |
-| Focus | Global `*:focus-visible` ring from `shadows.focusRing` — **never remove it** |
-| Active | `bgActive` or `…Active` |
-| Disabled | `opacity: 0.6`, `cursor: not-allowed`, no transform |
+| State    | Convention                                                                   |
+| -------- | ---------------------------------------------------------------------------- |
+| Default  | Token colours at rest                                                        |
+| Hover    | `bgHover` / `…Hover` token; `transitions.fast`                               |
+| Focus    | Global `*:focus-visible` ring from `shadows.focusRing` — **never remove it** |
+| Active   | `bgActive` or `…Active`                                                      |
+| Disabled | `opacity: 0.6`, `cursor: not-allowed`, no transform                          |
 
 Hover transforms (`translateY(-1px)`) are reserved for buttons and cards, and must be reverted
 on `:disabled`.
 
 ## Feedback
 
-| Situation | Mechanism |
-|-----------|-----------|
-| Mutation succeeded | `toast.success('Post created')` |
-| Mutation failed | `toast.error(err.response?.data?.message ?? 'Something went wrong')` |
-| Field invalid | Inline `error` prop on `Input` / `TextArea` |
-| Whole form or page failed | `Alert variant="error"` above the form |
-| Page data loading | `Loading` with a caption |
-| In-place work | Inline `Spinner`, or the button's `isLoading` |
-| Destructive confirmation | `Modal` with an explicitly named action |
+| Situation                 | Mechanism                                                            |
+| ------------------------- | -------------------------------------------------------------------- |
+| Mutation succeeded        | `toast.success('Post created')`                                      |
+| Mutation failed           | `toast.error(err.response?.data?.message ?? 'Something went wrong')` |
+| Field invalid             | Inline `error` prop on `Input` / `TextArea`                          |
+| Whole form or page failed | `Alert variant="error"` above the form                               |
+| Page data loading         | `Loading` with a caption                                             |
+| In-place work             | Inline `Spinner`, or the button's `isLoading`                        |
+| Destructive confirmation  | `Modal` with an explicitly named action                              |
 
 Toasts appear top-right. Do not use them for validation — validation belongs next to the field.
 
@@ -422,12 +422,12 @@ block with a route home. Never surface a raw exception or stack trace.
 
 ## Content and voice
 
-| Rule | Yes | No |
-|------|-----|-----|
-| Sentence case | "Write a post" | "Write A Post" |
-| Verb-first buttons | "Publish", "Save draft" | "Submit", "OK" |
-| Plain, specific errors | "Post not found" | "Error 404: resource unavailable" |
-| Second person | "Your posts" | "User's posts" |
+| Rule                   | Yes                       | No                                |
+| ---------------------- | ------------------------- | --------------------------------- |
+| Sentence case          | "Write a post"            | "Write A Post"                    |
+| Verb-first buttons     | "Publish", "Save draft"   | "Submit", "OK"                    |
+| Plain, specific errors | "Post not found"          | "Error 404: resource unavailable" |
+| Second person          | "Your posts"              | "User's posts"                    |
 | No jargon in user copy | "Couldn't save your post" | "Mutation failed with status 500" |
 
 Dates use `date-fns` as `MMM d, yyyy`. Relative time is reserved for activity feeds.
@@ -447,18 +447,18 @@ needs an `aria-label`; icons decorate, never carry meaning alone.
 Semantic markup and a global focus ring are in place; **no audit has been run**
 ([GAP-18](../product/roadmap.md#gap-18)).
 
-| Area | Requirement |
-|------|-------------|
-| Structure | One `<h1>` per page; heading levels descend without skipping |
-| Landmarks | `<header>`, `<nav>`, `<main>`, `<footer>` used for their purpose |
-| Focus | Visible on every interactive element; never `outline: none` without a replacement |
-| Keyboard | Every action reachable; modals trap focus and close on Escape (Radix handles this) |
-| Contrast | 4.5:1 body, 3:1 large text and UI boundaries, **in both themes** |
-| Images | Meaningful images carry `alt`; decorative use `alt=""` |
-| Controls | Icon-only buttons carry `aria-label`; toggles expose `aria-pressed` |
-| Forms | Labels programmatically associated; errors linked with `aria-describedby` |
-| Motion | Respect `prefers-reduced-motion` beyond a colour fade |
-| Live regions | Toasts announce through `aria-live` |
+| Area         | Requirement                                                                        |
+| ------------ | ---------------------------------------------------------------------------------- |
+| Structure    | One `<h1>` per page; heading levels descend without skipping                       |
+| Landmarks    | `<header>`, `<nav>`, `<main>`, `<footer>` used for their purpose                   |
+| Focus        | Visible on every interactive element; never `outline: none` without a replacement  |
+| Keyboard     | Every action reachable; modals trap focus and close on Escape (Radix handles this) |
+| Contrast     | 4.5:1 body, 3:1 large text and UI boundaries, **in both themes**                   |
+| Images       | Meaningful images carry `alt`; decorative use `alt=""`                             |
+| Controls     | Icon-only buttons carry `aria-label`; toggles expose `aria-pressed`                |
+| Forms        | Labels programmatically associated; errors linked with `aria-describedby`          |
+| Motion       | Respect `prefers-reduced-motion` beyond a colour fade                              |
+| Live regions | Toasts announce through `aria-live`                                                |
 
 **Before merging a UI change:** tab through with no mouse, toggle both themes, check contrast
 on any new pairing, resize to 375px.
@@ -467,20 +467,20 @@ on any new pairing, resize to 375px.
 
 ## Performance conventions
 
-| Practice | Detail |
-|----------|--------|
-| Code splitting | Every page lazily loaded via `lazyPage` |
-| Vendor chunks | `vendor`, `radix`, `editor` split in `vite.config.js` |
-| Images | Always set `alt`; `GlobalStyles` applies `max-width: 100%` |
-| Lists | Stable entity-id keys, never an array index |
-| Memoisation | Only for measured problems |
-| Fonts | System stacks only — do not add a web font without measuring |
+| Practice       | Detail                                                       |
+| -------------- | ------------------------------------------------------------ |
+| Code splitting | Every page lazily loaded via `lazyPage`                      |
+| Vendor chunks  | `vendor`, `radix`, `editor` split in `vite.config.js`        |
+| Images         | Always set `alt`; `GlobalStyles` applies `max-width: 100%`   |
+| Lists          | Stable entity-id keys, never an array index                  |
+| Memoisation    | Only for measured problems                                   |
+| Fonts          | System stacks only — do not add a web font without measuring |
 
 ---
 
 ## Extending the system
 
-**A token** — add to `tokens.js` (mode-independent) or to *both* theme files
+**A token** — add to `tokens.js` (mode-independent) or to _both_ theme files
 (mode-dependent). A key in only one theme causes an undefined value in the other.
 
 **A primitive** — create `components/ui/<Name>.jsx`, export named, add to `index.js`, document

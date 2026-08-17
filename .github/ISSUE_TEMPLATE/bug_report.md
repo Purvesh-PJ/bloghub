@@ -1,9 +1,9 @@
 ---
 name: Bug report
 about: Report something that does not work as intended
-title: '[Bug] '
+title: "[Bug] "
 labels: bug
-assignees: ''
+assignees: ""
 ---
 
 <!--
@@ -49,18 +49,19 @@ Response body:
 <!-- Browser console and/or server terminal. Redact any token or credential. -->
 
 ```
+
 ```
 
 ## Environment
 
-| | |
-|---|---|
-| Where | local / preview / production |
-| Commit or deployment | |
-| Browser and version | |
-| Node version | |
-| Operating system | |
-| Database | local MongoDB / Atlas |
+|                      |                              |
+| -------------------- | ---------------------------- |
+| Where                | local / preview / production |
+| Commit or deployment |                              |
+| Browser and version  |                              |
+| Node version         |                              |
+| Operating system     |                              |
+| Database             | local MongoDB / Atlas        |
 
 ## Scope
 

@@ -13,10 +13,10 @@
 Both workspaces read **one `.env` at the repository root** — consolidated from per-workspace
 files so a single value cannot drift out of step.
 
-| Workspace | Mechanism |
-|-----------|-----------|
+| Workspace  | Mechanism                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------- |
 | `backend/` | `dotenv.config({ path: path.resolve(__dirname, '../.env') })` in `index.js` and `seed.js` |
-| `client/` | `envDir: '../'` in `vite.config.js` |
+| `client/`  | `envDir: '../'` in `vite.config.js`                                                       |
 
 Consequences:
 
@@ -35,14 +35,14 @@ Consequences:
 `backend/config/env.js` runs before the database connection and exits non-zero on a
 misconfiguration, so a broken deployment fails at boot rather than on a user's first request.
 
-| Check | Scope |
-|-------|-------|
-| `JWT_SECRET` present | All environments |
-| `CLIENT_URL` present | Production only |
-| `JWT_SECRET` ≥ 32 characters | Production only |
-| `JWT_REFRESH_SECRET` ≠ `JWT_SECRET` | Production — **hard failure** |
-| `JWT_REFRESH_SECRET` set | Production — warning if absent |
-| Database URI present | All environments (`config/db.js`) |
+| Check                               | Scope                             |
+| ----------------------------------- | --------------------------------- |
+| `JWT_SECRET` present                | All environments                  |
+| `CLIENT_URL` present                | Production only                   |
+| `JWT_SECRET` ≥ 32 characters        | Production only                   |
+| `JWT_REFRESH_SECRET` ≠ `JWT_SECRET` | Production — **hard failure**     |
+| `JWT_REFRESH_SECRET` set            | Production — warning if absent    |
+| Database URI present                | All environments (`config/db.js`) |
 
 ---
 
@@ -50,24 +50,24 @@ misconfiguration, so a broken deployment fails at boot rather than on a user's f
 
 ### Backend
 
-| Variable | Required | Default | Consumed by | Purpose |
-|----------|----------|---------|-------------|---------|
-| `NODE_ENV` | No | `undefined` | `index.js`, `errorHandler`, `logger`, `env.js` | `development` enables stack traces in error responses and the `dev` log format; `test` skips the database connection |
-| `PORT` | No | `4000` | `index.js` | Listening port. Ignored on Vercel |
-| `MONGO_DB_URI` | **Yes** | — | `config/db.js` | Connection string. See [aliases](#database-uri-aliases) |
-| `CLIENT_URL` | Production | — | `index.js` | CORS allowed origin. Credentials are only enabled when it is set |
-| `JWT_SECRET` | **Yes** | — | `auth.controllers.js`, `authenticateUser.js`, `utils/visitor.js` | Signs and verifies **access** tokens, and salts the visitor hash used to deduplicate view and read tracking |
-| `JWT_REFRESH_SECRET` | Recommended | falls back to `JWT_SECRET` | `auth.controllers.js` | Signs and verifies **refresh** tokens. Must differ — see [SEC-06](../security/checklist.md#sec-06) |
-| `JWT_ACCESS_EXPIRES_IN` | No | `15m` | `auth.controllers.js` | Access token lifetime |
-| `JWT_REFRESH_EXPIRES_IN` | No | `7d` | `auth.controllers.js` | Refresh token lifetime |
-| `VERCEL` | Auto | — | `index.js` | Set by the platform; suppresses `app.listen` |
-| `SEED_ALLOW_REMOTE` | No | — | `seed.js` | Must equal `yes` before the seeder will touch a non-local database. The seeder empties every collection first, so without this guard one careless command destroys a live deployment |
+| Variable                 | Required    | Default                    | Consumed by                                                      | Purpose                                                                                                                                                                              |
+| ------------------------ | ----------- | -------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `NODE_ENV`               | No          | `undefined`                | `index.js`, `errorHandler`, `logger`, `env.js`                   | `development` enables stack traces in error responses and the `dev` log format; `test` skips the database connection                                                                 |
+| `PORT`                   | No          | `4000`                     | `index.js`                                                       | Listening port. Ignored on Vercel                                                                                                                                                    |
+| `MONGO_DB_URI`           | **Yes**     | —                          | `config/db.js`                                                   | Connection string. See [aliases](#database-uri-aliases)                                                                                                                              |
+| `CLIENT_URL`             | Production  | —                          | `index.js`                                                       | CORS allowed origin. Credentials are only enabled when it is set                                                                                                                     |
+| `JWT_SECRET`             | **Yes**     | —                          | `auth.controllers.js`, `authenticateUser.js`, `utils/visitor.js` | Signs and verifies **access** tokens, and salts the visitor hash used to deduplicate view and read tracking                                                                          |
+| `JWT_REFRESH_SECRET`     | Recommended | falls back to `JWT_SECRET` | `auth.controllers.js`                                            | Signs and verifies **refresh** tokens. Must differ — see [SEC-06](../security/checklist.md#sec-06)                                                                                   |
+| `JWT_ACCESS_EXPIRES_IN`  | No          | `15m`                      | `auth.controllers.js`                                            | Access token lifetime                                                                                                                                                                |
+| `JWT_REFRESH_EXPIRES_IN` | No          | `7d`                       | `auth.controllers.js`                                            | Refresh token lifetime                                                                                                                                                               |
+| `VERCEL`                 | Auto        | —                          | `index.js`                                                       | Set by the platform; suppresses `app.listen`                                                                                                                                         |
+| `SEED_ALLOW_REMOTE`      | No          | —                          | `seed.js`                                                        | Must equal `yes` before the seeder will touch a non-local database. The seeder empties every collection first, so without this guard one careless command destroys a live deployment |
 
 ### Client
 
-| Variable | Required | Default | Consumed by | Purpose |
-|----------|----------|---------|-------------|---------|
-| `VITE_API_URL` | No | `http://localhost:4000` | `config/api.js` | API base URL. **Public** |
+| Variable       | Required | Default                 | Consumed by     | Purpose                  |
+| -------------- | -------- | ----------------------- | --------------- | ------------------------ |
+| `VITE_API_URL` | No       | `http://localhost:4000` | `config/api.js` | API base URL. **Public** |
 
 One client variable by design — everything else the browser needs comes from the API.
 
@@ -78,7 +78,7 @@ One client variable by design — everything else the browser needs comes from t
 `config/db.js` accepts three names, in order:
 
 ```js
-process.env.MONGODB_URI || process.env.MONGO_DB_URI || process.env.DB_URI
+process.env.MONGODB_URI || process.env.MONGO_DB_URI || process.env.DB_URI;
 ```
 
 The chain exists because the name changed twice during development and hosting providers
@@ -143,16 +143,16 @@ JWT_REFRESH_EXPIRES_IN=7d
 
 ## Comparison
 
-| Aspect | Development | Test | Production |
-|--------|-------------|------|------------|
-| Database | Local `mongod` | In-memory / throwaway | Atlas replica set |
-| API origin | `http://localhost:4000` | in-process | Same origin, `/api` |
-| Error responses | Message **and stack** | Message and stack | Generic message only |
-| Request logs | `dev` | `dev` | `combined` |
-| Rate limits | Active | Active | Active |
-| Seed data | Recommended | Required for E2E | **Never** |
-| Secret source | Root `.env` | Test env | Vercel dashboard |
-| Boot validation | Warns on a shared refresh secret | Same | **Fails** on a shared refresh secret |
+| Aspect          | Development                      | Test                  | Production                           |
+| --------------- | -------------------------------- | --------------------- | ------------------------------------ |
+| Database        | Local `mongod`                   | In-memory / throwaway | Atlas replica set                    |
+| API origin      | `http://localhost:4000`          | in-process            | Same origin, `/api`                  |
+| Error responses | Message **and stack**            | Message and stack     | Generic message only                 |
+| Request logs    | `dev`                            | `dev`                 | `combined`                           |
+| Rate limits     | Active                           | Active                | Active                               |
+| Seed data       | Recommended                      | Required for E2E      | **Never**                            |
+| Secret source   | Root `.env`                      | Test env              | Vercel dashboard                     |
+| Boot validation | Warns on a shared refresh secret | Same                  | **Fails** on a shared refresh secret |
 
 ---
 
@@ -186,21 +186,21 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
 ## Remaining weaknesses
 
-| Issue | Impact | Fix |
-|-------|--------|-----|
-| Three accepted names for one URI | Ambiguity about which is authoritative | Settle on one, delete the fallbacks |
-| No schema validation | Typos in optional variables surface at runtime | Validate with `zod` at boot — already installed |
-| `JWT_REFRESH_SECRET` falls back in development | A developer may never set it, so local behaviour differs from production | Acceptable; the warning makes it visible |
+| Issue                                          | Impact                                                                   | Fix                                             |
+| ---------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------- |
+| Three accepted names for one URI               | Ambiguity about which is authoritative                                   | Settle on one, delete the fallbacks             |
+| No schema validation                           | Typos in optional variables surface at runtime                           | Validate with `zod` at boot — already installed |
+| `JWT_REFRESH_SECRET` falls back in development | A developer may never set it, so local behaviour differs from production | Acceptable; the warning makes it visible        |
 
 ---
 
 ## Secret handling
 
-| Rule | Detail |
-|------|--------|
-| Never commit `.env` | Git-ignored, and untracked retroactively in `dba4590` |
-| Keep `.env.example` current | Placeholders only |
-| Rotate on any suspicion | Change in Vercel and redeploy |
-| Do not reuse across environments | A development leak must not compromise production |
-| Do not log configuration | Not at boot, not in an error path |
-| Restrict dashboard access | Vercel variables are readable by every project member |
+| Rule                             | Detail                                                |
+| -------------------------------- | ----------------------------------------------------- |
+| Never commit `.env`              | Git-ignored, and untracked retroactively in `dba4590` |
+| Keep `.env.example` current      | Placeholders only                                     |
+| Rotate on any suspicion          | Change in Vercel and redeploy                         |
+| Do not reuse across environments | A development leak must not compromise production     |
+| Do not log configuration         | Not at boot, not in an error path                     |
+| Restrict dashboard access        | Vercel variables are readable by every project member |
