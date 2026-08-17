@@ -422,7 +422,7 @@ Worth recording so it is not regressed.
 
 | Practice                                                                 | Where                      |
 | ------------------------------------------------------------------------ | -------------------------- |
-| bcrypt hashing with a per-password salt, cost 10                         | `auth.controllers.js`      |
+| bcrypt hashing with a per-password salt, cost 12                         | `auth.controllers.js`      |
 | Identical 401 for unknown user and wrong password                        | `auth.controllers.js`      |
 | Regex metacharacters escaped before building the search query            | `search.controllers.js`    |
 | Post ownership enforced on update and delete, with an admin bypass       | `post.controllers.js`      |

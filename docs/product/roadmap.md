@@ -20,7 +20,7 @@ problem.
 | [BUG-04](#bug-04) | Comment replies lost their post reference            | P1       | ✅ **Fixed**       |
 | [BUG-05](#bug-05) | Settings feature persisted nothing                   | P0       | ✅ **Fixed**       |
 | [BUG-06](#bug-06) | `Analytics` documents never updated                  | P2       | ⚠️ Partially fixed |
-| [BUG-07](#bug-07) | Avatar upload broken                                 | P1       | ❌ Open            |
+| [BUG-07](#bug-07) | Avatar upload broken                                 | P1       | ✅ **Fixed**       |
 | [BUG-08](#bug-08) | Missing post returned 200 instead of 404             | P1       | ✅ **Fixed**       |
 | [BUG-09](#bug-09) | Duplicate accounts possible                          | P1       | ✅ **Fixed**       |
 | [BUG-10](#bug-10) | Post-count adjustment targeted the wrong profile     | P2       | ✅ **Fixed**       |
@@ -28,13 +28,18 @@ problem.
 | [BUG-12](#bug-12) | Deep links 404 in production                         | P1       | ✅ **Fixed**       |
 | [BUG-13](#bug-13) | Two cache keys held the same data                    | P3       | ✅ **Resolved**    |
 | [BUG-14](#bug-14) | CORS wildcard origin with credentials                | P2       | ✅ **Fixed**       |
-| [BUG-15](#bug-15) | `setState` inside an effect in four pages            | P2       | ❌ Open            |
+| [BUG-15](#bug-15) | `setState` inside an effect                          | P2       | ❌ Open            |
 | [BUG-16](#bug-16) | Seeder wrote `posts` instead of `post` on every like | P0       | ✅ **Fixed**       |
 | [BUG-17](#bug-17) | `PostDetail` referenced an undefined component       | P1       | ✅ **Fixed**       |
 | [BUG-18](#bug-18) | Seeder could not find the root `.env`                | P1       | ✅ **Fixed**       |
 
-14 of 18 closed. BUG-16 to BUG-18 were found during remediation, two of them by tooling that
-was fixed along the way.
+**16 of 18 closed.** The two that remain are BUG-06 (the `Analytics` collection, which is
+superseded rather than broken — the figures are computed live from the event collections) and
+BUG-15 (a lint-level render pattern). BUG-16 to BUG-18 were found during remediation, two of
+them by tooling that was fixed along the way.
+
+Everything closed here that a request can reach now has a regression test in
+[the backend suite](../guides/testing.md#current-state).
 
 ---
 
@@ -112,6 +117,26 @@ _Fix:_
 - Dead `backend/models/settings.model.js` deleted.
 
 _Verified:_ wrote `theme: dark`, read it back.
+
+### BUG-07
+
+**Avatar upload broken.** P1 · ✅ **Fixed**
+
+Three faults: multer wrote to a relative path that was never created and is read-only on
+serverless; the controller stored `file.path` (a string) into `image.data` (typed `Buffer`);
+and the reader base64-encoded that string back, producing a data URI containing the text of a
+filename rather than an image.
+
+_Fix:_ `multer.memoryStorage()` with a 2 MB cap and a MIME allowlist
+([SEC-05](../security/checklist.md#sec-05)), the **bytes** written to
+`UserProfile.image = { data: Buffer, contentType }`, and `avatarDataUri()` encoding those bytes
+on read. No filesystem is involved, so it works on Vercel unchanged.
+
+_Verified:_ uploaded through the settings page, the avatar renders after a reload.
+
+_Remaining trade-off:_ image bytes live in the document, so they inflate every read that
+populates a profile, and MongoDB is not a CDN. Object storage is the right destination at any
+real volume — that is [GAP-17](#gap-17), no longer a defect.
 
 ### BUG-08
 
@@ -237,24 +262,12 @@ _Recommended fix:_ remove the collection and compute per-post analytics on deman
 `getUserAnalytics` already does. That eliminates a second source of truth rather than adding
 machinery to keep it in step.
 
-### BUG-07
-
-**Avatar upload broken.** P1 · ❌ Open
-
-Three faults: multer writes to a relative path that is never created and is read-only on
-serverless; `setUser` stores `file.path` (a string) into `image.data` (typed `Buffer`); and
-`getUser` base64-encodes that string back, producing a corrupt data URL.
-
-_Fix:_ move to object storage (S3, Cloudinary, Vercel Blob), store the returned URL as a
-string, and delete the disk-storage configuration. Bundle with
-[SEC-05](../security/checklist.md#sec-05).
-
 ### BUG-15
 
 **`setState` inside an effect.** P2 · ❌ Open
 
-`WritePost`, `Settings` and `UserProfile` hydrate local form state from a query inside
-`useEffect`. The pattern works but causes a cascading render, and
+`WritePost`, `Settings`, `UserProfile` and `Search` hydrate local state from a query or a URL
+parameter inside `useEffect`. The pattern works but causes a cascading render, and
 `react-hooks/set-state-in-effect` flags it. (The fourth page originally listed here, `Profile`,
 no longer exists — it was folded into the workspace split.)
 
@@ -271,7 +284,7 @@ test is how regressions get shipped. Sequence it after the client half of
 | <a id="gap-01"></a>**GAP-01** | Password reset                      | P1       | ❌ Open                                                                                                                                                                                         |
 | <a id="gap-02"></a>**GAP-02** | Email verification                  | P2       | ❌ Open                                                                                                                                                                                         |
 | <a id="gap-03"></a>**GAP-03** | Draft autosave and revision history | P2       | ❌ Open                                                                                                                                                                                         |
-| <a id="gap-04"></a>**GAP-04** | Tags wired into the editor          | P2       | ❌ Open — model, routes and service exist                                                                                                                                                       |
+| <a id="gap-04"></a>**GAP-04** | Tags wired into the editor          | P2       | ✅ **Done** — up to 5 per story, set in the editor and persisted                                                                                                                                |
 | <a id="gap-05"></a>**GAP-05** | Real search                         | P1       | ⚠️ Partial — server-side category filtering added; still an unindexed regex over titles                                                                                                         |
 | <a id="gap-06"></a>**GAP-06** | Server-side session revocation      | P1       | ✅ **Done** — `tokenVersion` on the account, compared on every request                                                                                                                          |
 | <a id="gap-07"></a>**GAP-07** | Pagination on list endpoints        | P0       | ⚠️ Partial — `/posts`, `/search`, `/comments`, `/users` and the author's own list done; `/page-views/post/:id` is capped at 200 rather than paged; `GET /likes/post/:postId` is still unbounded |
@@ -284,7 +297,7 @@ test is how regressions get shipped. Sequence it after the client half of
 | <a id="gap-14"></a>**GAP-14** | Health and readiness endpoints      | P1       | ✅ **Done** — `GET /health`, `GET /ready`                                                                                                                                                       |
 | <a id="gap-15"></a>**GAP-15** | Structured logging                  | P2       | ❌ Open — morgan plus `console.*`                                                                                                                                                               |
 | <a id="gap-16"></a>**GAP-16** | SEO and social metadata             | P2       | ❌ Open                                                                                                                                                                                         |
-| <a id="gap-17"></a>**GAP-17** | Image upload pipeline               | P2       | ❌ Open — see [BUG-07](#bug-07)                                                                                                                                                                 |
+| <a id="gap-17"></a>**GAP-17** | Image upload pipeline               | P2       | ❌ Open — upload works, but the bytes live in MongoDB rather than object storage                                                                                                                |
 | <a id="gap-18"></a>**GAP-18** | Accessibility audit                 | P2       | ❌ Open                                                                                                                                                                                         |
 
 ---
@@ -327,9 +340,7 @@ phase built the thing that stops them coming back.
 
 - [ ] [GAP-01](#gap-01) password reset
 - [ ] [GAP-05](#gap-05) text-index search with paging
-- [ ] [GAP-17](#gap-17) image upload pipeline, closing [BUG-07](#bug-07) and
-      [SEC-05](../security/checklist.md#sec-05)
-- [ ] [GAP-04](#gap-04) tags in the editor
+- [ ] [GAP-17](#gap-17) move avatar bytes out of MongoDB and into object storage
 - [ ] [GAP-08](#gap-08) notifications
 - [ ] [GAP-16](#gap-16) SEO metadata
 

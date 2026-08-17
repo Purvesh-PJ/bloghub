@@ -848,7 +848,9 @@ export function Home() {
             </PillarIcon>
             <div>
               <PillarTitle>Markdown Canvas</PillarTitle>
-              <PillarDesc>Write fluidly with instant live preview and zero interface clutter.</PillarDesc>
+              <PillarDesc>
+                Write fluidly with instant live preview and zero interface clutter.
+              </PillarDesc>
             </div>
           </PillarCard>
 
@@ -858,7 +860,9 @@ export function Home() {
             </PillarIcon>
             <div>
               <PillarTitle>True Read Metrics</PillarTitle>
-              <PillarDesc>Understand how many readers actually finished your piece, not just clicked.</PillarDesc>
+              <PillarDesc>
+                Understand how many readers actually finished your piece, not just clicked.
+              </PillarDesc>
             </div>
           </PillarCard>
 
@@ -868,7 +872,9 @@ export function Home() {
             </PillarIcon>
             <div>
               <PillarTitle>Private & Public</PillarTitle>
-              <PillarDesc>Polish drafts in private, then publish seamlessly when you are ready.</PillarDesc>
+              <PillarDesc>
+                Polish drafts in private, then publish seamlessly when you are ready.
+              </PillarDesc>
             </div>
           </PillarCard>
 
@@ -878,7 +884,9 @@ export function Home() {
             </PillarIcon>
             <div>
               <PillarTitle>Pure Experience</PillarTitle>
-              <PillarDesc>Zero popups, zero intrusive ads, crafted for pure reading enjoyment.</PillarDesc>
+              <PillarDesc>
+                Zero popups, zero intrusive ads, crafted for pure reading enjoyment.
+              </PillarDesc>
             </div>
           </PillarCard>
         </PillarsSection>

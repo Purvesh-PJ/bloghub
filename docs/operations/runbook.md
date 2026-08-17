@@ -303,7 +303,7 @@ Check these before investigating.
 
 | Symptom                                                | Cause                                                                                                                           |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| Avatar upload fails or shows a broken image            | [BUG-07](../product/roadmap.md#bug-07) — the file is validated but has nowhere durable to be stored                             |
+| Avatar upload rejected                                 | Over the 2 MB cap, or a type outside the JPEG/PNG/WebP/GIF allowlist                                                            |
 | `GET /analytics/post/:id` returns 404 for a real post  | [BUG-06](../product/roadmap.md#bug-06) — `Analytics` documents are seeder-only                                                  |
 | Only the first page is reachable from the landing feed | [GAP-07](../product/roadmap.md#gap-07) — the landing page does not consume pagination; `/search` does                           |
 | Search misses obvious matches                          | [GAP-05](../product/roadmap.md#gap-05) — titles only, no content search                                                         |

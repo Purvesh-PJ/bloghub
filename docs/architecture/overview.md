@@ -221,13 +221,13 @@ pointed at it with `envDir: '../'`. Reference:
 
 ## Known structural weaknesses
 
-| Observation                                                         | Consequence                                                                                       |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| No root `package.json`                                              | Every command runs from a subdirectory; CI must install twice                                     |
-| `services/` covers only two of twelve resources                     | Most controllers talk to models directly, so the layer is a convention rather than a rule         |
-| The router is mounted at both `/` and `/api`                        | Two public surfaces to secure and document — see [reference/api.md](../reference/api.md#base-url) |
-| `client/tsconfig.json` alongside `jsconfig.json`                    | Two overlapping editor configs; the stricter one has no consumer                                  |
-| The `@/*` alias is declared but unused, with no matching Vite alias | Using it today would break the build                                                              |
-| Page components run 400–1,000+ lines                                | Styled components co-located with page logic; the largest files are hard to review                |
-| `errorHandler` is effectively unreachable                           | No controller calls `next(err)` — see [backend.md](backend.md#error-handling)                     |
-| No test runner                                                      | The largest risk in the repository ([GAP-11](../product/roadmap.md#gap-11))                       |
+| Observation                                                         | Consequence                                                                                                                    |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| No root `package.json`                                              | Every command runs from a subdirectory; CI must install twice                                                                  |
+| `services/` covers only two of twelve resources                     | Most controllers talk to models directly, so the layer is a convention rather than a rule                                      |
+| ~~The router is mounted at both `/` and `/api`~~                    | Closed — mounted once, at `/api`. See [reference/api.md](../reference/api.md#base-url)                                         |
+| `client/tsconfig.json` alongside `jsconfig.json`                    | Two overlapping editor configs; the stricter one has no consumer                                                               |
+| The `@/*` alias is declared but unused, with no matching Vite alias | Using it today would break the build                                                                                           |
+| Page components run 400–1,000+ lines                                | Styled components co-located with page logic; the largest files are hard to review                                             |
+| Five of thirteen controllers still catch locally                    | Both patterns are correct; the older one picks its status further from the cause — see [backend.md](backend.md#error-handling) |
+| No client test runner                                               | The backend has 61 tests in CI; the client has none ([GAP-11](../product/roadmap.md#gap-11))                                   |

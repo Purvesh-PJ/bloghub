@@ -82,39 +82,49 @@ Full catalogue with per-feature implementation status:
 
 ### Home
 
-Hero, featured-category carousel, post feed and trending sidebar.
+Hero, the trending list ranked over the last 14 days, and the feed. The spotlight card is a
+real post, not a mock.
 
 ![Home](./client/public/screenshots/home.png)
 
-### Feed
+### Explore
 
-Category filtering with the trending and topics sidebar.
+Server-side search and category filtering, with a per-category count so no filter leads to an
+empty page.
 
-![Latest posts](./client/public/screenshots/latest-posts.png)
+![Explore](./client/public/screenshots/explore.png)
 
 ### Post
 
-Focused reading view with a 680px measure and engagement controls.
+Focused reading view with a 680px measure and engagement controls. Markdown is sanitised
+before it is rendered.
 
 ![Post](./client/public/screenshots/post.png)
 
+### Workspace — Dashboard
+
+How the work is doing: views, reads finished, read-through, and the drafts to pick back up.
+
+![Dashboard](./client/public/screenshots/dashboard.png)
+
+### Workspace — Stories
+
+What has been written, and how to manage it. Filter, sort, search, publish, unpublish, delete
+and bulk actions — all applied on the server, so a reload reproduces the same view.
+
+![Stories](./client/public/screenshots/stories.png)
+
 ### Editor
 
-Markdown editing with live preview, categories and publishing controls.
+Markdown editing with live preview, categories, tags and publishing controls.
 
 ![Write post](./client/public/screenshots/write-post.png)
 
-### Profile
+### Public profile
 
-Author profile with statistics, bio and published posts.
+An author's public page with their published stories and counters.
 
 ![Profile](./client/public/screenshots/profile.png)
-
-### Analytics
-
-Views, reads, read rate and top-performing posts.
-
-![Analytics dashboard](./client/public/screenshots/performance-dashboard.png)
 
 </details>
 

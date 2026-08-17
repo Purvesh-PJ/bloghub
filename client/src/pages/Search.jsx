@@ -496,6 +496,11 @@ const EmptyContainer = styled.div`
   }
 `;
 
+/*
+  Suggested starting points, not a measurement. These are a fixed list, so the row is labelled
+  "Try searching for" rather than "Trending" — the app does not record what people search for,
+  and a label that claims otherwise is a number the product cannot back up.
+*/
 const POPULAR_SUGGESTIONS = [
   'Web Development',
   'Design Systems',
@@ -610,7 +615,7 @@ export function Search() {
 
         <QuickSuggestionsRow>
           <span className="label">
-            <TrendingUp size={13} /> Trending Searches:
+            <TrendingUp size={13} /> Try searching for:
           </span>
           {POPULAR_SUGGESTIONS.map((suggestion) => (
             <SuggestionBadge
@@ -683,9 +688,7 @@ export function Search() {
             {query ? (
               <>
                 Search results for “{query}”
-                <FeedMeta>
-                  ({searching ? 'Searching…' : `${results.length} found`})
-                </FeedMeta>
+                <FeedMeta>({searching ? 'Searching…' : `${results.length} found`})</FeedMeta>
               </>
             ) : topic ? (
               <>

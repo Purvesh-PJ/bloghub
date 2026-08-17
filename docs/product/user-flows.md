@@ -128,10 +128,14 @@ mismatched `type` claim.
 The API returns only `visibility: 'public'` posts, so no browser-side filter is required.
 Responses are cached for five minutes and are not refetched on window focus.
 
-The landing page has **no category filter**. It had one, and it was removed: it filtered only
-the posts already in memory, so it looked like a search of the platform while actually
-searching one page, and it competed with the ranking the page exists to present. Filtering
-belongs on `/search`, where the server does it against the whole collection.
+The landing page has **no in-page category filter**. It had one, and it was removed: it
+filtered only the posts already in memory, so it looked like a search of the platform while
+actually searching one page, and it competed with the ranking the page exists to present.
+
+What remains in the hero is a row of popular-topic shortcuts, which **navigate** to
+`/search?category=<name>` rather than filtering in place. The distinction matters: the landing
+page presents, `/search` filters, and the filtering is done by the server against the whole
+collection.
 
 **Known limitation:** the feed requests one page and does not paginate further, so only the
 most recent page is reachable from the landing page ([GAP-07](roadmap.md#gap-07)). `/search`

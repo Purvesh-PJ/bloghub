@@ -190,8 +190,9 @@ Not fixed in this release:
   nothing more — a component can throw on render and the pipeline stays green.
 - **CI reports but does not gate.** Branch protection is not enabled, so a red run still
   deploys.
-- Avatar upload is now safe but still unfinished: the file is validated in memory and has
-  nowhere durable to go until object storage is wired in (BUG-07, GAP-17).
+- Avatar images are stored in MongoDB as document bytes. It works and needs no external
+  service, but image bytes inflate every read that populates a profile; object storage is the
+  right destination at volume (GAP-17).
 - Rate-limit counters live in each instance's memory, so limits are approximate across
   serverless instances. A shared store would make them exact.
 - No Content-Security-Policy, no email verification, no password reset (GAP-01, GAP-02).

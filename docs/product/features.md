@@ -61,32 +61,32 @@ after it — see [security/auth.md](../security/auth.md).
 
 ## 2. Authoring
 
-| Capability                          | Status | Notes                                                                                     |
-| ----------------------------------- | ------ | ----------------------------------------------------------------------------------------- |
-| Markdown editor with live preview   | ✅     | `@uiw/react-md-editor`                                                                    |
-| Auto-generated URL slug             | ✅     | Client-side, editable                                                                     |
-| Cover image by URL                  | ✅     | Optional, on both create and edit                                                         |
-| Assign categories                   | ✅     | Selected at write time, reconciled on edit, ownership enforced                            |
-| Draft / private / public visibility | ✅     | Persisted and enforced server-side                                                        |
-| Edit an existing post               | ✅     | Works with or without a cover image                                                       |
-| Delete a post                       | ✅     | Cascades to comments and category back-references                                         |
-| Ownership enforcement               | ✅     | Author or `admin` only, on edit and delete                                                |
-| Assign tags                         | ⚠️     | Model, routes and service exist; the editor never sets them ([GAP-04](roadmap.md#gap-04)) |
-| Autosave / revision history         | ❌     | [GAP-03](roadmap.md#gap-03)                                                               |
+| Capability                          | Status | Notes                                                                                        |
+| ----------------------------------- | ------ | -------------------------------------------------------------------------------------------- |
+| Markdown editor with live preview   | ✅     | `@uiw/react-md-editor`                                                                       |
+| Auto-generated URL slug             | ✅     | Client-side, editable                                                                        |
+| Cover image by URL                  | ✅     | Optional, on both create and edit                                                            |
+| Assign categories                   | ✅     | Selected at write time, reconciled on edit, ownership enforced                               |
+| Draft / private / public visibility | ✅     | Persisted and enforced server-side                                                           |
+| Edit an existing post               | ✅     | Works with or without a cover image                                                          |
+| Delete a post                       | ✅     | Cascades to comments and category back-references                                            |
+| Ownership enforcement               | ✅     | Author or `admin` only, on edit and delete                                                   |
+| Assign tags                         | ✅     | Up to 5 per story, set in the editor and persisted on the post ([GAP-04](roadmap.md#gap-04)) |
+| Autosave / revision history         | ❌     | [GAP-03](roadmap.md#gap-03)                                                                  |
 
 ## 3. Reading and discovery
 
-| Capability                                       | Status | Notes                                                                                                                                                       |
-| ------------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Landing page with hero, feed and a trending list | ✅     | The category strip and creator widgets were removed — they repeated what the feed already showed                                                            |
-| Drafts and private posts hidden from the public  | ✅     | Enforced by the API, not the browser                                                                                                                        |
-| Author can preview their own unpublished post    | ✅     | Optional-auth on the detail endpoint                                                                                                                        |
-| Filter by category                               | ✅     | On `/search`, as a server-side query over the whole collection. Deliberately **not** on the landing page, where it only filtered the page already in memory |
-| Trending                                         | ✅     | Views + likes×3 + comments×5 + reads×5 over 14 days, with a minimum-views floor; falls back to latest and says so                                           |
-| Post detail with rendered Markdown               | ✅     |                                                                                                                                                             |
-| Paginated feed                                   | ✅     | `?page` and `?limit`, default 20, capped at 50                                                                                                              |
-| Search posts by title                            | ⚠️     | Public-only, capped, metacharacters escaped — but still an unindexed regex over titles ([GAP-05](roadmap.md#gap-05))                                        |
-| Infinite scroll                                  | ❌     | The API supports paging; the UI does not consume it yet                                                                                                     |
+| Capability                                       | Status | Notes                                                                                                                                                                                                     |
+| ------------------------------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Landing page with hero, feed and a trending list | ✅     | The category strip and creator widgets were removed — they repeated what the feed already showed                                                                                                          |
+| Drafts and private posts hidden from the public  | ✅     | Enforced by the API, not the browser                                                                                                                                                                      |
+| Author can preview their own unpublished post    | ✅     | Optional-auth on the detail endpoint                                                                                                                                                                      |
+| Filter by category                               | ✅     | On `/search`, as a server-side query over the whole collection, with a per-category count so no filter leads to an empty page. The landing page's topic pills link into it rather than filtering in place |
+| Trending                                         | ✅     | Views + likes×3 + comments×5 + reads×5 over 14 days, with a minimum-views floor; falls back to latest and says so                                                                                         |
+| Post detail with rendered Markdown               | ✅     |                                                                                                                                                                                                           |
+| Paginated feed                                   | ✅     | `?page` and `?limit`, default 20, capped at 50                                                                                                                                                            |
+| Search posts by title                            | ⚠️     | Public-only, capped, metacharacters escaped — but still an unindexed regex over titles ([GAP-05](roadmap.md#gap-05))                                                                                      |
+| Infinite scroll                                  | ❌     | The API supports paging; the UI does not consume it yet                                                                                                                                                   |
 
 ## 4. Social engagement
 
@@ -118,15 +118,15 @@ after it — see [security/auth.md](../security/auth.md).
 
 ## 6. Profile and settings
 
-| Capability                                                           | Status | Notes                                                                                                       |
-| -------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
-| View own profile with posts and counters                             | ✅     |                                                                                                             |
-| Edit username, email and bio                                         | ✅     |                                                                                                             |
-| Notification, privacy and appearance preferences                     | ✅     | Schema-backed; partial updates do not blank sibling fields                                                  |
-| Extended profile fields — full name, location, website, social links | ✅     | Declared on `UserProfile`                                                                                   |
-| Light / dark theme with system preference                            | ✅     | Persisted in local storage                                                                                  |
-| Upload an avatar                                                     | ❌     | Disk storage is unusable on serverless ([BUG-07](roadmap.md#bug-07))                                        |
-| Delete account                                                       | ✅     | `DELETE /users/me`, password-confirmed, purging posts, comments, likes, views, reads and both profile sides |
+| Capability                                                           | Status | Notes                                                                                                           |
+| -------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------- |
+| View own profile with posts and counters                             | ✅     |                                                                                                                 |
+| Edit username, email and bio                                         | ✅     |                                                                                                                 |
+| Notification, privacy and appearance preferences                     | ✅     | Schema-backed; partial updates do not blank sibling fields                                                      |
+| Extended profile fields — full name, location, website, social links | ✅     | Declared on `UserProfile`                                                                                       |
+| Light / dark theme with system preference                            | ✅     | Persisted in local storage                                                                                      |
+| Upload an avatar                                                     | ✅     | 2 MB cap, MIME allowlist, stored on the profile document and served as a data URI ([BUG-07](roadmap.md#bug-07)) |
+| Delete account                                                       | ✅     | `DELETE /users/me`, password-confirmed, purging posts, comments, likes, views, reads and both profile sides     |
 
 ## 7. Administration
 
