@@ -399,14 +399,19 @@ export function WritePost() {
       } else {
         toast.success(submitted?.visibility === 'public' ? 'Story published 🎉' : 'Story saved');
       }
-      navigate(data.postId ? `/post/${data.postId}` : '/dashboard');
+
+      // Publishing means you want to see it live. Saving a draft does not — there is nothing
+      // for a reader to look at — so that lands on the list where the draft can be managed.
+      navigate(
+        submitted?.visibility === 'public' && data.postId ? `/post/${data.postId}` : '/stories'
+      );
     },
     onError: (error) => toast.error(error.response?.data?.message || 'Could not create the post'),
   });
 
   const updateMutation = useMutation({
     mutationFn: (data) => postService.updatePost(id, data),
-    onSuccess: async () => {
+    onSuccess: async (_, submitted) => {
       // The work is on the server now, so the local recovery copy is no longer wanted.
       clearDraft();
       queryClient.invalidateQueries({ queryKey: ['myPosts'] });
@@ -430,7 +435,8 @@ export function WritePost() {
       } else {
         toast.success('Story updated 🚀');
       }
-      navigate(`/post/${id}`);
+      // Same rule as creating: an unpublished story has nothing to show a reader.
+      navigate(submitted?.visibility === 'public' ? `/post/${id}` : '/stories');
     },
     onError: (error) => toast.error(error.response?.data?.message || 'Could not update the post'),
   });
@@ -746,7 +752,7 @@ export function WritePost() {
               bookmark, a new tab, or the topbar on first load — left "back" pointing outside
               the application, so Cancel took the writer off the site entirely.
             */}
-            <Button variant="ghost" fullWidth as={Link} to="/dashboard">
+            <Button variant="ghost" fullWidth as={Link} to="/stories">
               Cancel
             </Button>
           </Buttons>

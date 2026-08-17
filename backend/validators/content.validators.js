@@ -61,8 +61,11 @@ const postRules = (partial) => {
       .isString()
       .trim()
       .isLength({ max: MAX_TITLE })
-      .matches(/^[a-z0-9-]+$/i)
-      .withMessage('Slug may only contain letters, numbers and hyphens'),
+      // Underscores are allowed. They are URL-safe, and slugs already in the database contain
+      // them — the editor sends the existing slug back on every save, so rejecting them made
+      // any such story impossible to edit at all, with a 400 the writer could do nothing about.
+      .matches(/^[a-z0-9_-]+$/i)
+      .withMessage('Slug may only contain letters, numbers, hyphens and underscores'),
 
     body('tags').optional().isArray({ max: 5 }).withMessage('A story can carry up to 5 tags'),
     body('tags.*')

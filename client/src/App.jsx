@@ -23,6 +23,7 @@ const UserProfile = lazyPage(() => import('./pages/UserProfile'), 'UserProfile')
 // User Pages (Protected)
 const WritePost = lazyPage(() => import('./pages/WritePost'), 'WritePost');
 const Dashboard = lazyPage(() => import('./pages/Dashboard'), 'Dashboard');
+const Stories = lazyPage(() => import('./pages/Stories'), 'Stories');
 const Responses = lazyPage(() => import('./pages/Responses'), 'Responses');
 const Settings = lazyPage(() => import('./pages/Settings'), 'Settings');
 
@@ -61,6 +62,7 @@ function App() {
           }
         >
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="stories" element={<Stories />} />
           <Route path="comments" element={<Responses />} />
           <Route path="write" element={<WritePost />} />
           <Route path="edit/:id" element={<WritePost />} />
@@ -68,7 +70,8 @@ function App() {
 
           {/* Legacy redirects */}
           <Route path="profile" element={<Navigate to="/dashboard" replace />} />
-          <Route path="my-posts" element={<Navigate to="/dashboard" replace />} />
+          {/* "My posts" is what /stories is now, so this one lands somewhere useful. */}
+          <Route path="my-posts" element={<Navigate to="/stories" replace />} />
           <Route path="analytics" element={<Navigate to="/dashboard" replace />} />
         </Route>
 
