@@ -29,6 +29,8 @@ import {
   DropdownMenu,
   Modal,
   Input,
+  Skeleton,
+  SkeletonText,
   Avatar,
 } from '../../components/ui';
 import { text, media } from '../../styles/theme/mixins';
@@ -128,7 +130,27 @@ export function AdminUsers() {
     onError: (err) => toast.error(err.response?.data?.message || 'Could not delete that account'),
   });
 
-  if (isLoading) return <Loading text="Loading the directory…" />;
+  if (isLoading) {
+    return (
+      <div aria-hidden="true">
+        <PageHeader title="People" subtitle="Loading directory…" />
+        <Card tone="low" radius="xl" style={{ padding: 20 }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+                <Skeleton $variant="circle" $width={36} $height={36} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+                  <Skeleton $width="35%" $height={15} $radius="xs" />
+                  <Skeleton $width="20%" $height={12} $radius="xs" />
+                </div>
+              </div>
+              <Skeleton $width={60} $height={24} $radius="pill" />
+            </div>
+          ))}
+        </Card>
+      </div>
+    );
+  }
 
   if (isError) {
     return (

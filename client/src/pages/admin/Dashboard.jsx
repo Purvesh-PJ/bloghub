@@ -8,7 +8,7 @@ import { postService } from '../../services/postService';
 import { analyticsService } from '../../services/analyticsService';
 import { PageHeader, Section } from '../../components/layout/PageShell';
 import { ReadRateHeadline } from '../../components/stats/ReadRateBar';
-import { Button, Card, Surface, Badge, Loading, EmptyState } from '../../components/ui';
+import { Button, Card, Surface, Badge, Loading, EmptyState, Skeleton, SkeletonText } from '../../components/ui';
 import { text, label as labelStyle, media, clamp } from '../../styles/theme/mixins';
 
 /**
@@ -118,7 +118,32 @@ export function AdminDashboard() {
     retry: false,
   });
 
-  if (isLoading) return <Loading text="Loading the console…" />;
+  if (isLoading) {
+    return (
+      <div aria-hidden="true">
+        <PageHeader
+          title="Overview"
+          subtitle="How much is being published, and how much of it is being read."
+        />
+        <Stats>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Stat key={i}>
+              <Skeleton $width={48} $height={32} $radius="xs" />
+              <Skeleton $width={60} $height={14} $radius="xs" />
+            </Stat>
+          ))}
+        </Stats>
+        <div style={{ marginTop: 24 }}>
+          <Card tone="low" padding="2xl" radius="xl">
+            <Skeleton $width="40%" $height={28} $radius="xs" />
+            <div style={{ marginTop: 12 }}>
+              <Skeleton $width="100%" $height={12} $radius="full" />
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   const posts = postsResponse?.data || [];
   const recent = posts.slice(0, 6);

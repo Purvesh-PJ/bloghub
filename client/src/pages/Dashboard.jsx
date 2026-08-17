@@ -23,7 +23,7 @@ import { postService } from '../services/postService';
 import { analyticsService } from '../services/analyticsService';
 import { PageShell, Section } from '../components/layout/PageShell';
 import { ReadRateBar } from '../components/stats/ReadRateBar';
-import { Button, Card, Loading, EmptyState, ErrorState, Avatar, Badge } from '../components/ui';
+import { Button, Card, Loading, EmptyState, ErrorState, Avatar, Badge, Skeleton, SkeletonText } from '../components/ui';
 import { text, label as labelStyle, media, clamp, display } from '../styles/theme/mixins';
 
 /**
@@ -499,7 +499,14 @@ export function Dashboard() {
         note={unfinished.length > 0 ? 'Stories you opened and have not finished.' : undefined}
       >
         {readingLoading ? (
-          <Loading text="Loading reading activity…" />
+          <ReadingGrid aria-hidden="true">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} tone="low" radius="xl" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <Skeleton $width="85%" $height={18} $radius="xs" />
+                <Skeleton $width="45%" $height={12} $radius="xs" />
+              </Card>
+            ))}
+          </ReadingGrid>
         ) : readingFailed ? (
           <ErrorState
             title="Reading activity did not load"

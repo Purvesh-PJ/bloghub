@@ -7,12 +7,10 @@ import toast from 'react-hot-toast';
 
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
-import { useAuth } from '../context/AuthContext';
 import { PostCard } from '../components/posts/PostCard';
+import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { PageShell, Section } from '../components/layout/PageShell';
-// Card is used by the loading skeleton below. It was missing from this list, so visiting any
-// profile threw a ReferenceError for as long as the posts query was in flight.
-import { Button, Card, Chip, Loading, EmptyState } from '../components/ui';
+import { Button, Card, Chip, Loading, EmptyState, Skeleton, SkeletonText } from '../components/ui';
 import { display, text, label as labelStyle, media } from '../styles/theme/mixins';
 import { initial } from '../utils/text';
 
@@ -205,13 +203,24 @@ export function UserProfile() {
   if (postsLoading) {
     return (
       <PageShell>
-        <Card style={{ height: 120, opacity: 0.6, marginBottom: 24 }} />
+        <Head aria-hidden="true">
+          <Skeleton $variant="circle" $width={96} $height={96} />
+          <Identity>
+            <Skeleton $width={180} $height={28} $radius="xs" />
+            <SkeletonText lines={2} lineHeight="14px" lastLineWidth="70%" gap="xs" />
+            <div style={{ display: 'flex', gap: 24, marginTop: 8 }}>
+              <Skeleton $width={60} $height={20} $radius="xs" />
+              <Skeleton $width={60} $height={20} $radius="xs" />
+              <Skeleton $width={60} $height={20} $radius="xs" />
+            </div>
+          </Identity>
+        </Head>
         <Section title="Stories">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {[1, 2, 3].map((i) => (
-              <Card key={i} style={{ height: 140, opacity: 0.6 }} />
+          <Grid>
+            {[1, 2, 3, 4].map((i) => (
+              <PostCardSkeleton key={i} layout="stacked" />
             ))}
-          </div>
+          </Grid>
         </Section>
       </PageShell>
     );
