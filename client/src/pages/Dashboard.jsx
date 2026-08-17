@@ -21,7 +21,6 @@ import {
   BarChart2,
   FileText,
   User,
-  Settings as SettingsIcon,
   Sparkles,
   Lock,
   ChevronLeft,
@@ -31,6 +30,7 @@ import toast from 'react-hot-toast';
 
 import { useAuth } from '../context/AuthContext';
 import { useDebounced } from '../hooks/useDebounced';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import { postService } from '../services/postService';
 import { analyticsService } from '../services/analyticsService';
 import { PageShell, Section } from '../components/layout/PageShell';
@@ -45,10 +45,12 @@ import {
   Modal,
   Loading,
   EmptyState,
+  ErrorState,
   DropdownMenu,
+  Spinner,
+  Avatar,
 } from '../components/ui';
 import { text, label as labelStyle, media, clamp, display } from '../styles/theme/mixins';
-import { initial } from '../utils/text';
 
 /* ── Executive Metrics Grid ─────────────────────────────────────────────── */
 
@@ -134,21 +136,6 @@ const CreatorInfo = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const CreatorAvatar = styled.div`
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #0284c7, #38bdf8);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 20px;
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
-  flex-shrink: 0;
 `;
 
 const CreatorDetails = styled.div`
@@ -243,6 +230,25 @@ const SelectCell = styled.div`
   grid-area: select;
   display: flex;
   align-items: center;
+`;
+
+/* Sits over the table's top edge while a refetch is in flight. */
+const FetchingBar = styled.div`
+  position: absolute;
+  top: ${({ theme }) => theme.spacing.sm};
+  right: ${({ theme }) => theme.spacing.lg};
+  z-index: 1;
+
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  padding: 4px 10px;
+  border-radius: ${({ theme }) => theme.radii.full};
+
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentText};
+  ${text('xs')}
+  font-weight: 600;
 `;
 
 const SelectAllRow = styled.label`
@@ -458,6 +464,31 @@ const ReadingMeta = styled.span`
   margin-top: auto;
 `;
 
+/* Replaces the metric grid until the account has written something worth measuring. */
+const FirstRun = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing['2xl']};
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px dashed ${({ theme }) => theme.colors.accentLine};
+`;
+
+const FirstRunTitle = styled.h2`
+  ${display('xs')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+const FirstRunBody = styled.p`
+  ${text('sm')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  max-width: 62ch;
+  line-height: 1.6;
+`;
+
 const TipText = styled.p`
   ${text('xs')}
   color: ${({ theme }) => theme.colors.textSecondary};
@@ -470,10 +501,20 @@ const TipText = styled.p`
 function PostRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSelected }) {
   const navigate = useNavigate();
 
+  const isPublic = post.visibility === 'public';
+
+  // The link works for the author either way, but for anyone else an unpublished post is a
+  // 404. Calling it a "public link" and reporting success made that a trap: a writer would
+  // send it to somebody and be told the story does not exist.
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/post/${post._id}`;
-    navigator.clipboard.writeText(url);
-    toast.success('Public article link copied! 📋');
+    navigator.clipboard.writeText(`${window.location.origin}/post/${post._id}`);
+    if (isPublic) {
+      toast.success('Public link copied');
+    } else {
+      toast('Link copied — but this story is not published, so only you can open it', {
+        icon: '🔒',
+      });
+    }
   };
 
   // Every visibility the post is not currently in, so "private" is reachable from the table.
@@ -497,12 +538,13 @@ function PostRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSel
       onClick: () => onSetVisibility(post, option.value),
     })),
     {
-      label: 'Copy public link',
+      label: isPublic ? 'Copy public link' : 'Copy private link',
       icon: <Share2 size={14} />,
       onClick: handleCopyLink,
     },
     {
-      label: 'View live story',
+      // An unpublished story is not "live", and saying so invited the writer to believe it was.
+      label: isPublic ? 'View live story' : 'Preview as reader',
       icon: <ExternalLink size={14} />,
       onClick: () => navigate(`/post/${post._id}`),
     },
@@ -620,6 +662,7 @@ const PAGE_SIZE = 10;
 
 export function Dashboard() {
   const { user } = useAuth();
+  const { avatarUrl, bio } = useCurrentUser();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState('all');
   const [query, setQuery] = useState('');
@@ -642,7 +685,16 @@ export function Dashboard() {
     ...(debouncedQuery.trim() && { q: debouncedQuery.trim() }),
   };
 
-  const { data: postsData, isLoading: postsLoading } = useQuery({
+  const {
+    data: postsData,
+    isLoading: postsLoading,
+    // isFetching, not isLoading: a filter or search change refetches with the previous rows
+    // still on screen, so isLoading is false and nothing would otherwise indicate the wait.
+    isFetching: postsFetching,
+    isError: postsFailed,
+    error: postsError,
+    refetch: refetchPosts,
+  } = useQuery({
     queryKey: ['myPosts', listParams],
     queryFn: () => postService.getMyPosts(listParams),
     placeholderData: (previous) => previous, // keeps the table on screen while paging
@@ -654,12 +706,22 @@ export function Dashboard() {
     read-rate bar sat empty, and "Continue Reading" never showed anything. The data was being
     computed and returned by the server the whole time; nothing was asking for it.
   */
-  const { data: analyticsData } = useQuery({
+  const {
+    data: analyticsData,
+    isPending: analyticsPending,
+    isError: analyticsFailed,
+  } = useQuery({
     queryKey: ['myAnalytics'],
     queryFn: analyticsService.getMyAnalytics,
   });
 
-  const { data: readingData, isLoading: readingLoading } = useQuery({
+  const {
+    data: readingData,
+    isLoading: readingLoading,
+    isError: readingFailed,
+    error: readingError,
+    refetch: refetchReading,
+  } = useQuery({
     queryKey: ['readingActivity'],
     queryFn: analyticsService.getReadingActivity,
   });
@@ -754,6 +816,9 @@ export function Dashboard() {
   };
 
   const firstName = user?.username?.split(' ')[0] || user?.username || 'Creator';
+  // Only once the list has actually loaded — an outage must not be mistaken for a new account.
+  const isNewAccount =
+    !postsFailed && !postsLoading && counts.all === 0 && !query && filter === 'all';
 
   if (postsLoading) {
     return (
@@ -769,91 +834,123 @@ export function Dashboard() {
     );
   }
 
-  // Straight from the analytics endpoint. The fallback exists only for the moment before
-  // that query resolves — it used to be the value that actually showed, because the query
-  // never ran, and it can only ever count the posts on the current page.
-  const totalViews = analytics?.totalViews ?? 0;
-  const totalReads = analytics?.totalReads ?? 0;
-  const overallRate = analytics?.readRate ?? 0;
+  // Straight from the analytics endpoint. Rendered as em dashes until it resolves rather
+  // than as zeroes: the stories query settles first, so a hard 0 would appear in all four
+  // cards and then jump to the real figure, reading as "your stats are gone" every load.
+  const metric = (value, suffix = '') => {
+    if (analyticsFailed) return '—';
+    if (analyticsPending) return '…';
+    return `${value ?? 0}${suffix}`;
+  };
 
   return (
     <PageShell>
       {/* ── Creator Profile Header ────────────────────────────────────────── */}
       <CreatorBanner>
         <CreatorInfo>
-          <CreatorAvatar>{initial(user?.username || 'C')}</CreatorAvatar>
+          {/* The real avatar, not initials-only. `bio` likewise comes from the account
+              rather than the auth payload, which never carried one. */}
+          <Avatar src={avatarUrl} name={user?.username} size="lg" />
           <CreatorDetails>
             <CreatorName>
               Welcome back, {firstName} <Sparkles size={16} />
             </CreatorName>
             <CreatorBio>
-              {user?.bio ||
+              {bio ||
                 'Manage your published stories, draft new ideas, and monitor reader engagement.'}
             </CreatorBio>
           </CreatorDetails>
         </CreatorInfo>
 
+        {/*
+          "Write New Story" was here as well as in the sidebar and the topbar — three copies
+          of one action on a single screen — and Settings twice. What is left is the one thing
+          the sidebar does not offer: seeing the profile the way a reader sees it.
+        */}
         <BannerActions>
-          <Button as={Link} to="/write">
-            <PenLine /> Write New Story
-          </Button>
           {(user?._id || user?.user_id) && (
             <Button as={Link} to={`/user/${user._id || user.user_id}`} variant="secondary">
-              <User /> Public Profile
+              <User /> View public profile
             </Button>
           )}
-          <Button as={Link} to="/settings" variant="tonal">
-            <SettingsIcon /> Settings
-          </Button>
         </BannerActions>
       </CreatorBanner>
 
-      {/* ── Executive Metrics ─────────────────────────────────────────────── */}
-      <MetricGrid>
-        <MetricCard>
-          <MetricHeader>
-            <span>Total Story Views</span>
-            <Eye />
-          </MetricHeader>
-          <MetricValue>{totalViews}</MetricValue>
-          <MetricSub>Across all published articles</MetricSub>
-        </MetricCard>
+      {/*
+        A brand-new account has nothing to measure, so four cards of zeroes and an empty
+        table told it only that it was empty. Until the first story exists, the space says
+        what to do instead of reporting nothing.
+      */}
+      {isNewAccount ? (
+        <FirstRun>
+          <FirstRunTitle>Publish your first story</FirstRunTitle>
+          <FirstRunBody>
+            Write in Markdown with a live preview. Save it as a draft while you work — only you can
+            see a draft — and publish when you are ready. Views and read-through appear here once
+            readers arrive.
+          </FirstRunBody>
+          <Button as={Link} to="/write">
+            <PenLine /> Start writing
+          </Button>
+        </FirstRun>
+      ) : (
+        <MetricGrid>
+          <MetricCard>
+            <MetricHeader>
+              <span>Total Story Views</span>
+              <Eye />
+            </MetricHeader>
+            <MetricValue>{metric(analytics?.totalViews)}</MetricValue>
+            <MetricSub>
+              {analyticsFailed ? 'Could not load' : 'Across all published articles'}
+            </MetricSub>
+          </MetricCard>
 
-        <MetricCard>
-          <MetricHeader>
-            <span>Total Reads Finished</span>
-            <CheckCircle2 />
-          </MetricHeader>
-          <MetricValue>{totalReads}</MetricValue>
-          <MetricSub>Readers who reached the conclusion</MetricSub>
-        </MetricCard>
+          <MetricCard>
+            <MetricHeader>
+              <span>Total Reads Finished</span>
+              <CheckCircle2 />
+            </MetricHeader>
+            <MetricValue>{metric(analytics?.totalReads)}</MetricValue>
+            <MetricSub>
+              {analyticsFailed ? 'Could not load' : 'Readers who reached the conclusion'}
+            </MetricSub>
+          </MetricCard>
 
-        <MetricCard>
-          <MetricHeader>
-            <span>Avg Read-Through %</span>
-            <BarChart2 />
-          </MetricHeader>
-          <MetricValue>{overallRate}%</MetricValue>
-          <MetricSub>True reader engagement score</MetricSub>
-        </MetricCard>
+          <MetricCard>
+            <MetricHeader>
+              <span>Avg Read-Through %</span>
+              <BarChart2 />
+            </MetricHeader>
+            <MetricValue>{metric(analytics?.readRate, '%')}</MetricValue>
+            <MetricSub>
+              {analyticsFailed ? 'Could not load' : 'True reader engagement score'}
+            </MetricSub>
+          </MetricCard>
 
-        <MetricCard>
-          <MetricHeader>
-            <span>Published Stories</span>
-            <FileText />
-          </MetricHeader>
-          <MetricValue>{counts.public}</MetricValue>
-          <MetricSub>
-            {counts.draft} draft{counts.draft === 1 ? '' : 's'} in progress
-          </MetricSub>
-        </MetricCard>
-      </MetricGrid>
+          <MetricCard>
+            <MetricHeader>
+              <span>Published Stories</span>
+              <FileText />
+            </MetricHeader>
+            <MetricValue>{counts.public}</MetricValue>
+            <MetricSub>
+              {counts.draft} draft{counts.draft === 1 ? '' : 's'} in progress
+            </MetricSub>
+          </MetricCard>
+        </MetricGrid>
+      )}
 
       <Split>
         <Section title="Your Stories">
-          {selectedIds.length > 0 ? (
+          {/*
+            The bulk bar sits above the toolbar rather than replacing it. Swapping them out
+            hid which filter was active and removed any way to change it without first
+            abandoning the selection.
+          */}
+          {selectedIds.length > 0 && (
             <BulkBar>
-              <BulkCount>{selectedIds.length} selected</BulkCount>
+              <BulkCount>{selectedIds.length} selected on this page</BulkCount>
               <Button
                 size="sm"
                 variant="tonal"
@@ -890,46 +987,57 @@ export function Dashboard() {
                 Cancel
               </Button>
             </BulkBar>
-          ) : (
-            <Toolbar>
-              {FILTERS.map((option) => (
-                <Chip
-                  key={option.id}
-                  selected={filter === option.id}
-                  onClick={() => resetToFirstPage(() => setFilter(option.id))}
-                >
-                  {option.label}
-                  {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
-                </Chip>
-              ))}
-
-              <SortSelect
-                value={sort}
-                onChange={(e) => resetToFirstPage(() => setSort(e.target.value))}
-                aria-label="Sort stories"
-              >
-                {SORTS.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </SortSelect>
-
-              <SearchField>
-                <Input
-                  icon={<SearchIcon />}
-                  placeholder="Search by title…"
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setPage(1);
-                  }}
-                />
-              </SearchField>
-            </Toolbar>
           )}
 
-          {posts.length === 0 ? (
+          <Toolbar>
+            {FILTERS.map((option) => (
+              <Chip
+                key={option.id}
+                selected={filter === option.id}
+                onClick={() => resetToFirstPage(() => setFilter(option.id))}
+              >
+                {option.label}
+                {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
+              </Chip>
+            ))}
+
+            <SortSelect
+              value={sort}
+              onChange={(e) => resetToFirstPage(() => setSort(e.target.value))}
+              aria-label="Sort stories"
+            >
+              {SORTS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </SortSelect>
+
+            <SearchField>
+              <Input
+                icon={<SearchIcon />}
+                placeholder="Search by title…"
+                value={query}
+                // Selection is cleared here too. Without it, selecting rows and then
+                // searching left the selection pointing at posts no longer on screen —
+                // so "Delete" acted on stories the reader could not see.
+                onChange={(e) => resetToFirstPage(() => setQuery(e.target.value))}
+              />
+            </SearchField>
+          </Toolbar>
+
+          {/*
+            The failure branch comes first and is deliberate. Falling through to the empty
+            state meant an outage told a writer with fifty posts that they had never written
+            anything, and invited them to start.
+          */}
+          {postsFailed ? (
+            <ErrorState
+              title="Your stories did not load"
+              error={postsError}
+              onRetry={() => refetchPosts()}
+            />
+          ) : posts.length === 0 ? (
             <EmptyState
               icon={SearchIcon}
               title={counts.all === 0 ? 'No stories written yet' : 'No matching stories'}
@@ -956,7 +1064,17 @@ export function Dashboard() {
               )}
             </EmptyState>
           ) : (
-            <Surface $tone="low" $radius="xl" $padding="sm">
+            <Surface $tone="low" $radius="xl" $padding="sm" style={{ position: 'relative' }}>
+              {/*
+                A refetch keeps the previous rows on screen, so without this the list simply
+                sat there after a filter or a keystroke with nothing to say it was working.
+              */}
+              {postsFetching && (
+                <FetchingBar role="status" aria-live="polite">
+                  <Spinner size="12px" /> Updating…
+                </FetchingBar>
+              )}
+
               <SelectAllRow>
                 <Checkbox
                   type="checkbox"
@@ -1060,6 +1178,12 @@ export function Dashboard() {
       >
         {readingLoading ? (
           <Loading text="Loading reading activity…" />
+        ) : readingFailed ? (
+          <ErrorState
+            title="Reading activity did not load"
+            error={readingError}
+            onRetry={() => refetchReading()}
+          />
         ) : unfinished.length === 0 ? (
           <EmptyState icon={BookOpen} title="No articles half-read">
             Stories you open to read will be bookmarked here so you can continue anytime.
