@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { Github, Twitter, Linkedin } from 'lucide-react';
 import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
+import { BrandMark } from '../ui';
 
 /**
  * Footer.
@@ -47,20 +48,6 @@ const Logo = styled(Link)`
   ${text('lg', 'semibold')}
   letter-spacing: ${({ theme }) => theme.tracking.tight};
   color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const Mark = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
 `;
 
 const Blurb = styled.p`
@@ -170,7 +157,7 @@ export function Footer() {
         <Top>
           <Brand>
             <Logo to="/">
-              <Mark>B</Mark>
+              <BrandMark letter="B" />
               BlogHub
             </Logo>
             <Blurb>

@@ -81,7 +81,7 @@ const AuthorDot = styled.span`
   width: 24px;
   height: 24px;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  background: ${({ theme }) => theme.gradients.brand};
   color: #ffffff;
   font-size: 11px;
   font-weight: ${({ theme }) => theme.weights.bold};
