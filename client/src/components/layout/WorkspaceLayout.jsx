@@ -1,11 +1,21 @@
+import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import styled, { css } from 'styled-components';
-import { LayoutDashboard, PenLine, Settings, LogOut, Globe, ExternalLink } from 'lucide-react';
+import {
+  LayoutDashboard,
+  PenLine,
+  Settings,
+  LogOut,
+  Globe,
+  ExternalLink,
+  MessageSquare,
+  ShieldCheck,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { ThemeToggle } from './ThemeToggle';
-import { Button } from '../ui';
+import { Button, Avatar, Modal } from '../ui';
 import { text, media, interactive } from '../../styles/theme/mixins';
-import { initial } from '../../utils/text';
 
 const Shell = styled.div`
   display: flex;
@@ -269,8 +279,10 @@ const Content = styled.main`
 `;
 
 export function WorkspaceLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
+  const { avatarUrl } = useCurrentUser();
   const location = useLocation();
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   const userId = user?._id || user?.user_id;
 
@@ -302,9 +314,20 @@ export function WorkspaceLayout() {
             <NavLink to="/write" $active={location.pathname.startsWith('/write')}>
               <PenLine /> Write New Story
             </NavLink>
+            <NavLink to="/comments" $active={location.pathname === '/comments'}>
+              <MessageSquare /> Responses
+            </NavLink>
             <NavLink to="/settings" $active={location.pathname === '/settings'}>
               <Settings /> Settings
             </NavLink>
+
+            {/* An administrator had no way back to the console short of typing the URL. */}
+            {isAdmin() && (
+              <NavLink to="/admin">
+                <ShieldCheck /> Admin console
+              </NavLink>
+            )}
+
             <NavLink to="/" style={{ marginTop: 'auto' }}>
               <Globe /> Reader Feed
             </NavLink>
@@ -315,7 +338,7 @@ export function WorkspaceLayout() {
               to={userId ? `/user/${userId}` : '/settings'}
               title="View Public Profile"
             >
-              <UserAvatar>{initial(user?.username || 'C')}</UserAvatar>
+              <Avatar src={avatarUrl} name={user?.username} size="sm" />
               <UserMeta>
                 <UserNameRow>
                   <UserName>{user?.username || 'Creator'}</UserName>
@@ -325,7 +348,11 @@ export function WorkspaceLayout() {
                 </ProfileBadge>
               </UserMeta>
             </UserProfileLink>
-            <LogoutButton onClick={logout} title="Sign Out">
+            {/*
+              Signing out now revokes the session on every device, not just this browser, so
+              it asks first. It was an unlabelled 32px icon that acted on the first click.
+            */}
+            <LogoutButton onClick={() => setConfirmSignOut(true)} aria-label="Sign out">
               <LogOut />
             </LogoutButton>
           </UserCard>
@@ -351,6 +378,22 @@ export function WorkspaceLayout() {
           </div>
         </Content>
       </Frame>
+
+      <Modal
+        open={confirmSignOut}
+        onOpenChange={setConfirmSignOut}
+        title="Sign out everywhere?"
+        description="This ends your session on every device you are signed in on, not just this browser. Your drafts and stories are unaffected."
+      >
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+          <Button variant="secondary" onClick={() => setConfirmSignOut(false)}>
+            Stay signed in
+          </Button>
+          <Button variant="danger" onClick={logout}>
+            Sign out
+          </Button>
+        </div>
+      </Modal>
     </Shell>
   );
 }
