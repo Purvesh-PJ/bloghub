@@ -39,7 +39,7 @@ export function AdminCategories() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: categoryService.getCategories,
+    queryFn: () => categoryService.getCategories({ withEmpty: true }),
   });
 
   const createMutation = useMutation({

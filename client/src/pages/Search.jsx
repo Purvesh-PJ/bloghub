@@ -251,9 +251,12 @@ export function Search() {
     enabled: Boolean(query),
   });
 
+  // The topic goes to the server. Filtering a fetched page of twenty client-side meant
+  // picking a topic showed only the stories in it that happened to be among the twenty most
+  // recent — "Programming" returned two while eight published Programming stories existed.
   const { data: postsData, isLoading: loadingPosts } = useQuery({
-    queryKey: ['posts'],
-    queryFn: () => postService.getPosts({ limit: 20 }),
+    queryKey: ['posts', { topic }],
+    queryFn: () => postService.getPosts({ limit: 20, ...(topic && { category: topic }) }),
     enabled: !query,
   });
 
@@ -265,15 +268,7 @@ export function Search() {
   const categories = categoriesData?.data || [];
   const results = searchData?.data || [];
 
-  const browsePosts = useMemo(() => {
-    const posts = postsData?.data || [];
-    if (!topic) return posts;
-    return posts.filter((post) =>
-      (post.categories || []).some(
-        (category) => (category?.name ?? category).toLowerCase() === topic.toLowerCase()
-      )
-    );
-  }, [postsData, topic]);
+  const browsePosts = useMemo(() => postsData?.data || [], [postsData]);
 
   const setTopic = (name) => {
     const next = new URLSearchParams(searchParams);

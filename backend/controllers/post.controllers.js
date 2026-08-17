@@ -25,6 +25,21 @@ exports.getBlogs = asyncHandler(async (req, res) => {
   const isAdmin = req.user?.roles?.includes('admin');
   const filter = wantsAll && isAdmin ? {} : { visibility: 'public' };
 
+  /*
+    Filtering by category happens here rather than in the browser.
+
+    Search fetched twenty posts and narrowed them client-side, so picking a topic showed only
+    the stories in that topic that happened to be among the twenty most recent — "Programming"
+    returned two while eight published Programming stories existed. Narrowing a page of
+    results is not the same as querying for them.
+  */
+  if (req.query.category) {
+    const category = await Category.findOne({ name: req.query.category }).select('_id').lean();
+    // An unknown name must match nothing rather than being ignored, which would silently
+    // return the unfiltered feed.
+    filter.categories = category ? category._id : null;
+  }
+
   const [posts, total] = await Promise.all([
     Post.find(filter)
       .populate('user', 'username')

@@ -1,23 +1,40 @@
 const Category = require('../models/category.model');
 const Post = require('../models/post.model');
+const asyncHandler = require('../middlewares/asyncHandler');
 
-exports.getCategories = async (req, res) => {
-  try {
-    const Categories = await Category.find();
+/**
+ * Categories, each with the number of published stories in it.
+ *
+ * The count is what lets a caller avoid offering a category that leads nowhere. Both the
+ * landing page and search rendered a chip for every category an administrator had ever
+ * created, so a reader could pick one with nothing behind it and land on an empty list —
+ * "Lifestyle" existed with zero published stories and was offered anyway.
+ *
+ * `?withEmpty=true` returns the full list, which is what the editor and the admin console
+ * want: a writer must be able to file a story under a category nobody has used yet.
+ */
+exports.getCategories = asyncHandler(async (req, res) => {
+  const counts = await Post.aggregate([
+    { $match: { visibility: 'public' } },
+    { $unwind: '$categories' },
+    { $group: { _id: '$categories', count: { $sum: 1 } } },
+  ]);
 
-    res.status(200).json({
-      success: true,
-      message: 'categories get succesfully',
-      data: Categories,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'An error occured',
-      error: error.message,
-    });
-  }
-};
+  const countById = new Map(counts.map((row) => [String(row._id), row.count]));
+
+  const categories = await Category.find().select('name').sort({ name: 1 }).lean();
+
+  const withCounts = categories.map((category) => ({
+    ...category,
+    postCount: countById.get(String(category._id)) ?? 0,
+  }));
+
+  res.status(200).json({
+    success: true,
+    message: 'Categories found successfully',
+    data: req.query.withEmpty === 'true' ? withCounts : withCounts.filter((c) => c.postCount > 0),
+  });
+});
 
 exports.postCategoryCollection = async (req, res) => {
   try {
