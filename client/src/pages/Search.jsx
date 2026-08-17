@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
-import { Search as SearchIcon, Compass, TrendingUp, X, Clock, BookOpen } from 'lucide-react';
+import { Search as SearchIcon, Compass, X, Clock, BookOpen } from 'lucide-react';
 
 import { searchService } from '../services/searchService';
 import { postService } from '../services/postService';
@@ -92,21 +92,6 @@ const QuickFilterRow = styled.div`
   flex-wrap: wrap;
 `;
 
-const QuickFilterLabel = styled.span`
-  ${text('xs', 'semibold')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-right: 4px;
-`;
-
-const Columns = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: ${({ theme }) => theme.spacing['3xl']};
-  align-items: start;
-
-  ${media.down('lg')`grid-template-columns: 1fr;`}
-`;
-
 const Feed = styled.div`
   display: flex;
   flex-direction: column;
@@ -170,37 +155,6 @@ const ResultMeta = styled.div`
     align-items: center;
     gap: 4px;
   }
-`;
-
-const TopicSection = styled.div`
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  padding: ${({ theme }) => theme.spacing.xl};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
-`;
-
-const TopicTitle = styled.h4`
-  ${text('sm', 'bold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-`;
-
-const TopicChipList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 `;
 
 /* ── Main Component ──────────────────────────────────────────────────────── */
@@ -296,22 +250,24 @@ export function Search() {
         </SearchInputWrapper>
 
         <QuickFilterRow>
-          <QuickFilterLabel>Popular:</QuickFilterLabel>
-          {['Technology', 'Design', 'Programming', 'Science', 'Food'].map((name) => (
-            <Chip
-              key={name}
-              size="sm"
-              selected={topic.toLowerCase() === name.toLowerCase()}
-              onClick={() => setTopic(name)}
-            >
-              {name}
-            </Chip>
-          ))}
-          {topic && (
-            <Chip size="sm" onClick={() => setTopic('')}>
-              ✕ Clear Filter
-            </Chip>
-          )}
+          <Chip size="sm" selected={!topic} onClick={() => setTopic('')}>
+            All
+          </Chip>
+          {categories.map((category) => {
+            const Icon = topicIcon(category.name);
+            return (
+              <Chip
+                key={category._id}
+                size="sm"
+                selected={topic.toLowerCase() === category.name.toLowerCase()}
+                onClick={() => setTopic(category.name)}
+              >
+                <Icon size={13} />
+                {category.name}
+                {category.postCount ? ` (${category.postCount})` : ''}
+              </Chip>
+            );
+          })}
         </QuickFilterRow>
       </SearchHero>
 
@@ -370,10 +326,14 @@ export function Search() {
           )}
         </Section>
       ) : (
-        <Columns>
+        <>
           <Section
-            title={topic ? `Stories in ${topic}` : 'Featured & Recent Stories'}
-            note={loadingPosts ? 'Loading…' : `${browsePosts.length} stories`}
+            title={topic ? `${topic} stories` : 'All stories'}
+            note={
+              loadingPosts
+                ? 'Loading…'
+                : `${browsePosts.length} ${browsePosts.length === 1 ? 'story' : 'stories'}`
+            }
           >
             {loadingPosts ? (
               <Feed>
@@ -398,32 +358,7 @@ export function Search() {
               </Feed>
             )}
           </Section>
-
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <TopicSection>
-              <TopicTitle>
-                <TrendingUp /> Browse All Categories
-              </TopicTitle>
-              <TopicChipList>
-                {categories.map((category) => {
-                  const Icon = topicIcon(category.name);
-                  const isSelected = topic.toLowerCase() === category.name.toLowerCase();
-                  return (
-                    <Chip
-                      key={category._id}
-                      size="sm"
-                      selected={isSelected}
-                      onClick={() => setTopic(category.name)}
-                    >
-                      <Icon size={13} />
-                      {category.name}
-                    </Chip>
-                  );
-                })}
-              </TopicChipList>
-            </TopicSection>
-          </aside>
-        </Columns>
+        </>
       )}
     </PageShell>
   );

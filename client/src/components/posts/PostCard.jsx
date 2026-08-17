@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageCircle } from 'lucide-react';
+import { Heart, MessageCircle, BookOpenCheck } from 'lucide-react';
 
 import styled, { css } from 'styled-components';
 import { display, text, clamp, media, interactive } from '../../styles/theme/mixins';
@@ -154,6 +154,12 @@ export function PostCard({ post, layout = 'row' }) {
   const isValidDate = created && !isNaN(created.getTime());
   const showThumb = Boolean(post.imageURL) && !imageFailed;
   const likesCount = post.likesCount ?? post.likes?.length ?? 0;
+  // Present only on posts that came from the trending endpoint, and only meaningful once
+  // somebody has opened the story.
+  const readRate =
+    post.trending?.views > 0 && typeof post.trending?.readRate === 'number'
+      ? post.trending.readRate
+      : null;
   const commentsCount = post.commentsCount ?? post.comments?.length ?? 0;
 
   return (
@@ -173,6 +179,18 @@ export function PostCard({ post, layout = 'row' }) {
             <Chip size="sm" interactive={false} as="span">
               {category}
             </Chip>
+          )}
+          {/*
+            The read-through, where the list carries it. The landing page promises "find out
+            who finished reading" and then showed cards of likes and comments like anywhere
+            else — the one figure that makes this platform different was missing from the very
+            list meant to demonstrate it. Only rendered when the story has been opened, since
+            a percentage of nothing means nothing.
+          */}
+          {readRate !== null && (
+            <Stat title={`${readRate}% of readers reached the end`}>
+              <BookOpenCheck /> {readRate}% finished
+            </Stat>
           )}
           <Stat>
             <Heart /> {likesCount}

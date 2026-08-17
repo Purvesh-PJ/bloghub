@@ -7,13 +7,10 @@ import {
   PenLine,
   Sparkles,
   Compass,
-  TrendingUp,
   Flame,
   Heart,
   BarChart2,
   Layers,
-  Zap,
-  Users,
   Clock,
   Eye,
   MessageCircle,
@@ -24,7 +21,7 @@ import {
 import { postService } from '../services/postService';
 import { categoryService } from '../services/categoryService';
 import { useAuth } from '../context/AuthContext';
-import { Button, Chip, Skeleton, Avatar } from '../components/ui';
+import { Button, Chip } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
 import { AuthorByline } from '../components/posts/AuthorByline';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
@@ -205,36 +202,6 @@ const CardHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const AuthorInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
-
-const AuthorMeta = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const AuthorName = styled.span`
-  ${text('sm', 'bold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  svg {
-    width: 13px;
-    height: 13px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-`;
-
-const AuthorHandle = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
 `;
 
 const CardImageMock = styled.div`
@@ -471,93 +438,27 @@ const BentoDescription = styled.p`
 
 /* ── Feed Grid ───────────────────────────────────────────────────────────── */
 
-const FeedGrid = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: ${({ theme }) => theme.spacing['3xl']};
-  align-items: start;
+/*
+  One column. The sidebar beside it held three widgets and each duplicated something:
 
-  ${media.down('lg')`grid-template-columns: 1fr;`}
+    Browse by topic     the same categories as the hero pills, linking to the search page
+                        that has its own category chips — the third copy of one control.
+    Featured creators   whoever happened to be in the top twelve, with their names already
+                        visible in the cards immediately to the left. A by-product presented
+                        as curation.
+    How ranking works   a longer version of the sentence directly under the section heading.
+
+  Removing it gives the stories the full width, which matters because they are what the page
+  is for.
+*/
+const FeedGrid = styled.div`
+  display: block;
 `;
 
 const PostList = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xl};
-`;
-
-const Sidebar = styled.aside`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing['2xl']};
-
-  ${media.up('lg')`
-    position: sticky;
-    top: calc(${({ theme }) => theme.layout.headerHeight} + ${({ theme }) => theme.spacing.xl});
-  `}
-`;
-
-const SidebarCard = styled.div`
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  padding: ${({ theme }) => theme.spacing.xl};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
-`;
-
-const SidebarTitle = styled.h4`
-  ${text('md', 'bold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-
-  svg {
-    width: 16px;
-    height: 16px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-`;
-
-const WriterRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.md};
-
-  & + & {
-    padding-top: ${({ theme }) => theme.spacing.md};
-    border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  }
-`;
-
-const WriterLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  min-width: 0;
-`;
-
-const WriterMeta = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-`;
-
-const WriterName = styled.span`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const WriterFollowers = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
 `;
 
 /* ── CTA Banner ──────────────────────────────────────────────────── */
@@ -638,39 +539,6 @@ export function Home() {
   const featuredCategory = featuredPost?.categories?.[0]?.name ?? featuredPost?.categories?.[0];
   const featuredAuthor = featuredPost?.user?.username;
   const featuredStats = featuredPost?.trending;
-
-  /*
-    Writers with more than one story in the current ranking.
-
-    The count is of stories *in this list*, not of everything they have written — the landing
-    page has no way to know that — so it is labelled as such. It previously read
-    `…length || 7`, which meant a writer the count came out as zero for was shown as having
-    seven stories.
-  */
-  const featuredWriters = useMemo(() => {
-    const map = new Map();
-    posts.forEach((post) => {
-      const author = post.user;
-      if (!author?.username) return;
-
-      const existing = map.get(author.username);
-      if (existing) {
-        existing.storiesCount += 1;
-        return;
-      }
-
-      map.set(author.username, {
-        id: author._id,
-        name: author.username,
-        topic: post.categories?.[0]?.name ?? post.categories?.[0] ?? 'Writing',
-        storiesCount: 1,
-      });
-    });
-
-    return Array.from(map.values())
-      .sort((a, b) => b.storiesCount - a.storiesCount)
-      .slice(0, 4);
-  }, [posts]);
 
   /*
     The categories the platform actually has. They were fetched and then ignored in favour of
@@ -831,7 +699,7 @@ export function Home() {
                   {isLoading
                     ? 'Loading stories…'
                     : isRanked
-                      ? `Ranked by reads, finishes, likes and comments over the last ${trendingWindow} days.`
+                      ? `Ranked by what readers did over the last ${trendingWindow} days — opens, finishes, likes and comments, with finishing weighted highest. A new story does not start at the top; it gets there by being read.`
                       : 'Not enough reading activity yet to rank anything, so these are the newest.'}
                 </SectionSubtitle>
               </SectionLeft>
@@ -862,112 +730,6 @@ export function Home() {
               </MoreLink>
             )}
           </section>
-
-          <Sidebar>
-            {/*
-              Real categories, each a link into search rather than a local filter.
-
-              These were eight hardcoded names — one of them, "Architecture", is not a category
-              this platform has — wired to a filter that ran over the twelve ranked posts
-              already on the page. So picking "Programming" showed nothing while eight
-              published Programming stories sat in the database, and picking a category with no
-              stories at all was offered just the same. Browsing belongs on the search page,
-              which queries the whole collection; this points there and says how many are
-              waiting.
-            */}
-            <SidebarCard>
-              <SidebarTitle>
-                <TrendingUp /> Browse by topic
-              </SidebarTitle>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {categories.map((category) => (
-                  <Chip
-                    key={category._id}
-                    as={Link}
-                    size="sm"
-                    to={`/search?topic=${encodeURIComponent(category.name)}`}
-                  >
-                    {category.name}
-                    {category.postCount ? ` (${category.postCount})` : ''}
-                  </Chip>
-                ))}
-              </div>
-            </SidebarCard>
-
-            {/* Featured Writers Widget */}
-            <SidebarCard>
-              <SidebarTitle>
-                <Users /> Featured Creators
-              </SidebarTitle>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {isLoading && featuredWriters.length === 0
-                  ? Array.from({ length: 4 }).map((_, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: 12,
-                          padding: index > 0 ? '8px 0 0 0' : 0,
-                          borderTop: index > 0 ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-                          <Skeleton $variant="circle" $width={34} $height={34} />
-                          <div
-                            style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}
-                          >
-                            <Skeleton $width="70%" $height={13} $radius="xs" />
-                            <Skeleton $width="40%" $height={11} $radius="xs" />
-                          </div>
-                        </div>
-                        <Skeleton $width={50} $height={28} $radius="sm" />
-                      </div>
-                    ))
-                  : featuredWriters.map((writer) => (
-                      <WriterRow key={writer.name}>
-                        <WriterLeft>
-                          <Avatar name={writer.name} size="sm" />
-                          <WriterMeta>
-                            <WriterName>{writer.name}</WriterName>
-                            <WriterFollowers>
-                              {writer.topic} · {writer.storiesCount}{' '}
-                              {writer.storiesCount === 1 ? 'story' : 'stories'} trending
-                            </WriterFollowers>
-                          </WriterMeta>
-                        </WriterLeft>
-                        <Button
-                          size="sm"
-                          variant="tonal"
-                          onClick={() =>
-                            writer.id ? navigate(`/user/${writer.id}`) : navigate('/search')
-                          }
-                        >
-                          View
-                        </Button>
-                      </WriterRow>
-                    ))}
-              </div>
-            </SidebarCard>
-
-            {/*
-              A "BlogHub Weekly" signup form used to sit here. There is no newsletter: it took
-              an address, threw it away, and answered "Subscribed! Welcome to the BlogHub weekly
-              digest." Collecting an address under a promise nothing keeps is the worst kind of
-              filler, so it is gone until there is something to send.
-            */}
-            <SidebarCard>
-              <SidebarTitle>
-                <Zap /> How ranking works
-              </SidebarTitle>
-              <p style={{ fontSize: 13, lineHeight: 1.6, opacity: 0.85 }}>
-                Stories are ranked by what readers did in the last {trendingWindow} days — opens,
-                finishes, likes and comments — with finishing weighted highest. A new story does not
-                start at the top; it gets there by being read.
-              </p>
-            </SidebarCard>
-          </Sidebar>
         </FeedGrid>
       </Container>
 
