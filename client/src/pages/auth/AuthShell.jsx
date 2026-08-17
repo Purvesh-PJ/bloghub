@@ -142,7 +142,7 @@ const PointIcon = styled.span`
   height: 38px;
   flex-shrink: 0;
   border-radius: ${({ theme }) => theme.radii.md};
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  background: ${({ theme }) => theme.gradients.brand};
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
 

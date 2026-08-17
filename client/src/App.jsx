@@ -55,7 +55,7 @@ const TopProgressBar = styled.div`
     display: block;
     width: 50%;
     height: 100%;
-    background: linear-gradient(90deg, #0284c7, #38bdf8);
+    background: ${({ theme }) => theme.gradients.brandBar};
     border-radius: 9999px;
     animation: ${progressAnim} 1.2s ease-in-out infinite;
   }

@@ -44,7 +44,7 @@ const Portrait = styled.div`
   height: 96px;
   flex-shrink: 0;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  background: ${({ theme }) => theme.gradients.brand};
   color: #ffffff;
   ${display('sm')}
   font-weight: 700;

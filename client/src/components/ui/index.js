@@ -10,6 +10,7 @@ export { Container, Box, Flex } from './Container';
 export { Modal } from './Modal';
 export { Select } from './Select';
 export { Avatar } from './Avatar';
+export { BrandMark } from './BrandMark';
 export { Spinner } from './Spinner';
 export { Tabs } from './Tabs';
 export { DropdownMenu } from './DropdownMenu';

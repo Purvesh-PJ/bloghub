@@ -3,7 +3,7 @@ import styled, { css } from 'styled-components';
 import { Search, PenLine, User, LayoutGrid, Settings, LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
-import { Button, DropdownMenu } from '../ui';
+import { Button, DropdownMenu, BrandMark } from '../ui';
 import { text, media, interactive } from '../../styles/theme/mixins';
 
 /**
@@ -55,20 +55,6 @@ const Logo = styled(Link)`
   letter-spacing: -0.02em;
   color: ${({ theme }) => theme.colors.textPrimary};
   flex-shrink: 0;
-`;
-
-const Mark = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: ${({ theme }) => theme.radii.xs};
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
 `;
 
 const Nav = styled.nav`
@@ -156,7 +142,7 @@ const AvatarButton = styled.button`
   width: 36px;
   height: 36px;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  background: ${({ theme }) => theme.gradients.brand};
   color: #ffffff;
   ${text('sm', 'bold')}
   box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
@@ -208,7 +194,7 @@ export function Header() {
       <Bar>
         <Left>
           <Logo to="/">
-            <Mark>B</Mark>
+            <BrandMark letter="B" />
             BlogHub
           </Logo>
 

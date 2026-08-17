@@ -50,6 +50,43 @@ const elevationFor = (mode) =>
         glow: '0 4px 16px 0 rgba(56, 189, 248, 0.30)',
       };
 
+/* ── Contrast ──────────────────────────────────────────────────────────────
+   Relative luminance and contrast ratio, per WCAG 2.1. Small enough to keep here, and
+   worth having: it is what lets the foreground for a solid colour be derived rather than
+   assumed. */
+
+const channel = (value) => {
+  const c = value / 255;
+  return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+};
+
+const luminance = (hex) => {
+  const clean = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(clean.slice(i, i + 2), 16));
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+};
+
+const contrast = (a, b) => {
+  const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (light + 0.05) / (dark + 0.05);
+};
+
+const INK = '#0f172a';
+
+/**
+ * The readable foreground for a solid background.
+ *
+ * `textOnAccent` was hardcoded to white. The accent ramp is Radix `sky`, whose step 9 is
+ * #7ce2fe — one of the bright scales that is designed to carry a *dark* foreground. White on
+ * it measures 1.48:1, against the 4.5:1 WCAG asks for, so every primary button, every selected
+ * chip and the skip link rendered near-invisible text in both light and dark mode.
+ *
+ * Deriving it means the pairing stays legible if the accent ramp is ever swapped, rather than
+ * being correct only for the ramp somebody had in mind when they typed '#ffffff'.
+ */
+const readableOn = (background) =>
+  contrast(background, '#ffffff') >= contrast(background, INK) ? '#ffffff' : INK;
+
 export function createTheme(ramps, mode) {
   const { neutral: n, accent: a, success: s, warning: w, danger: d, info: i, alpha } = ramps;
 
@@ -77,7 +114,10 @@ export function createTheme(ramps, mode) {
     textSecondary: isLight ? '#475569' : '#94a3b8',
     textMuted: isLight ? '#64748b' : '#64748b',
     textDisabled: isLight ? '#94a3b8' : '#475569',
-    textOnAccent: '#ffffff',
+    // Derived, not assumed. See readableOn above.
+    textOnAccent: readableOn(step(a, 9)),
+    textOnDanger: readableOn(step(d, 9)),
+    textOnSuccess: readableOn(step(s, 9)),
     textLink: step(a, 11),
     textLinkHover: step(a, 12),
 
@@ -226,6 +266,31 @@ export function createTheme(ramps, mode) {
     mode,
     colors,
     elevation,
+
+    /*
+      The brand gradient, in one place.
+
+      `linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)` was pasted into nine files — every
+      logo mark, every hand-rolled avatar, the footer, the auth shell. Two problems with that:
+      changing the brand meant finding nine copies, and the literals bypass the theme
+      entirely, so the gradient looked identical in dark mode where everything around it had
+      moved.
+    */
+    gradients: {
+      brand: `linear-gradient(135deg, ${step(a, 10)} 0%, ${step(a, 8)} 100%)`,
+      brandSoft: `linear-gradient(135deg, ${step(a, 4)} 0%, ${step(a, 6)} 100%)`,
+      // Horizontal, for thin progress and accent bars.
+      brandBar: `linear-gradient(90deg, ${step(a, 10)}, ${step(a, 8)})`,
+      // Darker, for large surfaces that carry text of their own.
+      brandDeep: `linear-gradient(135deg, ${step(a, 10)} 0%, ${step(a, 11)} 100%)`,
+      /*
+        For gradient *text*, which sits on the page background rather than being a surface.
+        Steps 11 and 12 are the only two Radix guarantees for contrast, and they are what a
+        headline needs — the solid steps used above measure 1.6:1 on white, which is a
+        headline nobody can read.
+      */
+      brandText: `linear-gradient(135deg, ${step(a, 11)} 0%, ${step(a, 12)} 100%)`,
+    },
     shadows: {
       ...elevation,
       // aliases for existing call sites

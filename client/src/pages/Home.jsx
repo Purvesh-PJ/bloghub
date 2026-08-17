@@ -111,7 +111,7 @@ const HeroTitle = styled.h1`
   font-weight: 800;
 
   .gradient-text {
-    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+    background: ${({ theme }) => theme.gradients.brandText};
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
@@ -216,7 +216,7 @@ const AuthorAvatar = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  background: ${({ theme }) => theme.gradients.brand};
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -310,7 +310,7 @@ const ProgressBar = styled.div`
   div {
     height: 100%;
     width: 92%;
-    background: linear-gradient(90deg, #0284c7, #38bdf8);
+    background: ${({ theme }) => theme.gradients.brandBar};
     border-radius: inherit;
   }
 `;
@@ -558,7 +558,7 @@ const WriterAvatar = styled.div`
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  background: ${({ theme }) => theme.gradients.brand};
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -590,7 +590,7 @@ const WriterFollowers = styled.span`
 /* ── CTA Banner ──────────────────────────────────────────────────── */
 
 const CtaSection = styled.div`
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  background: ${({ theme }) => theme.gradients.brandDeep};
   border-radius: ${({ theme }) => theme.radii['2xl']};
   padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing['2xl']};
   color: #ffffff;

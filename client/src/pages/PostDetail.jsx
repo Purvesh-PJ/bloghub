@@ -104,7 +104,7 @@ const Portrait = styled.span`
   height: 46px;
   flex-shrink: 0;
   border-radius: ${({ theme }) => theme.radii.full};
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  background: ${({ theme }) => theme.gradients.brand};
   color: #ffffff;
   ${text('md', 'bold')}
   box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);

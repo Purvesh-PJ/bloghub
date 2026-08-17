@@ -15,7 +15,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { ThemeToggle } from './ThemeToggle';
-import { Button, Avatar, Modal } from '../ui';
+import { Button, Avatar, Modal, BrandMark } from '../ui';
 import { text, media, interactive } from '../../styles/theme/mixins';
 
 const Shell = styled.div`
@@ -69,20 +69,6 @@ const Brand = styled(Link)`
   ${text('md', 'bold')}
   color: ${({ theme }) => theme.colors.textPrimary};
   text-decoration: none;
-`;
-
-const Mark = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
 `;
 
 const StudioBadge = styled.span`
@@ -174,7 +160,7 @@ const UserAvatar = styled.div`
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  background: ${({ theme }) => theme.gradients.brand};
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -303,7 +289,7 @@ export function WorkspaceLayout() {
         <Sidebar>
           <BrandRow>
             <Brand to="/dashboard">
-              <Mark>B</Mark>
+              <BrandMark letter="B" />
               <span>BlogHub</span>
               <StudioBadge>Studio</StudioBadge>
             </Brand>
