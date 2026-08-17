@@ -2,20 +2,33 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { User, Bell, Palette, Shield, Sun, Moon, Monitor, Check, Info, Trash2 } from 'lucide-react';
+import {
+  User,
+  Bell,
+  Palette,
+  Shield,
+  Sun,
+  Moon,
+  Monitor,
+  Check,
+  Info,
+  Trash2,
+  ImagePlus,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { userService } from '../services/userService';
 import { authService } from '../services/authService';
 import { settingsService } from '../services/settingsService';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../styles/ThemeProvider';
 import { PageShell, PageHeader } from '../components/layout/PageShell';
-import { Button, Input, TextArea, Surface, Loading, Modal } from '../components/ui';
+import { Button, Input, TextArea, Surface, Loading, Modal, Avatar } from '../components/ui';
+import { display, text, media, interactive } from '../styles/theme/mixins';
 
 // Mirrors the server-side minimum in validators/auth.validators.js.
 const MIN_PASSWORD_LENGTH = 10;
-import { display, text, media, interactive } from '../styles/theme/mixins';
 
 /**
  * Settings.
@@ -26,9 +39,8 @@ import { display, text, media, interactive } from '../styles/theme/mixins';
  * neither did Delete Account; the System theme card was rendered permanently inactive.
  * Somebody could fill in a new password, press the button and get no response at all.
  *
- * Every control here is wired to something real. Where the backend genuinely has nothing —
- * there is no password-change route and no account-deletion route — the page says so rather
- * than drawing a form that quietly does nothing.
+ * Every control here is wired to something real, changing the password and deleting the
+ * account included — both now have routes behind them rather than a "coming soon" badge.
  */
 
 const Layout = styled.div`
@@ -110,6 +122,43 @@ const PanelTitle = styled.h2`
 const PanelNote = styled.p`
   ${text('sm')}
   color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const AvatarRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xl};
+  padding-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+
+  ${media.down('sm')`
+    flex-direction: column;
+    align-items: flex-start;
+  `}
+`;
+
+const AvatarControls = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+  min-width: 0;
+`;
+
+/*
+  The visible control is the Button rendered as a <label>; this is the real input it wraps.
+  Hidden with clip rather than display:none so it stays focusable from the keyboard.
+*/
+const HiddenFileInput = styled.input`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 `;
 
 const Fields = styled.div`
@@ -311,6 +360,7 @@ const TABS = [
 export function Settings() {
   const queryClient = useQueryClient();
   const { user, logout } = useAuth();
+  const { avatarUrl } = useCurrentUser();
   const navigate = useNavigate();
   const { preference, setTheme } = useTheme();
   const [tab, setTab] = useState('profile');
@@ -325,6 +375,8 @@ export function Settings() {
   });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   const { data: userData, isLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -383,19 +435,41 @@ export function Settings() {
       toast.error(error.response?.data?.message || 'Could not delete your account'),
   });
 
+  // Mirrors the server's own limits, so an oversized file is refused here rather than after
+  // an upload the browser has already spent time on.
+  const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+
+  const handleAvatarPick = (file) => {
+    if (!file) return;
+    if (file.size > MAX_AVATAR_BYTES) {
+      return toast.error('That image is larger than 2 MB');
+    }
+    setAvatarFile(file);
+    // Shown immediately, so the choice is visible before it is saved.
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const clearAvatarPick = () => {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+  };
+
   const profileMutation = useMutation({
     mutationFn: () => {
       const body = new FormData();
       body.append('username', form.username);
       body.append('email', form.email);
       body.append('bio', form.bio);
+      if (avatarFile) body.append('image', avatarFile);
       return userService.updateUser(body);
     },
     onSuccess: () => {
+      clearAvatarPick();
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       toast.success('Profile saved');
     },
-    onError: () => toast.error('Could not save your profile'),
+    onError: (error) => toast.error(error.response?.data?.message || 'Could not save your profile'),
   });
 
   const settingsMutation = useMutation({
@@ -459,6 +533,35 @@ export function Settings() {
                   profileMutation.mutate();
                 }}
               >
+                {/*
+                  The API has accepted an avatar all along and getUser returns one, but there
+                  was no control anywhere in the app to send it, so the feature was invisible.
+                */}
+                <AvatarRow>
+                  <Avatar src={avatarPreview || avatarUrl} name={form.username} size="xl" />
+                  <AvatarControls>
+                    <PanelNote>
+                      JPEG, PNG, WebP or GIF, up to 2 MB. Square images look best.
+                    </PanelNote>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <Button type="button" variant="secondary" size="sm" as="label">
+                        <ImagePlus size={14} /> {avatarUrl || avatarFile ? 'Replace' : 'Upload'}
+                        <HiddenFileInput
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          onChange={(event) => handleAvatarPick(event.target.files?.[0])}
+                        />
+                      </Button>
+                      {avatarFile && (
+                        <Button type="button" variant="ghost" size="sm" onClick={clearAvatarPick}>
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                    {avatarFile && <PanelNote>Not saved yet — press Save changes below.</PanelNote>}
+                  </AvatarControls>
+                </AvatarRow>
+
                 <Fields>
                   <Input
                     label="Username"

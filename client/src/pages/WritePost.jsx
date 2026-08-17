@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import MDEditor from '@uiw/react-md-editor';
@@ -372,19 +372,33 @@ export function WritePost() {
 
   const createMutation = useMutation({
     mutationFn: postService.createPost,
-    onSuccess: async (data) => {
+    // `submitted` is the payload the mutation was called with, which is where the visibility
+    // actually chosen lives — component state may already have moved on.
+    onSuccess: async (data, submitted) => {
       // The work is on the server now, so the local recovery copy is no longer wanted.
       clearDraft();
       queryClient.invalidateQueries({ queryKey: ['myPosts'] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
+      // Categories are a second request, so they can fail on their own. This used to be
+      // swallowed into console.error and followed by an unconditional success toast — the
+      // writer was told everything saved while the categories silently had not.
+      let categoriesFailed = false;
       if (selectedCategories.length > 0 && data.postId) {
         try {
           await categoryService.attachCategoriesToPost(selectedCategories, data.postId);
-        } catch (error) {
-          console.error('[WritePost] attaching categories failed', error);
+        } catch {
+          categoriesFailed = true;
         }
       }
-      toast.success('Post published successfully! 🎉');
+
+      if (categoriesFailed) {
+        toast.success('Story saved');
+        toast.error('Its topics could not be saved — reopen the story to set them again.', {
+          duration: 6000,
+        });
+      } else {
+        toast.success(submitted?.visibility === 'public' ? 'Story published 🎉' : 'Story saved');
+      }
       navigate(data.postId ? `/post/${data.postId}` : '/dashboard');
     },
     onError: (error) => toast.error(error.response?.data?.message || 'Could not create the post'),
@@ -401,14 +415,21 @@ export function WritePost() {
       const added = selectedCategories.filter((name) => !originalCategories.includes(name));
       const removed = originalCategories.filter((name) => !selectedCategories.includes(name));
 
+      let categoriesFailed = false;
       if (added.length > 0 || removed.length > 0) {
         try {
           await categoryService.updatePostCategories(id, added, removed);
-        } catch (error) {
-          console.error('[WritePost] updating categories failed', error);
+        } catch {
+          categoriesFailed = true;
         }
       }
-      toast.success('Post updated successfully! 🚀');
+
+      if (categoriesFailed) {
+        toast.success('Story updated');
+        toast.error('Its topics could not be saved — try setting them again.', { duration: 6000 });
+      } else {
+        toast.success('Story updated 🚀');
+      }
       navigate(`/post/${id}`);
     },
     onError: (error) => toast.error(error.response?.data?.message || 'Could not update the post'),
@@ -720,7 +741,12 @@ export function WritePost() {
                 Save as draft
               </Button>
             )}
-            <Button variant="ghost" fullWidth onClick={() => navigate(-1)}>
+            {/*
+              An explicit destination, not navigate(-1). Opening /write directly — from a
+              bookmark, a new tab, or the topbar on first load — left "back" pointing outside
+              the application, so Cancel took the writer off the site entirely.
+            */}
+            <Button variant="ghost" fullWidth as={Link} to="/dashboard">
               Cancel
             </Button>
           </Buttons>
