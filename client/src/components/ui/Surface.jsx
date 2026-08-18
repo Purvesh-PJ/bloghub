@@ -36,11 +36,41 @@ const tones = {
   `,
 };
 
+const variants = {
+  /** Featured spotlight surface with subtle accent glow */
+  featured: css`
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    border: 1px solid ${({ theme }) => theme.colors.accentLine};
+    box-shadow:
+      0 8px 30px -4px rgba(14, 165, 233, 0.12),
+      0 2px 8px -2px rgba(15, 23, 42, 0.04);
+  `,
+  /** Clean floating elevated surface */
+  elevated: css`
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    border: none;
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+  `,
+  /** Minimal seamless surface with no background box */
+  ghost: css`
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  `,
+  /** Inset sunken well */
+  inset: css`
+    background: ${({ theme }) => theme.colors.surfaceContainerLow};
+    border: none;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  `,
+};
+
 export const Surface = styled.div`
   border-radius: ${({ theme, $radius }) => theme.radii[$radius]};
   padding: ${({ theme, $padding }) => ($padding === 'none' ? '0' : theme.spacing[$padding])};
 
   ${({ $tone }) => tones[$tone] ?? tones.low}
+  ${({ $variant }) => $variant && variants[$variant]}
 
   ${({ $bordered, theme }) =>
     $bordered &&
@@ -79,9 +109,12 @@ Surface.defaultProps = {
 
 /**
  * Card — a Surface with the conventional card geometry. Most callers want this.
+ *
+ * Supports `variant` ('elevated', 'featured', 'ghost', 'inset') and traditional `tone`.
  */
 export function Card({
   children,
+  variant,
   tone = 'low',
   radius = 'xl',
   padding = 'xl',
@@ -92,6 +125,7 @@ export function Card({
 }) {
   return (
     <Surface
+      $variant={variant}
       $tone={tone}
       $radius={radius}
       $padding={padding}
