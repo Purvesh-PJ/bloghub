@@ -1,17 +1,15 @@
 import { useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import {
   ArrowRight,
   PenLine,
   Sparkles,
   Compass,
   Flame,
-  Heart,
   BarChart2,
   Layers,
-  Clock,
   MessageCircle,
   ShieldCheck,
   CheckCircle2,
@@ -19,27 +17,11 @@ import {
 } from 'lucide-react';
 
 import { postService } from '../services/postService';
-import { categoryService } from '../services/categoryService';
 import { useAuth } from '../context/AuthContext';
-import { Button, Chip } from '../components/ui';
+import { Button } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
-import { AuthorByline } from '../components/posts/AuthorByline';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
-import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
-import { topicIcon } from '../components/marketing/Topics';
-import { readingTime } from '../utils/text';
-
-/* ── Keyframe Animations ─────────────────────────────────────────────────── */
-
-const floatAnimation = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-`;
-
-const pulseGlow = keyframes`
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.05); }
-`;
+import { display, text, media, interactive } from '../styles/theme/mixins';
 
 /* ── Page Shell ──────────────────────────────────────────────────────────── */
 
@@ -62,28 +44,29 @@ const Container = styled.div`
   `}
 `;
 
-/* ── Hero Section ────────────────────────────────────────────────────────── */
+/* ── Hero Section (Focused & Centered Editorial Headline) ─────────────────── */
 
 const HeroSection = styled.header`
-  padding: ${({ theme }) => theme.spacing['3xl']} 0 ${({ theme }) => theme.spacing['2xl']};
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: ${({ theme }) => theme.spacing['3xl']};
+  padding: ${({ theme }) => theme.spacing['4xl']} 0 ${({ theme }) => theme.spacing['2xl']};
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  min-height: min(74vh, 640px);
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto;
 
-  ${media.down('lg')`
-    grid-template-columns: 1fr;
-    min-height: auto;
-    padding: ${({ theme }) => theme.spacing.xl} 0;
+  ${media.down('sm')`
+    padding: ${({ theme }) => theme.spacing['2xl']} 0 ${({ theme }) => theme.spacing.xl};
   `}
 `;
 
 const HeroContent = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: ${({ theme }) => theme.spacing.xl};
-  max-width: 640px;
+  width: 100%;
 `;
 
 const HeroBadge = styled.div`
@@ -97,7 +80,6 @@ const HeroBadge = styled.div`
   ${text('xs', 'semibold')}
   width: fit-content;
   border: 1px solid ${({ theme }) => theme.colors.accentLine};
-  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.15);
 
   svg {
     width: 14px;
@@ -107,11 +89,12 @@ const HeroBadge = styled.div`
 `;
 
 const HeroTitle = styled.h1`
-  ${display('2xl')}
+  ${display('xl')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  line-height: 1.1;
-  letter-spacing: -0.035em;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
   font-weight: 800;
+  max-width: 760px;
 
   .gradient-text {
     background: ${({ theme }) => theme.gradients.brandText};
@@ -120,240 +103,24 @@ const HeroTitle = styled.h1`
     display: inline-block;
   }
 
-  ${media.down('lg')`font-size: ${({ theme }) => theme.display.xl[0]};`}
   ${media.down('md')`font-size: ${({ theme }) => theme.display.lg[0]};`}
   ${media.down('sm')`font-size: ${({ theme }) => theme.display.md[0]};`}
 `;
 
 const HeroSubtitle = styled.p`
-  ${text('lg')}
+  ${text('md')}
   line-height: 1.7;
   color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 560px;
+  max-width: 620px;
+  margin: 0 auto;
 `;
 
 const HeroActions = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  flex-wrap: wrap;
-`;
-
-const HeroTopicsSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
-  padding-top: ${({ theme }) => theme.spacing.md};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-`;
-
-const TopicLabel = styled.span`
-  ${text('xs', 'medium')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const CategoryPillsRow = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-`;
-
-const TopicPill = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  ${text('xs', 'semibold')}
-  transition: all ${({ theme }) => theme.transitions.fast};
-  ${interactive}
-
-  svg {
-    width: 13px;
-    height: 13px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.accentContainer};
-    color: ${({ theme }) => theme.colors.accentText};
-    border-color: ${({ theme }) => theme.colors.accentLine};
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
-  }
-`;
-
-/* ── Hero Showcase Card ──────────────────────────────────────────────────── */
-
-const HeroVisual = styled.div`
-  position: relative;
-  display: flex;
   justify-content: center;
-
-  ${media.down('lg')`
-    margin-top: ${({ theme }) => theme.spacing.xl};
-  `}
-`;
-
-const AmbientGlow = styled.div`
-  position: absolute;
-  inset: -20px;
-  background: radial-gradient(
-    circle,
-    rgba(14, 165, 233, 0.25) 0%,
-    rgba(56, 189, 248, 0.08) 50%,
-    transparent 70%
-  );
-  border-radius: 50%;
-  filter: blur(30px);
-  z-index: 1;
-  pointer-events: none;
-  animation: ${pulseGlow} 5s ease-in-out infinite;
-`;
-
-const ShowcaseCard = styled.div`
-  width: 100%;
-  max-width: 450px;
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  border-radius: ${({ theme }) => theme.radii['2xl']};
-  padding: ${({ theme }) => theme.spacing.xl};
-  box-shadow:
-    0 24px 48px -12px rgba(15, 23, 42, 0.12),
-    0 0 25px -5px rgba(14, 165, 233, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-  position: relative;
-  z-index: 2;
-  animation: ${floatAnimation} 6s ease-in-out infinite;
-`;
-
-const SpotlightBadge = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentText};
-  ${text('xs', 'semibold')}
-  border: 1px solid ${({ theme }) => theme.colors.accentLine};
-
-  svg {
-    width: 12px;
-    height: 12px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const CardImageMock = styled.div`
-  width: 100%;
-  height: 180px;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
-  padding: ${({ theme }) => theme.spacing.md};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 30%, rgba(15, 23, 42, 0.75) 100%);
-  }
-`;
-
-const CardTitle = styled(Link)`
-  ${display('xs')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: 1.2rem;
-  line-height: 1.35;
-  font-weight: 700;
-  text-decoration: none;
-  transition: color ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-const ReadRateWidget = styled.div`
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.md};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
-
-const ReadRateHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  ${text('xs', 'semibold')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  span.percent {
-    color: ${({ theme }) => theme.colors.accentText};
-    font-weight: 700;
-  }
-`;
-
-const ProgressBar = styled.div`
-  height: 6px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-  overflow: hidden;
-
-  div {
-    height: 100%;
-    background: ${({ theme }) => theme.gradients.brandBar};
-    border-radius: inherit;
-    transition: width 1s ease-out;
-  }
-`;
-
-const CardFooterStats = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  padding-top: ${({ theme }) => theme.spacing.xs};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-`;
-
-const StatItem = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-
-  svg {
-    width: 14px;
-    height: 14px;
-    color: ${({ $heart, theme }) => ($heart ? '#ef4444' : theme.colors.textMuted)};
-    fill: ${({ $heart }) => ($heart ? '#ef4444' : 'none')};
-  }
+  flex-wrap: wrap;
 `;
 
 /* ── Value Pillars Strip ─────────────────────────────────────────────────── */
@@ -364,7 +131,7 @@ const PillarsSection = styled.div`
   gap: ${({ theme }) => theme.spacing.lg};
   padding: ${({ theme }) => theme.spacing.xl};
   background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  border: none;
   border-radius: ${({ theme }) => theme.radii['2xl']};
 
   ${media.down('lg')`
@@ -373,6 +140,7 @@ const PillarsSection = styled.div`
 
   ${media.down('sm')`
     grid-template-columns: 1fr;
+    padding: ${({ theme }) => theme.spacing.lg};
   `}
 `;
 
@@ -380,16 +148,15 @@ const PillarCard = styled.div`
   display: flex;
   align-items: flex-start;
   gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.sm};
 `;
 
 const PillarIcon = styled.div`
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: ${({ theme }) => theme.radii.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
   background: ${({ theme }) => theme.colors.accentContainer};
   color: ${({ theme }) => theme.colors.accentSolid};
   flex-shrink: 0;
@@ -401,7 +168,7 @@ const PillarIcon = styled.div`
 `;
 
 const PillarTitle = styled.h3`
-  ${text('sm', 'bold')}
+  ${text('sm', 'semibold')}
   color: ${({ theme }) => theme.colors.textPrimary};
   margin-bottom: 2px;
 `;
@@ -412,7 +179,7 @@ const PillarDesc = styled.p`
   line-height: 1.5;
 `;
 
-/* ── Section Headers & Feed ──────────────────────────────────────────────── */
+/* ── Feed Section ────────────────────────────────────────────────────────── */
 
 const SectionHead = styled.div`
   display: flex;
@@ -430,39 +197,67 @@ const SectionLeft = styled.div`
 `;
 
 const SectionKicker = styled.span`
-  ${labelStyle('sm')}
-  color: ${({ theme }) => theme.colors.accentText};
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
+  ${text('xs', 'semibold')}
+  color: ${({ theme }) => theme.colors.accentText};
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
+    color: ${({ theme }) => theme.colors.accentSolid};
   }
 `;
 
 const SectionTitle = styled.h2`
-  ${display('md')}
+  ${display('sm')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  font-weight: 800;
-  letter-spacing: -0.025em;
-
-  ${media.down('sm')`font-size: ${({ theme }) => theme.display.sm[0]};`}
+  letter-spacing: -0.02em;
+  font-weight: 700;
 `;
 
 const SectionSubtitle = styled.p`
-  ${text('md')}
+  ${text('sm')}
   color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 560px;
 `;
 
 const PostList = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xl};
+`;
+
+const MoreLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+  padding: 10px 20px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+  color: ${({ theme }) => theme.colors.accentText};
+  ${text('sm', 'semibold')}
+  text-decoration: none;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  ${interactive}
+
+  svg {
+    width: 15px;
+    height: 15px;
+    transition: transform ${({ theme }) => theme.transitions.fast};
+  }
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.accentContainer};
+    transform: translateY(-1px);
+
+    svg {
+      transform: translateX(4px);
+    }
+  }
 `;
 
 const EmptyFeed = styled.div`
@@ -474,110 +269,77 @@ const EmptyFeed = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
   background: ${({ theme }) => theme.colors.surfaceContainerLow};
   border-radius: ${({ theme }) => theme.radii.xl};
-  border: 1px dashed ${({ theme }) => theme.colors.lineDefault};
+
+  h3 {
+    ${display('xs')}
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
 
   p {
-    ${text('md')}
+    ${text('sm')}
     color: ${({ theme }) => theme.colors.textSecondary};
-    max-width: 440px;
+    max-width: 420px;
   }
 `;
 
-const MoreLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: ${({ theme }) => theme.spacing['2xl']};
-  padding: 10px 20px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  text-decoration: none;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  svg {
-    width: 16px;
-    height: 16px;
-    transition: transform ${({ theme }) => theme.transitions.fast};
-  }
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.accentContainer};
-    color: ${({ theme }) => theme.colors.accentText};
-    border-color: ${({ theme }) => theme.colors.accentLine};
-    transform: translateY(-2px);
-
-    svg {
-      transform: translateX(4px);
-    }
-  }
-`;
-
-/* ── Bento Grid ──────────────────────────────────────────────────────────── */
+/* ── "Why BlogHub?" Bento Grid ───────────────────────────────────────────── */
 
 const BentoGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: ${({ theme }) => theme.spacing.xl};
 
-  ${media.down('lg')`grid-template-columns: 1fr 1fr;`}
-  ${media.down('sm')`grid-template-columns: 1fr;`}
+  ${media.down('lg')`
+    grid-template-columns: repeat(2, 1fr);
+  `}
+
+  ${media.down('sm')`
+    grid-template-columns: 1fr;
+  `}
 `;
 
 const BentoCard = styled.div`
+  position: relative;
   background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  border-radius: ${({ theme }) => theme.radii.xl};
+  border-radius: ${({ theme }) => theme.radii['2xl']};
   padding: ${({ theme }) => theme.spacing['2xl']};
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacing.md};
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
-  transition: all ${({ theme }) => theme.transitions.normal};
-  ${interactive}
+  transition: background ${({ theme }) => theme.transitions.fast};
 
-  ${({ $span }) =>
-    $span === '2' &&
-    `
-    grid-column: span 2;
-  `}
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.accentLine};
-    box-shadow:
-      0 16px 36px -10px rgba(15, 23, 42, 0.1),
-      0 0 20px -4px rgba(14, 165, 233, 0.15);
-    transform: translateY(-4px);
-  }
+  grid-column: ${({ $span }) => ($span ? `span ${$span}` : 'span 1')};
 
   ${media.down('lg')`
     grid-column: span 1;
   `}
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceHover};
+  }
 `;
 
 const BentoIcon = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentSolid};
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+  width: 44px;
+  height: 44px;
+  border-radius: ${({ theme }) => theme.radii.xl};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentSolid};
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
   }
 `;
 
 const BentoTitle = styled.h3`
-  ${display('xs')}
+  ${text('md', 'bold')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  font-weight: 700;
+  letter-spacing: -0.01em;
 `;
 
 const BentoDescription = styled.p`
@@ -586,47 +348,39 @@ const BentoDescription = styled.p`
   line-height: 1.65;
 `;
 
-/* ── CTA Banner ──────────────────────────────────────────────────────────── */
+/* ── Closing CTA Section ─────────────────────────────────────────────────── */
 
 const CtaSection = styled.div`
-  background: ${({ theme }) => theme.gradients.brandDeep};
-  border-radius: ${({ theme }) => theme.radii['2xl']};
+  position: relative;
+  background: ${({ theme }) => theme.gradients.brand};
+  border-radius: ${({ theme }) => theme.radii['3xl']};
   padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing['2xl']};
+  text-align: center;
   color: #ffffff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: ${({ theme }) => theme.spacing.xl};
-  position: relative;
   overflow: hidden;
-  box-shadow: 0 24px 50px -12px rgba(2, 132, 199, 0.45);
+  box-shadow: 0 20px 40px -15px rgba(14, 165, 233, 0.35);
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -20%;
-    width: 70%;
-    height: 160%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
-    pointer-events: none;
-  }
+  ${media.down('sm')`
+    padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing.lg};
+  `}
 `;
 
 const CtaTitle = styled.h2`
-  ${display('xl')}
+  ${display('md')}
   color: #ffffff;
   font-weight: 800;
-  max-width: 24ch;
-
-  ${media.down('md')`font-size: ${({ theme }) => theme.display.md[0]};`}
+  letter-spacing: -0.025em;
+  max-width: 640px;
 `;
 
 const CtaSubtitle = styled.p`
-  ${text('lg')}
-  color: rgba(255, 255, 255, 0.92);
-  max-width: 580px;
+  ${text('md')}
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 520px;
   line-height: 1.65;
 `;
 
@@ -664,31 +418,12 @@ export function Home() {
     queryFn: () => postService.getTrending({ limit: 12 }),
   });
 
-  const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
-    queryFn: categoryService.getCategories,
-  });
-
   const posts = useMemo(() => trendingResponse?.data ?? [], [trendingResponse]);
   const isRanked = trendingResponse?.trendedBy === 'engagement';
   const trendingWindow = trendingResponse?.window ?? 14;
-  const categories = useMemo(() => categoriesData?.data ?? [], [categoriesData]);
 
   const startHref = isAuthenticated ? '/write' : '/register';
   const startLabel = isAuthenticated ? 'Open Creator Studio' : 'Start Writing for Free';
-
-  const featuredPost = posts[0];
-  const featuredCategory = featuredPost?.categories?.[0]?.name ?? featuredPost?.categories?.[0];
-  const featuredAuthor = featuredPost?.user?.username || featuredPost?.author?.username;
-  const featuredStats = featuredPost?.trending;
-
-  const topics = useMemo(() => {
-    if (categories.length > 0) return categories.map((c) => ({ name: c.name }));
-
-    const fromPosts = new Set();
-    posts.forEach((post) => (post.categories || []).forEach((c) => fromPosts.add(c?.name ?? c)));
-    return [...fromPosts].filter(Boolean).map((name) => ({ name }));
-  }, [categories, posts]);
 
   return (
     <Page>
@@ -719,123 +454,7 @@ export function Home() {
                 <Compass /> Explore stories
               </Button>
             </HeroActions>
-
-            {topics.length > 0 && (
-              <HeroTopicsSection>
-                <TopicLabel>
-                  <Flame size={14} /> Popular Topics:
-                </TopicLabel>
-                <CategoryPillsRow>
-                  {topics.slice(0, 6).map((topic) => {
-                    const Icon = topicIcon(topic.name);
-                    return (
-                      <TopicPill
-                        key={topic.name}
-                        onClick={() =>
-                          navigate(`/search?category=${encodeURIComponent(topic.name)}`)
-                        }
-                      >
-                        <Icon /> {topic.name}
-                      </TopicPill>
-                    );
-                  })}
-                </CategoryPillsRow>
-              </HeroTopicsSection>
-            )}
           </HeroContent>
-
-          {/* Hero Spotlight Card */}
-          <HeroVisual>
-            <AmbientGlow />
-            {featuredPost ? (
-              <ShowcaseCard>
-                <CardHeader>
-                  <AuthorByline
-                    layout="stacked"
-                    size="sm"
-                    name={featuredAuthor}
-                    note={isRanked ? `Most read this month` : 'Featured community story'}
-                  />
-                  <SpotlightBadge>
-                    <Sparkles /> Spotlight
-                  </SpotlightBadge>
-                </CardHeader>
-
-                {featuredPost.imageURL && (
-                  <CardImageMock style={{ backgroundImage: `url(${featuredPost.imageURL})` }} />
-                )}
-
-                <CardTitle to={`/post/${featuredPost._id}`}>{featuredPost.title}</CardTitle>
-
-                {featuredStats && featuredStats.views > 0 && (
-                  <ReadRateWidget>
-                    <ReadRateHeader>
-                      <span>Read through completion</span>
-                      <span className="percent">{featuredStats.readRate}%</span>
-                    </ReadRateHeader>
-                    <ProgressBar>
-                      <div style={{ width: `${featuredStats.readRate}%` }} />
-                    </ProgressBar>
-                  </ReadRateWidget>
-                )}
-
-                <CardFooterStats>
-                  {featuredCategory && (
-                    <Chip size="sm" selected interactive={false}>
-                      {featuredCategory}
-                    </Chip>
-                  )}
-                  <StatItem $heart>
-                    <Heart /> {featuredPost.likes?.length ?? 0}
-                  </StatItem>
-                  <StatItem>
-                    <Clock /> {readingTime(featuredPost.content)} min read
-                  </StatItem>
-                </CardFooterStats>
-              </ShowcaseCard>
-            ) : (
-              <ShowcaseCard>
-                <CardHeader>
-                  <AuthorByline
-                    layout="stacked"
-                    size="sm"
-                    name="Elena Rostova"
-                    note="Staff Writer · 4 min read"
-                  />
-                  <SpotlightBadge>
-                    <Sparkles /> Spotlight
-                  </SpotlightBadge>
-                </CardHeader>
-                <CardImageMock
-                  style={{
-                    backgroundImage:
-                      "url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80')",
-                  }}
-                />
-                <CardTitle to="/search">The Art of Distraction-Free Deep Thinking</CardTitle>
-                <ReadRateWidget>
-                  <ReadRateHeader>
-                    <span>Read through completion</span>
-                    <span className="percent">94%</span>
-                  </ReadRateHeader>
-                  <ProgressBar>
-                    <div style={{ width: '94%' }} />
-                  </ProgressBar>
-                </ReadRateWidget>
-                <CardFooterStats>
-                  <Chip size="sm" selected interactive={false}>
-                    Productivity
-                  </Chip>
-                  <StatItem $heart>
-                    <Heart /> 48
-                  </StatItem>
-                  <StatItem>
-                    <Clock /> 4 min read
-                  </StatItem>
-                </CardFooterStats>
-              </ShowcaseCard>
-            )}
-          </HeroVisual>
         </HeroSection>
       </Container>
 
