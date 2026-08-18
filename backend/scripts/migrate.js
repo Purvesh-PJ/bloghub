@@ -19,6 +19,8 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const mongoose = require('mongoose');
 const Post = require('../models/post.model');
 const Comment = require('../models/comment.model');
+const Tag = require('../models/tag.model');
+const Category = require('../models/category.model');
 
 const DRY = process.argv.includes('--dry');
 
@@ -107,13 +109,63 @@ async function deduplicateSlugs() {
   console.log(`  slugs: rewrote ${changed}`);
 }
 
+/** Ensures all existing posts have corresponding dynamic tags populated from their categories. */
+async function migrateTagsFromCategories() {
+  const postsNeedingTags = await Post.find({
+    $or: [{ tags: { $exists: false } }, { tags: { $size: 0 } }],
+  })
+    .populate('categories', 'name')
+    .select('_id categories tags');
+
+  if (postsNeedingTags.length === 0) {
+    console.log('  tags: all posts already have dynamic tags');
+    return;
+  }
+
+  console.log(`  tags: ${postsNeedingTags.length} posts need dynamic tags`);
+  if (DRY) return;
+
+  const tagMap = new Map();
+  const getOrCreateTag = async (rawName) => {
+    const clean = String(rawName || '').trim().toLowerCase();
+    if (!clean) return null;
+    if (tagMap.has(clean)) return tagMap.get(clean);
+    let tag = await Tag.findOne({ name: clean });
+    if (!tag) {
+      tag = await Tag.create({ name: clean, posts: [] });
+    }
+    tagMap.set(clean, tag);
+    return tag;
+  };
+
+  let migrated = 0;
+  for (const post of postsNeedingTags) {
+    const categoryNames = (post.categories || [])
+      .map((c) => (typeof c === 'string' ? c : c.name))
+      .filter(Boolean);
+    const namesToUse = categoryNames.length > 0 ? categoryNames : ['stories'];
+
+    const tagDocs = (await Promise.all(namesToUse.map(getOrCreateTag))).filter(Boolean);
+    const tagIds = tagDocs.map((t) => t._id);
+
+    await Post.updateOne({ _id: post._id }, { $set: { tags: tagIds } });
+
+    for (const tagDoc of tagDocs) {
+      await Tag.updateOne({ _id: tagDoc._id }, { $addToSet: { posts: post._id } });
+    }
+    migrated += 1;
+  }
+
+  console.log(`  tags: migrated dynamic tags for ${migrated} existing posts`);
+}
+
 /** Builds the indexes the models declare, now that the data can satisfy them. */
 async function syncIndexes() {
   if (DRY) {
     console.log('  indexes: would sync');
     return;
   }
-  await Promise.all([Post.syncIndexes(), Comment.syncIndexes()]);
+  await Promise.all([Post.syncIndexes(), Comment.syncIndexes(), Tag.syncIndexes()]);
   console.log('  indexes: synced');
 }
 
@@ -131,6 +183,7 @@ async function syncIndexes() {
 
   await backfillCommentPosts();
   await deduplicateSlugs();
+  await migrateTagsFromCategories();
   await syncIndexes();
 
   await mongoose.disconnect();
