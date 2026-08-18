@@ -14,6 +14,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   Feather,
+  Code,
+  Check,
 } from 'lucide-react';
 
 import { postService } from '../services/postService';
@@ -44,29 +46,29 @@ const Container = styled.div`
   `}
 `;
 
-/* ── Hero Section (Focused & Centered Editorial Headline) ─────────────────── */
+/* ── Hero Section (Left Aligned Content + Right Studio Visual) ───────────── */
 
 const HeroSection = styled.header`
-  padding: ${({ theme }) => theme.spacing['4xl']} 0 ${({ theme }) => theme.spacing['2xl']};
-  display: flex;
-  flex-direction: column;
+  padding: ${({ theme }) => theme.spacing['3xl']} 0 ${({ theme }) => theme.spacing['2xl']};
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: ${({ theme }) => theme.spacing['3xl']};
   align-items: center;
-  text-align: center;
-  max-width: 820px;
-  margin: 0 auto;
 
-  ${media.down('sm')`
-    padding: ${({ theme }) => theme.spacing['2xl']} 0 ${({ theme }) => theme.spacing.xl};
+  ${media.down('lg')`
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacing['2xl']};
+    padding: ${({ theme }) => theme.spacing.xl} 0;
   `}
 `;
 
 const HeroContent = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
   gap: ${({ theme }) => theme.spacing.xl};
-  width: 100%;
+  max-width: 600px;
 `;
 
 const HeroBadge = styled.div`
@@ -89,12 +91,11 @@ const HeroBadge = styled.div`
 `;
 
 const HeroTitle = styled.h1`
-  ${display('xl')}
+  ${display('lg')}
   color: ${({ theme }) => theme.colors.textPrimary};
-  line-height: 1.18;
-  letter-spacing: -0.025em;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
   font-weight: 800;
-  max-width: 760px;
 
   .gradient-text {
     background: ${({ theme }) => theme.gradients.brandText};
@@ -103,24 +104,204 @@ const HeroTitle = styled.h1`
     display: inline-block;
   }
 
-  ${media.down('md')`font-size: ${({ theme }) => theme.display.lg[0]};`}
-  ${media.down('sm')`font-size: ${({ theme }) => theme.display.md[0]};`}
+  ${media.down('md')`font-size: ${({ theme }) => theme.display.md[0]};`}
 `;
 
 const HeroSubtitle = styled.p`
   ${text('md')}
   line-height: 1.7;
   color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 620px;
-  margin: 0 auto;
 `;
 
 const HeroActions = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: ${({ theme }) => theme.spacing.md};
   flex-wrap: wrap;
+`;
+
+const HeroFeaturePills = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.lg};
+  flex-wrap: wrap;
+  padding-top: ${({ theme }) => theme.spacing.xs};
+  ${text('xs', 'medium')}
+  color: ${({ theme }) => theme.colors.textMuted};
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  svg {
+    width: 13px;
+    height: 13px;
+    color: ${({ theme }) => theme.colors.accentSolid};
+  }
+`;
+
+/* ── Hero Studio & Reader Visual (Right Side) ─────────────────────────────── */
+
+const HeroVisualWrapper = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const StudioCard = styled.div`
+  width: 100%;
+  max-width: 460px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border-radius: ${({ theme }) => theme.radii['2xl']};
+  padding: ${({ theme }) => theme.spacing.xl};
+  box-shadow:
+    0 20px 40px -12px rgba(15, 23, 42, 0.08),
+    0 0 20px -4px rgba(14, 165, 233, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+  position: relative;
+  border: none;
+`;
+
+const StudioHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const WindowDots = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+
+    &:nth-child(1) {
+      background: #ef4444;
+      opacity: 0.85;
+    }
+    &:nth-child(2) {
+      background: #f59e0b;
+      opacity: 0.85;
+    }
+    &:nth-child(3) {
+      background: #10b981;
+      opacity: 0.85;
+    }
+  }
+`;
+
+const StudioStatus = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentText};
+  ${text('xs', 'semibold')}
+
+  svg {
+    width: 12px;
+    height: 12px;
+    color: ${({ theme }) => theme.colors.accentSolid};
+  }
+`;
+
+const EditorSnippet = styled.div`
+  background: ${({ theme }) => theme.colors.surfaceContainer};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  padding: ${({ theme }) => theme.spacing.lg};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+  font-family: inherit;
+`;
+
+const SnippetHeading = styled.div`
+  ${text('sm', 'bold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+  letter-spacing: -0.01em;
+`;
+
+const SnippetBody = styled.div`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: 1.6;
+`;
+
+const CodeHighlight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  padding: 8px 12px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  color: ${({ theme }) => theme.colors.accentText};
+  margin-top: 4px;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: ${({ theme }) => theme.colors.accentSolid};
+  }
+`;
+
+const MetricFloater = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  border-radius: ${({ theme }) => theme.radii.xl};
+`;
+
+const MetricLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  svg {
+    color: #10b981;
+    width: 18px;
+    height: 18px;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+
+    strong {
+      ${text('xs', 'semibold')}
+      color: ${({ theme }) => theme.colors.textPrimary};
+    }
+
+    span {
+      font-size: 11px;
+      color: ${({ theme }) => theme.colors.textMuted};
+    }
+  }
+`;
+
+const MetricValue = styled.span`
+  ${text('sm', 'bold')}
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  padding: 4px 10px;
+  border-radius: ${({ theme }) => theme.radii.full};
 `;
 
 /* ── Value Pillars Strip ─────────────────────────────────────────────────── */
@@ -427,7 +608,7 @@ export function Home() {
 
   return (
     <Page>
-      {/* ── 1. Hero Section ──────────────────────────────────────────────── */}
+      {/* ── 1. Hero Section (Left Aligned Text + Right Markdown Visual) ────── */}
       <Container>
         <HeroSection>
           <HeroContent>
@@ -454,7 +635,58 @@ export function Home() {
                 <Compass /> Explore stories
               </Button>
             </HeroActions>
+
+            <HeroFeaturePills>
+              <span>
+                <Check /> Pure Markdown Canvas
+              </span>
+              <span>
+                <Check /> True Read Completion Metrics
+              </span>
+              <span>
+                <Check /> 100% Free & Open
+              </span>
+            </HeroFeaturePills>
           </HeroContent>
+
+          {/* Right Side: Meaningful Markdown & Reader Metrics Studio Visual */}
+          <HeroVisualWrapper>
+            <StudioCard>
+              <StudioHeader>
+                <WindowDots>
+                  <span />
+                  <span />
+                  <span />
+                </WindowDots>
+                <StudioStatus>
+                  <Sparkles /> Live Preview · 3 min read
+                </StudioStatus>
+              </StudioHeader>
+
+              <EditorSnippet>
+                <SnippetHeading># The Architecture of Deep Focus</SnippetHeading>
+                <SnippetBody>
+                  When interface noise drops to zero, thinking gets clear. BlogHub is crafted for
+                  writers who value clarity over clutter.
+                </SnippetBody>
+                <CodeHighlight>
+                  <Code />
+                  <span>const attention = &#123; depth: &apos;100%&apos;, noise: 0 &#125;;</span>
+                </CodeHighlight>
+              </EditorSnippet>
+
+              <MetricFloater>
+                <MetricLeft>
+                  <BarChart2 />
+                  <div>
+                    <strong>94% Read-Through Rate</strong>
+                    <span>Genuine reader attention tracked</span>
+                  </div>
+                </MetricLeft>
+                <MetricValue>Top 5%</MetricValue>
+              </MetricFloater>
+            </StudioCard>
+          </HeroVisualWrapper>
         </HeroSection>
       </Container>
 
