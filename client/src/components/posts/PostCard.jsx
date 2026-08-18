@@ -22,35 +22,18 @@ const Card = styled(Link)`
   padding: ${({ theme }) => theme.spacing.xl};
   border-radius: ${({ theme }) => theme.radii.xl};
   background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  border: none;
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
-  transition: all ${({ theme }) => theme.transitions.normal};
+  transition: background ${({ theme }) => theme.transitions.fast}, box-shadow ${({ theme }) => theme.transitions.fast};
   text-decoration: none;
   overflow: hidden;
   ${interactive}
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: ${({ theme }) => theme.gradients.brandBar};
-    opacity: 0;
-    transition: opacity ${({ theme }) => theme.transitions.fast};
-  }
-
   &:hover {
-    border-color: ${({ theme }) => theme.colors.accentLine};
+    background: ${({ theme }) => theme.colors.surfaceHover};
     box-shadow:
-      0 14px 32px -8px rgba(15, 23, 42, 0.09),
-      0 0 20px -4px rgba(14, 165, 233, 0.16);
-    transform: translateY(-3px);
-
-    &::before {
-      opacity: 1;
-    }
+      0 12px 24px -6px rgba(15, 23, 42, 0.06),
+      0 0 12px -2px rgba(14, 165, 233, 0.1);
   }
 
   ${({ $layout }) =>
@@ -114,8 +97,8 @@ const Footer = styled.div`
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.md};
   margin-top: ${({ theme }) => theme.spacing.xs};
-  padding-top: ${({ theme }) => theme.spacing.sm};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  padding-top: ${({ theme }) => theme.spacing.xs};
+  border-top: none;
   flex-wrap: wrap;
 `;
 

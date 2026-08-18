@@ -9,7 +9,7 @@ const Card = styled.div`
   padding: ${({ theme }) => theme.spacing.xl};
   border-radius: ${({ theme }) => theme.radii.xl};
   background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  border: none;
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
 
   ${({ $layout }) =>
