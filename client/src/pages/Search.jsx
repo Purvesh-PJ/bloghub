@@ -130,9 +130,9 @@ const SearchBox = styled.div`
 const CategoryNav = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: ${({ theme }) => theme.spacing.sm};
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: ${({ theme }) => theme.spacing.xs} 2px ${({ theme }) => theme.spacing.sm} 2px;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -353,8 +353,8 @@ export function Search() {
       {/* ── 2. Category Navigation Bar ───────────────────────────────────── */}
       {!query && (
         <CategoryNav>
-          <Chip size="sm" selected={!topic} onClick={() => setTopic('')}>
-            <Flame size={13} /> All Stories
+          <Chip size="md" selected={!topic} onClick={() => setTopic('')}>
+            <Flame size={14} /> All Stories
           </Chip>
           {categories.map((category) => {
             const Icon = topicIcon(category.name);
@@ -362,11 +362,11 @@ export function Search() {
             return (
               <Chip
                 key={category._id}
-                size="sm"
+                size="md"
                 selected={isSelected}
                 onClick={() => setTopic(category.name)}
               >
-                <Icon size={13} />
+                <Icon size={14} />
                 {category.name}
                 {category.postCount ? ` (${category.postCount})` : ''}
               </Chip>

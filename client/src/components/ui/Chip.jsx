@@ -18,6 +18,7 @@ const StyledChip = styled.button`
   border: none;
   border-radius: ${({ theme }) => theme.radii.full};
   white-space: nowrap;
+  flex-shrink: 0;
   ${({ $size }) => ($size === 'sm' ? text('xs', 'medium') : text('sm', 'medium'))}
   transition: all ${({ theme }) => theme.transitions.fast};
   ${interactive}
