@@ -20,10 +20,11 @@ const Card = styled.div`
           padding: ${({ theme }) => theme.spacing.md};
         `
       : css`
-          grid-template-columns: 1fr 190px;
+          grid-template-columns: 210px 1fr;
+          align-items: stretch;
 
           ${media.down('md')`
-            grid-template-columns: 1fr 160px;
+            grid-template-columns: 170px 1fr;
           `}
 
           ${media.down('sm')`
@@ -55,29 +56,19 @@ const Footer = styled.div`
 `;
 
 const Thumb = styled(Skeleton)`
+  width: 100%;
+  height: 100%;
+  min-height: 130px;
+  aspect-ratio: 16 / 10;
+  order: -1;
+  border-radius: ${({ theme }) => theme.radii.md};
+
   ${({ $layout }) =>
-    $layout === 'stacked'
-      ? css`
-          width: 100%;
-          aspect-ratio: 16 / 9;
-          height: auto;
-          order: -1;
-        `
-      : css`
-          width: 220px;
-          aspect-ratio: 16 / 10;
-          height: auto;
-
-          ${media.down('md')`
-            width: 180px;
-          `}
-
-          ${media.down('sm')`
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            order: -1;
-          `}
-        `}
+    $layout === 'stacked' &&
+    css`
+      aspect-ratio: 16 / 9;
+      min-height: unset;
+    `}
 `;
 
 export function PostCardSkeleton({ layout = 'row' }) {

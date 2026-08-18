@@ -44,10 +44,11 @@ const Card = styled(Link)`
           padding: ${({ theme }) => theme.spacing.md};
         `
       : css`
-          grid-template-columns: 1fr 190px;
+          grid-template-columns: 210px 1fr;
+          align-items: stretch;
 
           ${media.down('md')`
-            grid-template-columns: 1fr 160px;
+            grid-template-columns: 170px 1fr;
           `}
 
           ${media.down('sm')`
@@ -157,45 +158,34 @@ const StatBadge = styled.span`
 
 const Thumb = styled.div`
   position: relative;
-  border-radius: ${({ theme }) => theme.radii.lg};
+  border-radius: ${({ theme }) => theme.radii.md};
   overflow: hidden;
   background: ${({ theme }) => theme.colors.surfaceContainer};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  height: 100%;
+  min-height: 130px;
+  aspect-ratio: 16 / 10;
+  order: -1;
   flex-shrink: 0;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
     transition: transform ${({ theme }) => theme.transitions.normal};
   }
 
   ${Card}:hover & img {
-    transform: scale(1.05);
+    transform: scale(1.04);
   }
 
   ${({ $layout }) =>
-    $layout === 'stacked'
-      ? css`
-          width: 100%;
-          aspect-ratio: 16 / 9;
-          order: -1;
-        `
-      : css`
-          width: 220px;
-          aspect-ratio: 16 / 10;
-
-          ${media.down('md')`
-            width: 180px;
-          `}
-
-          ${media.down('sm')`
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            order: -1;
-          `}
-        `}
+    $layout === 'stacked' &&
+    css`
+      aspect-ratio: 16 / 9;
+      min-height: unset;
+    `}
 `;
 
 export function PostCard({ post, layout = 'row' }) {
