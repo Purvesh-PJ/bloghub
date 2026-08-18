@@ -202,7 +202,8 @@ export function PostCard({ post, layout = 'row' }) {
 
   if (!post) return null;
 
-  const category = post.categories?.[0]?.name ?? post.categories?.[0];
+  const primaryTopic =
+    post.tags?.[0]?.name || post.tags?.[0] || post.categories?.[0]?.name || post.categories?.[0];
   const author = post.author?.name || post.author?.username || post.user?.username || 'Anonymous';
   const created = post.createdAt ? new Date(post.createdAt) : null;
   const isValidDate = created && !Number.isNaN(created.getTime());
@@ -230,9 +231,9 @@ export function PostCard({ post, layout = 'row' }) {
 
         <Footer>
           <FooterLeft>
-            {category && (
+            {primaryTopic && (
               <Chip size="sm" interactive={false} as="span">
-                {category}
+                #{primaryTopic}
               </Chip>
             )}
 

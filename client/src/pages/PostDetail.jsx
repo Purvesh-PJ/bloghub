@@ -179,6 +179,14 @@ const Article = styled.article`
 
 /* ── Engagement ──────────────────────────────────────────────────────────── */
 
+const TagList = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+  padding: ${({ theme }) => theme.spacing.md} 0;
+`;
+
 const Bar = styled.div`
   display: flex;
   align-items: center;
@@ -492,6 +500,24 @@ export function PostDetail() {
             <MDEditor.Markdown source={post.content} rehypePlugins={markdownRehypePlugins} />
           </div>
         </Article>
+
+        {post.tags && post.tags.length > 0 && (
+          <TagList>
+            {post.tags.map((tag) => {
+              const name = typeof tag === 'string' ? tag : tag.name;
+              return (
+                <Chip
+                  key={name}
+                  as={Link}
+                  to={`/search?topic=${encodeURIComponent(name)}`}
+                  size="sm"
+                >
+                  #{name}
+                </Chip>
+              );
+            })}
+          </TagList>
+        )}
 
         {/*
           Each control pairs an icon with a bare number, which a screen reader would otherwise
