@@ -36,8 +36,8 @@ const Card = styled(Link)`
       0 0 12px -2px rgba(14, 165, 233, 0.1);
   }
 
-  ${({ $layout }) =>
-    $layout === 'stacked'
+  ${({ $layout, $hasThumb }) =>
+    $layout === 'stacked' || !$hasThumb
       ? css`
           grid-template-columns: 1fr;
           gap: ${({ theme }) => theme.spacing.md};
@@ -165,7 +165,6 @@ const Thumb = styled.div`
   height: 100%;
   min-height: 130px;
   aspect-ratio: 16 / 10;
-  order: -1;
   flex-shrink: 0;
 
   img {
@@ -218,7 +217,13 @@ export function PostCard({ post, layout = 'row' }) {
   const commentsCount = post.commentsCount ?? post.comments?.length ?? 0;
 
   return (
-    <Card to={`/post/${post._id}`} $layout={layout}>
+    <Card to={`/post/${post._id}`} $layout={layout} $hasThumb={showThumb}>
+      {showThumb && (
+        <Thumb $layout={layout}>
+          <img src={post.imageURL} alt="" loading="lazy" onError={() => setImageFailed(true)} />
+        </Thumb>
+      )}
+
       <Body>
         <ContentWrap>
           <AuthorByline
@@ -257,12 +262,6 @@ export function PostCard({ post, layout = 'row' }) {
           </StatsRow>
         </Footer>
       </Body>
-
-      {showThumb && (
-        <Thumb $layout={layout}>
-          <img src={post.imageURL} alt="" loading="lazy" onError={() => setImageFailed(true)} />
-        </Thumb>
-      )}
     </Card>
   );
 }

@@ -12,8 +12,8 @@ const Card = styled.div`
   border: none;
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
 
-  ${({ $layout }) =>
-    $layout === 'stacked'
+  ${({ $layout, $hasThumb = true }) =>
+    $layout === 'stacked' || !$hasThumb
       ? css`
           grid-template-columns: 1fr;
           gap: ${({ theme }) => theme.spacing.md};
@@ -60,7 +60,6 @@ const Thumb = styled(Skeleton)`
   height: 100%;
   min-height: 130px;
   aspect-ratio: 16 / 10;
-  order: -1;
   border-radius: ${({ theme }) => theme.radii.md};
 
   ${({ $layout }) =>
@@ -71,9 +70,11 @@ const Thumb = styled(Skeleton)`
     `}
 `;
 
-export function PostCardSkeleton({ layout = 'row' }) {
+export function PostCardSkeleton({ layout = 'row', hasThumb = true }) {
   return (
-    <Card $layout={layout} aria-hidden="true">
+    <Card $layout={layout} $hasThumb={hasThumb} aria-hidden="true">
+      {hasThumb && <Thumb $layout={layout} $radius="md" />}
+
       <Body>
         <Meta>
           <Skeleton $variant="circle" $width={24} $height={24} />
@@ -91,8 +92,6 @@ export function PostCardSkeleton({ layout = 'row' }) {
           <Skeleton $width={40} $height={14} $radius="xs" />
         </Footer>
       </Body>
-
-      <Thumb $layout={layout} $radius="lg" />
     </Card>
   );
 }
