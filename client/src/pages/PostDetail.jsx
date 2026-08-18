@@ -504,7 +504,18 @@ export function PostDetail() {
         {post.tags && post.tags.length > 0 && (
           <TagList>
             {post.tags.map((tag) => {
-              const name = typeof tag === 'string' ? tag : tag.name;
+              const rawName = typeof tag === 'string' ? tag : tag.name;
+              const name = String(rawName || '').replace(/^[#_-]+/, '');
+              const displayName =
+                name.toLowerCase() === 'uiux'
+                  ? 'UI/UX'
+                  : name.toLowerCase() === 'ai'
+                    ? 'AI'
+                    : name.toLowerCase() === 'saas'
+                      ? 'SaaS'
+                      : name.toLowerCase() === 'nodejs'
+                        ? 'Node.js'
+                        : name.charAt(0).toUpperCase() + name.slice(1);
               return (
                 <Chip
                   key={name}
@@ -512,7 +523,7 @@ export function PostDetail() {
                   to={`/search?topic=${encodeURIComponent(name)}`}
                   size="sm"
                 >
-                  #{name}
+                  {displayName}
                 </Chip>
               );
             })}

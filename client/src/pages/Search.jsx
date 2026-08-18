@@ -268,6 +268,16 @@ const SearchResultFooter = styled.div`
   }
 `;
 
+const formatTopicTitle = (text) => {
+  if (!text) return '';
+  const clean = String(text).replace(/^[#_-]+/, '');
+  if (clean.toLowerCase() === 'uiux') return 'UI/UX';
+  if (clean.toLowerCase() === 'ai') return 'AI';
+  if (clean.toLowerCase() === 'saas') return 'SaaS';
+  if (clean.toLowerCase() === 'nodejs') return 'Node.js';
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+};
+
 /* ── Main Component ──────────────────────────────────────────────────────── */
 
 export function Search() {
@@ -391,8 +401,7 @@ export function Search() {
                 onClick={() => setTopic(tag.name)}
               >
                 <Icon size={14} />
-                #{tag.name}
-                {tag.postCount ? ` (${tag.postCount})` : ''}
+                {formatTopicTitle(tag.name)}
               </Chip>
             );
           })}
@@ -403,7 +412,7 @@ export function Search() {
       {!query && topic && (
         <ActiveFilterBar>
           <ActiveFilterText>
-            <Sparkles size={16} /> Filtered by <strong>#{topic}</strong>
+            <Sparkles size={16} /> Filtered by <strong>{formatTopicTitle(topic)}</strong>
             <span className="count">
               ({loadingPosts ? '…' : `${browsePosts.length} ${browsePosts.length === 1 ? 'story' : 'stories'}`})
             </span>
