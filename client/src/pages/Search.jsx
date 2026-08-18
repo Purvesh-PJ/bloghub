@@ -16,7 +16,7 @@ import {
 
 import { searchService } from '../services/searchService';
 import { postService } from '../services/postService';
-import { categoryService } from '../services/categoryService';
+import { tagService } from '../services/tagService';
 import { PageShell } from '../components/layout/PageShell';
 import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
@@ -301,16 +301,17 @@ export function Search() {
 
   const { data: postsData, isLoading: loadingPosts } = useQuery({
     queryKey: ['posts', { topic }],
-    queryFn: () => postService.getPosts({ limit: 25, ...(topic && { category: topic }) }),
+    queryFn: () => postService.getPosts({ limit: 25, ...(topic && { topic }) }),
     enabled: !query,
   });
 
-  const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
-    queryFn: categoryService.getCategories,
+  const { data: tagsData } = useQuery({
+    queryKey: ['tags'],
+    queryFn: tagService.getTags,
   });
 
-  const categories = categoriesData?.data || [];
+  const tags = tagsData?.data || [];
+  const activeTags = tags.filter((t) => (t.postCount ?? 0) > 0);
   const results = searchData?.data || [];
   const browsePosts = useMemo(() => postsData?.data || [], [postsData]);
 
@@ -319,9 +320,11 @@ export function Search() {
     if (name && name !== topic) {
       next.set('topic', name);
       next.delete('category');
+      next.delete('tag');
     } else {
       next.delete('topic');
       next.delete('category');
+      next.delete('tag');
     }
     setSearchParams(next, { replace: true });
   };
@@ -371,25 +374,25 @@ export function Search() {
         </SearchBox>
       </TopBar>
 
-      {/* ── 2. Category Navigation Bar ───────────────────────────────────── */}
+      {/* ── 2. Dynamic Topic & Tags Navigation Bar ───────────────────────── */}
       {!query && (
         <CategoryNav>
           <Chip size="md" selected={!topic} onClick={() => setTopic('')}>
             <Flame size={14} /> All Stories
           </Chip>
-          {categories.map((category) => {
-            const Icon = topicIcon(category.name);
-            const isSelected = topic.toLowerCase() === category.name.toLowerCase();
+          {activeTags.map((tag) => {
+            const Icon = topicIcon(tag.name);
+            const isSelected = topic.toLowerCase() === tag.name.toLowerCase();
             return (
               <Chip
-                key={category._id}
+                key={tag._id || tag.name}
                 size="md"
                 selected={isSelected}
-                onClick={() => setTopic(category.name)}
+                onClick={() => setTopic(tag.name)}
               >
                 <Icon size={14} />
-                {category.name}
-                {category.postCount ? ` (${category.postCount})` : ''}
+                #{tag.name}
+                {tag.postCount ? ` (${tag.postCount})` : ''}
               </Chip>
             );
           })}
@@ -400,7 +403,7 @@ export function Search() {
       {!query && topic && (
         <ActiveFilterBar>
           <ActiveFilterText>
-            <Sparkles size={16} /> Filtered by <strong>{topic}</strong>
+            <Sparkles size={16} /> Filtered by <strong>#{topic}</strong>
             <span className="count">
               ({loadingPosts ? '…' : `${browsePosts.length} ${browsePosts.length === 1 ? 'story' : 'stories'}`})
             </span>

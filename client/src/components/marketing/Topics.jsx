@@ -16,34 +16,57 @@ import {
   Landmark,
   Dumbbell,
   Globe2,
+  Sparkles,
+  Database,
+  Layers,
 } from 'lucide-react';
 import { text, label as labelStyle, interactive } from '../../styles/theme/mixins';
-
-/**
- * Topic components.
- *
- * BlogHub is not a single-subject blog. One writer might cover databases while another
- * writes about cooking, and both belong here. That breadth is the first thing a visitor
- * needs to grasp, so the real topic list is shown rather than described.
- */
 
 /** Known topics get a face; anything else falls back to a globe. */
 const ICONS = {
   technology: Cpu,
+  tech: Cpu,
+  cloud: Cpu,
   programming: Code2,
+  coding: Code2,
+  webdev: Code2,
+  react: Code2,
+  typescript: Code2,
+  nodejs: Code2,
   design: Palette,
+  uiux: Palette,
+  creative: Palette,
   business: Briefcase,
+  startups: Rocket,
+  saas: Briefcase,
+  leadership: Briefcase,
   lifestyle: Leaf,
+  mindset: Leaf,
   science: FlaskConical,
+  research: FlaskConical,
+  physics: FlaskConical,
   travel: Plane,
+  adventure: Plane,
+  nomad: Plane,
   health: HeartPulse,
+  wellness: HeartPulse,
+  sleep: HeartPulse,
   food: UtensilsCrossed,
+  cooking: UtensilsCrossed,
+  culinary: UtensilsCrossed,
   photography: Camera,
-  aerospace: Rocket,
+  visuals: Camera,
+  art: Palette,
+  camera: Camera,
+  space: Rocket,
   education: BookOpen,
   music: Music,
   finance: Landmark,
   fitness: Dumbbell,
+  ai: Sparkles,
+  productivity: Sparkles,
+  database: Database,
+  architecture: Layers,
 };
 
 export const topicIcon = (name = '') => ICONS[name.toLowerCase()] ?? Globe2;

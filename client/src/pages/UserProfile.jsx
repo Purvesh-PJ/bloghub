@@ -160,12 +160,13 @@ export function UserProfile() {
   /** Topics this person actually writes about, most frequent first. */
   const topics = useMemo(() => {
     const tally = new Map();
-    userPosts.forEach((post) =>
-      (post.categories || []).forEach((category) => {
-        const name = category?.name;
+    userPosts.forEach((post) => {
+      const items = [...(post.tags || []), ...(post.categories || [])];
+      items.forEach((item) => {
+        const name = typeof item === 'string' ? item : item?.name;
         if (name) tally.set(name, (tally.get(name) || 0) + 1);
-      })
-    );
+      });
+    });
     return [...tally.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
   }, [userPosts]);
 

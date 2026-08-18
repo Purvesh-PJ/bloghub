@@ -8,10 +8,9 @@ import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 
 import { postService } from '../services/postService';
-import { categoryService } from '../services/categoryService';
+import { tagService } from '../services/tagService';
 import { useTheme } from '../styles/ThemeProvider';
 import { PageShell, PageHeader } from '../components/layout/PageShell';
-import { topicIcon } from '../components/marketing/Topics';
 import { Button, Card, Input, Chip, Loading } from '../components/ui';
 import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
 import { readingTime } from '../utils/text';
@@ -226,6 +225,19 @@ const TagHint = styled.p`
   margin-top: ${({ theme }) => theme.spacing.xs};
 `;
 
+const SuggestionsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  flex-wrap: wrap;
+  margin-top: ${({ theme }) => theme.spacing.sm};
+
+  .hint {
+    ${text('xs', 'medium')}
+    color: ${({ theme }) => theme.colors.textMuted};
+  }
+`;
+
 /* Shown when a local snapshot survives a crash or an accidental navigation. */
 const RecoveryBanner = styled.div`
   display: flex;
@@ -298,8 +310,6 @@ export function WritePost() {
   const [content, setContent] = useState('');
   const [slug, setSlug] = useState('');
   const [visibility, setVisibility] = useState('draft');
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [originalCategories, setOriginalCategories] = useState([]);
   const [tags, setTags] = useState([]);
   const [tagDraft, setTagDraft] = useState('');
   const [imageURL, setImageURL] = useState('');
@@ -308,10 +318,15 @@ export function WritePost() {
   // snapshot and the navigation guards.
   const [dirty, setDirty] = useState(false);
 
-  const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => categoryService.getCategories({ withEmpty: true }),
+  const { data: tagsData } = useQuery({
+    queryKey: ['tags'],
+    queryFn: tagService.getTags,
   });
+
+  const popularSuggestions = useMemo(() => {
+    const list = tagsData?.data || [];
+    return list.filter((t) => !tags.includes(t.name.toLowerCase())).slice(0, 5);
+  }, [tagsData, tags]);
 
   const { data: existingPost, isLoading: postLoading } = useQuery({
     queryKey: ['post', id],
@@ -327,17 +342,14 @@ export function WritePost() {
     setSlug(post.slug || '');
     setVisibility(post.visibility || 'draft');
     setImageURL(post.imageURL || '');
-    setTags(post.tags?.map((tag) => tag.name ?? tag) || []);
-    const names = post.categories?.map((category) => category.name) || [];
-    setSelectedCategories(names);
-    setOriginalCategories(names);
+    setTags(post.tags?.map((tag) => (typeof tag === 'string' ? tag : tag.name)) || []);
     // Loading the server's own copy is not an edit.
     setDirty(false);
   }, [existingPost]);
 
   const editorValues = useMemo(
-    () => ({ title, content, slug, visibility, imageURL, tags, categories: selectedCategories }),
-    [title, content, slug, visibility, imageURL, tags, selectedCategories]
+    () => ({ title, content, slug, visibility, imageURL, tags }),
+    [title, content, slug, visibility, imageURL, tags]
   );
 
   const {
@@ -364,7 +376,6 @@ export function WritePost() {
     setVisibility(recovered.visibility ?? 'draft');
     setImageURL(recovered.imageURL ?? '');
     setTags(recovered.tags ?? []);
-    setSelectedCategories(recovered.categories ?? []);
     setDirty(true);
     discardDraft();
     toast.success('Recovered your unsaved work');
@@ -375,30 +386,11 @@ export function WritePost() {
     // `submitted` is the payload the mutation was called with, which is where the visibility
     // actually chosen lives — component state may already have moved on.
     onSuccess: async (data, submitted) => {
-      // The work is on the server now, so the local recovery copy is no longer wanted.
       clearDraft();
       queryClient.invalidateQueries({ queryKey: ['myPosts'] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      // Categories are a second request, so they can fail on their own. This used to be
-      // swallowed into console.error and followed by an unconditional success toast — the
-      // writer was told everything saved while the categories silently had not.
-      let categoriesFailed = false;
-      if (selectedCategories.length > 0 && data.postId) {
-        try {
-          await categoryService.attachCategoriesToPost(selectedCategories, data.postId);
-        } catch {
-          categoriesFailed = true;
-        }
-      }
-
-      if (categoriesFailed) {
-        toast.success('Story saved');
-        toast.error('Its topics could not be saved — reopen the story to set them again.', {
-          duration: 6000,
-        });
-      } else {
-        toast.success(submitted?.visibility === 'public' ? 'Story published 🎉' : 'Story saved');
-      }
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      toast.success(submitted?.visibility === 'public' ? 'Story published 🎉' : 'Story saved');
 
       // Publishing means you want to see it live. Saving a draft does not — there is nothing
       // for a reader to look at — so that lands on the list where the draft can be managed.
@@ -412,29 +404,12 @@ export function WritePost() {
   const updateMutation = useMutation({
     mutationFn: (data) => postService.updatePost(id, data),
     onSuccess: async (_, submitted) => {
-      // The work is on the server now, so the local recovery copy is no longer wanted.
       clearDraft();
       queryClient.invalidateQueries({ queryKey: ['myPosts'] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
       queryClient.invalidateQueries({ queryKey: ['post', id] });
-      const added = selectedCategories.filter((name) => !originalCategories.includes(name));
-      const removed = originalCategories.filter((name) => !selectedCategories.includes(name));
-
-      let categoriesFailed = false;
-      if (added.length > 0 || removed.length > 0) {
-        try {
-          await categoryService.updatePostCategories(id, added, removed);
-        } catch {
-          categoriesFailed = true;
-        }
-      }
-
-      if (categoriesFailed) {
-        toast.success('Story updated');
-        toast.error('Its topics could not be saved — try setting them again.', { duration: 6000 });
-      } else {
-        toast.success('Story updated 🚀');
-      }
+      toast.success('Story updated 🚀');
       // Same rule as creating: an unpublished story has nothing to show a reader.
       navigate(submitted?.visibility === 'public' ? `/post/${id}` : '/stories');
     },
@@ -468,13 +443,6 @@ export function WritePost() {
 
   const removeTag = (name) => {
     setTags((current) => current.filter((tag) => tag !== name));
-    setDirty(true);
-  };
-
-  const toggleCategory = (name) => {
-    setSelectedCategories((current) =>
-      current.includes(name) ? current.filter((item) => item !== name) : [...current, name]
-    );
     setDirty(true);
   };
 
@@ -617,53 +585,16 @@ export function WritePost() {
           </Card>
 
           <Card tone="low" radius="lg" padding="lg">
-            <AsideLabel>Categories & Topics</AsideLabel>
-            <Topics>
-              {(categories.length > 0
-                ? categories.map((c) => ({ id: c._id, name: c.name }))
-                : [
-                    { id: '1', name: 'Food' },
-                    { id: '2', name: 'Technology' },
-                    { id: '3', name: 'Science' },
-                    { id: '4', name: 'Design' },
-                    { id: '5', name: 'Travel' },
-                    { id: '6', name: 'Health' },
-                    { id: '7', name: 'Programming' },
-                    { id: '8', name: 'Business' },
-                  ]
-              ).map((category) => {
-                const Icon = topicIcon(category.name);
-                const isSelected = selectedCategories.includes(category.name);
-                return (
-                  <Chip
-                    key={category.id}
-                    size="sm"
-                    selected={isSelected}
-                    onClick={() => toggleCategory(category.name)}
-                  >
-                    <Icon size={13} /> {category.name}
-                  </Chip>
-                );
-              })}
-            </Topics>
-          </Card>
-
-          {/*
-            Tags, unlike categories, are whatever the writer types — categories stay a fixed
-            list an administrator curates. The Tag model, its routes and the `tags` field on
-            Post all existed before this; nothing had ever written to them.
-          */}
-          <Card tone="low" radius="lg" padding="lg">
-            <AsideLabel>Tags</AsideLabel>
+            <AsideLabel>Tags & Topics</AsideLabel>
             <TagRow>
               {tags.map((tag) => (
                 <Chip key={tag} size="sm" selected onClick={() => removeTag(tag)}>
-                  {tag} <X size={12} />
+                  #{tag} <X size={12} />
                 </Chip>
               ))}
             </TagRow>
             <Input
-              placeholder={tags.length >= MAX_TAGS ? 'Tag limit reached' : 'Add a tag, press Enter'}
+              placeholder={tags.length >= MAX_TAGS ? 'Tag limit reached' : 'Add tag (e.g. ai, react)'}
               value={tagDraft}
               disabled={tags.length >= MAX_TAGS}
               onChange={(event) => setTagDraft(event.target.value)}
@@ -681,6 +612,22 @@ export function WritePost() {
             <TagHint>
               {tags.length}/{MAX_TAGS} · lowercase, letters, numbers and hyphens
             </TagHint>
+
+            {popularSuggestions.length > 0 && tags.length < MAX_TAGS && (
+              <SuggestionsRow>
+                <span className="hint">Popular:</span>
+                {popularSuggestions.map((s) => (
+                  <Chip
+                    key={s.name}
+                    size="sm"
+                    onClick={() => addTag(s.name)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    +{s.name}
+                  </Chip>
+                ))}
+              </SuggestionsRow>
+            )}
           </Card>
 
           <Card tone="low" radius="lg" padding="lg">

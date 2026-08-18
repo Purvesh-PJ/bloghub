@@ -1,4 +1,5 @@
 const Post = require('../models/post.model');
+const Tag = require('../models/tag.model');
 const Category = require('../models/category.model');
 const Comment = require('../models/comment.model');
 const User = require('../models/user.model');
@@ -26,18 +27,26 @@ exports.getBlogs = asyncHandler(async (req, res) => {
   const filter = wantsAll && isAdmin ? {} : { visibility: 'public' };
 
   /*
-    Filtering by category happens here rather than in the browser.
-
-    Search fetched twenty posts and narrowed them client-side, so picking a topic showed only
-    the stories in that topic that happened to be among the twenty most recent — "Programming"
-    returned two while eight published Programming stories existed. Narrowing a page of
-    results is not the same as querying for them.
+    Filtering by tag/topic/category happens here on the database level.
+    Supports ?tag=react, ?topic=react, and legacy ?category=react.
   */
-  if (req.query.category) {
-    const category = await Category.findOne({ name: req.query.category }).select('_id').lean();
-    // An unknown name must match nothing rather than being ignored, which would silently
-    // return the unfiltered feed.
-    filter.categories = category ? category._id : null;
+  const topicParam = req.query.tag || req.query.topic || req.query.category;
+  if (topicParam) {
+    const cleanTopic = String(topicParam).trim().toLowerCase();
+    const [tag, category] = await Promise.all([
+      Tag.findOne({ name: cleanTopic }).select('_id').lean(),
+      Category.findOne({ name: new RegExp(`^${cleanTopic}$`, 'i') }).select('_id').lean(),
+    ]);
+
+    const orClauses = [];
+    if (tag) orClauses.push({ tags: tag._id });
+    if (category) orClauses.push({ categories: category._id });
+
+    if (orClauses.length > 0) {
+      filter.$or = orClauses;
+    } else {
+      filter._id = null; // An unknown topic matches nothing
+    }
   }
 
   const [posts, total] = await Promise.all([

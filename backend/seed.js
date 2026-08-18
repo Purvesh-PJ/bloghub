@@ -4,6 +4,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const User = require('./models/user.model');
 const Post = require('./models/post.model');
+const Tag = require('./models/tag.model');
 const Category = require('./models/category.model');
 const Comment = require('./models/comment.model');
 const Like = require('./models/like.model');
@@ -412,6 +413,7 @@ async function seed() {
     await Promise.all([
       User.deleteMany({}),
       Post.deleteMany({}),
+      Tag.deleteMany({}),
       Category.deleteMany({}),
       Comment.deleteMany({}),
       Like.deleteMany({}),
@@ -428,6 +430,16 @@ async function seed() {
     const categoryMap = {};
     createdCategories.forEach((cat) => (categoryMap[cat.name] = cat));
     console.log(`Created ${createdCategories.length} categories`);
+
+    // Dynamic Tag Dictionary
+    const tagMap = new Map();
+    const getOrCreateTag = async (tagName) => {
+      const clean = tagName.trim().toLowerCase();
+      if (tagMap.has(clean)) return tagMap.get(clean);
+      const tag = await Tag.create({ name: clean, posts: [] });
+      tagMap.set(clean, tag);
+      return tag;
+    };
 
     console.log('Creating users...');
     const createdUsers = [];
@@ -463,9 +475,23 @@ async function seed() {
     console.log(`Created ${createdUsers.length} users`);
 
     // ── Generate 6 to 8 Posts PER User ──────────────────────────────────────
-    console.log('Generating 6 to 8 multi-category stories per creator...');
+    console.log('Generating 6 to 8 multi-topic stories per creator...');
     const createdPosts = [];
     const regularUsers = createdUsers.filter((u) => u.email !== 'admin@bloghub.com');
+
+    // Topic tag mappings for rich tag discovery
+    const categoryToTags = {
+      Technology: ['technology', 'webdev', 'cloud', 'architecture'],
+      Food: ['food', 'cooking', 'culinary', 'science'],
+      Design: ['design', 'uiux', 'typography', 'creative'],
+      Science: ['science', 'physics', 'space', 'research'],
+      Travel: ['travel', 'adventure', 'nomad', 'culture'],
+      Health: ['health', 'wellness', 'sleep', 'productivity'],
+      Programming: ['programming', 'typescript', 'react', 'nodejs'],
+      Business: ['business', 'startups', 'saas', 'leadership'],
+      Photography: ['photography', 'visuals', 'art', 'camera'],
+      Lifestyle: ['lifestyle', 'mindset', 'habits', 'books'],
+    };
 
     for (let uIdx = 0; uIdx < regularUsers.length; uIdx++) {
       const user = regularUsers[uIdx];
@@ -489,6 +515,11 @@ async function seed() {
         const category = categoryMap[categoryName] || createdCategories[0];
         const uniqueSlug = `${template.slug}-${user.username}-${pIdx + 1}`;
 
+        // Resolve tag objects for this story
+        const tagNames = categoryToTags[categoryName] || ['general', 'stories'];
+        const tagObjects = await Promise.all(tagNames.map((name) => getOrCreateTag(name)));
+        const tagIds = tagObjects.map((t) => t._id);
+
         const post = new Post({
           user: user._id,
           title: template.title,
@@ -497,6 +528,7 @@ async function seed() {
           imageURL: template.imageURL,
           visibility,
           categories: [category._id],
+          tags: tagIds,
           likes: [],
           comments: [],
           views: [],
@@ -509,6 +541,12 @@ async function seed() {
           await Profile.findOneAndUpdate({ user: user._id }, { $inc: { postCount: 1 } });
           category.posts.push(post._id);
           await category.save();
+
+          // Sync tag backrefs
+          for (const tagObj of tagObjects) {
+            tagObj.posts.push(post._id);
+            await tagObj.save();
+          }
         }
 
         createdPosts.push(post);
@@ -516,7 +554,7 @@ async function seed() {
       await user.save();
     }
     console.log(
-      `Created ${createdPosts.length} total posts across ${regularUsers.length} creators!`,
+      `Created ${createdPosts.length} total posts across ${regularUsers.length} creators with ${tagMap.size} unique dynamic tags!`,
     );
 
     // Add comments to public posts
