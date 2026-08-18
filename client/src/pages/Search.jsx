@@ -29,18 +29,41 @@ import { excerpt, readingTime } from '../utils/text';
 
 const TopBar = styled.div`
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.xl};
-  padding-bottom: ${({ theme }) => theme.spacing.lg};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  border-bottom: none;
   flex-wrap: wrap;
+`;
+
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.lg};
+  min-width: 0;
+`;
+
+const HeaderIconWrap = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: ${({ theme }) => theme.radii.xl};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentSolid};
+  flex-shrink: 0;
+
+  svg {
+    width: 26px;
+    height: 26px;
+  }
 `;
 
 const HeaderTitles = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: 2px;
   min-width: 0;
 `;
 
@@ -49,9 +72,6 @@ const Title = styled.h1`
   color: ${({ theme }) => theme.colors.textPrimary};
   font-weight: 800;
   letter-spacing: -0.025em;
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 const Subtitle = styled.p`
@@ -63,7 +83,7 @@ const Subtitle = styled.p`
 const SearchBox = styled.div`
   position: relative;
   width: 100%;
-  max-width: 380px;
+  max-width: 360px;
 
   ${media.down('sm')`
     max-width: 100%;
@@ -78,7 +98,7 @@ const SearchBox = styled.div`
     border-radius: ${({ theme }) => theme.radii.full};
     background: ${({ theme }) => theme.colors.surfaceContainer};
     color: ${({ theme }) => theme.colors.textPrimary};
-    border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+    border: none;
     transition: all ${({ theme }) => theme.transitions.fast};
 
     &::placeholder {
@@ -88,7 +108,6 @@ const SearchBox = styled.div`
     &:focus {
       outline: none;
       background: ${({ theme }) => theme.colors.surfaceElevated};
-      border-color: ${({ theme }) => theme.colors.accentSolid};
       box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
     }
   }
@@ -147,7 +166,7 @@ const ActiveFilterBar = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
   padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
   background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  border: none;
   border-radius: ${({ theme }) => theme.radii.lg};
 `;
 
@@ -199,18 +218,17 @@ const SearchResultCard = styled(Link)`
   padding: ${({ theme }) => theme.spacing.xl};
   border-radius: ${({ theme }) => theme.radii.xl};
   background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
+  border: none;
   text-decoration: none;
-  transition: all ${({ theme }) => theme.transitions.fast};
+  transition: background ${({ theme }) => theme.transitions.fast}, box-shadow ${({ theme }) => theme.transitions.fast};
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
   ${interactive}
 
   &:hover {
-    border-color: ${({ theme }) => theme.colors.accentLine};
-    transform: translateY(-3px);
+    background: ${({ theme }) => theme.colors.surfaceHover};
     box-shadow:
-      0 12px 28px -6px rgba(15, 23, 42, 0.08),
-      0 0 16px -2px rgba(14, 165, 233, 0.15);
+      0 12px 24px -6px rgba(15, 23, 42, 0.06),
+      0 0 12px -2px rgba(14, 165, 233, 0.1);
   }
 `;
 
@@ -238,8 +256,8 @@ const SearchResultFooter = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.md};
-  padding-top: ${({ theme }) => theme.spacing.sm};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  padding-top: ${({ theme }) => theme.spacing.xs};
+  border-top: none;
   ${text('xs')}
   color: ${({ theme }) => theme.colors.textMuted};
 
@@ -321,16 +339,19 @@ export function Search() {
 
   return (
     <PageShell>
-      {/* ── 1. Clean Top Header with Integrated Search ─────────────────────── */}
+      {/* ── 1. Clean Top Header: Left Icon, Right Title & Subtitle + Search ─── */}
       <TopBar>
-        <HeaderTitles>
-          <Title>
-            <Compass size={24} /> Explore Stories
-          </Title>
-          <Subtitle>
-            Discover deep-dive breakdowns, engineering essays, and creative perspectives.
-          </Subtitle>
-        </HeaderTitles>
+        <HeaderLeft>
+          <HeaderIconWrap>
+            <Compass />
+          </HeaderIconWrap>
+          <HeaderTitles>
+            <Title>Explore Stories</Title>
+            <Subtitle>
+              Discover deep-dive breakdowns, engineering essays, and creative perspectives.
+            </Subtitle>
+          </HeaderTitles>
+        </HeaderLeft>
 
         <SearchBox>
           <SearchIcon className="search-icon" />

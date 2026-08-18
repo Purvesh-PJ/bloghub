@@ -25,8 +25,8 @@ const Wrapper = styled.header`
     theme.mode === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(7, 11, 19, 0.85)'};
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
-  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  border-bottom: none;
+  box-shadow: none;
 `;
 
 const Bar = styled.div`
