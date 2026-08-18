@@ -1,5 +1,6 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import styled, { css } from 'styled-components';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import { Search, PenLine, User, Settings, LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
@@ -10,13 +11,11 @@ import { text, media, interactive } from '../../styles/theme/mixins';
 /**
  * Header — a floating glass bar.
  *
- * Sits inside the viewport rather than flush against it, so the page scrolls *under* a
- * rounded, blurred surface. The account menu is a real Radix DropdownMenu: the previous
- * hand-rolled one listened for `mousedown` and handled nothing else — no Escape, no arrow
- * keys, no focus return, no `aria-expanded`.
+ * Sits seamlessly at the top of the viewport. Provides brand access on the left,
+ * and quick search (with global ⌘K shortcut), theme toggle, creator actions, and
+ * profile management on the right.
  */
 
-/* Full-width sticky bar without any dividing border line for seamless one-page look */
 const Wrapper = styled.header`
   position: sticky;
   top: 0;
@@ -55,35 +54,12 @@ const Logo = styled(Link)`
   ${text('md', 'bold')}
   letter-spacing: -0.02em;
   color: ${({ theme }) => theme.colors.textPrimary};
+  text-decoration: none;
   flex-shrink: 0;
-`;
-
-const Nav = styled.nav`
-  display: flex;
-  align-items: center;
-  gap: 2px;
-
-  ${media.down('md')`display: none;`}
-`;
-
-const NavLink = styled(Link)`
-  padding: 5px 12px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  ${text('sm', 'medium')}
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.accentText : theme.colors.textSecondary};
-  ${interactive}
-
-  ${({ $active, theme }) =>
-    $active &&
-    css`
-      background: ${theme.colors.accentContainer};
-      font-weight: 600;
-    `}
+  transition: opacity ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    background: ${({ theme }) => theme.colors.surfaceContainer};
+    opacity: 0.85;
   }
 `;
 
@@ -136,11 +112,6 @@ const Kbd = styled.kbd`
   ${media.down('sm')`display: none;`}
 `;
 
-/*
-  A button that wraps an Avatar rather than redrawing one. It used to be the sixth copy of
-  the same circle — its own gradient, its own hardcoded white, its own initial derived with
-  `username[0]` — and like the rest it could not display an uploaded picture.
-*/
 const AvatarButton = styled.button`
   display: inline-flex;
   border-radius: ${({ theme }) => theme.radii.full};
@@ -176,16 +147,22 @@ const HideOnMobile = styled.span`
   ${media.down('sm')`display: none;`}
 `;
 
-const NAV = [
-  { to: '/', label: 'Home', exact: true },
-  { to: '/search', label: 'Explore' },
-];
-
 export function Header() {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const { isAuthenticated, user, logout, isAdmin } = useAuth();
   const { avatarUrl } = useCurrentUser();
+
+  // Global ⌘K / Ctrl+K shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        navigate('/search');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
 
   const handleLogout = () => {
     logout();
@@ -200,22 +177,10 @@ export function Header() {
             <BrandMark letter="B" />
             BlogHub
           </Logo>
-
-          <Nav>
-            {NAV.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                $active={item.exact ? pathname === item.to : pathname.startsWith(item.to)}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </Nav>
         </Left>
 
         <Right>
-          <SearchButton onClick={() => navigate('/search')} aria-label="Search">
+          <SearchButton onClick={() => navigate('/search')} aria-label="Search stories (⌘K)">
             <Search />
             <span style={{ opacity: 0.8 }}>Search...</span>
             <Kbd>⌘K</Kbd>
