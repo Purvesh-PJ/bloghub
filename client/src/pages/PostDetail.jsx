@@ -429,7 +429,6 @@ export function PostDetail() {
     );
   }
 
-  const category = post.categories?.[0];
   const comments = post.comments || [];
 
   return (
@@ -443,14 +442,6 @@ export function PostDetail() {
           <Cover>
             <img src={post.imageURL} alt={`Cover image for ${post.title}`} />
           </Cover>
-        )}
-
-        {category && (
-          <div>
-            <Chip size="sm" onClick={() => navigate('/search')}>
-              {category.name ?? category}
-            </Chip>
-          </div>
         )}
 
         <Title>{post.title}</Title>
