@@ -470,7 +470,6 @@ export function WritePost() {
   };
 
   const words = useMemo(() => content.split(/\s+/).filter(Boolean).length, [content]);
-  const categories = categoriesData?.data || [];
   const pending = createMutation.isPending || updateMutation.isPending;
 
   if (isEditing && postLoading) return <Loading text="Loading the post…" />;

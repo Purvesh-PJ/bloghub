@@ -202,8 +202,19 @@ export function PostCard({ post, layout = 'row' }) {
 
   if (!post) return null;
 
-  const primaryTopic =
+  const rawTopic =
     post.tags?.[0]?.name || post.tags?.[0] || post.categories?.[0]?.name || post.categories?.[0];
+  const primaryTopic = rawTopic
+    ? String(rawTopic).toLowerCase() === 'uiux'
+      ? 'UI/UX'
+      : String(rawTopic).toLowerCase() === 'ai'
+        ? 'AI'
+        : String(rawTopic).toLowerCase() === 'saas'
+          ? 'SaaS'
+          : String(rawTopic).toLowerCase() === 'nodejs'
+            ? 'Node.js'
+            : String(rawTopic).charAt(0).toUpperCase() + String(rawTopic).slice(1)
+    : '';
   const author = post.author?.name || post.author?.username || post.user?.username || 'Anonymous';
   const created = post.createdAt ? new Date(post.createdAt) : null;
   const isValidDate = created && !Number.isNaN(created.getTime());
@@ -233,7 +244,7 @@ export function PostCard({ post, layout = 'row' }) {
           <FooterLeft>
             {primaryTopic && (
               <Chip size="sm" interactive={false} as="span">
-                #{primaryTopic}
+                {primaryTopic}
               </Chip>
             )}
 

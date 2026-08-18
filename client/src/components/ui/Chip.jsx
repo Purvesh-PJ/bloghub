@@ -26,26 +26,26 @@ const StyledChip = styled.button`
   ${({ $selected, $interactive: clickable, theme }) =>
     $selected
       ? css`
-          background: ${theme.gradients.brand};
-          color: #ffffff;
-          box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.4);
+          background: ${theme.colors.accentContainer};
+          color: ${theme.colors.accentText};
           font-weight: 600;
         `
       : css`
           background: ${theme.colors.surfaceContainer};
           color: ${theme.colors.textSecondary};
-          box-shadow: inset 0 0 0 1px ${theme.colors.lineDefault};
 
           ${clickable &&
           css`
             &:hover {
-              background: ${theme.colors.accentContainer};
-              color: ${theme.colors.accentText};
-              box-shadow:
-                inset 0 0 0 1px ${theme.colors.accentLine},
-                0 2px 8px -2px rgba(14, 165, 233, 0.2);
-              transform: translateY(-1px);
+              background: ${theme.colors.surfaceContainerHigh};
+              color: ${theme.colors.textPrimary};
             }
+          `}
+
+          ${!clickable &&
+          css`
+            background: ${theme.colors.surfaceContainerLow};
+            color: ${theme.colors.textSecondary};
           `}
         `}
 
