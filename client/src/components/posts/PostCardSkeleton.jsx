@@ -4,10 +4,10 @@ import { Skeleton, SkeletonText } from '../ui/Skeleton';
 
 const Card = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacing.lg};
   align-items: start;
-  padding: ${({ theme }) => theme.spacing.xl};
-  border-radius: ${({ theme }) => theme.radii.xl};
+  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.lg};
   background: ${({ theme }) => theme.colors.surfaceElevated};
   border: none;
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
@@ -16,18 +16,20 @@ const Card = styled.div`
     $layout === 'stacked'
       ? css`
           grid-template-columns: 1fr;
-          gap: ${({ theme }) => theme.spacing.lg};
+          gap: ${({ theme }) => theme.spacing.md};
+          padding: ${({ theme }) => theme.spacing.md};
         `
       : css`
-          grid-template-columns: 1fr 220px;
+          grid-template-columns: 1fr 190px;
 
           ${media.down('md')`
-            grid-template-columns: 1fr 180px;
+            grid-template-columns: 1fr 160px;
           `}
 
           ${media.down('sm')`
             grid-template-columns: 1fr;
-            gap: ${({ theme }) => theme.spacing.lg};
+            gap: ${({ theme }) => theme.spacing.md};
+            padding: ${({ theme }) => theme.spacing.md};
           `}
         `}
 `;
@@ -36,7 +38,7 @@ const Body = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 const Meta = styled.div`
