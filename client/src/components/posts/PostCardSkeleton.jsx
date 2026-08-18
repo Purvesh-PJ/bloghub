@@ -10,10 +10,8 @@ const cardVariants = {
   `,
   featured: css`
     background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: 1px solid ${({ theme }) => theme.colors.accentLine};
-    box-shadow:
-      0 8px 24px -4px rgba(14, 165, 233, 0.12),
-      0 2px 8px -2px rgba(15, 23, 42, 0.04);
+    border: none;
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
   `,
   ghost: css`
     background: transparent;

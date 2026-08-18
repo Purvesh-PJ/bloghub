@@ -29,20 +29,17 @@ const cardVariants = {
     }
   `,
 
-  /** Featured spotlight card with glowing accent border */
+  /** Featured spotlight card with soft elevation */
   featured: css`
     background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: 1px solid ${({ theme }) => theme.colors.accentLine};
-    box-shadow:
-      0 8px 24px -4px rgba(14, 165, 233, 0.12),
-      0 2px 8px -2px rgba(15, 23, 42, 0.04);
+    border: none;
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
 
     &:hover {
       background: ${({ theme }) => theme.colors.surfaceHover};
-      border-color: ${({ theme }) => theme.colors.accentSolid};
       box-shadow:
-        0 16px 36px -6px rgba(14, 165, 233, 0.2),
-        0 0 16px -2px rgba(14, 165, 233, 0.15);
+        0 14px 28px -6px rgba(15, 23, 42, 0.08),
+        0 0 12px -2px rgba(14, 165, 233, 0.1);
     }
   `,
 
