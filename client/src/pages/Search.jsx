@@ -470,11 +470,11 @@ export function Search() {
       loadingPosts ? (
         <div>
           <FeaturedSpotlight>
-            <PostCardSkeleton layout="row" variant="featured" />
+            <PostCardSkeleton layout="row" />
           </FeaturedSpotlight>
           <EditorialGrid>
             {Array.from({ length: 6 }).map((_, i) => (
-              <PostCardSkeleton key={i} layout="stacked" variant="elevated" />
+              <PostCardSkeleton key={i} layout="stacked" />
             ))}
           </EditorialGrid>
         </div>
@@ -494,10 +494,10 @@ export function Search() {
         </EmptyState>
       ) : (
         <div>
-          {/* Lead / Featured Post (Row Layout with Spotlight Variant) */}
+          {/* Lead Post (Clean Borderless Row Layout) */}
           {leadPost && (
             <FeaturedSpotlight>
-              <PostCard post={leadPost} layout="row" variant="featured" />
+              <PostCard post={leadPost} layout="row" />
             </FeaturedSpotlight>
           )}
 
@@ -505,7 +505,7 @@ export function Search() {
           {gridPosts.length > 0 && (
             <EditorialGrid>
               {gridPosts.map((post) => (
-                <PostCard key={post._id} post={post} layout="stacked" variant="elevated" />
+                <PostCard key={post._id} post={post} layout="stacked" />
               ))}
             </EditorialGrid>
           )}
