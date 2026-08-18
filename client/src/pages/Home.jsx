@@ -564,7 +564,11 @@ export function Home() {
         <PostList>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, index) => (
-              <PostCardSkeleton key={index} layout="row" />
+              <PostCardSkeleton
+                key={index}
+                layout="row"
+                variant={index === 0 && isRanked ? 'featured' : 'elevated'}
+              />
             ))
           ) : posts.length === 0 ? (
             <EmptyFeed>
@@ -576,7 +580,14 @@ export function Home() {
               </Button>
             </EmptyFeed>
           ) : (
-            posts.map((post) => <PostCard key={post._id} post={post} layout="row" />)
+            posts.map((post, index) => (
+              <PostCard
+                key={post._id}
+                post={post}
+                layout="row"
+                variant={index === 0 && isRanked ? 'featured' : 'elevated'}
+              />
+            ))
           )}
         </PostList>
 

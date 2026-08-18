@@ -14,6 +14,63 @@ import { AuthorByline } from './AuthorByline';
  * Supports `row` for main feed / search and `stacked` for grids / profile views.
  */
 
+const cardVariants = {
+  /** Standard elevated surface (Default) */
+  elevated: css`
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    border: none;
+    box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+
+    &:hover {
+      background: ${({ theme }) => theme.colors.surfaceHover};
+      box-shadow:
+        0 12px 24px -6px rgba(15, 23, 42, 0.06),
+        0 0 12px -2px rgba(14, 165, 233, 0.1);
+    }
+  `,
+
+  /** Featured spotlight card with glowing accent border */
+  featured: css`
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    border: 1px solid ${({ theme }) => theme.colors.accentLine};
+    box-shadow:
+      0 8px 24px -4px rgba(14, 165, 233, 0.12),
+      0 2px 8px -2px rgba(15, 23, 42, 0.04);
+
+    &:hover {
+      background: ${({ theme }) => theme.colors.surfaceHover};
+      border-color: ${({ theme }) => theme.colors.accentSolid};
+      box-shadow:
+        0 16px 36px -6px rgba(14, 165, 233, 0.2),
+        0 0 16px -2px rgba(14, 165, 233, 0.15);
+    }
+  `,
+
+  /** Ghost / Minimal seamless editorial card */
+  ghost: css`
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: ${({ theme }) => theme.radii.md};
+
+    &:hover {
+      background: ${({ theme }) => theme.colors.surfaceContainerLow};
+      box-shadow: none;
+    }
+  `,
+
+  /** Inset sunken well */
+  inset: css`
+    background: ${({ theme }) => theme.colors.surfaceContainerLow};
+    border: none;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+
+    &:hover {
+      background: ${({ theme }) => theme.colors.surfaceContainer};
+    }
+  `,
+};
+
 const Card = styled(Link)`
   position: relative;
   display: grid;
@@ -21,20 +78,12 @@ const Card = styled(Link)`
   align-items: start;
   padding: ${({ theme }) => theme.spacing.lg};
   border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: none;
-  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
-  transition: background ${({ theme }) => theme.transitions.fast}, box-shadow ${({ theme }) => theme.transitions.fast};
   text-decoration: none;
   overflow: hidden;
+  transition: all ${({ theme }) => theme.transitions.fast};
   ${interactive}
 
-  &:hover {
-    background: ${({ theme }) => theme.colors.surfaceHover};
-    box-shadow:
-      0 12px 24px -6px rgba(15, 23, 42, 0.06),
-      0 0 12px -2px rgba(14, 165, 233, 0.1);
-  }
+  ${({ $variant }) => cardVariants[$variant] ?? cardVariants.elevated}
 
   ${({ $layout, $hasThumb }) =>
     $layout === 'stacked' || !$hasThumb
@@ -75,8 +124,8 @@ const ContentWrap = styled.div`
 `;
 
 const Title = styled.h3`
-  ${display('xs')}
-  font-weight: 700;
+  ${({ $variant }) => ($variant === 'featured' ? display('sm') : display('xs'))}
+  font-weight: ${({ $variant }) => ($variant === 'featured' ? 800 : 700)};
   line-height: 1.3;
   color: ${({ theme }) => theme.colors.textPrimary};
   ${clamp(2)}
@@ -187,7 +236,7 @@ const Thumb = styled.div`
     `}
 `;
 
-export function PostCard({ post, layout = 'row' }) {
+export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   if (!post) return null;
@@ -217,7 +266,7 @@ export function PostCard({ post, layout = 'row' }) {
   const commentsCount = post.commentsCount ?? post.comments?.length ?? 0;
 
   return (
-    <Card to={`/post/${post._id}`} $layout={layout} $hasThumb={showThumb}>
+    <Card to={`/post/${post._id}`} $layout={layout} $hasThumb={showThumb} $variant={variant}>
       {showThumb && (
         <Thumb $layout={layout}>
           <img src={post.imageURL} alt="" loading="lazy" onError={() => setImageFailed(true)} />
@@ -232,7 +281,7 @@ export function PostCard({ post, layout = 'row' }) {
             readingMinutes={readingTime(post.content)}
           />
 
-          <Title>{post.title}</Title>
+          <Title $variant={variant}>{post.title}</Title>
           <Excerpt>{excerpt(post.content)}</Excerpt>
         </ContentWrap>
 

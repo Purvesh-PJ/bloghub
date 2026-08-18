@@ -2,15 +2,39 @@ import styled, { css } from 'styled-components';
 import { media } from '../../styles/theme/mixins';
 import { Skeleton, SkeletonText } from '../ui/Skeleton';
 
+const cardVariants = {
+  elevated: css`
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    border: none;
+    box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+  `,
+  featured: css`
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    border: 1px solid ${({ theme }) => theme.colors.accentLine};
+    box-shadow:
+      0 8px 24px -4px rgba(14, 165, 233, 0.12),
+      0 2px 8px -2px rgba(15, 23, 42, 0.04);
+  `,
+  ghost: css`
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: ${({ theme }) => theme.radii.md};
+  `,
+  inset: css`
+    background: ${({ theme }) => theme.colors.surfaceContainerLow};
+    border: none;
+  `,
+};
+
 const Card = styled.div`
   display: grid;
   gap: ${({ theme }) => theme.spacing.lg};
   align-items: start;
   padding: ${({ theme }) => theme.spacing.lg};
   border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: none;
-  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+
+  ${({ $variant }) => cardVariants[$variant] ?? cardVariants.elevated}
 
   ${({ $layout, $hasThumb = true }) =>
     $layout === 'stacked' || !$hasThumb
@@ -70,9 +94,9 @@ const Thumb = styled(Skeleton)`
     `}
 `;
 
-export function PostCardSkeleton({ layout = 'row', hasThumb = true }) {
+export function PostCardSkeleton({ layout = 'row', hasThumb = true, variant = 'elevated' }) {
   return (
-    <Card $layout={layout} $hasThumb={hasThumb} aria-hidden="true">
+    <Card $layout={layout} $hasThumb={hasThumb} $variant={variant} aria-hidden="true">
       {hasThumb && <Thumb $layout={layout} $radius="md" />}
 
       <Body>
