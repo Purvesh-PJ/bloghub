@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, BookOpenCheck } from 'lucide-react';
 import styled, { css } from 'styled-components';
 
 import { display, text, clamp, media, interactive } from '../../styles/theme/mixins';
 import { excerpt, readingTime } from '../../utils/text';
 import { AuthorByline } from './AuthorByline';
-import { topicIcon } from '../marketing/Topics';
 
 /**
  * PostCard — elevated editorial story card.
@@ -87,15 +85,15 @@ const Card = styled(Link)`
 
   ${({ $variant }) => cardVariants[$variant] ?? cardVariants.elevated}
 
-  ${({ $layout }) =>
-    $layout === 'stacked'
+  ${({ $layout, $hasThumb }) =>
+    $layout === 'stacked' || !$hasThumb
       ? css`
           grid-template-columns: 1fr;
           align-items: start;
         `
       : css`
-          grid-template-columns: 190px 1fr;
-          align-items: stretch;
+          grid-template-columns: 200px 1fr;
+          align-items: center;
 
           ${media.down('md')`
             grid-template-columns: 160px 1fr;
@@ -113,14 +111,12 @@ const Body = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.sm};
-  height: 100%;
-  justify-content: space-between;
 `;
 
 const ContentWrap = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 `;
 
 const Title = styled.h3`
@@ -141,69 +137,7 @@ const Excerpt = styled.p`
   ${text('sm')}
   line-height: 1.6;
   color: ${({ theme }) => theme.colors.textSecondary};
-  ${clamp(2)}
-`;
-
-const Footer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin-top: 6px;
-  border-top: none;
-  flex-wrap: wrap;
-`;
-
-const FooterLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  flex-wrap: wrap;
-`;
-
-const StatsRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
-
-const StatBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  ${text('xs', 'medium')}
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  svg {
-    width: 13px;
-    height: 13px;
-  }
-
-  ${({ $tone, theme }) =>
-    $tone === 'accent' &&
-    css`
-      background: ${theme.colors.accentContainer};
-      color: ${theme.colors.accentText};
-      font-weight: 600;
-      border: 1px solid ${theme.colors.accentLine};
-
-      svg {
-        color: ${theme.colors.accentSolid};
-      }
-    `}
-
-  ${({ $tone }) =>
-    $tone === 'love' &&
-    css`
-      svg {
-        color: #ef4444;
-        fill: #ef4444;
-      }
-    `}
+  ${({ $hasThumb }) => ($hasThumb ? clamp(2) : clamp(3))}
 `;
 
 const Thumb = styled.div`
@@ -212,14 +146,14 @@ const Thumb = styled.div`
   overflow: hidden;
   background: ${({ theme }) => theme.colors.surfaceContainer};
   width: 100%;
-  height: 100%;
-  min-height: 130px;
   aspect-ratio: 16 / 10;
+  max-height: 135px;
   flex-shrink: 0;
 
   img {
     width: 100%;
     height: 100%;
+    aspect-ratio: 16 / 10;
     object-fit: cover;
     display: block;
     transition: transform ${({ theme }) => theme.transitions.normal};
@@ -233,74 +167,8 @@ const Thumb = styled.div`
     $layout === 'stacked' &&
     css`
       aspect-ratio: 16 / 9;
-      min-height: unset;
+      max-height: unset;
     `}
-`;
-
-const ThumbPlaceholder = styled.div`
-  position: relative;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-  min-height: 130px;
-  aspect-ratio: 16 / 10;
-  flex-shrink: 0;
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.surfaceContainer} 0%,
-    ${({ theme }) => theme.colors.surfaceContainerHigh} 100%
-  );
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  transition: all ${({ theme }) => theme.transitions.normal};
-
-  ${({ $layout }) =>
-    $layout === 'stacked' &&
-    css`
-      aspect-ratio: 16 / 9;
-      min-height: 140px;
-    `}
-
-  .icon-wrap {
-    width: 42px;
-    height: 42px;
-    border-radius: ${({ theme }) => theme.radii.full};
-    background: ${({ theme }) => theme.colors.accentContainer};
-    color: ${({ theme }) => theme.colors.accentSolid};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.15);
-    transition: transform ${({ theme }) => theme.transitions.normal};
-
-    svg {
-      width: 20px;
-      height: 20px;
-    }
-  }
-
-  .topic-label {
-    ${text('xs', 'semibold')}
-    color: ${({ theme }) => theme.colors.accentText};
-    letter-spacing: 0.02em;
-  }
-
-  ${Card}:hover & {
-    background: linear-gradient(
-      135deg,
-      ${({ theme }) => theme.colors.surfaceContainerHigh} 0%,
-      ${({ theme }) => theme.colors.surfaceContainerHighest} 100%
-    );
-
-    .icon-wrap {
-      transform: scale(1.1);
-    }
-  }
 `;
 
 const HashtagsWrap = styled.div`
@@ -308,6 +176,7 @@ const HashtagsWrap = styled.div`
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  margin-top: 4px;
 `;
 
 const TagHash = styled.span`
@@ -334,33 +203,17 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
     .map((t) => (typeof t === 'string' ? t : t?.name))
     .filter(Boolean);
 
-  const primaryRaw = rawTags[0] || '';
-  const primaryTopic = primaryRaw.toLowerCase().replace(/^[#_-]+/, '');
-  const TopicIcon = topicIcon(primaryRaw);
   const author = post.author?.name || post.author?.username || post.user?.username || 'Anonymous';
   const created = post.createdAt ? new Date(post.createdAt) : null;
   const isValidDate = created && !Number.isNaN(created.getTime());
   const showThumb = Boolean(post.imageURL) && !imageFailed;
-  const likesCount = post.likesCount ?? post.likes?.length ?? 0;
-  const readRate =
-    post.trending?.views > 0 && typeof post.trending?.readRate === 'number'
-      ? post.trending.readRate
-      : null;
-  const commentsCount = post.commentsCount ?? post.comments?.length ?? 0;
 
   return (
-    <Card to={`/post/${post._id}`} $layout={layout} $variant={variant}>
-      {showThumb ? (
+    <Card to={`/post/${post._id}`} $layout={layout} $hasThumb={showThumb} $variant={variant}>
+      {showThumb && (
         <Thumb $layout={layout}>
           <img src={post.imageURL} alt="" loading="lazy" onError={() => setImageFailed(true)} />
         </Thumb>
-      ) : (
-        <ThumbPlaceholder $layout={layout}>
-          <div className="icon-wrap">
-            <TopicIcon />
-          </div>
-          {primaryTopic && <span className="topic-label">#{primaryTopic}</span>}
-        </ThumbPlaceholder>
       )}
 
       <Body>
@@ -375,51 +228,31 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
             readingMinutes={readingTime(post.content)}
           />
 
-          {/* 3. Excerpt */}
-          <Excerpt>{excerpt(post.content)}</Excerpt>
+          {/* 3. Short description / Excerpt */}
+          <Excerpt $hasThumb={showThumb}>{excerpt(post.content)}</Excerpt>
+
+          {/* 4. Hashtags directly below description */}
+          {rawTags.length > 0 && (
+            <HashtagsWrap>
+              {rawTags.slice(0, 3).map((tag) => {
+                const clean = tag.toLowerCase().replace(/^[#_-]+/, '');
+                return (
+                  <TagHash
+                    key={clean}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate(`/search?topic=${encodeURIComponent(clean)}`);
+                    }}
+                    title={`Explore stories in #${clean}`}
+                  >
+                    #{clean}
+                  </TagHash>
+                );
+              })}
+            </HashtagsWrap>
+          )}
         </ContentWrap>
-
-        {/* 4. Base Footer: Hashtags, Read Rate, Likes & Comments */}
-        <Footer>
-          <FooterLeft>
-            {rawTags.length > 0 && (
-              <HashtagsWrap>
-                {rawTags.slice(0, 2).map((tag) => {
-                  const clean = tag.toLowerCase().replace(/^[#_-]+/, '');
-                  return (
-                    <TagHash
-                      key={clean}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        navigate(`/search?topic=${encodeURIComponent(clean)}`);
-                      }}
-                      title={`Explore stories in #${clean}`}
-                    >
-                      #{clean}
-                    </TagHash>
-                  );
-                })}
-              </HashtagsWrap>
-            )}
-
-            {readRate !== null && (
-              <StatBadge $tone="accent" title={`${readRate}% of readers reached the end`}>
-                <BookOpenCheck /> {readRate}% finished
-              </StatBadge>
-            )}
-          </FooterLeft>
-
-          <StatsRow>
-            <StatBadge $tone={likesCount > 0 ? 'love' : undefined} title={`${likesCount} likes`}>
-              <Heart /> {likesCount}
-            </StatBadge>
-
-            <StatBadge title={`${commentsCount} comments`}>
-              <MessageCircle /> {commentsCount}
-            </StatBadge>
-          </StatsRow>
-        </Footer>
       </Body>
     </Card>
   );

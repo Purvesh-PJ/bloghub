@@ -34,15 +34,15 @@ const Card = styled.div`
 
   ${({ $variant }) => cardVariants[$variant] ?? cardVariants.elevated}
 
-  ${({ $layout }) =>
-    $layout === 'stacked'
+  ${({ $layout, $hasThumb = true }) =>
+    $layout === 'stacked' || !$hasThumb
       ? css`
           grid-template-columns: 1fr;
           align-items: start;
         `
       : css`
-          grid-template-columns: 190px 1fr;
-          align-items: stretch;
+          grid-template-columns: 200px 1fr;
+          align-items: center;
 
           ${media.down('md')`
             grid-template-columns: 160px 1fr;
@@ -59,7 +59,7 @@ const Body = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: 8px;
 `;
 
 const Meta = styled.div`
@@ -68,32 +68,31 @@ const Meta = styled.div`
   gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-const Footer = styled.div`
+const HashtagsSkeleton = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.lg};
-  margin-top: ${({ theme }) => theme.spacing.xs};
+  gap: 8px;
+  margin-top: 4px;
 `;
 
 const Thumb = styled(Skeleton)`
   width: 100%;
-  height: 100%;
-  min-height: 130px;
   aspect-ratio: 16 / 10;
+  max-height: 135px;
   border-radius: ${({ theme }) => theme.radii.lg};
 
   ${({ $layout }) =>
     $layout === 'stacked' &&
     css`
       aspect-ratio: 16 / 9;
-      min-height: unset;
+      max-height: unset;
     `}
 `;
 
-export function PostCardSkeleton({ layout = 'row', variant = 'elevated' }) {
+export function PostCardSkeleton({ layout = 'row', hasThumb = true, variant = 'elevated' }) {
   return (
-    <Card $layout={layout} $variant={variant} aria-hidden="true">
-      <Thumb $layout={layout} $radius="lg" />
+    <Card $layout={layout} $hasThumb={hasThumb} $variant={variant} aria-hidden="true">
+      {hasThumb && <Thumb $layout={layout} $radius="lg" />}
 
       <Body>
         {/* 1. Title Skeleton First */}
@@ -110,12 +109,11 @@ export function PostCardSkeleton({ layout = 'row', variant = 'elevated' }) {
         {/* 3. Excerpt */}
         <SkeletonText lines={2} lineHeight="14px" lastLineWidth="90%" gap="xs" />
 
-        {/* 4. Footer */}
-        <Footer>
+        {/* 4. Hashtags directly below description */}
+        <HashtagsSkeleton>
           <Skeleton $width={50} $height={14} $radius="xs" />
-          <Skeleton $width={50} $height={14} $radius="xs" />
-          <Skeleton $width={40} $height={14} $radius="xs" />
-        </Footer>
+          <Skeleton $width={60} $height={14} $radius="xs" />
+        </HashtagsSkeleton>
       </Body>
     </Card>
   );
