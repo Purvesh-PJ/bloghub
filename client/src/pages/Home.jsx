@@ -10,6 +10,7 @@ import {
   Flame,
   BarChart2,
   Layers,
+  MessageCircle,
   ShieldCheck,
   CheckCircle2,
   Feather,
