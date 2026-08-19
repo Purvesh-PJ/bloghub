@@ -466,18 +466,13 @@ export function Search() {
             ))}
           </EditorialGrid>
         )
-      ) : /* ── Browse Mode (Featured Spotlight + 3-Column Editorial Grid) ── */
+      ) : /* ── Browse Mode (Uniform 3-Column Editorial Grid) ── */
       loadingPosts ? (
-        <div>
-          <FeaturedSpotlight>
-            <PostCardSkeleton layout="row" />
-          </FeaturedSpotlight>
-          <EditorialGrid>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <PostCardSkeleton key={i} layout="stacked" />
-            ))}
-          </EditorialGrid>
-        </div>
+        <EditorialGrid>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <PostCardSkeleton key={i} layout="stacked" />
+          ))}
+        </EditorialGrid>
       ) : !hasPosts ? (
         <EmptyState
           icon={Compass}
@@ -493,23 +488,11 @@ export function Search() {
           </div>
         </EmptyState>
       ) : (
-        <div>
-          {/* Lead Post (Clean Borderless Row Layout) */}
-          {leadPost && (
-            <FeaturedSpotlight>
-              <PostCard post={leadPost} layout="row" />
-            </FeaturedSpotlight>
-          )}
-
-          {/* Remaining Posts (Rich 3-Column Grid with Stacked Layout) */}
-          {gridPosts.length > 0 && (
-            <EditorialGrid>
-              {gridPosts.map((post) => (
-                <PostCard key={post._id} post={post} layout="stacked" />
-              ))}
-            </EditorialGrid>
-          )}
-        </div>
+        <EditorialGrid>
+          {browsePosts.map((post) => (
+            <PostCard key={post._id} post={post} layout="stacked" />
+          ))}
+        </EditorialGrid>
       )}
     </PageShell>
   );

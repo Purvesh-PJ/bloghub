@@ -309,19 +309,23 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
 
   if (!post) return null;
 
-  const rawTopic = post.tags?.[0]?.name || post.tags?.[0] || '';
-  const primaryTopic = rawTopic
-    ? String(rawTopic).toLowerCase() === 'uiux'
-      ? 'UI/UX'
-      : String(rawTopic).toLowerCase() === 'ai'
-        ? 'AI'
-        : String(rawTopic).toLowerCase() === 'saas'
-          ? 'SaaS'
-          : String(rawTopic).toLowerCase() === 'nodejs'
-            ? 'Node.js'
-            : String(rawTopic).charAt(0).toUpperCase() + String(rawTopic).slice(1)
-    : '';
-  const TopicIcon = topicIcon(rawTopic);
+  const formatTag = (raw) => {
+    if (!raw) return '';
+    const s = String(raw).trim().replace(/^[#_-]+/, '');
+    if (s.toLowerCase() === 'uiux') return 'UI/UX';
+    if (s.toLowerCase() === 'ai') return 'AI';
+    if (s.toLowerCase() === 'saas') return 'SaaS';
+    if (s.toLowerCase() === 'nodejs') return 'Node.js';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  };
+
+  const rawTags = (post.tags || [])
+    .map((t) => (typeof t === 'string' ? t : t?.name))
+    .filter(Boolean);
+
+  const displayTags = rawTags.slice(0, 2).map(formatTag);
+  const primaryTopic = displayTags[0] || '';
+  const TopicIcon = topicIcon(rawTags[0] || '');
   const author = post.author?.name || post.author?.username || post.user?.username || 'Anonymous';
   const created = post.createdAt ? new Date(post.createdAt) : null;
   const isValidDate = created && !Number.isNaN(created.getTime());
@@ -362,11 +366,11 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
 
         <Footer>
           <FooterLeft>
-            {primaryTopic && (
-              <Chip size="sm" interactive={false} as="span">
-                {primaryTopic}
+            {displayTags.map((tag) => (
+              <Chip key={tag} size="sm" interactive={false} as="span">
+                {tag}
               </Chip>
-            )}
+            ))}
 
             {readRate !== null && (
               <StatBadge $tone="accent" title={`${readRate}% of readers reached the end`}>
