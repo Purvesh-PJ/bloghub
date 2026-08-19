@@ -5,54 +5,52 @@ import { Skeleton, SkeletonText } from '../ui/Skeleton';
 const cardVariants = {
   elevated: css`
     background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: none;
+    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
     box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
   `,
   featured: css`
     background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: none;
+    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
     box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
   `,
   ghost: css`
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     box-shadow: none;
-    border-radius: ${({ theme }) => theme.radii.md};
+    border-radius: ${({ theme }) => theme.radii.lg};
   `,
   inset: css`
     background: ${({ theme }) => theme.colors.surfaceContainerLow};
-    border: none;
+    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
   `,
 };
 
 const Card = styled.div`
   display: grid;
   gap: ${({ theme }) => theme.spacing.lg};
-  align-items: start;
   padding: ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.lg};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
 
   ${({ $variant }) => cardVariants[$variant] ?? cardVariants.elevated}
 
-  ${({ $layout, $hasThumb = true }) =>
-    $layout === 'stacked' || !$hasThumb
+  ${({ $layout }) =>
+    $layout === 'stacked'
       ? css`
           grid-template-columns: 1fr;
-          gap: ${({ theme }) => theme.spacing.md};
-          padding: ${({ theme }) => theme.spacing.md};
+          align-items: start;
         `
       : css`
-          grid-template-columns: 210px 1fr;
+          grid-template-columns: 190px 1fr;
           align-items: stretch;
 
           ${media.down('md')`
-            grid-template-columns: 170px 1fr;
+            grid-template-columns: 160px 1fr;
           `}
 
           ${media.down('sm')`
             grid-template-columns: 1fr;
             gap: ${({ theme }) => theme.spacing.md};
-            padding: ${({ theme }) => theme.spacing.md};
           `}
         `}
 `;
@@ -82,7 +80,7 @@ const Thumb = styled(Skeleton)`
   height: 100%;
   min-height: 130px;
   aspect-ratio: 16 / 10;
-  border-radius: ${({ theme }) => theme.radii.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
 
   ${({ $layout }) =>
     $layout === 'stacked' &&
@@ -92,10 +90,10 @@ const Thumb = styled(Skeleton)`
     `}
 `;
 
-export function PostCardSkeleton({ layout = 'row', hasThumb = true, variant = 'elevated' }) {
+export function PostCardSkeleton({ layout = 'row', variant = 'elevated' }) {
   return (
-    <Card $layout={layout} $hasThumb={hasThumb} $variant={variant} aria-hidden="true">
-      {hasThumb && <Thumb $layout={layout} $radius="md" />}
+    <Card $layout={layout} $variant={variant} aria-hidden="true">
+      <Thumb $layout={layout} $radius="lg" />
 
       <Body>
         <Meta>
