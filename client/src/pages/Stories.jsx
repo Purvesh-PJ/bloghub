@@ -314,7 +314,9 @@ function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSe
                 : 'recently';
             })()}
           </span>
-          {post.categories?.[0] && <span>· {post.categories[0]?.name ?? post.categories[0]}</span>}
+          {post.tags?.[0] && (
+            <span>· #{post.tags[0]?.name ?? post.tags[0]}</span>
+          )}
         </RowMeta>
       </TitleCell>
 

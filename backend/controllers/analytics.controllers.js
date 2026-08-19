@@ -117,9 +117,9 @@ exports.getReadingActivity = async (req, res) => {
     );
 
     const posts = await Post.find({ _id: { $in: openedIds }, visibility: 'public' })
-      .select('title imageURL createdAt categories')
+      .select('title imageURL createdAt tags')
       .populate('user', 'username')
-      .populate('categories', 'name')
+      .populate('tags', 'name')
       .lean();
 
     const postById = new Map(posts.map((post) => [String(post._id), post]));

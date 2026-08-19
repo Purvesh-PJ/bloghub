@@ -238,8 +238,7 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
 
   if (!post) return null;
 
-  const rawTopic =
-    post.tags?.[0]?.name || post.tags?.[0] || post.categories?.[0]?.name || post.categories?.[0];
+  const rawTopic = post.tags?.[0]?.name || post.tags?.[0];
   const primaryTopic = rawTopic
     ? String(rawTopic).toLowerCase() === 'uiux'
       ? 'UI/UX'

@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { LayoutDashboard, FileText, Users, FolderOpen, LogOut, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, Hash, LogOut, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
@@ -177,7 +177,7 @@ const Inner = styled.div`
 const NAV = [
   { path: '/admin', icon: LayoutDashboard, label: 'Overview', exact: true },
   { path: '/admin/posts', icon: FileText, label: 'Posts' },
-  { path: '/admin/categories', icon: FolderOpen, label: 'Topics' },
+  { path: '/admin/tags', icon: Hash, label: 'Tags & Topics' },
   { path: '/admin/users', icon: Users, label: 'People' },
 ];
 

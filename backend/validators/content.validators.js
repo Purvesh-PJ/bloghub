@@ -123,9 +123,11 @@ const paginationRules = [
     .toInt(),
 ];
 
-// Public feed listing: pagination plus an optional category name.
+// Public feed listing: pagination plus an optional tag/topic name.
 const feedRules = [
   ...paginationRules,
+  query('tag').optional().isString().trim().isLength({ max: 60 }),
+  query('topic').optional().isString().trim().isLength({ max: 60 }),
   query('category').optional().isString().trim().isLength({ max: 60 }),
 ];
 

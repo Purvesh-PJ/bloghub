@@ -1,22 +1,14 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
-import { Plus, FolderOpen } from 'lucide-react';
+import { Plus, Hash } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import { categoryService } from '../../services/categoryService';
+import { tagService } from '../../services/tagService';
 import { topicIcon } from '../../components/marketing/Topics';
 import { PageHeader, Section } from '../../components/layout/PageShell';
 import { Button, Card, Input, Modal, Table, Loading, EmptyState } from '../../components/ui';
 import { text } from '../../styles/theme/mixins';
-
-/**
- * Topics.
- *
- * The same list as before on the shared primitives, plus the icon each topic actually gets
- * on the landing page — so an administrator adding one can see how it will appear rather
- * than finding out later.
- */
 
 const NameCell = styled.span`
   display: inline-flex;
@@ -32,87 +24,87 @@ const NameCell = styled.span`
   }
 `;
 
-export function AdminCategories() {
+export function AdminTags() {
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => categoryService.getCategories({ withEmpty: true }),
+    queryKey: ['tags'],
+    queryFn: tagService.getTags,
   });
 
   const createMutation = useMutation({
-    mutationFn: categoryService.createCategory,
+    mutationFn: tagService.createTag,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast.success('Topic created');
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      toast.success('Tag created');
       setName('');
       setOpen(false);
     },
-    onError: () => toast.error('Could not create that topic'),
+    onError: () => toast.error('Could not create that tag'),
   });
 
   const handleCreate = (event) => {
     event.preventDefault();
-    if (!name.trim()) {
-      toast.error('Give the topic a name');
+    const clean = name.trim().toLowerCase().replace(/^[#_-]+/, '');
+    if (!clean) {
+      toast.error('Give the tag a name');
       return;
     }
-    createMutation.mutate(name.trim());
+    createMutation.mutate(clean);
   };
 
-  if (isLoading) return <Loading text="Loading topics…" />;
+  if (isLoading) return <Loading text="Loading tags…" />;
 
-  const categories = data?.data || [];
+  const tags = data?.data || [];
 
   return (
     <>
       <PageHeader
-        title="Topics"
-        subtitle="What people can file a post under. These drive the landing page and the browse view."
+        title="Tags & Topics"
+        subtitle="Dynamic topics and tags created by writers and readers across BlogHub."
         actions={
           <Button onClick={() => setOpen(true)}>
-            <Plus /> New topic
+            <Plus /> New tag
           </Button>
         }
       />
 
       <Section>
-        {categories.length === 0 ? (
+        {tags.length === 0 ? (
           <EmptyState
-            icon={FolderOpen}
-            title="No topics yet"
+            icon={Hash}
+            title="No tags yet"
             actions={
               <Button onClick={() => setOpen(true)}>
                 <Plus /> Create the first one
               </Button>
             }
           >
-            A post has to be filed under something. Add a few broad topics and writers can pick from
-            them.
+            Tags help writers categorize stories and help readers discover relevant topics.
           </EmptyState>
         ) : (
           <Card tone="low" radius="xl" padding="sm">
             <Table>
               <Table.Head>
                 <tr>
-                  <th>Topic</th>
-                  <th>Posts</th>
+                  <th>Topic / Tag</th>
+                  <th>Published Stories</th>
                 </tr>
               </Table.Head>
               <Table.Body>
-                {categories.map((category) => {
-                  const Icon = topicIcon(category.name);
+                {tags.map((tag) => {
+                  const Icon = topicIcon(tag.name);
                   return (
-                    <tr key={category._id}>
+                    <tr key={tag._id || tag.name}>
                       <td>
                         <NameCell>
                           <Icon />
-                          {category.name}
+                          #{tag.name}
                         </NameCell>
                       </td>
-                      <td>{category.posts?.length || 0}</td>
+                      <td>{tag.postCount ?? tag.posts?.length ?? 0}</td>
                     </tr>
                   );
                 })}
@@ -122,14 +114,14 @@ export function AdminCategories() {
         )}
       </Section>
 
-      <Modal open={open} onOpenChange={setOpen} title="New topic">
+      <Modal open={open} onOpenChange={setOpen} title="New tag / topic">
         <form onSubmit={handleCreate}>
           <Input
             label="Name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Photography"
-            hint="Known names get their own icon; anything else falls back to a globe."
+            placeholder="e.g. react, design, ai"
+            hint="Lowercase tag without hash; e.g. 'react', 'cloud', 'architecture'."
             autoFocus
           />
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 24 }}>

@@ -31,7 +31,7 @@ const Settings = lazyPage(() => import('./pages/Settings'), 'Settings');
 // Admin Pages
 const AdminDashboard = lazyPage(() => import('./pages/admin/Dashboard'), 'AdminDashboard');
 const AdminPosts = lazyPage(() => import('./pages/admin/Posts'), 'AdminPosts');
-const AdminCategories = lazyPage(() => import('./pages/admin/Categories'), 'AdminCategories');
+const AdminTags = lazyPage(() => import('./pages/admin/Tags'), 'AdminTags');
 const AdminUsers = lazyPage(() => import('./pages/admin/Users'), 'AdminUsers');
 
 const progressAnim = keyframes`
@@ -113,7 +113,8 @@ function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="posts" element={<AdminPosts />} />
-          <Route path="categories" element={<AdminCategories />} />
+          <Route path="tags" element={<AdminTags />} />
+          <Route path="categories" element={<Navigate to="/admin/tags" replace />} />
           <Route path="users" element={<AdminUsers />} />
         </Route>
       </Routes>

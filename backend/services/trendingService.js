@@ -117,7 +117,6 @@ exports.getTrendingPosts = async ({ limit = 10, windowDays = WINDOW_DAYS } = {})
 
   const posts = await Post.find({ _id: { $in: ranked.map((row) => row._id) } })
     .populate('user', 'username')
-    .populate('categories', 'name')
     .populate('tags', 'name')
     .lean();
 

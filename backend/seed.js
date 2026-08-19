@@ -5,7 +5,6 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const User = require('./models/user.model');
 const Post = require('./models/post.model');
 const Tag = require('./models/tag.model');
-const Category = require('./models/category.model');
 const Comment = require('./models/comment.model');
 const Like = require('./models/like.model');
 const Profile = require('./models/user-profile.model');
@@ -414,7 +413,6 @@ async function seed() {
       User.deleteMany({}),
       Post.deleteMany({}),
       Tag.deleteMany({}),
-      Category.deleteMany({}),
       Comment.deleteMany({}),
       Like.deleteMany({}),
       Profile.deleteMany({}),
@@ -422,14 +420,6 @@ async function seed() {
       Read.deleteMany({}),
       Analytics.deleteMany({}),
     ]);
-
-    console.log('Creating categories...');
-    const createdCategories = await Category.insertMany(
-      categories.map((name) => ({ name, posts: [] })),
-    );
-    const categoryMap = {};
-    createdCategories.forEach((cat) => (categoryMap[cat.name] = cat));
-    console.log(`Created ${createdCategories.length} categories`);
 
     // Dynamic Tag Dictionary
     const tagMap = new Map();
@@ -512,7 +502,6 @@ async function seed() {
               : 'public';
 
         const categoryName = template.category;
-        const category = categoryMap[categoryName] || createdCategories[0];
         const uniqueSlug = `${template.slug}-${user.username}-${pIdx + 1}`;
 
         // Resolve tag objects for this story
@@ -527,7 +516,6 @@ async function seed() {
           content: template.content,
           imageURL: template.imageURL,
           visibility,
-          categories: [category._id],
           tags: tagIds,
           likes: [],
           comments: [],
@@ -539,8 +527,6 @@ async function seed() {
         user.posts.push(post._id);
         if (visibility === 'public') {
           await Profile.findOneAndUpdate({ user: user._id }, { $inc: { postCount: 1 } });
-          category.posts.push(post._id);
-          await category.save();
 
           // Sync tag backrefs
           for (const tagObj of tagObjects) {
