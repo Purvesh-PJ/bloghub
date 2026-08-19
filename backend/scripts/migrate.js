@@ -152,6 +152,35 @@ async function migrateTagsFromCategories() {
   console.log(`  tags: migrated dynamic tags for ${migrated} existing posts`);
 }
 
+/** Removes legacy categories collection and unsets categories field on posts if present. */
+async function cleanupLegacyCategories() {
+  const db = mongoose.connection.db;
+  const collections = await db.listCollections().toArray();
+  const hasCategoriesCollection = collections.some((c) => c.name === 'categories');
+
+  if (hasCategoriesCollection) {
+    if (DRY) {
+      console.log('  cleanup: would drop obsolete categories collection');
+    } else {
+      await db.dropCollection('categories');
+      console.log('  cleanup: dropped obsolete categories collection');
+    }
+  }
+
+  const postsWithCategoriesField = await db
+    .collection('posts')
+    .countDocuments({ categories: { $exists: true } });
+
+  if (postsWithCategoriesField > 0) {
+    if (DRY) {
+      console.log(`  cleanup: would remove legacy categories field from ${postsWithCategoriesField} posts`);
+    } else {
+      await db.collection('posts').updateMany({}, { $unset: { categories: '' } });
+      console.log(`  cleanup: removed legacy categories field from ${postsWithCategoriesField} posts`);
+    }
+  }
+}
+
 /** Builds the indexes the models declare, now that the data can satisfy them. */
 async function syncIndexes() {
   if (DRY) {
@@ -177,6 +206,7 @@ async function syncIndexes() {
   await backfillCommentPosts();
   await deduplicateSlugs();
   await migrateTagsFromCategories();
+  await cleanupLegacyCategories();
   await syncIndexes();
 
   await mongoose.disconnect();
