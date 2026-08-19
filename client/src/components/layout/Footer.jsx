@@ -1,21 +1,43 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Github, PenLine, Compass } from 'lucide-react';
-import { text, media, interactive } from '../../styles/theme/mixins';
+import { Github, PenLine, Compass, Sparkles, Heart } from 'lucide-react';
+import { text, display, media, interactive } from '../../styles/theme/mixins';
 import { BrandMark } from '../ui';
 
 /**
- * Footer — clean, minimalist, and perfectly aligned with the top nav.
+ * Footer — high-end editorial footer with ambient watermark,
+ * aligned gutters, and purposeful community discovery.
  */
 
 const Wrapper = styled.footer`
+  position: relative;
+  overflow: hidden;
   margin-top: ${({ theme }) => theme.spacing['4xl']};
-  padding: ${({ theme }) => theme.spacing['2xl']} 0 ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacing['3xl']} 0 ${({ theme }) => theme.spacing.xl};
   border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  background: transparent;
+  background: ${({ theme }) =>
+    theme.mode === 'light' ? 'rgba(248, 250, 252, 0.4)' : 'rgba(7, 11, 19, 0.4)'};
+`;
+
+const WatermarkText = styled.div`
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(70px, 14vw, 160px);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: ${({ theme }) =>
+    theme.mode === 'light' ? 'rgba(15, 23, 42, 0.03)' : 'rgba(255, 255, 255, 0.02)'};
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
 `;
 
 const Container = styled.div`
+  position: relative;
+  z-index: 1;
   max-width: ${({ theme }) => theme.layout.maxWidth};
   margin: 0 auto;
   padding: 0 ${({ theme }) => theme.spacing.xl};
@@ -26,151 +48,249 @@ const Container = styled.div`
   `}
 `;
 
-const MainRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.xl};
-  flex-wrap: wrap;
+const MainGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing['3xl']};
+  align-items: start;
 
-  ${media.down('md')`
-    flex-direction: column;
-    align-items: flex-start;
-    gap: ${({ theme }) => theme.spacing.lg};
+  ${media.down('lg')`
+    grid-template-columns: 1.2fr 1fr;
+    gap: ${({ theme }) => theme.spacing['2xl']};
+  `}
+
+  ${media.down('sm')`
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacing.xl};
   `}
 `;
 
-const BrandSection = styled.div`
+const BrandBlock = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  max-width: 380px;
+  gap: ${({ theme }) => theme.spacing.md};
+  max-width: 440px;
 `;
 
-const Logo = styled(Link)`
-  display: inline-flex;
+const BrandHeader = styled.div`
+  display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: 10px;
+`;
+
+const BrandName = styled.span`
   ${text('md', 'bold')}
   letter-spacing: -0.02em;
   color: ${({ theme }) => theme.colors.textPrimary};
-  text-decoration: none;
-  transition: opacity ${({ theme }) => theme.transitions.fast};
+`;
 
-  &:hover {
-    opacity: 0.85;
+const StatusPill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentText};
+  ${text('xs', 'semibold')}
+
+  span.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
   }
 `;
 
 const Tagline = styled.p`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  line-height: 1.6;
+  ${text('sm')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: 1.65;
 `;
 
-const NavLinks = styled.nav`
+const NavCol = styled.div`
   display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xl};
-  flex-wrap: wrap;
-
-  ${media.down('sm')`
-    gap: ${({ theme }) => theme.spacing.md};
-  `}
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const FooterLink = styled(Link)`
+const ColTitle = styled.h4`
+  ${text('xs', 'semibold')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+`;
+
+const ColLinks = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const FooterNavLink = styled(Link)`
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   ${text('sm', 'medium')}
   color: ${({ theme }) => theme.colors.textSecondary};
   text-decoration: none;
-  transition: color ${({ theme }) => theme.transitions.fast};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  width: fit-content;
   ${interactive}
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
 
   svg {
     width: 15px;
     height: 15px;
     color: ${({ theme }) => theme.colors.accentSolid};
+    transition: transform ${({ theme }) => theme.transitions.fast};
   }
-`;
-
-const ExternalLink = styled.a`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  ${text('sm', 'medium')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  text-decoration: none;
-  transition: color ${({ theme }) => theme.transitions.fast};
-  ${interactive}
 
   &:hover {
     color: ${({ theme }) => theme.colors.accentText};
+    transform: translateX(2px);
+
+    svg {
+      transform: scale(1.1);
+    }
   }
+`;
+
+const FooterExternalLink = styled.a`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  ${text('sm', 'medium')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  text-decoration: none;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  width: fit-content;
+  ${interactive}
 
   svg {
     width: 15px;
     height: 15px;
   }
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.accentText};
+    transform: translateX(2px);
+  }
 `;
 
-const BottomRow = styled.div`
+const TopicHashtags = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const TopicTag = styled(Link)`
+  ${text('xs', 'medium')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  ${interactive}
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.accentText};
+    background: ${({ theme }) => theme.colors.accentContainer};
+    border-color: ${({ theme }) => theme.colors.accentLine};
+    transform: translateY(-1px);
+  }
+`;
+
+const BottomBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.md};
-  margin-top: ${({ theme }) => theme.spacing.xl};
-  padding-top: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+  padding-top: ${({ theme }) => theme.spacing.lg};
   border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
   flex-wrap: wrap;
   ${text('xs')}
   color: ${({ theme }) => theme.colors.textMuted};
+
+  span.built-with {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    svg {
+      width: 13px;
+      height: 13px;
+      color: #ef4444;
+      fill: #ef4444;
+    }
+  }
 `;
 
 export function Footer() {
   return (
     <Wrapper>
+      <WatermarkText>bloghub</WatermarkText>
+
       <Container>
-        <MainRow>
-          <BrandSection>
-            <Logo to="/">
+        <MainGrid>
+          {/* Brand Identity & Mission */}
+          <BrandBlock>
+            <BrandHeader>
               <BrandMark letter="B" />
-              BlogHub
-            </Logo>
+              <BrandName>BlogHub</BrandName>
+              <StatusPill>
+                <span className="dot" /> Open Source
+              </StatusPill>
+            </BrandHeader>
+
             <Tagline>
-              A distraction-free publishing space for thoughtful ideas, open writing, and genuine perspectives.
+              A distraction-free publishing space for writers, thinkers, and curious minds. Pure
+              Markdown canvas, true read attention metrics, and zero ads.
             </Tagline>
-          </BrandSection>
+          </BrandBlock>
 
-          <NavLinks>
-            <FooterLink to="/search">
-              <Compass /> Explore Stories
-            </FooterLink>
+          {/* Quick Discover Pathways */}
+          <NavCol>
+            <ColTitle>Explore</ColTitle>
+            <ColLinks>
+              <FooterNavLink to="/search">
+                <Compass /> Discover Stories
+              </FooterNavLink>
+              <FooterNavLink to="/write">
+                <PenLine /> Write an Article
+              </FooterNavLink>
+              <FooterExternalLink
+                href="https://github.com/Purvesh-PJ/bloghub"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Github /> GitHub Repository
+              </FooterExternalLink>
+            </ColLinks>
+          </NavCol>
 
-            <FooterLink to="/write">
-              <PenLine /> Write a Story
-            </FooterLink>
+          {/* Popular Community Topics */}
+          <NavCol>
+            <ColTitle>Popular Topics</ColTitle>
+            <TopicHashtags>
+              <TopicTag to="/search?topic=technology">#technology</TopicTag>
+              <TopicTag to="/search?topic=design">#design</TopicTag>
+              <TopicTag to="/search?topic=programming">#programming</TopicTag>
+              <TopicTag to="/search?topic=ai">#ai</TopicTag>
+              <TopicTag to="/search?topic=science">#science</TopicTag>
+              <TopicTag to="/search?topic=lifestyle">#lifestyle</TopicTag>
+            </TopicHashtags>
+          </NavCol>
+        </MainGrid>
 
-            <ExternalLink
-              href="https://github.com/Purvesh-PJ/bloghub"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Github /> GitHub
-            </ExternalLink>
-          </NavLinks>
-        </MainRow>
-
-        <BottomRow>
-          <span>© {new Date().getFullYear()} BlogHub · Open Publishing Platform</span>
-          <span>Crafted with Markdown & Precision</span>
-        </BottomRow>
+        <BottomBar>
+          <span>© {new Date().getFullYear()} BlogHub · All stories belong to their authors</span>
+          <span className="built-with">
+            Crafted with <Heart /> for open web publishing
+          </span>
+        </BottomBar>
       </Container>
     </Wrapper>
   );
