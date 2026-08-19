@@ -1,20 +1,36 @@
 import styled, { keyframes } from 'styled-components';
-import { Sparkles, PenLine, Heart, MessageSquare, TrendingUp, CheckCircle2 } from 'lucide-react';
+import {
+  Sparkles,
+  PenTool,
+  BookOpen,
+  Compass,
+  Rocket,
+  Palette,
+  Heart,
+  MessageSquare,
+  Bookmark,
+  CheckCircle2,
+} from 'lucide-react';
 import { media, text } from '../../styles/theme/mixins';
 
 const floatSlow = keyframes`
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-8px) rotate(0.5deg); }
+  50% { transform: translateY(-8px) rotate(0.4deg); }
 `;
 
 const floatReverse = keyframes`
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(6px) rotate(-1deg); }
+  50% { transform: translateY(7px) rotate(-0.8deg); }
 `;
 
 const pulseGlow = keyframes`
-  0%, 100% { opacity: 0.45; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.06); }
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.08); }
+`;
+
+const blink = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 `;
 
 const IllustrationWrapper = styled.div`
@@ -25,7 +41,7 @@ const IllustrationWrapper = styled.div`
   user-select: none;
 
   ${media.down('lg')`
-    max-width: 460px;
+    max-width: 480px;
     margin-top: ${({ theme }) => theme.spacing.xl};
   `}
 
@@ -36,20 +52,20 @@ const IllustrationWrapper = styled.div`
 
 const AmbientGlow = styled.div`
   position: absolute;
-  top: 15%;
-  left: 20%;
-  width: 320px;
-  height: 320px;
+  top: 10%;
+  left: 15%;
+  width: 360px;
+  height: 360px;
   background: radial-gradient(
     circle,
     ${({ theme }) => theme.colors.accentContainer} 0%,
-    rgba(14, 165, 233, 0.15) 45%,
+    rgba(14, 165, 233, 0.18) 40%,
     transparent 70%
   );
-  filter: blur(48px);
+  filter: blur(52px);
   z-index: 0;
   pointer-events: none;
-  animation: ${pulseGlow} 6s ease-in-out infinite;
+  animation: ${pulseGlow} 7s ease-in-out infinite;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
@@ -68,12 +84,13 @@ const MainCanvas = styled.div`
     0 4px 16px -2px rgba(14, 165, 233, 0.08);
   animation: ${floatSlow} 7s ease-in-out infinite;
   backdrop-filter: blur(16px);
-  transition: all 300ms ease;
+  transition: all ${({ theme }) => theme.transitions.normal};
 
   &:hover {
     box-shadow:
       0 32px 64px -12px rgba(15, 23, 42, 0.18),
       0 8px 24px -2px rgba(14, 165, 233, 0.15);
+    border-color: ${({ theme }) => theme.colors.lineDefault};
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -95,8 +112,8 @@ const WindowDots = styled.div`
   gap: 6px;
 
   span {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
 
     &:nth-child(1) { background: #ef4444; opacity: 0.8; }
@@ -109,14 +126,12 @@ const WindowStatus = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  ${text('xs', 'medium')}
-  color: ${({ theme }) => theme.colors.textMuted};
+  ${text('xs', 'semibold')}
+  color: ${({ theme }) => theme.colors.accentText};
 
-  span.indicator {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #10b981;
+  svg {
+    width: 13px;
+    height: 13px;
   }
 `;
 
@@ -126,18 +141,27 @@ const ArticlePreview = styled.div`
   gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-const TagStrip = styled.div`
+const TopicPillsRow = styled.div`
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
   margin-bottom: 4px;
 `;
 
-const TagChip = styled.span`
+const TopicPill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   ${text('xs', 'semibold')}
   padding: 3px 10px;
   border-radius: ${({ theme }) => theme.radii.full};
   background: ${({ theme }) => theme.colors.accentContainer};
   color: ${({ theme }) => theme.colors.accentText};
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
 `;
 
 const StoryTitle = styled.div`
@@ -154,62 +178,61 @@ const AuthorRow = styled.div`
   margin: 6px 0 10px;
 `;
 
-const AvatarPlaceholder = styled.div`
-  width: 28px;
-  height: 28px;
+const AvatarGradient = styled.div`
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
 `;
 
 const AuthorMeta = styled.div`
   ${text('xs', 'medium')}
   color: ${({ theme }) => theme.colors.textSecondary};
 
+  strong {
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+
   span.time {
     color: ${({ theme }) => theme.colors.textMuted};
   }
 `;
 
-const TextSkeleton = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 4px;
-
-  .line {
-    height: 8px;
-    border-radius: 4px;
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-
-    &.l1 { width: 94%; }
-    &.l2 { width: 86%; }
-    &.l3 { width: 68%; }
-  }
-`;
-
-const MarkdownCallout = styled.div`
-  margin-top: 12px;
-  padding: 10px 14px;
-  border-radius: ${({ theme }) => theme.radii.md};
+const EditorSnippet = styled.div`
+  position: relative;
+  margin-top: 6px;
+  padding: 12px 14px;
+  border-radius: ${({ theme }) => theme.radii.lg};
   background: ${({ theme }) => theme.colors.surfaceContainerLow};
   border-left: 3px solid ${({ theme }) => theme.colors.accentSolid};
   display: flex;
-  align-items: center;
-  gap: 10px;
-  ${text('xs', 'medium')}
-  color: ${({ theme }) => theme.colors.textPrimary};
+  flex-direction: column;
+  gap: 6px;
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: 1.6;
 
-  svg {
-    width: 14px;
-    height: 14px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-    flex-shrink: 0;
+  .quote-line {
+    color: ${({ theme }) => theme.colors.textPrimary};
+    font-weight: 500;
+    font-style: italic;
+  }
+
+  .typing-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 13px;
+    background: ${({ theme }) => theme.colors.accentSolid};
+    margin-left: 3px;
+    vertical-align: middle;
+    animation: ${blink} 1s infinite;
   }
 `;
 
@@ -218,7 +241,7 @@ const MarkdownCallout = styled.div`
 const FloatingBadgeTop = styled.div`
   position: absolute;
   top: -16px;
-  right: -12px;
+  right: -10px;
   z-index: 2;
   display: flex;
   align-items: center;
@@ -299,8 +322,8 @@ const RateInfo = styled.div`
 
 const FloatingInteraction = styled.div`
   position: absolute;
-  bottom: 24px;
-  right: -16px;
+  bottom: 22px;
+  right: -14px;
   z-index: 2;
   display: flex;
   align-items: center;
@@ -333,6 +356,12 @@ const FloatingInteraction = styled.div`
     color: ${({ theme }) => theme.colors.accentSolid};
   }
 
+  svg.bookmark {
+    width: 13px;
+    height: 13px;
+    color: #8b5cf6;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
@@ -343,9 +372,9 @@ export function HeroIllustration() {
     <IllustrationWrapper aria-hidden="true">
       <AmbientGlow />
 
-      {/* Floating Top Badge */}
+      {/* Floating Top Badge: Diverse Idea Worlds */}
       <FloatingBadgeTop>
-        <Sparkles /> #Engineering & Craft
+        <Sparkles /> #Ideas & Perspectives
       </FloatingBadgeTop>
 
       {/* Main Editorial Canvas Card */}
@@ -357,60 +386,68 @@ export function HeroIllustration() {
             <span />
           </WindowDots>
           <WindowStatus>
-            <span className="indicator" /> Live Markdown
+            <PenTool /> Editorial Canvas
           </WindowStatus>
         </WindowHeader>
 
         <ArticlePreview>
-          <TagStrip>
-            <TagChip>Design</TagChip>
-            <TagChip>Architecture</TagChip>
-          </TagStrip>
+          <TopicPillsRow>
+            <TopicPill>
+              <Compass /> Explore
+            </TopicPill>
+            <TopicPill>
+              <Palette /> Design
+            </TopicPill>
+            <TopicPill>
+              <Rocket /> Tech
+            </TopicPill>
+          </TopicPillsRow>
 
-          <StoryTitle>
-            The Architecture of Thoughtful Digital Writing
-          </StoryTitle>
+          <StoryTitle>Crafting Ideas That Outlast the Algorithm</StoryTitle>
 
           <AuthorRow>
-            <AvatarPlaceholder>AR</AvatarPlaceholder>
+            <AvatarGradient>BH</AvatarGradient>
             <AuthorMeta>
-              Alex Rivera <span className="time">· 4 min read</span>
+              <strong>Community Voice</strong>{' '}
+              <span className="time">· 3 min read</span>
             </AuthorMeta>
           </AuthorRow>
 
-          <TextSkeleton>
-            <div className="line l1" />
-            <div className="line l2" />
-            <div className="line l3" />
-          </TextSkeleton>
-
-          <MarkdownCallout>
-            <PenLine />
-            <span>&gt; Clarity is not a luxury, it is the entire message.</span>
-          </MarkdownCallout>
+          <EditorSnippet>
+            <span className="quote-line">
+              &gt; Write for depth. Read for understanding. Connect with curious minds.
+            </span>
+            <span>
+              A quiet, ad-free haven where thoughtful essays find a welcoming audience
+              <span className="typing-cursor" />
+            </span>
+          </EditorSnippet>
         </ArticlePreview>
       </MainCanvas>
 
       {/* Floating Bottom Metric Card */}
       <FloatingCardBottom>
         <RateIcon>
-          <TrendingUp />
+          <BookOpen />
         </RateIcon>
         <RateInfo>
           <strong>
-            94% Read Rate <CheckCircle2 size={13} color="#10b981" />
+            Deep Read Attention <CheckCircle2 size={13} color="#10b981" />
           </strong>
-          <span>True reader attention</span>
+          <span>Zero popups · 100% ad-free</span>
         </RateInfo>
       </FloatingCardBottom>
 
-      {/* Floating Interaction Badge */}
+      {/* Floating Community Interaction */}
       <FloatingInteraction>
         <span>
-          <Heart className="heart" /> 184
+          <Heart className="heart" /> 248
         </span>
         <span>
-          <MessageSquare className="comment" /> 32
+          <MessageSquare className="comment" /> 42
+        </span>
+        <span>
+          <Bookmark className="bookmark" /> 95
         </span>
       </FloatingInteraction>
     </IllustrationWrapper>

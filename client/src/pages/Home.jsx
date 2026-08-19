@@ -10,7 +10,6 @@ import {
   Flame,
   BarChart2,
   Layers,
-  MessageCircle,
   ShieldCheck,
   CheckCircle2,
   Feather,
@@ -18,11 +17,13 @@ import {
 } from 'lucide-react';
 
 import { postService } from '../services/postService';
+import { tagService } from '../services/tagService';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { HeroIllustration } from '../components/marketing/HeroIllustration';
+import { TopicMarquee } from '../components/marketing/Topics';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 
 /* ── Page Shell ──────────────────────────────────────────────────────────── */
@@ -31,7 +32,7 @@ const Page = styled.div`
   overflow-x: clip;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing['5xl']};
+  gap: ${({ theme }) => theme.spacing['3xl']};
   padding-bottom: ${({ theme }) => theme.spacing['4xl']};
 `;
 
@@ -49,7 +50,7 @@ const Container = styled.div`
 /* ── Hero Section (Left Aligned, Clean & Spacious Editorial Layout) ──────── */
 
 const HeroSection = styled.header`
-  padding: ${({ theme }) => theme.spacing['4xl']} 0 ${({ theme }) => theme.spacing['2xl']};
+  padding: ${({ theme }) => theme.spacing['2xl']} 0 ${({ theme }) => theme.spacing.md};
   display: grid;
   grid-template-columns: 1.12fr 0.88fr;
   align-items: center;
@@ -58,11 +59,11 @@ const HeroSection = styled.header`
   ${media.down('lg')`
     grid-template-columns: 1fr;
     gap: ${({ theme }) => theme.spacing['2xl']};
-    padding: ${({ theme }) => theme.spacing['3xl']} 0 ${({ theme }) => theme.spacing.xl};
+    padding: ${({ theme }) => theme.spacing.xl} 0 ${({ theme }) => theme.spacing.sm};
   `}
 
   ${media.down('sm')`
-    padding: ${({ theme }) => theme.spacing['2xl']} 0 ${({ theme }) => theme.spacing.xl};
+    padding: ${({ theme }) => theme.spacing.lg} 0 0;
   `}
 `;
 
@@ -149,60 +150,11 @@ const HeroFeaturePills = styled.div`
   }
 `;
 
-/* ── Value Pillars Strip ─────────────────────────────────────────────────── */
+/* ── Live Topic Discovery Strip ──────────────────────────────────────────── */
 
-const PillarsSection = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: ${({ theme }) => theme.spacing.lg};
-  padding: ${({ theme }) => theme.spacing.xl};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii['2xl']};
-
-  ${media.down('lg')`
-    grid-template-columns: repeat(2, 1fr);
-  `}
-
-  ${media.down('sm')`
-    grid-template-columns: 1fr;
-    padding: ${({ theme }) => theme.spacing.lg};
-  `}
-`;
-
-const PillarCard = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const PillarIcon = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentSolid};
-  flex-shrink: 0;
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-`;
-
-const PillarTitle = styled.h3`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: 2px;
-`;
-
-const PillarDesc = styled.p`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.5;
+const TopicStripWrap = styled.section`
+  padding: ${({ theme }) => theme.spacing.xs} 0;
+  width: 100%;
 `;
 
 /* ── Feed Section ────────────────────────────────────────────────────────── */
@@ -449,7 +401,19 @@ export function Home() {
     queryFn: () => postService.getTrending({ limit: 12 }),
   });
 
+  const { data: tagsData } = useQuery({
+    queryKey: ['tags'],
+    queryFn: tagService.getTags,
+  });
+
   const posts = useMemo(() => trendingResponse?.data ?? [], [trendingResponse]);
+  const tags = useMemo(
+    () =>
+      (tagsData?.data || [])
+        .map((t) => (typeof t === 'string' ? t : t?.name))
+        .filter(Boolean),
+    [tagsData]
+  );
   const isRanked = trendingResponse?.trendedBy === 'engagement';
   const trendingWindow = trendingResponse?.window ?? 14;
 
@@ -504,58 +468,10 @@ export function Home() {
         </HeroSection>
       </Container>
 
-      {/* ── 2. Value Pillars Strip ─────────────────────────────────────────── */}
-      <Container>
-        <PillarsSection>
-          <PillarCard>
-            <PillarIcon>
-              <Feather />
-            </PillarIcon>
-            <div>
-              <PillarTitle>Markdown Canvas</PillarTitle>
-              <PillarDesc>
-                Write fluidly with instant live preview and zero interface clutter.
-              </PillarDesc>
-            </div>
-          </PillarCard>
-
-          <PillarCard>
-            <PillarIcon>
-              <BarChart2 />
-            </PillarIcon>
-            <div>
-              <PillarTitle>True Read Metrics</PillarTitle>
-              <PillarDesc>
-                Understand how many readers actually finished your piece, not just clicked.
-              </PillarDesc>
-            </div>
-          </PillarCard>
-
-          <PillarCard>
-            <PillarIcon>
-              <ShieldCheck />
-            </PillarIcon>
-            <div>
-              <PillarTitle>Private & Public</PillarTitle>
-              <PillarDesc>
-                Polish drafts in private, then publish seamlessly when you are ready.
-              </PillarDesc>
-            </div>
-          </PillarCard>
-
-          <PillarCard>
-            <PillarIcon>
-              <Sparkles />
-            </PillarIcon>
-            <div>
-              <PillarTitle>Pure Experience</PillarTitle>
-              <PillarDesc>
-                Zero popups, zero intrusive ads, crafted for pure reading enjoyment.
-              </PillarDesc>
-            </div>
-          </PillarCard>
-        </PillarsSection>
-      </Container>
+      {/* ── 2. Live Topic Discovery Strip ────────────────────────────────── */}
+      <TopicStripWrap>
+        <TopicMarquee topics={tags} />
+      </TopicStripWrap>
 
       {/* ── 3. Main Feed Section ───────────────────────────────────────────── */}
       <Container>
