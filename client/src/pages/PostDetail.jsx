@@ -182,27 +182,22 @@ const Article = styled.article`
 const TagList = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing.md};
   flex-wrap: wrap;
   padding: ${({ theme }) => theme.spacing.lg} 0 ${({ theme }) => theme.spacing.md};
 `;
 
 const TagLink = styled(Link)`
-  ${text('xs', 'medium')}
-  color: ${({ theme }) => theme.colors.textMuted};
+  ${text('sm', 'semibold')}
+  color: ${({ theme }) => theme.colors.accentText};
   text-decoration: none;
-  padding: 6px 12px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
   transition: all ${({ theme }) => theme.transitions.fast};
   ${interactive}
 
   &:hover {
-    color: ${({ theme }) => theme.colors.accentText};
-    background: ${({ theme }) => theme.colors.accentContainer};
-    border-color: ${({ theme }) => theme.colors.accentLine};
-    transform: translateY(-1px);
+    color: ${({ theme }) => theme.colors.accentSolidHover};
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
 `;
 

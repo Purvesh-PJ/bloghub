@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, BookOpenCheck } from 'lucide-react';
 import styled, { css } from 'styled-components';
 
 import { display, text, clamp, media, interactive } from '../../styles/theme/mixins';
 import { excerpt, readingTime } from '../../utils/text';
-import { Chip } from '../ui';
 import { AuthorByline } from './AuthorByline';
 import { topicIcon } from '../marketing/Topics';
 
@@ -158,7 +157,7 @@ const Footer = styled.div`
 const FooterLeft = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing.md};
   flex-wrap: wrap;
 `;
 
@@ -287,7 +286,7 @@ const ThumbPlaceholder = styled.div`
 
   .topic-label {
     ${text('xs', 'semibold')}
-    color: ${({ theme }) => theme.colors.textMuted};
+    color: ${({ theme }) => theme.colors.accentText};
     letter-spacing: 0.02em;
   }
 
@@ -307,22 +306,26 @@ const ThumbPlaceholder = styled.div`
 const HashtagsWrap = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 `;
 
 const TagHash = styled.span`
-  ${text('xs', 'medium')}
-  color: ${({ theme }) => theme.colors.textMuted};
+  ${text('xs', 'semibold')}
+  color: ${({ theme }) => theme.colors.accentText};
   letter-spacing: 0.01em;
-  transition: color ${({ theme }) => theme.transitions.fast};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  cursor: pointer;
 
-  ${Card}:hover & {
-    color: ${({ theme }) => theme.colors.accentText};
+  &:hover {
+    color: ${({ theme }) => theme.colors.accentSolidHover};
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 `;
 
 export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
+  const navigate = useNavigate();
   const [imageFailed, setImageFailed] = useState(false);
 
   if (!post) return null;
@@ -381,9 +384,22 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
           <FooterLeft>
             {rawTags.length > 0 && (
               <HashtagsWrap>
-                {rawTags.slice(0, 2).map((tag) => (
-                  <TagHash key={tag}>#{tag.toLowerCase().replace(/^[#_-]+/, '')}</TagHash>
-                ))}
+                {rawTags.slice(0, 2).map((tag) => {
+                  const clean = tag.toLowerCase().replace(/^[#_-]+/, '');
+                  return (
+                    <TagHash
+                      key={clean}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate(`/search?topic=${encodeURIComponent(clean)}`);
+                      }}
+                      title={`Explore stories in #${clean}`}
+                    >
+                      #{clean}
+                    </TagHash>
+                  );
+                })}
               </HashtagsWrap>
             )}
 
