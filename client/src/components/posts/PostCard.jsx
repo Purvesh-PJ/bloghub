@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageCircle, BookOpenCheck, Sparkles } from 'lucide-react';
+import { Heart, MessageCircle, BookOpenCheck } from 'lucide-react';
 import styled, { css } from 'styled-components';
 
 import { display, text, clamp, media, interactive } from '../../styles/theme/mixins';
 import { excerpt, readingTime } from '../../utils/text';
 import { Chip } from '../ui';
 import { AuthorByline } from './AuthorByline';
+import { topicIcon } from '../marketing/Topics';
 
 /**
  * PostCard — elevated editorial story card.
@@ -18,52 +19,58 @@ const cardVariants = {
   /** Standard elevated surface (Default) */
   elevated: css`
     background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: none;
+    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
     box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
 
     &:hover {
       background: ${({ theme }) => theme.colors.surfaceHover};
+      border-color: ${({ theme }) => theme.colors.lineDefault};
       box-shadow:
-        0 12px 24px -6px rgba(15, 23, 42, 0.06),
-        0 0 12px -2px rgba(14, 165, 233, 0.1);
+        0 14px 28px -6px rgba(15, 23, 42, 0.08),
+        0 0 16px -2px rgba(14, 165, 233, 0.08);
+      transform: translateY(-2px);
     }
   `,
 
   /** Featured spotlight card with soft elevation */
   featured: css`
     background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: none;
+    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
     box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
 
     &:hover {
       background: ${({ theme }) => theme.colors.surfaceHover};
+      border-color: ${({ theme }) => theme.colors.lineDefault};
       box-shadow:
-        0 14px 28px -6px rgba(15, 23, 42, 0.08),
-        0 0 12px -2px rgba(14, 165, 233, 0.1);
+        0 16px 32px -6px rgba(15, 23, 42, 0.1),
+        0 0 16px -2px rgba(14, 165, 233, 0.12);
+      transform: translateY(-2px);
     }
   `,
 
   /** Ghost / Minimal seamless editorial card */
   ghost: css`
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     box-shadow: none;
-    border-radius: ${({ theme }) => theme.radii.md};
+    border-radius: ${({ theme }) => theme.radii.lg};
 
     &:hover {
       background: ${({ theme }) => theme.colors.surfaceContainerLow};
       box-shadow: none;
+      transform: translateY(-2px);
     }
   `,
 
   /** Inset sunken well */
   inset: css`
     background: ${({ theme }) => theme.colors.surfaceContainerLow};
-    border: none;
+    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 
     &:hover {
       background: ${({ theme }) => theme.colors.surfaceContainer};
+      transform: translateY(-2px);
     }
   `,
 };
@@ -72,9 +79,8 @@ const Card = styled(Link)`
   position: relative;
   display: grid;
   gap: ${({ theme }) => theme.spacing.lg};
-  align-items: start;
   padding: ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.lg};
+  border-radius: ${({ theme }) => theme.radii.xl};
   text-decoration: none;
   overflow: hidden;
   transition: all ${({ theme }) => theme.transitions.fast};
@@ -82,25 +88,23 @@ const Card = styled(Link)`
 
   ${({ $variant }) => cardVariants[$variant] ?? cardVariants.elevated}
 
-  ${({ $layout, $hasThumb }) =>
-    $layout === 'stacked' || !$hasThumb
+  ${({ $layout }) =>
+    $layout === 'stacked'
       ? css`
           grid-template-columns: 1fr;
-          gap: ${({ theme }) => theme.spacing.md};
-          padding: ${({ theme }) => theme.spacing.md};
+          align-items: start;
         `
       : css`
-          grid-template-columns: 210px 1fr;
+          grid-template-columns: 190px 1fr;
           align-items: stretch;
 
           ${media.down('md')`
-            grid-template-columns: 170px 1fr;
+            grid-template-columns: 160px 1fr;
           `}
 
           ${media.down('sm')`
             grid-template-columns: 1fr;
             gap: ${({ theme }) => theme.spacing.md};
-            padding: ${({ theme }) => theme.spacing.md};
           `}
         `}
 `;
@@ -117,13 +121,14 @@ const Body = styled.div`
 const ContentWrap = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 `;
 
 const Title = styled.h3`
   ${({ $variant }) => ($variant === 'featured' ? display('sm') : display('xs'))}
-  font-weight: ${({ $variant }) => ($variant === 'featured' ? 800 : 700)};
-  line-height: 1.3;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
   color: ${({ theme }) => theme.colors.textPrimary};
   ${clamp(2)}
   transition: color ${({ theme }) => theme.transitions.fast};
@@ -135,7 +140,7 @@ const Title = styled.h3`
 
 const Excerpt = styled.p`
   ${text('sm')}
-  line-height: 1.55;
+  line-height: 1.6;
   color: ${({ theme }) => theme.colors.textSecondary};
   ${clamp(2)}
 `;
@@ -145,7 +150,7 @@ const Footer = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.sm};
-  margin-top: 4px;
+  margin-top: 6px;
   border-top: none;
   flex-wrap: wrap;
 `;
@@ -204,7 +209,7 @@ const StatBadge = styled.span`
 
 const Thumb = styled.div`
   position: relative;
-  border-radius: ${({ theme }) => theme.radii.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
   background: ${({ theme }) => theme.colors.surfaceContainer};
   width: 100%;
@@ -222,7 +227,7 @@ const Thumb = styled.div`
   }
 
   ${Card}:hover & img {
-    transform: scale(1.04);
+    transform: scale(1.05);
   }
 
   ${({ $layout }) =>
@@ -233,12 +238,78 @@ const Thumb = styled.div`
     `}
 `;
 
+const ThumbPlaceholder = styled.div`
+  position: relative;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  min-height: 130px;
+  aspect-ratio: 16 / 10;
+  flex-shrink: 0;
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.surfaceContainer} 0%,
+    ${({ theme }) => theme.colors.surfaceContainerHigh} 100%
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  transition: all ${({ theme }) => theme.transitions.normal};
+
+  ${({ $layout }) =>
+    $layout === 'stacked' &&
+    css`
+      aspect-ratio: 16 / 9;
+      min-height: 140px;
+    `}
+
+  .icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: ${({ theme }) => theme.radii.full};
+    background: ${({ theme }) => theme.colors.accentContainer};
+    color: ${({ theme }) => theme.colors.accentSolid};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.15);
+    transition: transform ${({ theme }) => theme.transitions.normal};
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .topic-label {
+    ${text('xs', 'semibold')}
+    color: ${({ theme }) => theme.colors.textMuted};
+    letter-spacing: 0.02em;
+  }
+
+  ${Card}:hover & {
+    background: linear-gradient(
+      135deg,
+      ${({ theme }) => theme.colors.surfaceContainerHigh} 0%,
+      ${({ theme }) => theme.colors.surfaceContainerHighest} 100%
+    );
+
+    .icon-wrap {
+      transform: scale(1.1);
+    }
+  }
+`;
+
 export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   if (!post) return null;
 
-  const rawTopic = post.tags?.[0]?.name || post.tags?.[0];
+  const rawTopic = post.tags?.[0]?.name || post.tags?.[0] || '';
   const primaryTopic = rawTopic
     ? String(rawTopic).toLowerCase() === 'uiux'
       ? 'UI/UX'
@@ -250,6 +321,7 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
             ? 'Node.js'
             : String(rawTopic).charAt(0).toUpperCase() + String(rawTopic).slice(1)
     : '';
+  const TopicIcon = topicIcon(rawTopic);
   const author = post.author?.name || post.author?.username || post.user?.username || 'Anonymous';
   const created = post.createdAt ? new Date(post.createdAt) : null;
   const isValidDate = created && !Number.isNaN(created.getTime());
@@ -262,11 +334,18 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
   const commentsCount = post.commentsCount ?? post.comments?.length ?? 0;
 
   return (
-    <Card to={`/post/${post._id}`} $layout={layout} $hasThumb={showThumb} $variant={variant}>
-      {showThumb && (
+    <Card to={`/post/${post._id}`} $layout={layout} $variant={variant}>
+      {showThumb ? (
         <Thumb $layout={layout}>
           <img src={post.imageURL} alt="" loading="lazy" onError={() => setImageFailed(true)} />
         </Thumb>
+      ) : (
+        <ThumbPlaceholder $layout={layout}>
+          <div className="icon-wrap">
+            <TopicIcon />
+          </div>
+          {primaryTopic && <span className="topic-label">{primaryTopic}</span>}
+        </ThumbPlaceholder>
       )}
 
       <Body>

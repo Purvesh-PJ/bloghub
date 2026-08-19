@@ -250,10 +250,15 @@ const SectionSubtitle = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
-const PostList = styled.div`
-  display: flex;
-  flex-direction: column;
+const PostGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: ${({ theme }) => theme.spacing.xl};
+
+  ${media.down('lg')`
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacing.lg};
+  `}
 `;
 
 const MoreLink = styled(Link)`
@@ -570,13 +575,13 @@ export function Home() {
           </SectionLeft>
         </SectionHead>
 
-        <PostList>
+        <PostGrid>
           {isLoading ? (
-            Array.from({ length: 5 }).map((_, index) => (
+            Array.from({ length: 6 }).map((_, index) => (
               <PostCardSkeleton key={index} layout="row" />
             ))
           ) : posts.length === 0 ? (
-            <EmptyFeed>
+            <EmptyFeed style={{ gridColumn: '1 / -1' }}>
               <Feather size={36} style={{ opacity: 0.5 }} />
               <h3>No stories published yet</h3>
               <p>Be the very first writer to share an insightful article with the community!</p>
@@ -587,7 +592,7 @@ export function Home() {
           ) : (
             posts.map((post) => <PostCard key={post._id} post={post} layout="row" />)
           )}
-        </PostList>
+        </PostGrid>
 
         {!isLoading && posts.length > 0 && (
           <div style={{ textAlign: 'center' }}>
