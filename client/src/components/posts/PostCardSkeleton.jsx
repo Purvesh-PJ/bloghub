@@ -96,6 +96,10 @@ export function PostCardSkeleton({ layout = 'row', variant = 'elevated' }) {
       <Thumb $layout={layout} $radius="lg" />
 
       <Body>
+        {/* 1. Title Skeleton First */}
+        <SkeletonText lines={2} lineHeight="22px" lastLineWidth="75%" gap="xs" />
+
+        {/* 2. Author Profile Meta */}
         <Meta>
           <Skeleton $variant="circle" $width={24} $height={24} />
           <Skeleton $width={90} $height={14} $radius="xs" />
@@ -103,12 +107,13 @@ export function PostCardSkeleton({ layout = 'row', variant = 'elevated' }) {
           <Skeleton $width={70} $height={14} $radius="xs" />
         </Meta>
 
-        <SkeletonText lines={2} lineHeight="22px" lastLineWidth="75%" gap="xs" />
+        {/* 3. Excerpt */}
         <SkeletonText lines={2} lineHeight="14px" lastLineWidth="90%" gap="xs" />
 
+        {/* 4. Footer */}
         <Footer>
-          <Skeleton $variant="pill" $width={75} $height={24} />
-          <Skeleton $width={40} $height={14} $radius="xs" />
+          <Skeleton $width={50} $height={14} $radius="xs" />
+          <Skeleton $width={50} $height={14} $radius="xs" />
           <Skeleton $width={40} $height={14} $radius="xs" />
         </Footer>
       </Body>
