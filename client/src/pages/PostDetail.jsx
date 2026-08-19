@@ -184,7 +184,26 @@ const TagList = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
   flex-wrap: wrap;
-  padding: ${({ theme }) => theme.spacing.md} 0;
+  padding: ${({ theme }) => theme.spacing.lg} 0 ${({ theme }) => theme.spacing.md};
+`;
+
+const TagLink = styled(Link)`
+  ${text('xs', 'medium')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  ${interactive}
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.accentText};
+    background: ${({ theme }) => theme.colors.accentContainer};
+    border-color: ${({ theme }) => theme.colors.accentLine};
+    transform: translateY(-1px);
+  }
 `;
 
 const Bar = styled.div`
@@ -495,27 +514,16 @@ export function PostDetail() {
         {post.tags && post.tags.length > 0 && (
           <TagList>
             {post.tags.map((tag) => {
-              const rawName = typeof tag === 'string' ? tag : tag.name;
-              const name = String(rawName || '').replace(/^[#_-]+/, '');
-              const displayName =
-                name.toLowerCase() === 'uiux'
-                  ? 'UI/UX'
-                  : name.toLowerCase() === 'ai'
-                    ? 'AI'
-                    : name.toLowerCase() === 'saas'
-                      ? 'SaaS'
-                      : name.toLowerCase() === 'nodejs'
-                        ? 'Node.js'
-                        : name.charAt(0).toUpperCase() + name.slice(1);
+              const rawName = typeof tag === 'string' ? tag : tag?.name;
+              if (!rawName) return null;
+              const name = String(rawName).trim().toLowerCase().replace(/^[#_-]+/, '');
               return (
-                <Chip
+                <TagLink
                   key={name}
-                  as={Link}
                   to={`/search?topic=${encodeURIComponent(name)}`}
-                  size="sm"
                 >
-                  {displayName}
-                </Chip>
+                  #{name}
+                </TagLink>
               );
             })}
           </TagList>
