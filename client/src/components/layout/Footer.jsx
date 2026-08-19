@@ -1,201 +1,177 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Github, Twitter, Linkedin } from 'lucide-react';
-import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
+import { Github, PenLine, Compass } from 'lucide-react';
+import { text, media, interactive } from '../../styles/theme/mixins';
 import { BrandMark } from '../ui';
 
 /**
- * Footer.
- *
- * Sits on a raised tone so the page visibly ends, rather than fading into the same grey as
- * the content above it.
+ * Footer — clean, minimalist, and perfectly aligned with the top nav.
  */
 
 const Wrapper = styled.footer`
-  margin-top: ${({ theme }) => theme.spacing['3xl']};
-  padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing.xl}
-    ${({ theme }) => theme.spacing['2xl']};
+  margin-top: ${({ theme }) => theme.spacing['4xl']};
+  padding: ${({ theme }) => theme.spacing['2xl']} 0 ${({ theme }) => theme.spacing.xl};
+  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
   background: transparent;
-  border-top: none;
 `;
 
-const Inner = styled.div`
+const Container = styled.div`
   max-width: ${({ theme }) => theme.layout.maxWidth};
   margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacing.xl};
+  width: 100%;
+
+  ${media.down('md')`
+    padding: 0 ${({ theme }) => theme.spacing.lg};
+  `}
 `;
 
-const Top = styled.div`
-  display: grid;
-  grid-template-columns: 1.6fr repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing['3xl']};
+const MainRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.xl};
+  flex-wrap: wrap;
 
-  ${media.down('lg')`grid-template-columns: 1fr 1fr;`}
-  ${media.down('sm')`grid-template-columns: 1fr;`}
+  ${media.down('md')`
+    flex-direction: column;
+    align-items: flex-start;
+    gap: ${({ theme }) => theme.spacing.lg};
+  `}
 `;
 
-const Brand = styled.div`
+const BrandSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-  align-items: flex-start;
-  max-width: 320px;
+  gap: 4px;
+  max-width: 380px;
 `;
 
 const Logo = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
-  ${text('lg', 'semibold')}
-  letter-spacing: ${({ theme }) => theme.tracking.tight};
+  ${text('md', 'bold')}
+  letter-spacing: -0.02em;
   color: ${({ theme }) => theme.colors.textPrimary};
+  text-decoration: none;
+  transition: opacity ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    opacity: 0.85;
+  }
 `;
 
-const Blurb = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
+const Tagline = styled.p`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  line-height: 1.6;
 `;
 
-const Socials = styled.div`
+const NavLinks = styled.nav`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xl};
+  flex-wrap: wrap;
+
+  ${media.down('sm')`
+    gap: ${({ theme }) => theme.spacing.md};
+  `}
 `;
 
-const Social = styled.a`
+const FooterLink = styled(Link)`
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainer};
+  gap: 6px;
+  ${text('sm', 'medium')}
   color: ${({ theme }) => theme.colors.textSecondary};
+  text-decoration: none;
+  transition: color ${({ theme }) => theme.transitions.fast};
   ${interactive}
 
   &:hover {
-    background: ${({ theme }) => theme.colors.accentContainer};
     color: ${({ theme }) => theme.colors.accentText};
   }
 
   svg {
-    width: 17px;
-    height: 17px;
+    width: 15px;
+    height: 15px;
+    color: ${({ theme }) => theme.colors.accentSolid};
   }
 `;
 
-const Column = styled.nav`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const ColumnTitle = styled.h3`
-  ${labelStyle('sm')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const FooterLink = styled(Link)`
-  ${text('sm')}
+const ExternalLink = styled.a`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  ${text('sm', 'medium')}
   color: ${({ theme }) => theme.colors.textSecondary};
-  width: fit-content;
+  text-decoration: none;
+  transition: color ${({ theme }) => theme.transitions.fast};
   ${interactive}
 
   &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
+    color: ${({ theme }) => theme.colors.accentText};
+  }
+
+  svg {
+    width: 15px;
+    height: 15px;
   }
 `;
 
-const Bottom = styled.div`
+const BottomRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.lg};
-  flex-wrap: wrap;
-  margin-top: ${({ theme }) => theme.spacing['3xl']};
-  padding-top: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  padding-top: ${({ theme }) => theme.spacing.md};
   border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  ${text('sm')}
+  flex-wrap: wrap;
+  ${text('xs')}
   color: ${({ theme }) => theme.colors.textMuted};
 `;
-
-const BottomLinks = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.xl};
-`;
-
-const COLUMNS = [
-  {
-    title: 'Product',
-    links: [
-      { to: '/', label: 'Home' },
-      { to: '/search', label: 'Explore' },
-      { to: '/write', label: 'Write' },
-    ],
-  },
-  {
-    title: 'Account',
-    links: [
-      { to: '/dashboard', label: 'Dashboard' },
-      { to: '/write', label: 'New story' },
-      { to: '/settings', label: 'Settings' },
-    ],
-  },
-  {
-    title: 'Resources',
-    links: [
-      { to: '/search', label: 'Browse topics' },
-      { to: '/register', label: 'Create account' },
-      { to: '/login', label: 'Sign in' },
-    ],
-  },
-];
 
 export function Footer() {
   return (
     <Wrapper>
-      <Inner>
-        <Top>
-          <Brand>
+      <Container>
+        <MainRow>
+          <BrandSection>
             <Logo to="/">
               <BrandMark letter="B" />
               BlogHub
             </Logo>
-            <Blurb>
-              A writing platform for people with something to say. Markdown in, a clean article out.
-            </Blurb>
-            <Socials>
-              <Social href="https://github.com/Purvesh-PJ" aria-label="GitHub">
-                <Github />
-              </Social>
-              <Social href="https://twitter.com" aria-label="Twitter">
-                <Twitter />
-              </Social>
-              <Social href="https://linkedin.com" aria-label="LinkedIn">
-                <Linkedin />
-              </Social>
-            </Socials>
-          </Brand>
+            <Tagline>
+              A distraction-free publishing space for thoughtful ideas, open writing, and genuine perspectives.
+            </Tagline>
+          </BrandSection>
 
-          {COLUMNS.map((column) => (
-            <Column key={column.title}>
-              <ColumnTitle>{column.title}</ColumnTitle>
-              {column.links.map((link) => (
-                <FooterLink key={link.label} to={link.to}>
-                  {link.label}
-                </FooterLink>
-              ))}
-            </Column>
-          ))}
-        </Top>
+          <NavLinks>
+            <FooterLink to="/search">
+              <Compass /> Explore Stories
+            </FooterLink>
 
-        <Bottom>
-          <span>© {new Date().getFullYear()} BlogHub</span>
-          <BottomLinks>
-            <FooterLink to="/">Privacy</FooterLink>
-            <FooterLink to="/">Terms</FooterLink>
-          </BottomLinks>
-        </Bottom>
-      </Inner>
+            <FooterLink to="/write">
+              <PenLine /> Write a Story
+            </FooterLink>
+
+            <ExternalLink
+              href="https://github.com/Purvesh-PJ/bloghub"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Github /> GitHub
+            </ExternalLink>
+          </NavLinks>
+        </MainRow>
+
+        <BottomRow>
+          <span>© {new Date().getFullYear()} BlogHub · Open Publishing Platform</span>
+          <span>Crafted with Markdown & Precision</span>
+        </BottomRow>
+      </Container>
     </Wrapper>
   );
 }
