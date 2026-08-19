@@ -304,28 +304,36 @@ const ThumbPlaceholder = styled.div`
   }
 `;
 
+const HashtagsWrap = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const TagHash = styled.span`
+  ${text('xs', 'medium')}
+  color: ${({ theme }) => theme.colors.textMuted};
+  letter-spacing: 0.01em;
+  transition: color ${({ theme }) => theme.transitions.fast};
+
+  ${Card}:hover & {
+    color: ${({ theme }) => theme.colors.accentText};
+  }
+`;
+
 export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   if (!post) return null;
 
-  const formatTag = (raw) => {
-    if (!raw) return '';
-    const s = String(raw).trim().replace(/^[#_-]+/, '');
-    if (s.toLowerCase() === 'uiux') return 'UI/UX';
-    if (s.toLowerCase() === 'ai') return 'AI';
-    if (s.toLowerCase() === 'saas') return 'SaaS';
-    if (s.toLowerCase() === 'nodejs') return 'Node.js';
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  };
-
   const rawTags = (post.tags || [])
     .map((t) => (typeof t === 'string' ? t : t?.name))
     .filter(Boolean);
 
-  const displayTags = rawTags.slice(0, 2).map(formatTag);
-  const primaryTopic = displayTags[0] || '';
-  const TopicIcon = topicIcon(rawTags[0] || '');
+  const primaryRaw = rawTags[0] || '';
+  const primaryTopic = primaryRaw.toLowerCase().replace(/^[#_-]+/, '');
+  const TopicIcon = topicIcon(primaryRaw);
   const author = post.author?.name || post.author?.username || post.user?.username || 'Anonymous';
   const created = post.createdAt ? new Date(post.createdAt) : null;
   const isValidDate = created && !Number.isNaN(created.getTime());
@@ -348,29 +356,36 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
           <div className="icon-wrap">
             <TopicIcon />
           </div>
-          {primaryTopic && <span className="topic-label">{primaryTopic}</span>}
+          {primaryTopic && <span className="topic-label">#{primaryTopic}</span>}
         </ThumbPlaceholder>
       )}
 
       <Body>
         <ContentWrap>
+          {/* 1. Title First */}
+          <Title $variant={variant}>{post.title}</Title>
+
+          {/* 2. User Profile & Details */}
           <AuthorByline
             name={author}
             at={isValidDate ? created : undefined}
             readingMinutes={readingTime(post.content)}
           />
 
-          <Title $variant={variant}>{post.title}</Title>
+          {/* 3. Excerpt */}
           <Excerpt>{excerpt(post.content)}</Excerpt>
         </ContentWrap>
 
+        {/* 4. Base Footer: Hashtags, Read Rate, Likes & Comments */}
         <Footer>
           <FooterLeft>
-            {displayTags.map((tag) => (
-              <Chip key={tag} size="sm" interactive={false} as="span">
-                {tag}
-              </Chip>
-            ))}
+            {rawTags.length > 0 && (
+              <HashtagsWrap>
+                {rawTags.slice(0, 2).map((tag) => (
+                  <TagHash key={tag}>#{tag.toLowerCase().replace(/^[#_-]+/, '')}</TagHash>
+                ))}
+              </HashtagsWrap>
+            )}
 
             {readRate !== null && (
               <StatBadge $tone="accent" title={`${readRate}% of readers reached the end`}>
