@@ -22,6 +22,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
+import { HeroIllustration } from '../components/marketing/HeroIllustration';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 
 /* ── Page Shell ──────────────────────────────────────────────────────────── */
@@ -49,11 +50,16 @@ const Container = styled.div`
 
 const HeroSection = styled.header`
   padding: ${({ theme }) => theme.spacing['4xl']} 0 ${({ theme }) => theme.spacing['2xl']};
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  max-width: 840px;
+  display: grid;
+  grid-template-columns: 1.12fr 0.88fr;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing['3xl']};
+
+  ${media.down('lg')`
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacing['2xl']};
+    padding: ${({ theme }) => theme.spacing['3xl']} 0 ${({ theme }) => theme.spacing.xl};
+  `}
 
   ${media.down('sm')`
     padding: ${({ theme }) => theme.spacing['2xl']} 0 ${({ theme }) => theme.spacing.xl};
@@ -487,6 +493,9 @@ export function Home() {
               </span>
             </HeroFeaturePills>
           </HeroContent>
+
+          {/* Right Side Relatable Editorial Illustration */}
+          <HeroIllustration />
         </HeroSection>
       </Container>
 
