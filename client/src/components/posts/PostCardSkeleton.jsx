@@ -41,11 +41,11 @@ const Card = styled.div`
           align-items: start;
         `
       : css`
-          grid-template-columns: 200px 1fr;
-          align-items: center;
+          grid-template-columns: 230px 1fr;
+          align-items: stretch;
 
           ${media.down('md')`
-            grid-template-columns: 160px 1fr;
+            grid-template-columns: 180px 1fr;
           `}
 
           ${media.down('sm')`
@@ -59,7 +59,9 @@ const Body = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 8px;
+  height: 100%;
 `;
 
 const Meta = styled.div`
@@ -77,15 +79,17 @@ const HashtagsSkeleton = styled.div`
 
 const Thumb = styled(Skeleton)`
   width: 100%;
+  height: 100%;
+  min-height: 155px;
   aspect-ratio: 16 / 10;
-  max-height: 135px;
   border-radius: ${({ theme }) => theme.radii.lg};
 
   ${({ $layout }) =>
     $layout === 'stacked' &&
     css`
       aspect-ratio: 16 / 9;
-      max-height: unset;
+      height: auto;
+      min-height: unset;
     `}
 `;
 
