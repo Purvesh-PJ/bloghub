@@ -143,7 +143,6 @@ exports.getUserSelfPosts = asyncHandler(async (req, res) => {
 
   const [posts, total, counts] = await Promise.all([
     Post.find(filter)
-      .populate('categories', 'name')
       .populate('tags', 'name')
       .sort(sort)
       .skip((page - 1) * limit)

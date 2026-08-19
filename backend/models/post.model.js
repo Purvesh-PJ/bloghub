@@ -48,13 +48,6 @@ const PostSchema = new mongoose.Schema(
       },
     ],
 
-    categories: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category',
-      },
-    ],
-
     views: [
       {
         type: mongoose.Schema.Types.ObjectId,

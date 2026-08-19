@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { formatDistanceToNow } from 'date-fns';
-import { FileText, Users, FolderOpen, PenLine, ArrowRight } from 'lucide-react';
+import { FileText, Users, Hash, PenLine, ArrowRight } from 'lucide-react';
 
 import { postService } from '../../services/postService';
 import { analyticsService } from '../../services/analyticsService';
@@ -271,8 +271,8 @@ export function AdminDashboard() {
               <Button as={Link} to="/write" variant="tonal">
                 <PenLine /> Write
               </Button>
-              <Button as={Link} to="/admin/categories" variant="tonal">
-                <FolderOpen /> Topics
+              <Button as={Link} to="/admin/tags" variant="tonal">
+                <Hash /> Tags & Topics
               </Button>
               <Button as={Link} to="/admin/posts" variant="tonal">
                 <FileText /> Posts

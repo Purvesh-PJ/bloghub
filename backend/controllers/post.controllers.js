@@ -1,6 +1,5 @@
 const Post = require('../models/post.model');
 const Tag = require('../models/tag.model');
-const Category = require('../models/category.model');
 const Comment = require('../models/comment.model');
 const User = require('../models/user.model');
 const Profile = require('../models/user-profile.model');
@@ -27,23 +26,16 @@ exports.getBlogs = asyncHandler(async (req, res) => {
   const filter = wantsAll && isAdmin ? {} : { visibility: 'public' };
 
   /*
-    Filtering by tag/topic/category happens here on the database level.
-    Supports ?tag=react, ?topic=react, and legacy ?category=react.
+    Filtering by tag/topic happens here on the database level.
+    Supports ?tag=react, ?topic=react, and ?category=react.
   */
   const topicParam = req.query.tag || req.query.topic || req.query.category;
   if (topicParam) {
     const cleanTopic = String(topicParam).trim().toLowerCase();
-    const [tag, category] = await Promise.all([
-      Tag.findOne({ name: cleanTopic }).select('_id').lean(),
-      Category.findOne({ name: new RegExp(`^${cleanTopic}$`, 'i') }).select('_id').lean(),
-    ]);
+    const tag = await Tag.findOne({ name: cleanTopic }).select('_id').lean();
 
-    const orClauses = [];
-    if (tag) orClauses.push({ tags: tag._id });
-    if (category) orClauses.push({ categories: category._id });
-
-    if (orClauses.length > 0) {
-      filter.$or = orClauses;
+    if (tag) {
+      filter.tags = tag._id;
     } else {
       filter._id = null; // An unknown topic matches nothing
     }
@@ -52,7 +44,6 @@ exports.getBlogs = asyncHandler(async (req, res) => {
   const [posts, total] = await Promise.all([
     Post.find(filter)
       .populate('user', 'username')
-      .populate('categories')
       .populate('tags', 'name')
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -93,7 +84,6 @@ exports.getTrendingPosts = asyncHandler(async (req, res) => {
 
   const latest = await Post.find({ visibility: 'public' })
     .populate('user', 'username')
-    .populate('categories', 'name')
     .populate('tags', 'name')
     .sort({ createdAt: -1 })
     .limit(limit)
@@ -119,7 +109,6 @@ exports.getSinglePost = asyncHandler(async (req, res) => {
         { path: 'replies', populate: { path: 'user', select: 'username', model: 'User' } },
       ],
     })
-    .populate('categories')
     .populate('tags', 'name');
 
   if (!singlePost) {
@@ -196,13 +185,13 @@ exports.bulkUpdatePosts = asyncHandler(async (req, res) => {
   const scope = { _id: { $in: ids }, ...(isAdmin ? {} : { user: req.user.id }) };
 
   if (action === 'delete') {
-    const doomed = await Post.find(scope).select('_id user categories').lean();
+    const doomed = await Post.find(scope).select('_id user tags').lean();
     const doomedIds = doomed.map((post) => post._id);
 
     if (doomedIds.length > 0) {
       await Promise.all([
-        Category.updateMany(
-          { _id: { $in: doomed.flatMap((post) => post.categories ?? []) } },
+        Tag.updateMany(
+          { _id: { $in: doomed.flatMap((post) => post.tags ?? []) } },
           { $pull: { posts: { $in: doomedIds } } },
         ),
         Comment.deleteMany({ post: { $in: doomedIds } }),
@@ -244,7 +233,7 @@ exports.bulkUpdatePosts = asyncHandler(async (req, res) => {
 exports.deletePost = asyncHandler(async (req, res) => {
   const postId = req.params.id;
 
-  const post = await Post.findById(postId).select('user categories comments').lean();
+  const post = await Post.findById(postId).select('user tags comments').lean();
   if (!post) throw notFound('Post not found');
 
   if (
@@ -261,7 +250,7 @@ exports.deletePost = asyncHandler(async (req, res) => {
 
   // Independent cleanups, so there is nothing to gain from running them in series.
   await Promise.all([
-    Category.updateMany({ _id: { $in: post.categories ?? [] } }, { $pull: { posts: postId } }),
+    Tag.updateMany({ _id: { $in: post.tags ?? [] } }, { $pull: { posts: postId } }),
     Comment.deleteMany({ post: postId }),
     User.updateOne({ _id: authorId }, { $pull: { posts: postId } }),
   ]);

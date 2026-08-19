@@ -28,7 +28,6 @@ const errorHandler = require('./middlewares/errorHandler'); // Import error hand
 // IMPORT ROUTES
 const postRoutes = require('./routes/post.routes');
 const userRoutes = require('./routes/user.routes');
-const categoryRoutes = require('./routes/category.routes');
 const tagRoutes = require('./routes/tag.routes');
 const commentRoutes = require('./routes/comment.routes');
 const searchRoutes = require('./routes/search.routes');
@@ -104,7 +103,6 @@ router.use(generalLimiter);
 router.use('/auth', authLimiter);
 router.use('/posts', postRoutes);
 router.use('/users', userRoutes);
-router.use('/categories', categoryRoutes);
 router.use('/tags', tagRoutes);
 router.use('/comments', commentRoutes);
 router.use('/search', searchRoutes);

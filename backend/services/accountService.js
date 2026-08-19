@@ -5,7 +5,6 @@ const Comment = require('../models/comment.model');
 const Like = require('../models/like.model');
 const View = require('../models/view.model');
 const Read = require('../models/read.model');
-const Category = require('../models/category.model');
 const Tag = require('../models/tag.model');
 const UserSettings = require('../models/user-settings.model');
 
@@ -41,7 +40,6 @@ exports.purgeAccount = async (userId) => {
     Like.deleteMany({ post: { $in: postIds } }),
 
     // References to them and their posts held elsewhere.
-    Category.updateMany({}, { $pull: { posts: { $in: postIds } } }),
     Tag.updateMany({}, { $pull: { posts: { $in: postIds } } }),
     Profile.updateMany(
       { $or: [{ followers: userId }, { followings: userId }] },

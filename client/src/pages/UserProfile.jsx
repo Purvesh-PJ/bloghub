@@ -161,7 +161,7 @@ export function UserProfile() {
   const topics = useMemo(() => {
     const tally = new Map();
     userPosts.forEach((post) => {
-      const items = [...(post.tags || []), ...(post.categories || [])];
+      const items = post.tags || [];
       items.forEach((item) => {
         const name = typeof item === 'string' ? item : item?.name;
         if (name) tally.set(name, (tally.get(name) || 0) + 1);

@@ -231,20 +231,22 @@ const TileCount = styled.span`
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
-export function TopicGrid({ categories = [], onSelect }) {
+export function TopicGrid({ topics = [], categories = [], onSelect }) {
+  const items = topics.length > 0 ? topics : categories;
+
   return (
     <Grid>
-      {categories.map((category) => {
-        const Icon = topicIcon(category.name);
-        const count = category.posts?.length ?? 0;
+      {items.map((topic) => {
+        const Icon = topicIcon(topic.name);
+        const count = topic.postCount ?? topic.posts?.length ?? 0;
 
         return (
-          <Tile key={category._id} onClick={() => onSelect?.(category)}>
+          <Tile key={topic._id || topic.name} onClick={() => onSelect?.(topic)}>
             <TileIcon>
               <Icon />
             </TileIcon>
             <div>
-              <TileName>{category.name}</TileName>
+              <TileName>{topic.name}</TileName>
               <br />
               <TileCount>
                 {count} {count === 1 ? 'story' : 'stories'}

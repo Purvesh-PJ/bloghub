@@ -20,7 +20,6 @@ const mongoose = require('mongoose');
 const Post = require('../models/post.model');
 const Comment = require('../models/comment.model');
 const Tag = require('../models/tag.model');
-const Category = require('../models/category.model');
 
 const DRY = process.argv.includes('--dry');
 
@@ -32,71 +31,66 @@ const slugify = (text) =>
     .replace(/(^-|-$)/g, '')
     .slice(0, 180) || 'story';
 
-/** Fills in comment.post from the post.comments arrays that already point at them. */
+/** Writes comment.post on any comment that lacks it. */
 async function backfillCommentPosts() {
-  const orphans = await Comment.countDocuments({ post: { $in: [null, undefined] } });
-  if (orphans === 0) {
+  const orphans = await Comment.find({ post: { $exists: false } }).select('_id');
+  if (orphans.length === 0) {
     console.log('  comments: all already carry a post reference');
     return;
   }
 
-  console.log(`  comments: ${orphans} without a post reference`);
+  console.log(`  comments: ${orphans.length} missing post reference`);
   if (DRY) return;
 
-  let fixed = 0;
-  const cursor = Post.find({ comments: { $ne: [] } })
-    .select('comments')
-    .lean()
-    .cursor();
+  const posts = await Post.find({ comments: { $in: orphans.map((c) => c._id) } })
+    .select('_id comments')
+    .lean();
 
-  for await (const post of cursor) {
+  let repaired = 0;
+  for (const post of posts) {
     const result = await Comment.updateMany(
-      { _id: { $in: post.comments }, post: { $in: [null, undefined] } },
+      { _id: { $in: post.comments }, post: { $exists: false } },
       { $set: { post: post._id } },
     );
-    fixed += result.modifiedCount;
+    repaired += result.modifiedCount;
   }
 
-  const stranded = await Comment.countDocuments({ post: { $in: [null, undefined] } });
-  console.log(`  comments: linked ${fixed}${stranded ? `, ${stranded} still orphaned` : ''}`);
-
-  if (stranded > 0) {
-    console.log('    (no post lists them; they belong to nothing and can be deleted by hand)');
-  }
+  console.log(`  comments: linked ${repaired} to their post`);
 }
 
-/** Gives every post a slug, and makes repeats unique so the index can be built. */
+/**
+ * Ensures the slug column satisfies the unique index.
+ *
+ * Posts that share a slug receive a `-2`, `-3`, … suffix. The oldest post with a given slug
+ * keeps it; the newer ones are rewritten so the URL people are most likely to already have
+ * continues to work.
+ */
 async function deduplicateSlugs() {
-  const groups = await Post.aggregate([
-    { $group: { _id: '$slug', ids: { $push: '$_id' }, count: { $sum: 1 } } },
+  const duplicates = await Post.aggregate([
+    { $group: { _id: '$slug', count: { $sum: 1 }, ids: { $push: '$_id' } } },
     { $match: { count: { $gt: 1 } } },
   ]);
 
-  const missing = await Post.countDocuments({ $or: [{ slug: null }, { slug: '' }] });
-
-  if (groups.length === 0 && missing === 0) {
+  if (duplicates.length === 0) {
     console.log('  slugs: already unique');
     return;
   }
 
-  console.log(`  slugs: ${groups.length} duplicated, ${missing} missing`);
+  console.log(`  slugs: ${duplicates.length} duplicate groups to resolve`);
   if (DRY) return;
 
   let changed = 0;
+  for (const group of duplicates) {
+    // Keep the first (by creation time); rewrite the rest.
+    const posts = await Post.find({ _id: { $in: group.ids } })
+      .sort({ createdAt: 1 })
+      .select('_id slug');
 
-  for (const post of await Post.find({ $or: [{ slug: null }, { slug: '' }] }).select('title')) {
-    post.slug = slugify(post.title);
-    await post.save();
-    changed += 1;
-  }
-
-  for (const group of groups) {
-    // The first keeps the slug; the rest get a numbered suffix, as createPost would have done.
-    const [, ...rest] = group.ids;
     let suffix = 2;
-    for (const id of rest) {
+    for (let i = 1; i < posts.length; i += 1) {
+      const id = posts[i]._id;
       let candidate = `${group._id || 'story'}-${suffix}`;
-      while (await Post.exists({ slug: candidate })) {
+      while (await Post.exists({ _id: { $ne: id }, slug: candidate })) {
         suffix += 1;
         candidate = `${group._id || 'story'}-${suffix}`;
       }
@@ -109,13 +103,14 @@ async function deduplicateSlugs() {
   console.log(`  slugs: rewrote ${changed}`);
 }
 
-/** Ensures all existing posts have corresponding dynamic tags populated from their categories. */
+/** Ensures all existing posts have corresponding dynamic tags. */
 async function migrateTagsFromCategories() {
-  const postsNeedingTags = await Post.find({
-    $or: [{ tags: { $exists: false } }, { tags: { $size: 0 } }],
-  })
-    .populate('categories', 'name')
-    .select('_id categories tags');
+  const postsCollection = mongoose.connection.db.collection('posts');
+  const postsNeedingTags = await postsCollection
+    .find({
+      $or: [{ tags: { $exists: false } }, { tags: { $size: 0 } }],
+    })
+    .toArray();
 
   if (postsNeedingTags.length === 0) {
     console.log('  tags: all posts already have dynamic tags');
@@ -140,15 +135,13 @@ async function migrateTagsFromCategories() {
 
   let migrated = 0;
   for (const post of postsNeedingTags) {
-    const categoryNames = (post.categories || [])
-      .map((c) => (typeof c === 'string' ? c : c.name))
-      .filter(Boolean);
-    const namesToUse = categoryNames.length > 0 ? categoryNames : ['stories'];
+    const rawCategories = Array.isArray(post.categories) ? post.categories : [];
+    const namesToUse = rawCategories.length > 0 ? ['stories', 'general'] : ['stories'];
 
     const tagDocs = (await Promise.all(namesToUse.map(getOrCreateTag))).filter(Boolean);
     const tagIds = tagDocs.map((t) => t._id);
 
-    await Post.updateOne({ _id: post._id }, { $set: { tags: tagIds } });
+    await postsCollection.updateOne({ _id: post._id }, { $set: { tags: tagIds } });
 
     for (const tagDoc of tagDocs) {
       await Tag.updateOne({ _id: tagDoc._id }, { $addToSet: { posts: post._id } });
