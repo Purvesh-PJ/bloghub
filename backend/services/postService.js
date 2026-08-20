@@ -139,6 +139,9 @@ exports.updatePost = async (post, postId) => {
     imageURL: imageURL || '',
     title,
     content,
+    // Recorded here and nowhere else, so it means "the author changed the story" rather than
+    // "the document was written to" — see the field's note on the schema.
+    editedAt: new Date(),
   };
 
   // Only re-derive the slug when one was supplied or the title changed; otherwise a plain
