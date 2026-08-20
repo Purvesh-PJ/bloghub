@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
@@ -26,6 +26,7 @@ import { useTheme } from '../styles/ThemeProvider';
 import { PageShell, PageHeader } from '../components/layout/PageShell';
 import { Button, Input, TextArea, Surface, Modal, Avatar, Skeleton } from '../components/ui';
 import { display, text, media, interactive } from '../styles/theme/mixins';
+import { queryKeys } from '../services/queryKeys';
 
 // Mirrors the server-side minimum in validators/auth.validators.js.
 const MIN_PASSWORD_LENGTH = 10;
@@ -360,12 +361,34 @@ const TABS = [
 export function Settings() {
   const queryClient = useQueryClient();
   const { user, logout } = useAuth();
-  const { avatarUrl } = useCurrentUser();
+  /*
+    One source for the account, shared with the header.
+
+    This screen used to declare its own `useQuery` on the same key alongside this hook — two
+    definitions of the same fetch, which happened to agree. Any drift between them would have
+    shown as the header and the form disagreeing about the signed-in user.
+  */
+  const { account, avatarUrl, isLoading } = useCurrentUser();
   const navigate = useNavigate();
   const { preference, setTheme } = useTheme();
   const [tab, setTab] = useState('profile');
 
   const [form, setForm] = useState({ username: '', email: '', bio: '' });
+  /*
+    The rest of the public profile.
+
+    `PUT /settings/profile` and its service wrapper have accepted these fields all along, and
+    the profile schema declares every one of them — nothing anywhere in the app ever sent
+    them, so a writer had no way to say where they are, link their own site, or connect a
+    handle. Kept separate from `form` because they save through a different endpoint:
+    username, email and avatar go to `PUT /users/setUser`, these to `PUT /settings/profile`.
+  */
+  const [profileDetails, setProfileDetails] = useState({
+    fullName: '',
+    location: '',
+    website: '',
+    socialLinks: { github: '', twitter: '', linkedin: '' },
+  });
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [privacy, setPrivacy] = useState({ showEmail: false, showActivity: true });
   const [passwordForm, setPasswordForm] = useState({
@@ -378,35 +401,62 @@ export function Settings() {
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
 
-  const { data: userData, isLoading } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: userService.getUser,
-  });
-
   const { data: settings } = useQuery({
-    queryKey: ['userSettings'],
+    queryKey: queryKeys.settings.all,
     queryFn: settingsService.getUserSettings,
     retry: false,
   });
 
-  useEffect(() => {
-    if (userData?.User) {
-      setForm({
-        username: userData.User.username || '',
-        email: userData.User.email || '',
-        bio: userData.User.profile?.bio || '',
-      });
-    }
-  }, [userData]);
+  const { data: profileResponse } = useQuery({
+    queryKey: queryKeys.profiles.ownDetails(),
+    queryFn: () => settingsService.getUserProfile(),
+    retry: false,
+  });
 
-  useEffect(() => {
-    const data = settings?.data ?? settings;
-    if (!data) return;
+  /*
+    Seeding the editable fields from what the server holds.
+
+    Done during render rather than in an effect, keyed on the fetched payload itself: an
+    effect paints one frame with empty inputs before filling them, which on this screen reads
+    as "your profile is blank". Each block runs again only when a refetch produces a new
+    object — after a save, for instance, so the form re-syncs with what was actually stored.
+  */
+  const [seededAccount, setSeededAccount] = useState(null);
+  if (account && seededAccount !== account) {
+    setSeededAccount(account);
+    setForm({
+      username: account.username || '',
+      email: account.email || '',
+      bio: account.profile?.bio || '',
+    });
+  }
+
+  const [seededProfile, setSeededProfile] = useState(null);
+  if (profileResponse?.data && seededProfile !== profileResponse) {
+    setSeededProfile(profileResponse);
+    const profile = profileResponse.data;
+    setProfileDetails({
+      fullName: profile.fullName ?? '',
+      location: profile.location ?? '',
+      website: profile.website ?? '',
+      socialLinks: {
+        github: profile.socialLinks?.github ?? '',
+        twitter: profile.socialLinks?.twitter ?? '',
+        linkedin: profile.socialLinks?.linkedin ?? '',
+      },
+    });
+  }
+
+  const [seededSettings, setSeededSettings] = useState(null);
+  if (settings && seededSettings !== settings) {
+    setSeededSettings(settings);
+    // Older responses returned the settings bare rather than under `data`.
+    const data = settings.data ?? settings;
     if (typeof data.emailNotifications === 'boolean') {
       setEmailNotifications(data.emailNotifications);
     }
     if (data.privacySettings) setPrivacy((current) => ({ ...current, ...data.privacySettings }));
-  }, [settings]);
+  }
 
   const passwordMutation = useMutation({
     mutationFn: ({ currentPassword, newPassword, confirmPassword }) =>
@@ -455,18 +505,38 @@ export function Settings() {
     setAvatarPreview(null);
   };
 
+  /*
+    Saving the profile touches two endpoints: the account fields and the avatar go to
+    `PUT /users/setUser` as multipart, the rest to `PUT /settings/profile` as JSON. Issued in
+    sequence rather than together so that a rejected username — the likeliest failure, since
+    it is the one with a uniqueness constraint — is reported before the second write lands
+    and leaves the two halves disagreeing.
+  */
   const profileMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const body = new FormData();
       body.append('username', form.username);
       body.append('email', form.email);
       body.append('bio', form.bio);
       if (avatarFile) body.append('image', avatarFile);
-      return userService.updateUser(body);
+
+      await userService.updateUser(body);
+
+      return settingsService.updateUserProfile({
+        fullName: profileDetails.fullName,
+        location: profileDetails.location,
+        // The server only accepts an http(s) URL, and rejects an empty string as one. Send
+        // nothing when the field is blank rather than a value it must refuse.
+        ...(profileDetails.website.trim() && { website: profileDetails.website.trim() }),
+        socialLinks: profileDetails.socialLinks,
+      });
     },
     onSuccess: () => {
       clearAvatarPick();
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.currentUser() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profiles.ownDetails() });
+      // The public page reads the same profile, so its cached copy is now stale.
+      queryClient.invalidateQueries({ queryKey: queryKeys.profiles.all });
       toast.success('Profile saved');
     },
     onError: (error) => toast.error(error.response?.data?.message || 'Could not save your profile'),
@@ -474,13 +544,13 @@ export function Settings() {
 
   const settingsMutation = useMutation({
     mutationFn: (payload) => settingsService.updateUserSettings(payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['userSettings'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.settings.all }),
     onError: () => toast.error('Could not save that preference'),
   });
 
   const privacyMutation = useMutation({
     mutationFn: (payload) => settingsService.updatePrivacySettings({ privacySettings: payload }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['userSettings'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.settings.all }),
     onError: () => toast.error('Could not save that preference'),
   });
 
@@ -607,6 +677,79 @@ export function Settings() {
                           hint="Shown on your public profile."
                         />
                       </div>
+
+                      <Input
+                        label="Display name"
+                        value={profileDetails.fullName}
+                        onChange={(event) =>
+                          setProfileDetails({ ...profileDetails, fullName: event.target.value })
+                        }
+                        placeholder="How you'd like to be credited"
+                        hint="Optional. Shown beneath your username."
+                      />
+                      <Input
+                        label="Location"
+                        value={profileDetails.location}
+                        onChange={(event) =>
+                          setProfileDetails({ ...profileDetails, location: event.target.value })
+                        }
+                        placeholder="City, country"
+                      />
+                      <div className="full">
+                        <Input
+                          label="Website"
+                          type="url"
+                          value={profileDetails.website}
+                          onChange={(event) =>
+                            setProfileDetails({ ...profileDetails, website: event.target.value })
+                          }
+                          placeholder="https://example.com"
+                          hint="Must start with http:// or https://"
+                        />
+                      </div>
+
+                      <Input
+                        label="GitHub"
+                        value={profileDetails.socialLinks.github}
+                        onChange={(event) =>
+                          setProfileDetails({
+                            ...profileDetails,
+                            socialLinks: {
+                              ...profileDetails.socialLinks,
+                              github: event.target.value,
+                            },
+                          })
+                        }
+                        placeholder="username"
+                      />
+                      <Input
+                        label="X / Twitter"
+                        value={profileDetails.socialLinks.twitter}
+                        onChange={(event) =>
+                          setProfileDetails({
+                            ...profileDetails,
+                            socialLinks: {
+                              ...profileDetails.socialLinks,
+                              twitter: event.target.value,
+                            },
+                          })
+                        }
+                        placeholder="username"
+                      />
+                      <Input
+                        label="LinkedIn"
+                        value={profileDetails.socialLinks.linkedin}
+                        onChange={(event) =>
+                          setProfileDetails({
+                            ...profileDetails,
+                            socialLinks: {
+                              ...profileDetails.socialLinks,
+                              linkedin: event.target.value,
+                            },
+                          })
+                        }
+                        placeholder="username"
+                      />
                     </Fields>
 
                     <Actions style={{ marginTop: 24 }}>

@@ -34,6 +34,7 @@ import {
   StatTile,
 } from '../components/ui';
 import { text, label as labelStyle, media, clamp, display } from '../styles/theme/mixins';
+import { queryKeys } from '../services/queryKeys';
 
 /**
  * Dashboard — how the writing is doing.
@@ -273,13 +274,13 @@ export function Dashboard() {
     error: analyticsError,
     refetch: refetchAnalytics,
   } = useQuery({
-    queryKey: ['myAnalytics'],
+    queryKey: queryKeys.analytics.mine(),
     queryFn: analyticsService.getMyAnalytics,
   });
 
   // Just enough of the list to show what is unfinished; the full table lives on /stories.
   const { data: draftsData } = useQuery({
-    queryKey: ['myPosts', { visibility: 'draft', limit: 4, sort: 'updated' }],
+    queryKey: queryKeys.posts.mine({ visibility: 'draft', limit: 4, sort: 'updated' }),
     queryFn: () => postService.getMyPosts({ visibility: 'draft', limit: 4, sort: 'updated' }),
   });
 
@@ -290,7 +291,7 @@ export function Dashboard() {
     error: readingError,
     refetch: refetchReading,
   } = useQuery({
-    queryKey: ['readingActivity'],
+    queryKey: queryKeys.analytics.reading(),
     queryFn: analyticsService.getReadingActivity,
   });
 

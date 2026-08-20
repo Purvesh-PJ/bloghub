@@ -22,10 +22,11 @@ export const settingsService = {
     return response.data;
   },
 
-  updateSecuritySettings: async (securityData) => {
-    const response = await api.put('/settings/security', securityData);
-    return response.data;
-  },
+  /*
+    There is deliberately no updateSecuritySettings here. `PUT /settings/security` answers 501
+    — two-factor authentication is not implemented — and a wrapper for it only invites a
+    screen to be built against something that cannot work.
+  */
 
   updatePrivacySettings: async (privacyData) => {
     const response = await api.put('/settings/privacy', privacyData);

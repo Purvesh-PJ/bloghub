@@ -39,6 +39,7 @@ import {
   Pagination,
 } from '../components/ui';
 import { text, media, clamp } from '../styles/theme/mixins';
+import { queryKeys } from '../services/queryKeys';
 
 /**
  * Stories — everything to do with managing what you have written.
@@ -252,12 +253,6 @@ const FetchingBar = styled.div`
   font-weight: 600;
 `;
 
-const PagerLabel = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-variant-numeric: tabular-nums;
-`;
-
 /* ── Row ─────────────────────────────────────────────────────────────────── */
 
 function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSelected }) {
@@ -314,9 +309,7 @@ function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSe
                 : 'recently';
             })()}
           </span>
-          {post.tags?.[0] && (
-            <span>· #{post.tags[0]?.name ?? post.tags[0]}</span>
-          )}
+          {post.tags?.[0] && <span>· #{post.tags[0]?.name ?? post.tags[0]}</span>}
         </RowMeta>
       </TitleCell>
 
@@ -428,21 +421,21 @@ export function Stories() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['myPosts', listParams],
+    queryKey: queryKeys.posts.mine(listParams),
     queryFn: () => postService.getMyPosts(listParams),
     placeholderData: (previous) => previous,
   });
 
   // Per-post view and read figures, which the list itself does not carry.
   const { data: analyticsData } = useQuery({
-    queryKey: ['myAnalytics'],
+    queryKey: queryKeys.analytics.mine(),
     queryFn: analyticsService.getMyAnalytics,
   });
 
   const refreshLists = () => {
-    queryClient.invalidateQueries({ queryKey: ['myPosts'] });
-    queryClient.invalidateQueries({ queryKey: ['myAnalytics'] });
-    queryClient.invalidateQueries({ queryKey: ['posts'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.posts.mine() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.analytics.mine() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
   };
 
   const VISIBILITY_MESSAGE = {

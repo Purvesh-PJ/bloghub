@@ -1,8 +1,26 @@
 import api from '../config/api';
 
 export const userService = {
+  // The signed-in account. Scoped to the token, so it takes no id — see getPublicProfile for
+  // somebody else's page.
   getUser: async () => {
     const response = await api.get('/users/getUser');
+    return response.data;
+  },
+
+  /**
+   * Anybody's public page.
+   *
+   * The profile screen used to call `getUser` with a user id, which that function ignores —
+   * so it rendered the *viewer's* own account for every writer on the site, and 401'd for a
+   * signed-out reader who clicked an author byline.
+   *
+   * Returns { success, data: { username, avatar, bio, location, website, socialLinks,
+   * counts: { posts, followers, following } } }. The email is present only when the account
+   * turned that on in its own privacy settings.
+   */
+  getPublicProfile: async (userId) => {
+    const response = await api.get(`/users/${userId}/profile`);
     return response.data;
   },
 
@@ -10,11 +28,6 @@ export const userService = {
     const response = await api.put('/users/setUser', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
-  },
-
-  getUserPosts: async () => {
-    const response = await api.get('/users/getUserPosts');
     return response.data;
   },
 
@@ -63,8 +76,8 @@ export const userService = {
     return response.data;
   },
 
-  getAllUsers: async (page = 1) => {
-    const response = await api.get('/users', { params: { page } });
+  getAllUsers: async (page = 1, params = {}) => {
+    const response = await api.get('/users', { params: { page, ...params } });
     return response.data;
   },
 };

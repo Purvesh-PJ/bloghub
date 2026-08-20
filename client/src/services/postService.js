@@ -7,8 +7,18 @@ export const postService = {
     return response.data;
   },
 
-  // Moderation view: includes drafts and private posts. Requires an admin token; the
-  // server ignores the flag for anyone else.
+  /**
+   * Moderation view: includes drafts and private posts. Requires an admin token; the
+   * server ignores the flag for anyone else.
+   *
+   * Takes { page, limit, visibility, q }. Filtering and paging happen on the server — the
+   * console used to ask for a flat 50 and filter them in the browser, so a site with more
+   * than fifty stories had no way to reach the rest of them, and the counts on the filter
+   * chips described the loaded page rather than the site.
+   *
+   * Returns { data, pagination, counts } where `counts` breaks the whole collection down by
+   * visibility.
+   */
   getAllPosts: async (params = {}) => {
     const response = await api.get('/posts', { params: { ...params, all: 'true' } });
     return response.data;
@@ -23,6 +33,18 @@ export const postService = {
    */
   getTrending: async (params = {}) => {
     const response = await api.get('/posts/trending', { params });
+    return response.data;
+  },
+
+  /**
+   * One author's published stories, filtered and paged on the server.
+   *
+   * The public profile page used to fetch the global feed and filter it in the browser, so it
+   * only ever saw whichever of that author's posts happened to fall in the first page of the
+   * whole site — usually none of them.
+   */
+  getPostsByAuthor: async (authorId, params = {}) => {
+    const response = await api.get('/posts', { params: { ...params, author: authorId } });
     return response.data;
   },
 

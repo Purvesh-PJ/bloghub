@@ -1,13 +1,17 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Github, PenLine, Compass, Sparkles, Heart } from 'lucide-react';
-import { text, display, media, interactive } from '../../styles/theme/mixins';
+import { Github, PenLine, Compass, Heart } from 'lucide-react';
+import { useTags } from '../../hooks/useTags';
+import { text, media, interactive } from '../../styles/theme/mixins';
 import { BrandMark } from '../ui';
 
 /**
  * Footer — high-end editorial footer with ambient watermark,
  * aligned gutters, and purposeful community discovery.
  */
+
+/** How many topics the discovery column shows. */
+const TOPIC_COUNT = 6;
 
 const Wrapper = styled.footer`
   position: relative;
@@ -229,6 +233,15 @@ const BottomBar = styled.div`
 `;
 
 export function Footer() {
+  /*
+    Shared with the landing page, search and the editor through one hook, so the footer costs
+    no extra request on most pages. Only topics with something published belong under a
+    heading that calls them popular; when there are none the column is left out rather than
+    shown empty.
+  */
+  const { tags } = useTags({ withPostsOnly: true });
+  const topics = tags.slice(0, TOPIC_COUNT);
+
   return (
     <Wrapper>
       <WatermarkText>bloghub</WatermarkText>
@@ -271,18 +284,31 @@ export function Footer() {
             </ColLinks>
           </NavCol>
 
-          {/* Popular Community Topics */}
-          <NavCol>
-            <ColTitle>Popular Topics</ColTitle>
-            <TopicHashtags>
-              <TopicTag to="/search?topic=technology">#technology</TopicTag>
-              <TopicTag to="/search?topic=design">#design</TopicTag>
-              <TopicTag to="/search?topic=programming">#programming</TopicTag>
-              <TopicTag to="/search?topic=ai">#ai</TopicTag>
-              <TopicTag to="/search?topic=science">#science</TopicTag>
-              <TopicTag to="/search?topic=lifestyle">#lifestyle</TopicTag>
-            </TopicHashtags>
-          </NavCol>
+          {/*
+            Popular Community Topics.
+
+            These were six hardcoded hashtags — #technology, #design, #ai and so on — each a
+            real link into the search page. On any site that had not happened to use those
+            exact words they led to an empty result, under a heading claiming they were
+            popular. They come from the tag endpoint now, which already reports a published
+            post count per tag and sorts by it, and the column is omitted entirely rather
+            than shown empty when nothing qualifies.
+          */}
+          {topics.length > 0 && (
+            <NavCol>
+              <ColTitle>Popular Topics</ColTitle>
+              <TopicHashtags>
+                {topics.map((topic) => (
+                  <TopicTag
+                    key={topic._id ?? topic.name}
+                    to={`/search?topic=${encodeURIComponent(topic.name)}`}
+                  >
+                    #{topic.name}
+                  </TopicTag>
+                ))}
+              </TopicHashtags>
+            </NavCol>
+          )}
         </MainGrid>
 
         <BottomBar>
