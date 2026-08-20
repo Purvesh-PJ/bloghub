@@ -33,8 +33,8 @@ const commentRoutes = require('./routes/comment.routes');
 const searchRoutes = require('./routes/search.routes');
 const authRoutes = require('./routes/auth.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
-const likesRoutes = require('./routes/likes.routes');
-const pageViewsRoutes = require('./routes/page-views.routes');
+const likeRoutes = require('./routes/like.routes');
+const pageViewRoutes = require('./routes/page-view.routes');
 const userActivityRoutes = require('./routes/user-activity.routes');
 const settingsRoutes = require('./routes/settings.routes');
 
@@ -108,8 +108,8 @@ router.use('/comments', commentRoutes);
 router.use('/search', searchRoutes);
 router.use('/auth', authRoutes);
 router.use('/analytics', analyticsRoutes);
-router.use('/likes', likesRoutes);
-router.use('/page-views', pageViewsRoutes);
+router.use('/likes', likeRoutes);
+router.use('/page-views', pageViewRoutes);
 router.use('/user-activity', userActivityRoutes);
 router.use('/settings', settingsRoutes);
 
