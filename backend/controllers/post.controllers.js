@@ -7,6 +7,7 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const { createPost, updatePost } = require('../services/postService');
 const { getTrendingPosts } = require('../services/trendingService');
 const { notFound, forbidden } = require('../utils/AppError');
+const { containsIgnoreCase } = require('../utils/regex');
 
 const MAX_PAGE_SIZE = 50;
 
@@ -26,6 +27,35 @@ exports.getBlogs = asyncHandler(async (req, res) => {
   const filter = wantsAll && isAdmin ? {} : { visibility: 'public' };
 
   /*
+    A single author's stories.
+
+    The public profile page used to fetch the global feed and filter it in the browser, so it
+    only ever saw whichever of that author's posts happened to fall in the first page of the
+    whole site — usually none of them — and the counts it derived were wrong for the same
+    reason. Filtering and paging belong here.
+  */
+  if (req.query.author) {
+    filter.user = req.query.author;
+  }
+
+  /*
+    Moderation controls, honoured only for the administrator's unfiltered listing.
+
+    Deliberately gated on `wantsAll && isAdmin`: for anybody else `filter.visibility` is
+    already pinned to 'public', and letting the query set it would turn the public feed into a
+    way to list everybody's drafts.
+  */
+  if (wantsAll && isAdmin && ['draft', 'private', 'public'].includes(req.query.visibility)) {
+    filter.visibility = req.query.visibility;
+  }
+
+  // Searching the listing by title. Escaped, so a term containing regex metacharacters is
+  // matched as the text somebody typed.
+  if (req.query.q) {
+    filter.title = containsIgnoreCase(req.query.q);
+  }
+
+  /*
     Filtering by tag/topic happens here on the database level.
     Supports ?tag=react, ?topic=react, and ?category=react.
   */
@@ -41,7 +71,7 @@ exports.getBlogs = asyncHandler(async (req, res) => {
     }
   }
 
-  const [posts, total] = await Promise.all([
+  const [posts, total, visibilityCounts] = await Promise.all([
     Post.find(filter)
       .populate('user', 'username')
       .populate('tags', 'name')
@@ -49,13 +79,37 @@ exports.getBlogs = asyncHandler(async (req, res) => {
       .skip(skip)
       .limit(limit),
     Post.countDocuments(filter),
+    /*
+      Counts per visibility, for the moderation console's filter chips.
+
+      They have to be computed over everything the console can see rather than over the page
+      it is showing, or the chips report "3 drafts" when what they mean is "3 drafts on this
+      page". Only issued for the administrator's listing; there is nothing to break down when
+      the filter is pinned to public.
+    */
+    wantsAll && isAdmin
+      ? Post.aggregate([{ $group: { _id: '$visibility', count: { $sum: 1 } } }])
+      : null,
   ]);
+
+  const byVisibility = (visibilityCounts ?? []).reduce(
+    (acc, row) => ({ ...acc, [row._id]: row.count }),
+    {},
+  );
 
   res.status(200).json({
     success: true,
     message: 'Posts found successfully',
     data: posts,
     pagination: { total, page, limit, pages: Math.ceil(total / limit) },
+    ...(visibilityCounts && {
+      counts: {
+        all: Object.values(byVisibility).reduce((sum, n) => sum + n, 0),
+        public: byVisibility.public || 0,
+        draft: byVisibility.draft || 0,
+        private: byVisibility.private || 0,
+      },
+    }),
   });
 });
 

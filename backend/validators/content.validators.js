@@ -123,12 +123,20 @@ const paginationRules = [
     .toInt(),
 ];
 
-// Public feed listing: pagination plus an optional tag/topic name.
+// Public feed listing: pagination, an optional tag/topic name, and an optional author.
 const feedRules = [
   ...paginationRules,
   query('tag').optional().isString().trim().isLength({ max: 60 }),
   query('topic').optional().isString().trim().isLength({ max: 60 }),
   query('category').optional().isString().trim().isLength({ max: 60 }),
+  query('author')
+    .optional()
+    .isString()
+    .matches(/^[a-f\d]{24}$/i)
+    .withMessage('author must be a valid user id'),
+  // Honoured only for an administrator's ?all=true listing; see getBlogs.
+  query('visibility').optional().isIn(['draft', 'private', 'public']),
+  query('q').optional().isString().trim().isLength({ max: 200 }),
 ];
 
 // Listing controls for the author's own posts.
