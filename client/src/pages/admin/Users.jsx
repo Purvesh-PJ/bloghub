@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import {
@@ -10,6 +10,7 @@ import {
   Ban,
   CircleCheck,
   Trash2,
+  Activity,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -31,6 +32,7 @@ import {
   Pagination,
 } from '../../components/ui';
 import { text } from '../../styles/theme/mixins';
+import { queryKeys } from '../../services/queryKeys';
 
 /**
  * The account directory, and the actions an administrator can take on one.
@@ -68,17 +70,18 @@ const Quiet = styled.span`
 
 export function AdminUsers() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { user: me } = useAuth();
   const [page, setPage] = useState(1);
   const [pendingDelete, setPendingDelete] = useState(null);
   const [password, setPassword] = useState('');
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['admin-users', page],
+    queryKey: queryKeys.admin.users(page),
     queryFn: () => userService.getAllUsers(page),
   });
 
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
 
   const suspendMutation = useMutation({
     mutationFn: ({ id, suspended }) => userService.setUserSuspended(id, suspended),
@@ -225,6 +228,14 @@ export function AdminUsers() {
                               </Button>
                             }
                           >
+                            <DropdownMenu.Item
+                              onSelect={() => navigate(`/admin/users/${user._id}/activity`)}
+                            >
+                              <Activity size={14} /> View activity
+                            </DropdownMenu.Item>
+
+                            <DropdownMenu.Separator />
+
                             {user.suspended ? (
                               <DropdownMenu.Item
                                 onSelect={() =>

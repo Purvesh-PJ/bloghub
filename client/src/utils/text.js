@@ -46,6 +46,20 @@ export function readingTime(body = '') {
   return Math.max(1, Math.round(words / 200));
 }
 
+/**
+ * Reading time from a character count rather than from the text itself.
+ *
+ * Search results carry the length of the whole body but only a 200-character excerpt of it,
+ * so `readingTime` applied to what they do carry reported the same minute for every result
+ * however long the story was. Five characters per word is the usual English average.
+ *
+ * @param {number} characters length of the full body
+ */
+export function readingTimeFromLength(characters = 0) {
+  const words = Math.max(0, Number(characters) || 0) / 5;
+  return Math.max(1, Math.round(words / 200));
+}
+
 /** First letter of a name, for avatar fallbacks. */
 export function initial(name = '') {
   const str = typeof name === 'string' ? name : String(name || '');

@@ -16,14 +16,15 @@ import {
 
 import { searchService } from '../services/searchService';
 import { postService } from '../services/postService';
-import { tagService } from '../services/tagService';
+import { useTags } from '../hooks/useTags';
 import { PageShell } from '../components/layout/PageShell';
 import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
-import { topicIcon } from '../components/marketing/Topics';
+import { topicIcon } from '../utils/topicIcons';
 import { Button, Chip, EmptyState } from '../components/ui';
 import { display, text, clamp, media, interactive } from '../styles/theme/mixins';
-import { excerpt, readingTime } from '../utils/text';
+import { excerpt, readingTimeFromLength } from '../utils/text';
+import { queryKeys } from '../services/queryKeys';
 
 /* ── Styled Components (All using Design Tokens & Primitives) ────────────── */
 
@@ -189,10 +190,6 @@ const ActiveFilterText = styled.span`
 
 /* ── Editorial Grid Containers ───────────────────────────────────────────── */
 
-const FeaturedSpotlight = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-`;
-
 const EditorialGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -220,7 +217,9 @@ const SearchResultCard = styled(Link)`
   background: ${({ theme }) => theme.colors.surfaceElevated};
   border: none;
   text-decoration: none;
-  transition: background ${({ theme }) => theme.transitions.fast}, box-shadow ${({ theme }) => theme.transitions.fast};
+  transition:
+    background ${({ theme }) => theme.transitions.fast},
+    box-shadow ${({ theme }) => theme.transitions.fast};
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
   ${interactive}
 
@@ -288,8 +287,17 @@ export function Search() {
   const topic = searchParams.get('topic') || searchParams.get('category') || '';
 
   const [draft, setDraft] = useState(query);
+  const [syncedQuery, setSyncedQuery] = useState(query);
 
-  useEffect(() => setDraft(query), [query]);
+  /*
+    Keep the box in step when the query changes from outside it — clearing a filter, using the
+    back button, or arriving on a shared URL. Adjusted during render rather than in an effect
+    so the input never paints one frame showing the previous search.
+  */
+  if (syncedQuery !== query) {
+    setSyncedQuery(query);
+    setDraft(query);
+  }
 
   // Debounced typing
   useEffect(() => {
@@ -304,24 +312,20 @@ export function Search() {
   }, [draft, query, searchParams, setSearchParams]);
 
   const { data: searchData, isLoading: searching } = useQuery({
-    queryKey: ['search', query],
+    queryKey: queryKeys.search(query),
     queryFn: () => searchService.search(query),
     enabled: Boolean(query),
   });
 
   const { data: postsData, isLoading: loadingPosts } = useQuery({
-    queryKey: ['posts', { topic }],
+    queryKey: queryKeys.posts.feed({ topic }),
     queryFn: () => postService.getPosts({ limit: 25, ...(topic && { topic }) }),
     enabled: !query,
   });
 
-  const { data: tagsData } = useQuery({
-    queryKey: ['tags'],
-    queryFn: tagService.getTags,
-  });
+  // Only topics with something behind them; a chip that leads nowhere is worse than no chip.
+  const { tags: activeTags } = useTags({ withPostsOnly: true });
 
-  const tags = tagsData?.data || [];
-  const activeTags = tags.filter((t) => (t.postCount ?? 0) > 0);
   const results = searchData?.data || [];
   const browsePosts = useMemo(() => postsData?.data || [], [postsData]);
 
@@ -347,8 +351,6 @@ export function Search() {
   };
 
   const hasPosts = browsePosts.length > 0;
-  const leadPost = hasPosts ? browsePosts[0] : null;
-  const gridPosts = hasPosts ? browsePosts.slice(1) : [];
 
   return (
     <PageShell>
@@ -370,7 +372,7 @@ export function Search() {
           <SearchIcon className="search-icon" />
           <input
             type="text"
-            placeholder="Search stories, tags, or authors…"
+            placeholder="Search titles, stories, tags and authors…"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             aria-label="Search stories"
@@ -414,7 +416,11 @@ export function Search() {
           <ActiveFilterText>
             <Sparkles size={16} /> Filtered by <strong>{formatTopicTitle(topic)}</strong>
             <span className="count">
-              ({loadingPosts ? '…' : `${browsePosts.length} ${browsePosts.length === 1 ? 'story' : 'stories'}`})
+              (
+              {loadingPosts
+                ? '…'
+                : `${browsePosts.length} ${browsePosts.length === 1 ? 'story' : 'stories'}`}
+              )
             </span>
           </ActiveFilterText>
           <Button size="sm" variant="ghost" onClick={() => setTopic('')}>
@@ -456,8 +462,12 @@ export function Search() {
                 </div>
                 <SearchResultFooter>
                   <span>
-                    <Clock size={12} /> {readingTime(result.content || '')} min read
+                    {/* The result carries the length of the whole body, not the body itself —
+                        estimating from the 200-character excerpt gave every card the same
+                        "0 min read". */}
+                    <Clock size={12} /> {readingTimeFromLength(result.contentLength)} min read
                   </span>
+                  {result.user?.username && <span>by {result.user.username}</span>}
                   <span style={{ color: '#0284c7', fontWeight: 600 }}>
                     Read story <ArrowRight size={12} />
                   </span>

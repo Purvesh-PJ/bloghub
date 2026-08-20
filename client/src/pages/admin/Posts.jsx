@@ -11,10 +11,14 @@ import {
   Pencil,
   Trash2,
   FileText,
+  Globe,
+  Lock,
+  FileEdit,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { postService } from '../../services/postService';
+import { useDebounced } from '../../hooks/useDebounced';
 import { PageHeader, Section } from '../../components/layout/PageShell';
 import {
   Button,
@@ -27,15 +31,22 @@ import {
   EmptyState,
   DropdownMenu,
   Skeleton,
+  Pagination,
 } from '../../components/ui';
 import { text, clamp } from '../../styles/theme/mixins';
+import { queryKeys } from '../../services/queryKeys';
 
 /**
  * Post moderation.
  *
- * Same listing as before, rebuilt on the shared primitives. The four stat cards became
- * counts on the filter chips: they showed the same four numbers the filter row already
- * implied, and a row of cards that only restates the control beneath it is decoration.
+ * Filtering, searching and paging happen on the server. This screen used to ask for a flat
+ * fifty posts and do all three in the browser, which meant a site with more than fifty
+ * stories offered no way to reach the rest of them — and the counts on the filter chips
+ * described the fifty that happened to load rather than the site.
+ *
+ * The bulk bar is the other half. `POST /posts/bulk` has always accepted an administrator's
+ * ids and applied one action to all of them, and the console had no way to select anything:
+ * unpublishing ten posts meant ten trips through a dropdown menu.
  */
 
 const Toolbar = styled.div`
@@ -85,6 +96,32 @@ const MenuTrigger = styled.button`
   }
 `;
 
+const Checkbox = styled.input`
+  width: 16px;
+  height: 16px;
+  accent-color: ${({ theme }) => theme.colors.accentSolid};
+  cursor: pointer;
+`;
+
+/* Appears only when something is selected, so it never occupies space it is not using. */
+const BulkBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  border: 1px solid ${({ theme }) => theme.colors.accentLine};
+`;
+
+const BulkCount = styled.span`
+  ${text('sm', 'semibold')}
+  color: ${({ theme }) => theme.colors.accentText};
+  margin-right: auto;
+`;
+
 const TONE = { public: 'success', draft: 'warning', private: 'neutral' };
 const LABEL = { public: 'Published', draft: 'Draft', private: 'Private' };
 
@@ -95,55 +132,95 @@ const FILTERS = [
   { id: 'private', label: 'Private' },
 ];
 
+const PAGE_SIZE = 20;
+
 export function AdminPosts() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [pendingBulkDelete, setPendingBulkDelete] = useState(null);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const debouncedQuery = useDebounced(query, 300);
+
+  const listParams = useMemo(
+    () => ({
+      page,
+      limit: PAGE_SIZE,
+      ...(filter !== 'all' && { visibility: filter }),
+      ...(debouncedQuery.trim() && { q: debouncedQuery.trim() }),
+    }),
+    [page, filter, debouncedQuery]
+  );
+
+  /*
+    Changing a filter or the search term has to return to the first page: staying on page 4
+    of the previous result set shows an empty table for a filter that plainly has matches.
+    Adjusted during render so no request is ever issued with the stale page.
+  */
+  const filterKey = `${filter}|${debouncedQuery.trim()}`;
+  const [syncedFilter, setSyncedFilter] = useState(filterKey);
+  if (syncedFilter !== filterKey) {
+    setSyncedFilter(filterKey);
+    setPage(1);
+    setSelectedIds([]);
+  }
 
   // Moderation view — includes drafts and private posts, unlike the public ['posts'] key.
   const { data: postsResponse, isLoading } = useQuery({
-    queryKey: ['allPosts'],
-    queryFn: () => postService.getAllPosts({ limit: 50 }),
+    queryKey: queryKeys.posts.moderation(listParams),
+    queryFn: () => postService.getAllPosts(listParams),
+    placeholderData: (previous) => previous,
   });
+
+  const refreshLists = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.posts.moderation() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.analytics.site() });
+  };
 
   const deleteMutation = useMutation({
     mutationFn: postService.deletePost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allPosts'] });
-      queryClient.invalidateQueries({ queryKey: ['adminAnalytics'] });
+      refreshLists();
       setPendingDelete(null);
       toast.success('Post deleted');
     },
-    onError: () => toast.error('Could not delete the post'),
+    onError: (error) => toast.error(error.response?.data?.message || 'Could not delete the post'),
   });
 
-  const posts = useMemo(() => postsResponse?.data || [], [postsResponse]);
+  /*
+    One action applied to every selected story in a single request. The endpoint has always
+    accepted this from an administrator; there was simply no way to select anything here.
+  */
+  const bulkMutation = useMutation({
+    mutationFn: ({ ids, action }) => postService.bulkUpdate(ids, action),
+    onSuccess: (response) => {
+      refreshLists();
+      setSelectedIds([]);
+      setPendingBulkDelete(null);
+      toast.success(response?.message || 'Stories updated');
+    },
+    onError: (error) =>
+      toast.error(error.response?.data?.message || 'Could not update those stories'),
+  });
 
-  const counts = useMemo(
-    () => ({
-      all: posts.length,
-      public: posts.filter((post) => post.visibility === 'public').length,
-      draft: posts.filter((post) => post.visibility === 'draft').length,
-      private: posts.filter((post) => post.visibility === 'private').length,
-    }),
-    [posts]
-  );
+  const visible = useMemo(() => postsResponse?.data || [], [postsResponse]);
+  const pagination = postsResponse?.pagination ?? { page: 1, pages: 1, total: 0 };
+  // Counted over the whole collection by the server, not over the page on screen.
+  const counts = postsResponse?.counts ?? { all: 0, public: 0, draft: 0, private: 0 };
 
-  const visible = useMemo(() => {
-    let list = posts;
-    if (filter !== 'all') list = list.filter((post) => post.visibility === filter);
-    if (query.trim()) {
-      const needle = query.trim().toLowerCase();
-      list = list.filter(
-        (post) =>
-          post.title?.toLowerCase().includes(needle) ||
-          post.user?.username?.toLowerCase().includes(needle)
-      );
-    }
-    return list;
-  }, [posts, filter, query]);
+  // Selection is per page: leaving it drops the selection rather than acting on rows the
+  // administrator can no longer see.
+  const visibleIds = visible.map((post) => post._id);
+  const allVisibleSelected =
+    visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
+
+  const toggleSelected = (id) =>
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((entry) => entry !== id) : [...current, id]
+    );
 
   if (isLoading) {
     return (
@@ -185,7 +262,7 @@ export function AdminPosts() {
     <>
       <PageHeader
         title="Posts"
-        subtitle={`${counts.all} loaded, including drafts and private posts.`}
+        subtitle={`${counts.all} stories, including drafts and private posts.`}
         actions={
           <Button as={Link} to="/write">
             <PenLine /> New post
@@ -194,6 +271,47 @@ export function AdminPosts() {
       />
 
       <Section>
+        {selectedIds.length > 0 && (
+          <BulkBar>
+            <BulkCount>{selectedIds.length} selected on this page</BulkCount>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'public' })}
+              disabled={bulkMutation.isPending}
+            >
+              <Globe /> Publish
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'draft' })}
+              disabled={bulkMutation.isPending}
+            >
+              <FileEdit /> Unpublish
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'private' })}
+              disabled={bulkMutation.isPending}
+            >
+              <Lock /> Make private
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => setPendingBulkDelete(selectedIds)}
+              disabled={bulkMutation.isPending}
+            >
+              <Trash2 /> Delete
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
+              Clear
+            </Button>
+          </BulkBar>
+        )}
+
         <Toolbar>
           {FILTERS.map((option) => (
             <Chip
@@ -209,10 +327,10 @@ export function AdminPosts() {
           <SearchField>
             <Input
               icon={<SearchIcon />}
-              placeholder="Search title or author"
+              placeholder="Search by title"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              aria-label="Search posts by title or author"
+              aria-label="Search posts by title"
             />
           </SearchField>
         </Toolbar>
@@ -228,6 +346,22 @@ export function AdminPosts() {
             <Table>
               <Table.Head>
                 <tr>
+                  <th style={{ width: 40 }}>
+                    <Checkbox
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      onChange={() =>
+                        setSelectedIds(
+                          allVisibleSelected
+                            ? selectedIds.filter((id) => !visibleIds.includes(id))
+                            : [...new Set([...selectedIds, ...visibleIds])]
+                        )
+                      }
+                      aria-label={
+                        allVisibleSelected ? 'Clear this page' : 'Select every story on this page'
+                      }
+                    />
+                  </th>
                   <th>Title</th>
                   <th>Author</th>
                   <th>Status</th>
@@ -239,6 +373,14 @@ export function AdminPosts() {
               <Table.Body>
                 {visible.map((post) => (
                   <tr key={post._id}>
+                    <td>
+                      <Checkbox
+                        type="checkbox"
+                        checked={selectedIds.includes(post._id)}
+                        onChange={() => toggleSelected(post._id)}
+                        aria-label={`Select ${post.title}`}
+                      />
+                    </td>
                     <td>
                       <CellTitle to={`/post/${post._id}`}>{post.title}</CellTitle>
                     </td>
@@ -276,9 +418,43 @@ export function AdminPosts() {
                 ))}
               </Table.Body>
             </Table>
+
+            <Pagination
+              page={pagination.page}
+              pages={pagination.pages}
+              total={pagination.total}
+              noun="stories"
+              onChange={(next) => {
+                setPage(next);
+                // Selection is per page; carrying it across would act on rows out of view.
+                setSelectedIds([]);
+              }}
+            />
           </Card>
         )}
       </Section>
+
+      <Modal
+        open={Boolean(pendingBulkDelete)}
+        onOpenChange={(open) => !open && setPendingBulkDelete(null)}
+        title={`Delete ${pendingBulkDelete?.length ?? 0} ${
+          pendingBulkDelete?.length === 1 ? 'story' : 'stories'
+        }?`}
+        description="They and their responses will be removed. This cannot be undone."
+      >
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="secondary" onClick={() => setPendingBulkDelete(null)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => bulkMutation.mutate({ ids: pendingBulkDelete, action: 'delete' })}
+            disabled={bulkMutation.isPending}
+          >
+            {bulkMutation.isPending ? 'Deleting…' : 'Delete all'}
+          </Button>
+        </div>
+      </Modal>
 
       <Modal
         open={!!pendingDelete}

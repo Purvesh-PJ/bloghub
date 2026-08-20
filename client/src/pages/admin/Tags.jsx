@@ -1,14 +1,25 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
-import { Plus, Hash } from 'lucide-react';
+import { Plus, Hash, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { tagService } from '../../services/tagService';
-import { topicIcon } from '../../components/marketing/Topics';
+import { useTags } from '../../hooks/useTags';
+import { topicIcon } from '../../utils/topicIcons';
 import { PageHeader, Section } from '../../components/layout/PageShell';
-import { Button, Card, Input, Modal, Table, Loading, EmptyState } from '../../components/ui';
+import {
+  Button,
+  Card,
+  Input,
+  Modal,
+  Table,
+  Loading,
+  EmptyState,
+  IconButton,
+} from '../../components/ui';
 import { text } from '../../styles/theme/mixins';
+import { queryKeys } from '../../services/queryKeys';
 
 const NameCell = styled.span`
   display: inline-flex;
@@ -28,26 +39,44 @@ export function AdminTags() {
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['tags'],
-    queryFn: tagService.getTags,
-  });
+  const { tags, isLoading } = useTags();
 
   const createMutation = useMutation({
     mutationFn: tagService.createTag,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
       toast.success('Tag created');
       setName('');
       setOpen(false);
     },
-    onError: () => toast.error('Could not create that tag'),
+    onError: (error) => toast.error(error.response?.data?.message || 'Could not create that tag'),
+  });
+
+  /*
+    Removing a tag.
+
+    The console could create tags and never remove one, so a typo entered here stayed on the
+    discovery rail permanently. The server refuses with a 409 while stories still carry the
+    tag and says how many, which is the message surfaced below.
+  */
+  const deleteMutation = useMutation({
+    mutationFn: (id) => tagService.deleteTag(id),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
+      setPendingDelete(null);
+      toast.success(result?.message || 'Tag removed');
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Could not remove that tag'),
   });
 
   const handleCreate = (event) => {
     event.preventDefault();
-    const clean = name.trim().toLowerCase().replace(/^[#_-]+/, '');
+    const clean = name
+      .trim()
+      .toLowerCase()
+      .replace(/^[#_-]+/, '');
     if (!clean) {
       toast.error('Give the tag a name');
       return;
@@ -56,8 +85,6 @@ export function AdminTags() {
   };
 
   if (isLoading) return <Loading text="Loading tags…" />;
-
-  const tags = data?.data || [];
 
   return (
     <>
@@ -91,6 +118,7 @@ export function AdminTags() {
                 <tr>
                   <th>Topic / Tag</th>
                   <th>Published Stories</th>
+                  <th aria-label="Actions" />
                 </tr>
               </Table.Head>
               <Table.Body>
@@ -100,11 +128,18 @@ export function AdminTags() {
                     <tr key={tag._id || tag.name}>
                       <td>
                         <NameCell>
-                          <Icon />
-                          #{tag.name}
+                          <Icon />#{tag.name}
                         </NameCell>
                       </td>
                       <td>{tag.postCount ?? tag.posts?.length ?? 0}</td>
+                      <td style={{ textAlign: 'right' }}>
+                        <IconButton
+                          aria-label={`Remove the tag ${tag.name}`}
+                          onClick={() => setPendingDelete(tag)}
+                        >
+                          <Trash2 />
+                        </IconButton>
+                      </td>
                     </tr>
                   );
                 })}
@@ -113,6 +148,26 @@ export function AdminTags() {
           </Card>
         )}
       </Section>
+
+      <Modal
+        open={Boolean(pendingDelete)}
+        onOpenChange={(next) => !next && setPendingDelete(null)}
+        title={`Remove #${pendingDelete?.name ?? ''}?`}
+        description="Writers can create the tag again by using it on a story."
+      >
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="secondary" onClick={() => setPendingDelete(null)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => deleteMutation.mutate(pendingDelete._id)}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? 'Removing…' : 'Remove'}
+          </Button>
+        </div>
+      </Modal>
 
       <Modal open={open} onOpenChange={setOpen} title="New tag / topic">
         <form onSubmit={handleCreate}>

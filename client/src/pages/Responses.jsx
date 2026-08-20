@@ -22,6 +22,7 @@ import {
   SkeletonText,
 } from '../components/ui';
 import { text, media } from '../styles/theme/mixins';
+import { queryKeys } from '../services/queryKeys';
 
 /**
  * Responses — what readers have said, and the only place an author can moderate it.
@@ -132,7 +133,7 @@ export function Responses() {
   // Every story the author has, so the picker can offer them. Drafts included — a private
   // post can still carry the author's own notes.
   const { data: postsData, isLoading: postsLoading } = useQuery({
-    queryKey: ['myPosts', { limit: 50, sort: 'newest' }],
+    queryKey: queryKeys.posts.mine({ limit: 50, sort: 'newest' }),
     queryFn: () => postService.getMyPosts({ limit: 50, sort: 'newest' }),
   });
 
@@ -148,7 +149,7 @@ export function Responses() {
     error: commentsError,
     refetch: refetchComments,
   } = useQuery({
-    queryKey: ['postComments', selectedId],
+    queryKey: queryKeys.comments.forPost(selectedId),
     queryFn: () => commentService.getPostComments(selectedId, { limit: 50 }),
     enabled: Boolean(selectedId),
   });
@@ -158,7 +159,7 @@ export function Responses() {
   const deleteMutation = useMutation({
     mutationFn: (id) => commentService.deleteComment(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['postComments', selectedId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.comments.forPost(selectedId) });
       setPendingDelete(null);
       toast.success('Response removed');
     },

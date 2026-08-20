@@ -10,6 +10,7 @@ import { PageHeader, Section } from '../../components/layout/PageShell';
 import { ReadRateHeadline } from '../../components/stats/ReadRateBar';
 import { Button, Card, Surface, Badge, EmptyState, Skeleton, StatTile } from '../../components/ui';
 import { text, media, clamp } from '../../styles/theme/mixins';
+import { queryKeys } from '../../services/queryKeys';
 
 /**
  * Admin overview.
@@ -97,15 +98,20 @@ const format = (n) => new Intl.NumberFormat().format(n ?? 0);
 export function AdminDashboard() {
   // Moderation view — includes drafts and private posts, unlike the public ['posts'] key.
   const { data: postsResponse, isLoading } = useQuery({
-    queryKey: ['allPosts'],
+    queryKey: queryKeys.posts.moderation(),
     queryFn: () => postService.getAllPosts({ limit: 50 }),
   });
 
-  const { data: analytics } = useQuery({
-    queryKey: ['adminAnalytics'],
+  const { data: analyticsResponse } = useQuery({
+    queryKey: queryKeys.analytics.site(),
     queryFn: analyticsService.getAdminAnalytics,
     retry: false,
   });
+
+  // `.data` — the endpoint now answers in the same { success, data } envelope as the rest of
+  // the API. It used to return a bare object, which made this the one screen reading a
+  // different shape from every other.
+  const analytics = analyticsResponse?.data;
 
   if (isLoading) {
     return (
@@ -137,13 +143,10 @@ export function AdminDashboard() {
   const posts = postsResponse?.data || [];
   const recent = posts.slice(0, 6);
 
-  /*
-    Totals come from the analytics endpoint, which counts the whole site. The visibility
-    split is derived from the loaded page and labelled as such, because the endpoint does
-    not break its post count down by visibility.
-  */
+  // Totals count the whole site, not the page of posts loaded above.
   const stats = [
     { label: 'Posts', value: format(analytics?.totalPosts ?? posts.length), icon: FileText },
+    { label: 'Published', value: format(analytics?.publishedPosts), icon: FileText },
     { label: 'People', value: format(analytics?.totalUsers), icon: Users },
     { label: 'Opened', value: format(analytics?.totalViews), icon: FileText },
     { label: 'Finished', value: format(analytics?.totalReads), icon: FileText },
