@@ -159,8 +159,9 @@ export function AdminUsers() {
   return (
     <>
       <PageHeader
+        badge="Directory"
         title="People"
-        subtitle={`${pagination.total} ${pagination.total === 1 ? 'account' : 'accounts'} registered.`}
+        subtitle={`${pagination.total} ${pagination.total === 1 ? 'account' : 'accounts'} registered across BlogHub.`}
       />
 
       <Section>

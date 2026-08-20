@@ -37,13 +37,17 @@ const Toolbar = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
   flex-wrap: wrap;
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
   margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
 const PostPicker = styled.div`
   min-width: 260px;
   flex: 1;
-  max-width: 420px;
+  max-width: 440px;
 
   ${media.down('sm')`max-width: 100%;`}
 `;
@@ -59,6 +63,7 @@ const Entry = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
   align-items: start;
   padding: ${({ theme }) => theme.spacing.lg};
+  transition: background ${({ theme }) => theme.transitions.fast};
 
   & + & {
     box-shadow: inset 0 1px 0 ${({ theme }) => theme.colors.lineSubtle};

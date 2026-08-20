@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { display, text, media } from '../../styles/theme/mixins';
+import { display, text, label as labelStyle, media } from '../../styles/theme/mixins';
 
 /**
  * The frame every signed-in page sits in.
@@ -13,26 +13,42 @@ const widths = {
   wide: 'maxWidth', // dashboards, listings
   narrow: 'maxWidthNarrow', // settings, forms
   reading: 'contentWidth', // article bodies
+  full: '100%',
 };
 
 export const PageShell = styled.div`
-  max-width: ${({ theme, $width = 'wide' }) => theme.layout[widths[$width]]};
+  max-width: ${({ theme, $width = 'wide' }) =>
+    $width === 'full' ? '100%' : theme.layout[widths[$width]] || theme.layout.maxWidth};
+  width: 100%;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing.xl}
+  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.xl}
     ${({ theme }) => theme.spacing['5xl']};
 
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing['3xl']};
+  gap: ${({ theme }) => theme.spacing.xl};
 
   ${media.down('md')`
-    padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg}
+    padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.md}
       ${({ theme }) => theme.spacing['4xl']};
-    gap: ${({ theme }) => theme.spacing['2xl']};
+    gap: ${({ theme }) => theme.spacing.lg};
   `}
 `;
 
-const HeaderRow = styled.header`
+const HeaderContainer = styled.header`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding-bottom: ${({ theme, $divider }) => ($divider ? theme.spacing.xl : '0')};
+  border-bottom: ${({ theme, $divider }) =>
+    $divider ? `1px solid ${theme.colors.lineSubtle}` : 'none'};
+
+  ${media.down('md')`
+    padding-bottom: ${({ theme, $divider }) => ($divider ? theme.spacing.lg : '0')};
+  `}
+`;
+
+const HeaderRow = styled.div`
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -43,19 +59,39 @@ const HeaderRow = styled.header`
 const Titles = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing.xs};
   min-width: 0;
+  flex: 1;
+`;
+
+const HeaderBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: ${({ theme }) => theme.radii.full};
+  background: ${({ theme }) => theme.colors.accentContainer};
+  color: ${({ theme }) => theme.colors.accentText};
+  ${labelStyle('xs')}
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
 `;
 
 const Title = styled.h1`
   ${display('sm')}
   color: ${({ theme }) => theme.colors.textPrimary};
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 `;
 
 const Subtitle = styled.p`
   ${text('md')}
   color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 60ch;
+  max-width: 65ch;
+  line-height: 1.5;
 `;
 
 const Actions = styled.div`
@@ -63,17 +99,27 @@ const Actions = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
   flex-shrink: 0;
+  flex-wrap: wrap;
 `;
 
-export function PageHeader({ title, subtitle, actions }) {
+/**
+ * PageHeader
+ *
+ * Distinct hero/header component that creates a clear visual boundary
+ * between page intent and the data/components below it.
+ */
+export function PageHeader({ badge, title, subtitle, actions, divider = true }) {
   return (
-    <HeaderRow>
-      <Titles>
-        <Title>{title}</Title>
-        {subtitle && <Subtitle>{subtitle}</Subtitle>}
-      </Titles>
-      {actions && <Actions>{actions}</Actions>}
-    </HeaderRow>
+    <HeaderContainer $divider={divider}>
+      <HeaderRow>
+        <Titles>
+          {badge && <HeaderBadge>{badge}</HeaderBadge>}
+          <Title>{title}</Title>
+          {subtitle && <Subtitle>{subtitle}</Subtitle>}
+        </Titles>
+        {actions && <Actions>{actions}</Actions>}
+      </HeaderRow>
+    </HeaderContainer>
   );
 }
 
@@ -99,11 +145,13 @@ const SectionHead = styled.div`
 const SectionTitle = styled.h2`
   ${display('xs')}
   color: ${({ theme }) => theme.colors.textPrimary};
+  letter-spacing: -0.01em;
 `;
 
 const SectionNote = styled.p`
   ${text('sm')}
   color: ${({ theme }) => theme.colors.textSecondary};
+  margin-top: 2px;
 `;
 
 export function Section({ title, note, aside, children, ...props }) {

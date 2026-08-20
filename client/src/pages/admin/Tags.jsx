@@ -89,6 +89,7 @@ export function AdminTags() {
   return (
     <>
       <PageHeader
+        badge="Taxonomy"
         title="Tags & Topics"
         subtitle="Dynamic topics and tags created by writers and readers across BlogHub."
         actions={

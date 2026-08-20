@@ -50,11 +50,12 @@ import { queryKeys } from '../services/queryKeys';
 
 /* ── Metrics ─────────────────────────────────────────────────────────────── */
 
+/* ── Metrics ─────────────────────────────────────────────────────────────── */
+
 const MetricGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
 
   ${media.down('lg')`grid-template-columns: repeat(2, 1fr);`}
   ${media.down('sm')`grid-template-columns: 1fr;`}
@@ -63,20 +64,26 @@ const MetricGrid = styled.div`
 /* ── Banner ──────────────────────────────────────────────────────────────── */
 
 const CreatorBanner = styled.div`
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(
     135deg,
     ${({ theme }) => theme.colors.surfaceContainerLow} 0%,
     ${({ theme }) => theme.colors.accentContainer} 100%
   );
   border: 1px solid ${({ theme }) => theme.colors.accentLine};
-  border-radius: ${({ theme }) => theme.radii['2xl']};
+  border-radius: ${({ theme }) => theme.radii.xl};
   padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing['2xl']};
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.xl};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
   flex-wrap: wrap;
+  box-shadow: ${({ theme }) => theme.elevation.sm};
+
+  ${media.down('sm')`
+    padding: ${({ theme }) => theme.spacing.lg};
+  `}
 `;
 
 const CreatorInfo = styled.div`
@@ -88,6 +95,7 @@ const CreatorInfo = styled.div`
 const CreatorDetails = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 2px;
 `;
 
 const CreatorName = styled.h2`
@@ -95,13 +103,19 @@ const CreatorName = styled.h2`
   color: ${({ theme }) => theme.colors.textPrimary};
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  letter-spacing: -0.01em;
+
+  svg {
+    color: ${({ theme }) => theme.colors.accentSolid};
+  }
 `;
 
 const CreatorBio = styled.p`
   ${text('sm')}
   color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 520px;
+  max-width: 540px;
+  line-height: 1.5;
 `;
 
 /* ── Panels ──────────────────────────────────────────────────────────────── */
@@ -116,16 +130,19 @@ const Split = styled.div`
 `;
 
 const PanelLabel = styled.span`
-  ${labelStyle('sm')}
+  ${labelStyle('xs')}
   color: ${({ theme }) => theme.colors.textMuted};
   font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
     color: ${({ theme }) => theme.colors.accentSolid};
   }
 `;
@@ -144,6 +161,7 @@ const TopPost = styled(Link)`
   padding: ${({ theme }) => theme.spacing.md} 0;
   color: inherit;
   text-decoration: none;
+  transition: transform ${({ theme }) => theme.transitions.fast};
 
   & + & {
     border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
@@ -158,6 +176,7 @@ const ItemTitle = styled.h4`
   ${text('sm', 'semibold')}
   color: ${({ theme }) => theme.colors.textPrimary};
   ${clamp(1)}
+  transition: color ${({ theme }) => theme.transitions.fast};
 `;
 
 const DraftRow = styled(Link)`
@@ -195,6 +214,11 @@ const SeeAll = styled(Link)`
   svg {
     width: 14px;
     height: 14px;
+    transition: transform ${({ theme }) => theme.transitions.fast};
+  }
+
+  &:hover svg {
+    transform: translateX(3px);
   }
 `;
 
@@ -223,6 +247,7 @@ const ReadingItem = styled(Link)`
   &:hover {
     border-color: ${({ theme }) => theme.colors.accentLine};
     transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.elevation.sm};
   }
 `;
 
@@ -326,7 +351,7 @@ export function Dashboard() {
           <Avatar src={avatarUrl} name={user?.username} size="lg" />
           <CreatorDetails>
             <CreatorName>
-              Welcome back, {firstName} <Sparkles size={16} />
+              Welcome back, {firstName} <Sparkles size={18} />
             </CreatorName>
             <CreatorBio>
               {bio || 'How your writing is doing. Manage what you have written under Stories.'}
@@ -335,8 +360,8 @@ export function Dashboard() {
         </CreatorInfo>
 
         {(user?._id || user?.user_id) && (
-          <Button as={Link} to={`/user/${user._id || user.user_id}`} variant="secondary">
-            <User /> View public profile
+          <Button as={Link} to={`/user/${user._id || user.user_id}`} variant="secondary" size="sm">
+            <User size={14} /> View public profile
           </Button>
         )}
       </CreatorBanner>
@@ -356,32 +381,34 @@ export function Dashboard() {
         </FirstRun>
       ) : (
         <>
-          <MetricGrid>
-            <StatTile
-              label="Total story views"
-              icon={Eye}
-              value={metric(analytics?.totalViews)}
-              hint={analyticsFailed ? 'Could not load' : 'Across all published stories'}
-            />
-            <StatTile
-              label="Reads finished"
-              icon={CheckCircle2}
-              value={metric(analytics?.totalReads)}
-              hint={analyticsFailed ? 'Could not load' : 'Readers who reached the end'}
-            />
-            <StatTile
-              label="Read-through"
-              icon={BarChart2}
-              value={metric(analytics?.readRate, '%')}
-              hint={analyticsFailed ? 'Could not load' : 'Finished as a share of opened'}
-            />
-            <StatTile
-              label="Stories"
-              icon={FileText}
-              value={metric(analytics?.totalPosts)}
-              hint={drafts.length > 0 ? `${drafts.length} unfinished` : 'All published'}
-            />
-          </MetricGrid>
+          <Section title="Performance Overview" note="Aggregated readership across all your stories">
+            <MetricGrid>
+              <StatTile
+                label="Total story views"
+                icon={Eye}
+                value={metric(analytics?.totalViews)}
+                hint={analyticsFailed ? 'Could not load' : 'Across all published stories'}
+              />
+              <StatTile
+                label="Reads finished"
+                icon={CheckCircle2}
+                value={metric(analytics?.totalReads)}
+                hint={analyticsFailed ? 'Could not load' : 'Readers who reached the end'}
+              />
+              <StatTile
+                label="Read-through"
+                icon={BarChart2}
+                value={metric(analytics?.readRate, '%')}
+                hint={analyticsFailed ? 'Could not load' : 'Finished as a share of opened'}
+              />
+              <StatTile
+                label="Stories"
+                icon={FileText}
+                value={metric(analytics?.totalPosts)}
+                hint={drafts.length > 0 ? `${drafts.length} unfinished` : 'All published'}
+              />
+            </MetricGrid>
+          </Section>
 
           {analyticsFailed && (
             <div style={{ marginBottom: 24 }}>
@@ -394,7 +421,7 @@ export function Dashboard() {
           )}
 
           <Split>
-            <Card tone="low" radius="xl">
+            <Card tone="low" radius="xl" padding="xl">
               <PanelLabel>
                 <TrendingUp /> Best read-through
               </PanelLabel>
@@ -414,7 +441,7 @@ export function Dashboard() {
               )}
             </Card>
 
-            <Card tone="low" radius="xl">
+            <Card tone="low" radius="xl" padding="xl">
               <PanelLabel>
                 <Pencil /> Pick up where you left off
               </PanelLabel>

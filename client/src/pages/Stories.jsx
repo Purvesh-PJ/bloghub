@@ -58,13 +58,17 @@ const Toolbar = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
   flex-wrap: wrap;
+  padding: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
   margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
 
 const SearchField = styled.div`
   flex: 1;
   min-width: 200px;
-  max-width: 300px;
+  max-width: 320px;
   margin-left: auto;
 
   ${media.down('sm')`
@@ -74,7 +78,7 @@ const SearchField = styled.div`
 `;
 
 const SortSelect = styled.select`
-  height: 36px;
+  height: 38px;
   padding: 0 ${({ theme }) => theme.spacing.md};
   border-radius: ${({ theme }) => theme.radii.md};
   border: 1px solid ${({ theme }) => theme.colors.lineDefault};
@@ -82,6 +86,11 @@ const SortSelect = styled.select`
   color: ${({ theme }) => theme.colors.textPrimary};
   ${text('sm')}
   cursor: pointer;
+  transition: border-color ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.lineStrong};
+  }
 
   &:focus-visible {
     outline: 2px solid ${({ theme }) => theme.colors.accentSolid};
