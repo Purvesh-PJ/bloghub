@@ -3,26 +3,71 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/user.model');
 const Post = require('../models/post.model');
 const Profile = require('../models/user-profile.model');
+const UserSettings = require('../models/user-settings.model');
 const asyncHandler = require('../middlewares/asyncHandler');
 const { purgeAccount } = require('../services/accountService');
+const { containsIgnoreCase } = require('../utils/regex');
 const { notFound, conflict, badRequest, unauthorized, forbidden } = require('../utils/AppError');
 
 /**
- * Renders a stored avatar as a data URI.
+ * Serves a stored avatar as an image.
  *
- * `image.data` is a Buffer of the image itself. It used to hold the *file path* multer wrote
- * to, which this function then base64-encoded — producing a data URI containing the text of a
- * path and therefore an image that never loaded.
+ * Avatars used to be base64-encoded into a data URI and embedded in the JSON of `getUser` and
+ * the public profile. The header calls `getUser` on every page, so a 2 MB avatar became ~2.7 MB
+ * of base64 inside a response the browser has no way to cache — re-downloaded on every cold
+ * load, and blocking the JSON the rest of the page needs.
+ *
+ * As its own resource it is cacheable: the ETag is the profile's last-modified time, so a
+ * repeat visit is a 304 with no body, and changing the picture changes the tag.
+ *
+ * Public, because that is what an avatar is — it appears on every byline and public profile,
+ * and an `<img>` tag cannot send an Authorization header anyway.
  */
-const avatarDataUri = (image) => {
-  if (!image?.data || !image.contentType) return null;
-  return `data:${image.contentType};base64,${Buffer.from(image.data).toString('base64')}`;
-};
+exports.getAvatar = asyncHandler(async (req, res) => {
+  const profile = await Profile.findOne({ user: req.params.id }).select('image updatedAt').lean();
+
+  if (!profile?.image?.data || !profile.image.contentType) {
+    throw notFound('No avatar for this account');
+  }
+
+  const etag = `W/"${profile.updatedAt?.getTime() ?? 0}"`;
+
+  if (req.headers['if-none-match'] === etag) {
+    return res.status(304).end();
+  }
+
+  res.set({
+    'Content-Type': profile.image.contentType,
+    ETag: etag,
+    // Short freshness with a long grace period: a changed avatar appears quickly, and the
+    // common case revalidates rather than re-downloading.
+    'Cache-Control': 'public, max-age=300, stale-while-revalidate=86400',
+  });
+
+  /*
+    `.lean()` hands back the driver's own Binary wrapper rather than a Node Buffer, and
+    `Buffer.from()` on that yields an empty one — a response with the right content type,
+    the right status, and no image in it. Unwrap when it is wrapped.
+  */
+  const { data } = profile.image;
+  const bytes = Buffer.isBuffer(data) ? data : Buffer.from(data.buffer ?? data);
+
+  return res.send(bytes);
+});
 
 exports.getUser = asyncHandler(async (req, res) => {
+  /*
+    The image buffer is excluded, not merely left unencoded.
+
+    The header calls this on every page. Selecting `image` pulled the avatar's bytes out of
+    the database and base64'd them into this response — around 2.7 MB of JSON for a 2 MB
+    picture, on every cold load. `image.contentType` is projected on its own so the response
+    can still say whether an avatar exists; the bytes come from GET /users/:id/avatar, which
+    the browser caches.
+  */
   const foundUser = await User.findById(req.user.id).select('-password -posts').populate({
     path: 'profile',
-    select: '-followers -followings',
+    select: '-followers -followings -image.data',
   });
 
   if (!foundUser) {
@@ -39,7 +84,11 @@ exports.getUser = asyncHandler(async (req, res) => {
       profile: plain.profile
         ? {
             ...plain.profile,
-            image: { ...plain.profile.image, data: avatarDataUri(plain.profile.image) },
+            image: undefined,
+            hasAvatar: Boolean(plain.profile.image?.contentType),
+            // Doubles as the cache key the client puts on the avatar URL, so a new picture is
+            // fetched rather than served from the last one.
+            avatarUpdatedAt: plain.profile.updatedAt ?? null,
           }
         : null,
     },
@@ -133,10 +182,7 @@ exports.getUserSelfPosts = asyncHandler(async (req, res) => {
 
   if (req.query.q) {
     // Escaped: a title search containing regex metacharacters must be treated as text.
-    filter.title = {
-      $regex: String(req.query.q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-      $options: 'i',
-    };
+    filter.title = containsIgnoreCase(req.query.q);
   }
 
   const sort = POST_SORTS[req.query.sort] || POST_SORTS.newest;
@@ -185,25 +231,6 @@ exports.getUserProfile = asyncHandler(async (req, res) => {
     message: 'Profile found successfully',
     data: { userProfile },
   });
-});
-
-exports.postUserProfile = asyncHandler(async (req, res) => {
-  const { file, body } = req;
-
-  // Upsert rather than insert: the unique index on `user` means a second POST from the same
-  // account used to fail with a duplicate-key error reported as a 500.
-  await Profile.findOneAndUpdate(
-    { user: req.user.id },
-    {
-      $set: {
-        bio: body?.bio ?? '',
-        ...(file && { image: { data: file.buffer, contentType: file.mimetype } }),
-      },
-    },
-    { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true },
-  );
-
-  res.status(201).json({ success: true, message: 'Profile saved successfully' });
 });
 
 exports.followUser = asyncHandler(async (req, res) => {
@@ -313,6 +340,67 @@ exports.deleteAccount = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Your account and all its content have been deleted',
+  });
+});
+
+/**
+ * Somebody else's public page.
+ *
+ * The client has had a `/user/:userId` route — linked from every author byline, from the
+ * account menu and from the admin console — with nothing behind it. It called `getUser`,
+ * which is scoped to the token, so the page rendered the *viewer's* own account for every
+ * writer on the site and 401'd for signed-out readers.
+ *
+ * Everything here is deliberately public: username, avatar, bio and the counts. The email is
+ * only included when the account has opted into showing it.
+ */
+exports.getPublicProfile = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const user = await User.findById(id).select('username createdAt roles').lean();
+  if (!user) throw notFound('User not found');
+
+  const [profile, settings, publishedPosts] = await Promise.all([
+    // `image.contentType` without `image.data`: enough to know an avatar exists, none of its
+    // weight. The bytes are served by GET /users/:id/avatar.
+    Profile.findOne({ user: id })
+      .select(
+        'bio fullName location website socialLinks followersCount followingsCount image.contentType updatedAt',
+      )
+      .lean(),
+    UserSettings.findOne({ user: id }).select('privacySettings').lean(),
+    // Counted from the collection rather than read off profile.postCount, which counts drafts
+    // and private posts too — this page only shows what is published.
+    Post.countDocuments({ user: id, visibility: 'public' }),
+  ]);
+
+  // Off by default, and only ever on because the account turned it on in its own settings.
+  const email =
+    settings?.privacySettings?.showEmail === true
+      ? (await User.findById(id).select('email').lean())?.email
+      : undefined;
+
+  res.status(200).json({
+    success: true,
+    message: 'Profile found',
+    data: {
+      _id: user._id,
+      username: user.username,
+      createdAt: user.createdAt,
+      ...(email && { email }),
+      hasAvatar: Boolean(profile?.image?.contentType),
+      avatarUpdatedAt: profile?.updatedAt ?? null,
+      bio: profile?.bio ?? '',
+      fullName: profile?.fullName ?? '',
+      location: profile?.location ?? '',
+      website: profile?.website ?? '',
+      socialLinks: profile?.socialLinks ?? {},
+      counts: {
+        posts: publishedPosts,
+        followers: profile?.followersCount ?? 0,
+        following: profile?.followingsCount ?? 0,
+      },
+    },
   });
 });
 

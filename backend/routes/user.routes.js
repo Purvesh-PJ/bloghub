@@ -42,12 +42,14 @@ router.get(
   UserController.getUserSelfPosts,
 );
 
-router.post(
-  '/postUserProfile',
-  AuthUser.authenticateUser,
-  uploadAvatar,
-  UserController.postUserProfile,
-);
+/*
+  There is deliberately no POST /postUserProfile.
+
+  It upserted bio and avatar onto the profile — the same write PUT /setUser already performs,
+  minus the step that keeps `User.profile` pointing at the document. Two write paths to one
+  record, one of which left the back-reference dangling, and nothing on the client had ever
+  called it.
+*/
 
 router.get('/getUserProfile', AuthUser.authenticateUser, UserController.getUserProfile);
 
@@ -81,6 +83,18 @@ router.get(
   validateObjectId('id'),
   UserController.isFollowing,
 );
+
+/*
+  Somebody else's public page. Deliberately unauthenticated — a signed-out reader clicking an
+  author byline must reach it. Declared after the literal `/getUser*` paths so none of them is
+  ever read as an id, and it cannot collide with `/isFollowing/:id` because the second segment
+  here is the literal word `profile`.
+*/
+router.get('/:id/profile', validateObjectId('id'), UserController.getPublicProfile);
+
+// The avatar itself, as an image the browser can cache. Public for the same reason the
+// profile is — see the controller.
+router.get('/:id/avatar', validateObjectId('id'), UserController.getAvatar);
 
 /* ── Administrator actions on other accounts ─────────────────────────────── */
 
