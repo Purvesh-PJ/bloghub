@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 import { postService } from '../services/postService';
-import { tagService } from '../services/tagService';
+import { useTags } from '../hooks/useTags';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui';
 import { PostCard } from '../components/posts/PostCard';
@@ -26,6 +26,7 @@ import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { HeroIllustration } from '../components/marketing/HeroIllustration';
 import { TopicMarquee } from '../components/marketing/Topics';
 import { display, text, media, interactive } from '../styles/theme/mixins';
+import { queryKeys } from '../services/queryKeys';
 
 /* ── Page Shell ──────────────────────────────────────────────────────────── */
 
@@ -398,23 +399,13 @@ export function Home() {
   const navigate = useNavigate();
 
   const { data: trendingResponse, isLoading } = useQuery({
-    queryKey: ['trendingPosts'],
+    queryKey: queryKeys.posts.trending(),
     queryFn: () => postService.getTrending({ limit: 12 }),
   });
 
-  const { data: tagsData } = useQuery({
-    queryKey: ['tags'],
-    queryFn: tagService.getTags,
-  });
+  const { names: tags, isLoading: tagsLoading } = useTags({ withPostsOnly: true });
 
   const posts = useMemo(() => trendingResponse?.data ?? [], [trendingResponse]);
-  const tags = useMemo(
-    () =>
-      (tagsData?.data || [])
-        .map((t) => (typeof t === 'string' ? t : t?.name))
-        .filter(Boolean),
-    [tagsData]
-  );
   const isRanked = trendingResponse?.trendedBy === 'engagement';
   const trendingWindow = trendingResponse?.window ?? 14;
 
@@ -471,7 +462,7 @@ export function Home() {
 
       {/* ── 2. Live Topic Discovery Strip ────────────────────────────────── */}
       <TopicStripWrap>
-        <TopicMarquee topics={tags} />
+        <TopicMarquee topics={tags} loading={tagsLoading} />
       </TopicStripWrap>
 
       {/* ── 3. Main Feed Section ───────────────────────────────────────────── */}

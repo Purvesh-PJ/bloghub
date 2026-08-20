@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { userService } from '../services/userService';
+import { avatarUrl } from '../config/api';
 import { useAuth } from '../context/AuthContext';
+import { queryKeys } from '../services/queryKeys';
 
 /**
  * The signed-in account as the server knows it.
@@ -18,7 +20,7 @@ export function useCurrentUser() {
   const { isAuthenticated } = useAuth();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: queryKeys.currentUser(),
     queryFn: userService.getUser,
     staleTime: 1000 * 60 * 5,
     // The endpoint requires a session. The header calls this hook on every page including
@@ -28,12 +30,18 @@ export function useCurrentUser() {
   });
 
   const account = data?.User;
+  const profile = account?.profile;
 
   return {
     account,
     isLoading,
-    // getUser renders the stored avatar as a data URI; null when none has been uploaded.
-    avatarUrl: account?.profile?.image?.data ?? null,
-    bio: account?.profile?.bio ?? '',
+    /*
+      A URL, not the image itself. getUser used to base64 the avatar into its own response —
+      which this hook feeds to the header on every page — so a 2 MB picture became megabytes
+      of JSON that no cache could hold onto. The bytes now come from their own endpoint,
+      keyed on when the profile last changed.
+    */
+    avatarUrl: profile?.hasAvatar ? avatarUrl(account._id, profile.avatarUpdatedAt) : null,
+    bio: profile?.bio ?? '',
   };
 }

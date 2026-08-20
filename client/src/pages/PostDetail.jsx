@@ -1,10 +1,19 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
-import MDEditor from '@uiw/react-md-editor';
+/*
+  The preview package, not the editor.
+
+  `@uiw/react-md-editor` re-exports this component as `MDEditor.Markdown`, so importing the
+  editor to render a post pulled its toolbar, its command set, its textarea and the syntax
+  highlighting they need into the same chunk — 1.1 MB that every reader downloaded to look at
+  an article they cannot edit. Reading and writing now load separately; the editor stays on
+  the pages that actually edit.
+*/
+import Markdown from '@uiw/react-markdown-preview/nohighlight';
 import { formatDistanceToNow } from 'date-fns';
-import { Heart, MessageCircle, Share2, Pencil, Trash2, FileQuestion } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Eye, Pencil, Trash2, FileQuestion } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { postService } from '../services/postService';
@@ -14,14 +23,15 @@ import { analyticsService } from '../services/analyticsService';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../styles/ThemeProvider';
 import { useReadTracking, useReadingProgress } from '../hooks/useReading';
-import { markdownRehypePlugins } from '../config/markdown';
+import { markdownRehypePlugins, hasCodeBlock, loadSyntaxHighlighting } from '../config/markdown';
 import { AuthorByline } from '../components/posts/AuthorByline';
 import { PageShell } from '../components/layout/PageShell';
 import { ReadRateBar } from '../components/stats/ReadRateBar';
-import { Button, Card, TextArea, Chip, Modal, EmptyState, Avatar } from '../components/ui';
+import { Button, Card, TextArea, Modal, EmptyState, Avatar } from '../components/ui';
 import { PostDetailSkeleton } from '../components/posts/PostDetailSkeleton';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 import { readingTime } from '../utils/text';
+import { queryKeys } from '../services/queryKeys';
 
 /**
  * The article page.
@@ -95,19 +105,6 @@ const Author = styled(Link)`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const Meta = styled.span`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-
-  svg {
-    width: 12px;
-    height: 12px;
-  }
 `;
 
 const OwnerActions = styled.div`
@@ -304,6 +301,19 @@ const ReplyToggle = styled.button`
 `;
 
 /* Nesting drawn with a rule rather than indentation alone, so a deep thread stays readable. */
+/* Reply and Delete sit on one line beneath a response rather than stacking two controls. */
+const CommentActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const DeleteResponse = styled(ReplyToggle)`
+  &:hover {
+    color: ${({ theme }) => theme.colors.dangerText ?? theme.colors.accentText};
+  }
+`;
+
 const Replies = styled.div`
   display: flex;
   flex-direction: column;
@@ -336,16 +346,18 @@ export function PostDetail() {
   const { mode } = useTheme();
 
   const [comment, setComment] = useState('');
-  const [liked, setLiked] = useState(false);
+  const [likedOverride, setLikedOverride] = useState(null);
+  const [syncedLike, setSyncedLike] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pendingCommentDelete, setPendingCommentDelete] = useState(null);
 
   const articleRef = useRef(null);
   const progress = useReadingProgress(articleRef);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['post', id],
+    queryKey: queryKeys.posts.detail(id),
     queryFn: () => postService.getPost(id),
     enabled: Boolean(id),
     retry: false,
@@ -363,26 +375,95 @@ export function PostDetail() {
     analyticsService.trackPageView(id).catch(() => {});
   }, [id]);
 
-  useEffect(() => {
-    if (post?.likes && user?.user_id) {
-      // Likes are populated with their user reference; fall back to a bare id in case the
-      // payload is not populated.
-      setLiked(post.likes.some((like) => String(like?.user ?? like) === String(user.user_id)));
-    }
-  }, [post, user]);
+  /*
+    Whether this reader has already liked the story.
+
+    Derived from the post rather than copied into state by an effect. The effect this replaces
+    only assigned when both `post.likes` and a signed-in user were present, so the flag kept
+    its previous value when either went away — signing out left the heart filled, and it
+    survived navigating to a different story until the new post's likes arrived.
+
+    `likedOverride` carries the optimistic flip so the heart responds to the click rather than
+    to the refetch that follows it, and is dropped as soon as the server's answer changes.
+  */
+  const likedByServer = Boolean(
+    user?.user_id &&
+    // Likes are populated with their user reference; fall back to a bare id in case the
+    // payload is not populated.
+    post?.likes?.some((like) => String(like?.user ?? like) === String(user.user_id))
+  );
+
+  if (syncedLike !== likedByServer) {
+    setSyncedLike(likedByServer);
+    setLikedOverride(null);
+  }
+
+  const liked = likedOverride ?? likedByServer;
 
   const isAuthor = user?.user_id === post?.user?._id;
 
   /* The author sees how their own piece is doing, in the same shape the dashboard uses. */
   const { data: analytics } = useQuery({
-    queryKey: ['userAnalytics', user?.user_id],
-    queryFn: () => analyticsService.getUserAnalytics(user?.user_id),
-    enabled: Boolean(isAuthor && user?.user_id),
+    queryKey: queryKeys.analytics.forPost(id),
+    /*
+      One post's figures.
+
+      This used to call getUserAnalytics and search the result for this post — every story the
+      author has ever written, fetched and discarded, to display one row of it. The per-post
+      endpoint answers the actual question, and is restricted to the author and administrators
+      for the same reason this query is only enabled for the author.
+    */
+    queryFn: () => analyticsService.getPostAnalytics(id),
+    enabled: Boolean(isAuthor && id),
     retry: false,
   });
 
-  const postStats = analytics?.postsAnalytics?.find(
-    (entry) => String(entry.postId) === String(post?._id)
+  const postStats = analytics?.data;
+
+  /*
+    The public view count.
+
+    `GET /page-views/post/:id/count` is the one figure here that is not the author's private
+    business, and nothing displayed it — the action bar showed likes and responses beside a
+    story whose reach was invisible to everybody, the author included until they opened the
+    dashboard.
+  */
+  const { data: viewCount } = useQuery({
+    queryKey: queryKeys.analytics.viewsForPost(id),
+    queryFn: () => analyticsService.getPageViewCount(id),
+    enabled: Boolean(id),
+    retry: false,
+  });
+
+  /*
+    Syntax highlighting, fetched only when the post has code in it.
+
+    See config/markdown.js: the highlighted renderer is 350 kB gzipped because it registers
+    every Prism language, and most posts have no code. The article renders immediately without
+    it; when there is a fenced block the plugin arrives a moment later and the code is
+    recoloured in place.
+  */
+  const [highlightPlugin, setHighlightPlugin] = useState(null);
+  const needsHighlighting = hasCodeBlock(post?.content);
+
+  useEffect(() => {
+    if (!needsHighlighting || highlightPlugin) return undefined;
+
+    let cancelled = false;
+    loadSyntaxHighlighting().then((plugin) => {
+      // Stored behind a function so React does not call the plugin as a state updater.
+      if (!cancelled && plugin) setHighlightPlugin(() => plugin);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [needsHighlighting, highlightPlugin]);
+
+  // Sanitisation runs last, so nothing the highlighter adds can widen what reaches the DOM.
+  const rehypePlugins = useMemo(
+    () => (highlightPlugin ? [highlightPlugin, ...markdownRehypePlugins] : markdownRehypePlugins),
+    [highlightPlugin]
   );
 
   const deleteMutation = useMutation({
@@ -398,7 +479,7 @@ export function PostDetail() {
     mutationFn: (payload) => commentService.createComment(payload),
     onSuccess: () => {
       setComment('');
-      queryClient.invalidateQueries({ queryKey: ['post', id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
     },
     onError: () => toast.error('Could not post that comment'),
   });
@@ -409,18 +490,44 @@ export function PostDetail() {
     onSuccess: () => {
       setReplyTo(null);
       setReplyText('');
-      queryClient.invalidateQueries({ queryKey: ['post', id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
     },
     onError: () => toast.error('Could not post that reply'),
   });
 
+  /*
+    Removing a response.
+
+    The API has always allowed the comment's author, the author of the post it sits on, and
+    administrators to delete one — and the reader had no control for it anywhere, so a writer
+    could be commented on and had no way to moderate their own thread from the story itself.
+  */
+  const deleteCommentMutation = useMutation({
+    mutationFn: (commentId) => commentService.deleteComment(commentId),
+    onSuccess: () => {
+      setPendingCommentDelete(null);
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
+      toast.success('Response removed');
+    },
+    onError: (error) =>
+      toast.error(error.response?.data?.message || 'Could not remove that response'),
+  });
+
+  const canDeleteComment = (entry) =>
+    isAuthenticated &&
+    (String(entry.user?._id) === String(user?.user_id) ||
+      isAuthor ||
+      user?.roles?.includes('admin'));
+
   const likeMutation = useMutation({
     mutationFn: () => (liked ? likeService.unlikePost(id) : likeService.likePost(id)),
-    onSuccess: () => {
-      setLiked((current) => !current);
-      queryClient.invalidateQueries({ queryKey: ['post', id] });
+    // Flip immediately, then let the refetched post confirm it.
+    onMutate: () => setLikedOverride(!liked),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) }),
+    onError: (error) => {
+      setLikedOverride(null);
+      toast.error(error.response?.data?.message || 'Could not register that');
     },
-    onError: () => toast.error('Could not register that'),
   });
 
   if (isLoading) return <PostDetailSkeleton />;
@@ -454,7 +561,17 @@ export function PostDetail() {
       <PageShell $width="reading">
         {post.imageURL && (
           <Cover>
-            <img src={post.imageURL} alt={`Cover image for ${post.title}`} />
+            {/*
+              The cover is the page's largest contentful paint. `lazy` here would be actively
+              wrong — it is above the fold — so it is marked high priority instead, and decoded
+              off the main thread so a large image cannot block the article rendering.
+            */}
+            <img
+              src={post.imageURL}
+              alt={`Cover image for ${post.title}`}
+              fetchPriority="high"
+              decoding="async"
+            />
           </Cover>
         )}
 
@@ -502,7 +619,7 @@ export function PostDetail() {
               inline HTML on its own, so the special case bought nothing and cost us an
               unsanitised sink.
             */}
-            <MDEditor.Markdown source={post.content} rehypePlugins={markdownRehypePlugins} />
+            <Markdown source={post.content} rehypePlugins={rehypePlugins} />
           </div>
         </Article>
 
@@ -511,12 +628,12 @@ export function PostDetail() {
             {post.tags.map((tag) => {
               const rawName = typeof tag === 'string' ? tag : tag?.name;
               if (!rawName) return null;
-              const name = String(rawName).trim().toLowerCase().replace(/^[#_-]+/, '');
+              const name = String(rawName)
+                .trim()
+                .toLowerCase()
+                .replace(/^[#_-]+/, '');
               return (
-                <TagLink
-                  key={name}
-                  to={`/search?topic=${encodeURIComponent(name)}`}
-                >
+                <TagLink key={name} to={`/search?topic=${encodeURIComponent(name)}`}>
                   #{name}
                 </TagLink>
               );
@@ -543,6 +660,14 @@ export function PostDetail() {
           <Action as="a" href="#comments" aria-label={`Jump to ${comments.length} responses`}>
             <MessageCircle aria-hidden="true" /> {comments.length}
           </Action>
+          {typeof viewCount?.count === 'number' && viewCount.count > 0 && (
+            <Action
+              as="span"
+              aria-label={`${viewCount.count} ${viewCount.count === 1 ? 'reader has' : 'readers have'} opened this`}
+            >
+              <Eye aria-hidden="true" /> {viewCount.count}
+            </Action>
+          )}
           <Action
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
@@ -613,13 +738,24 @@ export function PostDetail() {
                     </CommentHead>
                     <CommentText>{entry.message}</CommentText>
 
-                    {isAuthenticated && (
-                      <ReplyToggle
-                        onClick={() => setReplyTo(replyTo === entry._id ? null : entry._id)}
-                      >
-                        {replyTo === entry._id ? 'Cancel' : 'Reply'}
-                      </ReplyToggle>
-                    )}
+                    <CommentActions>
+                      {isAuthenticated && (
+                        <ReplyToggle
+                          onClick={() => setReplyTo(replyTo === entry._id ? null : entry._id)}
+                        >
+                          {replyTo === entry._id ? 'Cancel' : 'Reply'}
+                        </ReplyToggle>
+                      )}
+
+                      {canDeleteComment(entry) && (
+                        <DeleteResponse
+                          onClick={() => setPendingCommentDelete(entry)}
+                          aria-label={`Delete the response from ${entry.user?.username || 'this reader'}`}
+                        >
+                          Delete
+                        </DeleteResponse>
+                      )}
+                    </CommentActions>
 
                     {replyTo === entry._id && (
                       <Composer
@@ -663,10 +799,28 @@ export function PostDetail() {
                               <CommentHead>
                                 <CommentAuthor>{reply.user?.username || 'Anonymous'}</CommentAuthor>
                                 <CommentWhen>
-                                  {formatDistanceToNow(new Date(reply.date), { addSuffix: true })}
+                                  {/* Guarded like the parent above: an undefined or malformed
+                                      date rendered the literal string "Invalid Date". */}
+                                  {(() => {
+                                    const d = reply.date ? new Date(reply.date) : null;
+                                    return d && !isNaN(d.getTime())
+                                      ? formatDistanceToNow(d, { addSuffix: true })
+                                      : 'recently';
+                                  })()}
                                 </CommentWhen>
                               </CommentHead>
                               <CommentText>{reply.message}</CommentText>
+
+                              {canDeleteComment(reply) && (
+                                <CommentActions>
+                                  <DeleteResponse
+                                    onClick={() => setPendingCommentDelete(reply)}
+                                    aria-label={`Delete the reply from ${reply.user?.username || 'this reader'}`}
+                                  >
+                                    Delete
+                                  </DeleteResponse>
+                                </CommentActions>
+                              )}
                             </CommentBody>
                           </CommentRow>
                         ))}
@@ -679,6 +833,30 @@ export function PostDetail() {
           )}
         </Comments>
       </PageShell>
+
+      <Modal
+        open={Boolean(pendingCommentDelete)}
+        onOpenChange={(open) => !open && setPendingCommentDelete(null)}
+        title="Remove this response?"
+        description={
+          pendingCommentDelete?.replies?.length
+            ? 'Its replies will be removed with it. This cannot be undone.'
+            : 'This cannot be undone.'
+        }
+      >
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="secondary" onClick={() => setPendingCommentDelete(null)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => deleteCommentMutation.mutate(pendingCommentDelete._id)}
+            disabled={deleteCommentMutation.isPending}
+          >
+            {deleteCommentMutation.isPending ? 'Removing…' : 'Remove'}
+          </Button>
+        </div>
+      </Modal>
 
       <Modal
         open={confirmDelete}

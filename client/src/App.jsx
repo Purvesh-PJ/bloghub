@@ -1,8 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
-import { WorkspaceLayout } from './components/layout/WorkspaceLayout';
-import { AdminLayout } from './components/layout/AdminLayout';
 import { ProtectedRoute } from './guards/ProtectedRoute';
 import { AdminRoute } from './guards/AdminRoute';
 
@@ -12,6 +10,20 @@ import { Home } from './pages/Home';
 // Helper for lazy loading named exports
 const lazyPage = (importFn, name) =>
   lazy(() => importFn().then((module) => ({ default: module[name] })));
+
+/*
+  The two private shells are lazy as well.
+
+  Only the public Layout is needed to render anything a signed-out visitor can reach, and both
+  of these carry their own navigation, avatar menu and theme controls. Importing them eagerly
+  put the creator workspace and the whole administration console into the bundle every reader
+  downloads to look at the landing page.
+*/
+const WorkspaceLayout = lazyPage(
+  () => import('./components/layout/WorkspaceLayout'),
+  'WorkspaceLayout'
+);
+const AdminLayout = lazyPage(() => import('./components/layout/AdminLayout'), 'AdminLayout');
 
 // Public Pages (Home loaded eagerly for instant landing)
 const Login = lazyPage(() => import('./pages/Login'), 'Login');
@@ -33,6 +45,11 @@ const AdminDashboard = lazyPage(() => import('./pages/admin/Dashboard'), 'AdminD
 const AdminPosts = lazyPage(() => import('./pages/admin/Posts'), 'AdminPosts');
 const AdminTags = lazyPage(() => import('./pages/admin/Tags'), 'AdminTags');
 const AdminUsers = lazyPage(() => import('./pages/admin/Users'), 'AdminUsers');
+const AdminActivity = lazyPage(() => import('./pages/admin/Activity'), 'AdminActivity');
+const AdminPersonActivity = lazyPage(
+  () => import('./pages/admin/PersonActivity'),
+  'AdminPersonActivity'
+);
 
 const progressAnim = keyframes`
   0% { transform: translateX(-100%); }
@@ -116,6 +133,8 @@ function App() {
           <Route path="tags" element={<AdminTags />} />
           <Route path="categories" element={<Navigate to="/admin/tags" replace />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="activity" element={<AdminActivity />} />
+          <Route path="users/:userId/activity" element={<AdminPersonActivity />} />
         </Route>
       </Routes>
     </Suspense>

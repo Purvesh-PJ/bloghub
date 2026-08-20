@@ -11,6 +11,27 @@ const withApiPrefix = (raw) => {
 
 const API_BASE_URL = withApiPrefix(import.meta.env.VITE_API_URL || 'http://localhost:4000');
 
+/*
+  Exported so components can build URLs the browser fetches directly — the avatar being the
+  one that matters. An `<img>` cannot go through axios, and it should not: served as its own
+  resource the avatar is cacheable, where base64 inside a JSON response never was.
+*/
+export { API_BASE_URL };
+
+/**
+ * The URL of an account's avatar.
+ *
+ * @param {string} userId
+ * @param {string|number|Date|null} [version] the profile's last-modified time, appended so a
+ *   changed picture is fetched rather than served from the cached copy of the old one
+ * @returns {string|null} null when the account has no avatar
+ */
+export const avatarUrl = (userId, version) => {
+  if (!userId) return null;
+  const suffix = version ? `?v=${new Date(version).getTime()}` : '';
+  return `${API_BASE_URL}/users/${userId}/avatar${suffix}`;
+};
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
