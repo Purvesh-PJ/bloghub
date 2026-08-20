@@ -5,8 +5,15 @@ const AuthUser = require('../middlewares/authenticateUser');
 const authorizeSelfOrAdmin = require('../middlewares/authorizeSelfOrAdmin');
 const { validateObjectId } = require('../middlewares/validate');
 
-// Get analytics for a specific blog post
-router.get('/post/:id', validateObjectId('id'), AnalyticsController.getAnalytics);
+// Figures for one post. Requires a session: the handler restricts them to the post's author
+// and to administrators, so there is nobody else for whom an anonymous call could succeed.
+// The public number is the view count at GET /page-views/post/:postId/count.
+router.get(
+  '/post/:id',
+  AuthUser.authenticateUser,
+  validateObjectId('id'),
+  AnalyticsController.getAnalytics,
+);
 
 // Get analytics for a specific user — readable only by that user or an administrator
 router.get(
