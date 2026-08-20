@@ -54,13 +54,18 @@ const Toolbar = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
   flex-wrap: wrap;
+  padding: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
 
 /* Pushed to the end of the toolbar so the filters stay left-aligned with the table. */
 const SearchField = styled.div`
   flex: 1;
   min-width: 200px;
-  max-width: 300px;
+  max-width: 320px;
   margin-left: auto;
 `;
 
@@ -261,8 +266,9 @@ export function AdminPosts() {
   return (
     <>
       <PageHeader
+        badge="Moderation"
         title="Posts"
-        subtitle={`${counts.all} stories, including drafts and private posts.`}
+        subtitle={`${counts.all} stories across BlogHub, including drafts and private posts.`}
         actions={
           <Button as={Link} to="/write">
             <PenLine /> New post

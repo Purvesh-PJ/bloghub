@@ -180,8 +180,9 @@ export function AdminActivity() {
   return (
     <>
       <PageHeader
+        badge="Audit & Streams"
         title="Activity"
-        subtitle="Responses, likes and opens across the site, newest first."
+        subtitle="Responses, likes, opens and edits across the site, newest first."
       />
 
       <Section>

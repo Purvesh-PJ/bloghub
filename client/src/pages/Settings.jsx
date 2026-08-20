@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -73,7 +73,8 @@ const NavItem = styled.button`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
   padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.full};
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: none;
   text-align: left;
   white-space: nowrap;
   ${text('sm', 'medium')}
@@ -83,6 +84,12 @@ const NavItem = styled.button`
   color: ${({ theme, $active }) =>
     $active ? theme.colors.accentText : theme.colors.textSecondary};
 
+  ${({ $active }) =>
+    $active &&
+    css`
+      font-weight: 600;
+    `}
+
   &:hover {
     background: ${({ theme, $active }) =>
       $active ? theme.colors.accentContainer : theme.colors.surfaceContainer};
@@ -91,8 +98,9 @@ const NavItem = styled.button`
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
+    color: ${({ theme, $active }) => ($active ? theme.colors.accentSolid : theme.colors.textMuted)};
   }
 `;
 
@@ -574,7 +582,11 @@ export function Settings() {
 
   return (
     <PageShell $width="wide">
-      <PageHeader title="Settings" subtitle="Your account, and how BlogHub behaves for you." />
+      <PageHeader
+        badge="Preferences"
+        title="Settings"
+        subtitle="Your account settings, creator profile, notifications, and appearance."
+      />
 
       <Layout>
         <Nav>

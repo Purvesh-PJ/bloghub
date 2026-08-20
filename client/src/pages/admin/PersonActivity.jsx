@@ -210,6 +210,7 @@ export function AdminPersonActivity() {
       </Back>
 
       <PageHeader
+        badge="Account Timeline"
         title={person?.username ?? 'Activity'}
         subtitle={
           person?.createdAt

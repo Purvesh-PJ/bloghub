@@ -158,8 +158,9 @@ export function AdminDashboard() {
   return (
     <>
       <PageHeader
+        badge="Overview"
         title="Overview"
-        subtitle="How much is being published, and how much of it is being read."
+        subtitle="How much is being published, and how much of it is being read across BlogHub."
         actions={
           <Button as={Link} to="/write">
             <PenLine /> New post
@@ -169,7 +170,9 @@ export function AdminDashboard() {
 
       <Stats>
         {stats.map((stat) => (
-          <StatTile key={stat.label} label={stat.label} value={stat.value} padded={false} />
+          <Card key={stat.label} tone="low" radius="lg" padding="lg">
+            <StatTile label={stat.label} value={stat.value} icon={stat.icon} padded={false} />
+          </Card>
         ))}
       </Stats>
 

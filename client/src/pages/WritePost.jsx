@@ -477,6 +477,7 @@ export function WritePost() {
   return (
     <PageShell>
       <PageHeader
+        badge={isEditing ? 'Editing Story' : 'Composer'}
         title={isEditing ? 'Edit post' : 'New post'}
         subtitle={
           preview ? 'This is how it will read once published.' : 'Markdown, with a live preview.'
