@@ -116,9 +116,18 @@ const WindowDots = styled.div`
     height: 9px;
     border-radius: 50%;
 
-    &:nth-child(1) { background: #ef4444; opacity: 0.8; }
-    &:nth-child(2) { background: #f59e0b; opacity: 0.8; }
-    &:nth-child(3) { background: #10b981; opacity: 0.8; }
+    &:nth-child(1) {
+      background: #ef4444;
+      opacity: 0.8;
+    }
+    &:nth-child(2) {
+      background: #f59e0b;
+      opacity: 0.8;
+    }
+    &:nth-child(3) {
+      background: #10b981;
+      opacity: 0.8;
+    }
   }
 `;
 
@@ -408,8 +417,7 @@ export function HeroIllustration() {
           <AuthorRow>
             <AvatarGradient>BH</AvatarGradient>
             <AuthorMeta>
-              <strong>Community Voice</strong>{' '}
-              <span className="time">· 3 min read</span>
+              <strong>Community Voice</strong> <span className="time">· 3 min read</span>
             </AuthorMeta>
           </AuthorRow>
 
