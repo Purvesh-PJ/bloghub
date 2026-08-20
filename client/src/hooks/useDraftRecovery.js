@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useBlocker } from 'react-router-dom';
 
 const STORAGE_PREFIX = 'bloghub:draft:';
@@ -22,32 +22,36 @@ const keyFor = (id) => `${STORAGE_PREFIX}${id ?? 'new'}`;
  * @param {boolean} options.dirty whether the editor differs from what the server has
  * @param {boolean} [options.enabled] pause saving, e.g. while the post is still loading
  */
-export function useDraftRecovery({ id, values, dirty, enabled = true }) {
-  const [recovered, setRecovered] = useState(null);
-  // Read once, before the first save can overwrite what was there from last time.
-  const checkedRef = useRef(false);
+/**
+ * Reads back a stored draft, or null when there is nothing usable.
+ *
+ * Separated out and called from the state initialiser below rather than from an effect: the
+ * value has to be there on the very first render, or the editor mounts, reports itself clean,
+ * and the autosave overwrites the stored copy before the writer is ever offered it.
+ */
+const readStoredDraft = (id) => {
+  try {
+    const stored = localStorage.getItem(keyFor(id));
+    if (!stored) return null;
 
-  useEffect(() => {
-    if (checkedRef.current) return;
-    checkedRef.current = true;
-
-    try {
-      const stored = localStorage.getItem(keyFor(id));
-      if (!stored) return;
-
-      const parsed = JSON.parse(stored);
-      if (!parsed?.savedAt || Date.now() - parsed.savedAt > MAX_AGE_MS) {
-        localStorage.removeItem(keyFor(id));
-        return;
-      }
-      setRecovered(parsed);
-    } catch {
-      // Corrupt or unavailable storage is not worth interrupting the writer over.
+    const parsed = JSON.parse(stored);
+    if (!parsed?.savedAt || Date.now() - parsed.savedAt > MAX_AGE_MS) {
+      localStorage.removeItem(keyFor(id));
+      return null;
     }
-  }, [id]);
+    return parsed;
+  } catch {
+    // Corrupt or unavailable storage is not worth interrupting the writer over.
+    return null;
+  }
+};
+
+export function useDraftRecovery({ id, values, dirty, enabled = true }) {
+  // Read once, lazily, before the first autosave can overwrite what was there from last time.
+  const [recovered, setRecovered] = useState(() => readStoredDraft(id));
 
   useEffect(() => {
-    if (!enabled || !dirty || !checkedRef.current) return;
+    if (!enabled || !dirty) return;
 
     // Trails the keystrokes rather than writing on each one.
     const timer = setTimeout(() => {

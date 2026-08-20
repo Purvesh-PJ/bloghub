@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import styled, { css } from 'styled-components';
 import { text, label as labelStyle, interactive } from '../../styles/theme/mixins';
 
@@ -115,8 +116,20 @@ const Message = styled.span`
   color: ${({ theme, $error }) => ($error ? theme.colors.dangerText : theme.colors.textMuted)};
 `;
 
+/**
+ * A label is only a label if it points at the field.
+ *
+ * `id ?? props.name` left `inputId` undefined whenever a caller passed neither — which is
+ * seventeen fields across Settings, the editor and the admin console, every password box
+ * among them. `htmlFor={undefined}` renders no `for` attribute at all, so the visible text
+ * sat beside a control that assistive technology announced as unlabelled, and clicking the
+ * label did not focus the field. `useId` gives every instance a stable fallback.
+ */
 export function Input({ label, error, hint, icon, fullWidth = true, id, ...props }) {
-  const inputId = id ?? props.name;
+  const generatedId = useId();
+  const inputId = id ?? props.name ?? generatedId;
+  const messageId = error || hint ? `${inputId}-message` : undefined;
+
   return (
     <Field $fullWidth={fullWidth}>
       {label && <Label htmlFor={inputId}>{label}</Label>}
@@ -127,16 +140,26 @@ export function Input({ label, error, hint, icon, fullWidth = true, id, ...props
           $error={Boolean(error)}
           $hasIcon={Boolean(icon)}
           aria-invalid={Boolean(error) || undefined}
+          // Announced with the field, so an error or a format hint is not left to sighted
+          // readers only.
+          aria-describedby={messageId}
           {...props}
         />
       </ControlWrap>
-      {(error || hint) && <Message $error={Boolean(error)}>{error || hint}</Message>}
+      {(error || hint) && (
+        <Message id={messageId} $error={Boolean(error)}>
+          {error || hint}
+        </Message>
+      )}
     </Field>
   );
 }
 
 export function TextArea({ label, error, hint, fullWidth = true, id, ...props }) {
-  const inputId = id ?? props.name;
+  const generatedId = useId();
+  const inputId = id ?? props.name ?? generatedId;
+  const messageId = error || hint ? `${inputId}-message` : undefined;
+
   return (
     <Field $fullWidth={fullWidth}>
       {label && <Label htmlFor={inputId}>{label}</Label>}
@@ -144,9 +167,14 @@ export function TextArea({ label, error, hint, fullWidth = true, id, ...props })
         id={inputId}
         $error={Boolean(error)}
         aria-invalid={Boolean(error) || undefined}
+        aria-describedby={messageId}
         {...props}
       />
-      {(error || hint) && <Message $error={Boolean(error)}>{error || hint}</Message>}
+      {(error || hint) && (
+        <Message id={messageId} $error={Boolean(error)}>
+          {error || hint}
+        </Message>
+      )}
     </Field>
   );
 }

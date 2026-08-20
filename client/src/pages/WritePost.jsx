@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
@@ -8,7 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 
 import { postService } from '../services/postService';
-import { tagService } from '../services/tagService';
+import { useTags } from '../hooks/useTags';
 import { useTheme } from '../styles/ThemeProvider';
 import { PageShell, PageHeader } from '../components/layout/PageShell';
 import { Button, Card, Input, Chip, Loading } from '../components/ui';
@@ -16,6 +16,7 @@ import { display, text, label as labelStyle, media, interactive } from '../style
 import { readingTime } from '../utils/text';
 import { markdownRehypePlugins } from '../config/markdown';
 import { useDraftRecovery, useBeforeUnload, useNavigationGuard } from '../hooks/useDraftRecovery';
+import { queryKeys } from '../services/queryKeys';
 
 // Mirrors the server-side cap in validators/content.validators.js.
 const MAX_TAGS = 5;
@@ -201,12 +202,6 @@ const ChoiceNote = styled.span`
   display: block;
 `;
 
-const Topics = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.xs};
-  flex-wrap: wrap;
-`;
-
 const TagRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.xs};
@@ -318,24 +313,29 @@ export function WritePost() {
   // snapshot and the navigation guards.
   const [dirty, setDirty] = useState(false);
 
-  const { data: tagsData } = useQuery({
-    queryKey: ['tags'],
-    queryFn: tagService.getTags,
-  });
+  const { tags: allTags } = useTags();
 
   const popularSuggestions = useMemo(() => {
-    const list = tagsData?.data || [];
+    const list = allTags;
     return list.filter((t) => !tags.includes(t.name.toLowerCase())).slice(0, 5);
-  }, [tagsData, tags]);
+  }, [allTags, tags]);
 
   const { data: existingPost, isLoading: postLoading } = useQuery({
-    queryKey: ['post', id],
+    queryKey: queryKeys.posts.detail(id),
     queryFn: () => postService.getPost(id),
     enabled: isEditing,
   });
 
-  useEffect(() => {
-    if (!existingPost?.data) return;
+  /*
+    Load the stored story into the editor.
+
+    Done during render rather than in an effect, keyed on the fetched response itself, so the
+    editor never paints one frame empty before filling — which on a slow connection reads as
+    the story having been lost. It runs again only when a refetch produces a new object.
+  */
+  const [loadedPost, setLoadedPost] = useState(null);
+  if (existingPost?.data && loadedPost !== existingPost) {
+    setLoadedPost(existingPost);
     const post = existingPost.data;
     setTitle(post.title || '');
     setContent(post.content || '');
@@ -345,7 +345,7 @@ export function WritePost() {
     setTags(post.tags?.map((tag) => (typeof tag === 'string' ? tag : tag.name)) || []);
     // Loading the server's own copy is not an edit.
     setDirty(false);
-  }, [existingPost]);
+  }
 
   const editorValues = useMemo(
     () => ({ title, content, slug, visibility, imageURL, tags }),
@@ -387,9 +387,9 @@ export function WritePost() {
     // actually chosen lives — component state may already have moved on.
     onSuccess: async (data, submitted) => {
       clearDraft();
-      queryClient.invalidateQueries({ queryKey: ['myPosts'] });
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.mine() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
       toast.success(submitted?.visibility === 'public' ? 'Story published 🎉' : 'Story saved');
 
       // Publishing means you want to see it live. Saving a draft does not — there is nothing
@@ -405,10 +405,10 @@ export function WritePost() {
     mutationFn: (data) => postService.updatePost(id, data),
     onSuccess: async (_, submitted) => {
       clearDraft();
-      queryClient.invalidateQueries({ queryKey: ['myPosts'] });
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
-      queryClient.invalidateQueries({ queryKey: ['post', id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.mine() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
       toast.success('Story updated 🚀');
       // Same rule as creating: an unpublished story has nothing to show a reader.
       navigate(submitted?.visibility === 'public' ? `/post/${id}` : '/stories');
@@ -593,7 +593,9 @@ export function WritePost() {
               ))}
             </TagRow>
             <Input
-              placeholder={tags.length >= MAX_TAGS ? 'Tag limit reached' : 'Add tag (e.g. ai, react)'}
+              placeholder={
+                tags.length >= MAX_TAGS ? 'Tag limit reached' : 'Add tag (e.g. ai, react)'
+              }
               value={tagDraft}
               disabled={tags.length >= MAX_TAGS}
               onChange={(event) => setTagDraft(event.target.value)}

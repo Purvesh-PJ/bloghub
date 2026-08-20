@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { PenLine, BarChart3, MessagesSquare } from 'lucide-react';
 import { display, text, label as labelStyle, media } from '../../styles/theme/mixins';
-import { topicIcon } from '../../components/marketing/Topics';
+import { topicIcon } from '../../utils/topicIcons';
 
 /**
  * Shared shell for the auth pages.
