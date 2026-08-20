@@ -45,10 +45,15 @@ export default [
       'react/no-unescaped-entities': 'off',
 
       'react-hooks/exhaustive-deps': 'warn',
-      // Four pages hydrate local form state from a query inside an effect. The pattern
-      // works but causes a cascading render; refactoring it needs tests in place first,
-      // so it is tracked rather than blocking. See docs — BUG-15.
-      'react-hooks/set-state-in-effect': 'warn',
+      /*
+        Was a warning while four pages hydrated local form state from a query inside an
+        effect — a pattern that works but paints one frame with the stale value before
+        correcting it, which on Settings and the editor reads as "your work is gone".
+
+        All four now adjust state during render instead, keyed on the fetched payload, so
+        this is an error again: the next one should not be able to land quietly.
+      */
+      'react-hooks/set-state-in-effect': 'error',
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-console': 'off',
     },

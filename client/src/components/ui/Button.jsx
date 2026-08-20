@@ -165,7 +165,7 @@ export function Button({
 const StyledIconButton = styled(StyledButton)`
   padding: 0;
   aspect-ratio: 1;
-  width: ${({ $size, theme }) => ({ sm: '34px', md: '42px', lg: '52px' })[$size] ?? '42px'};
+  width: ${({ $size }) => ({ sm: '34px', md: '42px', lg: '52px' })[$size] ?? '42px'};
   border-radius: ${({ theme }) => theme.radii.full};
 `;
 
