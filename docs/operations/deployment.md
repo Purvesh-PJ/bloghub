@@ -305,12 +305,12 @@ request can read it. Vercel deployment needs no GitHub secret; the Git integrati
 
 ## Outstanding deployment issues
 
-| Issue                              | Impact                                                       | Reference                              |
-| ---------------------------------- | ------------------------------------------------------------ | -------------------------------------- |
-| CI reports but does not gate       | Branch protection is not enabled, so a red run still deploys | [above](#what-is-still-missing)        |
-| The client is untested             | A render-time crash passes CI, because CI only builds it     | [GAP-11](../product/roadmap.md#gap-11) |
-| No cached database connection      | Connection exhaustion under load                             | [above](#connection-handling)          |
-| Rate limits are per-instance       | Approximate enforcement on serverless                        | [above](#rate-limiting)                |
-| Avatar upload cannot work          | Read-only filesystem                                         | [BUG-07](../product/roadmap.md#bug-07) |
-| Legacy `builds`/`routes` format    | Harder to maintain                                           | [above](#verceljson)                   |
-| Nothing polls the health endpoints | An outage is discovered by a user                            | [runbook.md](runbook.md)               |
+| Issue                              | Impact                                                             | Reference                              |
+| ---------------------------------- | ------------------------------------------------------------------ | -------------------------------------- |
+| CI reports but does not gate       | Branch protection is not enabled, so a red run still deploys       | [above](#what-is-still-missing)        |
+| Client coverage is partial         | A render-time crash in the editor or the workspace still passes CI | [GAP-11](../product/roadmap.md#gap-11) |
+| No cached database connection      | Connection exhaustion under load                                   | [above](#connection-handling)          |
+| Rate limits are per-instance       | Approximate enforcement on serverless                              | [above](#rate-limiting)                |
+| Avatar upload cannot work          | Read-only filesystem                                               | [BUG-07](../product/roadmap.md#bug-07) |
+| Legacy `builds`/`routes` format    | Harder to maintain                                                 | [above](#verceljson)                   |
+| Nothing polls the health endpoints | An outage is discovered by a user                                  | [runbook.md](runbook.md)               |

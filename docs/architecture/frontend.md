@@ -302,7 +302,11 @@ it to an error tracker is the highest-value frontend observability work availabl
 | Technique              | Where                         | Effect                                                                                                |
 | ---------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------- |
 | Route code splitting   | `App.jsx`                     | Only the visited route's chunk downloads                                                              |
-| Manual vendor chunks   | `vite.config.js`              | `vendor`, `radix`, `editor` cache separately                                                          |
+| Manual vendor chunks   | `vite.config.js`              | `vendor`, `radix`, `markdown-preview`, `syntax-highlight` and `editor` cache separately               |
+| Read/write code split  | `PostDetail` vs `WritePost`   | Reading a post loads the renderer (126 kB gz), not the editor (was 376 kB gz)                         |
+| Deferred highlighting  | `config/markdown.js`          | `rehype-prism-plus` (225 kB gz) is fetched only for a post that contains a fenced code block          |
+| Cacheable avatars      | `GET /users/:id/avatar`       | Served with an ETag instead of base64 inside every `getUser` response                                 |
+| Lazy private shells    | `App.jsx`                     | The workspace and admin layouts are not in the bundle a signed-out visitor downloads                  |
 | Query caching          | `main.jsx`                    | Five-minute freshness, no focus refetch                                                               |
 | Conditional queries    | `WritePost`, `useCurrentUser` | `enabled:` avoids a pointless fetch — and, for `useCurrentUser`, a 401 on every anonymous page load   |
 | Server-side filtering  | `Stories`, `Search`           | Filter, sort and search are query parameters, so the browser never holds a list it then hides most of |
@@ -314,8 +318,24 @@ it to an error tracker is the highest-value frontend observability work availabl
 ([GAP-07](../product/roadmap.md#gap-07)). `ui/Pagination` exists and `/stories` uses it; wiring
 it into `/search` is the remaining piece.
 
-**Known issue:** four pages hydrate form state from a query inside `useEffect`, causing a
-cascading render ([BUG-15](../product/roadmap.md#bug-15)).
+### Chunk budget
+
+Measured from `npm run build`. The two large chunks are both on the read path and both
+deliberate: the renderer is what displays an article, and highlighting is fetched separately
+because most posts have no code in them.
+
+| Chunk              | Raw    | gzip   | Loaded when                                   |
+| ------------------ | ------ | ------ | --------------------------------------------- |
+| `vendor`           | 479 kB | 147 kB | Always — but only re-downloaded on an upgrade |
+| `index`            | 344 kB | 98 kB  | Always                                        |
+| `radix`            | 191 kB | 59 kB  | Always                                        |
+| `markdown-preview` | 408 kB | 126 kB | Opening a post, or the editor                 |
+| `syntax-highlight` | 626 kB | 225 kB | Only a post containing a fenced code block    |
+| `editor`           | 75 kB  | 25 kB  | Only `/write` and `/edit/:id`                 |
+
+`syntax-highlight` is the largest single item in the build and buys code colouring; if it ever
+needs to go, `refractor` registering every Prism language is the reason it is that size, and
+registering a shortlist is the lever.
 
 ---
 

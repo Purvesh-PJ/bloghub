@@ -83,7 +83,7 @@ on **two consecutive** failures — a single serverless cold start can exceed a 
 | Slow queries     | Any over 100ms                                                 |
 | Collection scans | Any — the search regex is the known offender                   |
 
-Atlas's Performance Advisor recommends indexes from real traffic. With 13 indexes now
+Atlas's Performance Advisor recommends indexes from real traffic. With 26 indexes now
 declared it should have far less to say than before.
 
 ### Business signals

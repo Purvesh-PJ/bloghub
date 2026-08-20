@@ -12,34 +12,44 @@ problem.
 
 ## Defect status
 
-| ID                | Defect                                               | Priority | Status             |
-| ----------------- | ---------------------------------------------------- | -------- | ------------------ |
-| [BUG-01](#bug-01) | Post visibility never persisted                      | P0       | ✅ **Fixed**       |
-| [BUG-02](#bug-02) | Post without a cover image could not be edited       | P0       | ✅ **Fixed**       |
-| [BUG-03](#bug-03) | `Post.likes` never maintained at runtime             | P0       | ✅ **Fixed**       |
-| [BUG-04](#bug-04) | Comment replies lost their post reference            | P1       | ✅ **Fixed**       |
-| [BUG-05](#bug-05) | Settings feature persisted nothing                   | P0       | ✅ **Fixed**       |
-| [BUG-06](#bug-06) | `Analytics` documents never updated                  | P2       | ⚠️ Partially fixed |
-| [BUG-07](#bug-07) | Avatar upload broken                                 | P1       | ✅ **Fixed**       |
-| [BUG-08](#bug-08) | Missing post returned 200 instead of 404             | P1       | ✅ **Fixed**       |
-| [BUG-09](#bug-09) | Duplicate accounts possible                          | P1       | ✅ **Fixed**       |
-| [BUG-10](#bug-10) | Post-count adjustment targeted the wrong profile     | P2       | ✅ **Fixed**       |
-| [BUG-11](#bug-11) | Category attachment did not await its writes         | P2       | ✅ **Fixed**       |
-| [BUG-12](#bug-12) | Deep links 404 in production                         | P1       | ✅ **Fixed**       |
-| [BUG-13](#bug-13) | Two cache keys held the same data                    | P3       | ✅ **Resolved**    |
-| [BUG-14](#bug-14) | CORS wildcard origin with credentials                | P2       | ✅ **Fixed**       |
-| [BUG-15](#bug-15) | `setState` inside an effect                          | P2       | ❌ Open            |
-| [BUG-16](#bug-16) | Seeder wrote `posts` instead of `post` on every like | P0       | ✅ **Fixed**       |
-| [BUG-17](#bug-17) | `PostDetail` referenced an undefined component       | P1       | ✅ **Fixed**       |
-| [BUG-18](#bug-18) | Seeder could not find the root `.env`                | P1       | ✅ **Fixed**       |
+| ID                | Defect                                               | Priority | Status          |
+| ----------------- | ---------------------------------------------------- | -------- | --------------- |
+| [BUG-01](#bug-01) | Post visibility never persisted                      | P0       | ✅ **Fixed**    |
+| [BUG-02](#bug-02) | Post without a cover image could not be edited       | P0       | ✅ **Fixed**    |
+| [BUG-03](#bug-03) | `Post.likes` never maintained at runtime             | P0       | ✅ **Fixed**    |
+| [BUG-04](#bug-04) | Comment replies lost their post reference            | P1       | ✅ **Fixed**    |
+| [BUG-05](#bug-05) | Settings feature persisted nothing                   | P0       | ✅ **Fixed**    |
+| [BUG-06](#bug-06) | `Analytics` documents never updated                  | P2       | ✅ **Fixed**    |
+| [BUG-07](#bug-07) | Avatar upload broken                                 | P1       | ✅ **Fixed**    |
+| [BUG-08](#bug-08) | Missing post returned 200 instead of 404             | P1       | ✅ **Fixed**    |
+| [BUG-09](#bug-09) | Duplicate accounts possible                          | P1       | ✅ **Fixed**    |
+| [BUG-10](#bug-10) | Post-count adjustment targeted the wrong profile     | P2       | ✅ **Fixed**    |
+| [BUG-11](#bug-11) | Category attachment did not await its writes         | P2       | ✅ **Fixed**    |
+| [BUG-12](#bug-12) | Deep links 404 in production                         | P1       | ✅ **Fixed**    |
+| [BUG-13](#bug-13) | Two cache keys held the same data                    | P3       | ✅ **Resolved** |
+| [BUG-14](#bug-14) | CORS wildcard origin with credentials                | P2       | ✅ **Fixed**    |
+| [BUG-15](#bug-15) | `setState` inside an effect                          | P2       | ✅ **Fixed**    |
+| [BUG-16](#bug-16) | Seeder wrote `posts` instead of `post` on every like | P0       | ✅ **Fixed**    |
+| [BUG-17](#bug-17) | `PostDetail` referenced an undefined component       | P1       | ✅ **Fixed**    |
+| [BUG-18](#bug-18) | Seeder could not find the root `.env`                | P1       | ✅ **Fixed**    |
+| [BUG-19](#bug-19) | `/user/:id` rendered the viewer, not the writer      | P0       | ✅ **Fixed**    |
+| [BUG-20](#bug-20) | Replies returned twice by the comment listing        | P1       | ✅ **Fixed**    |
+| [BUG-21](#bug-21) | A repeated like answered 500                         | P1       | ✅ **Fixed**    |
+| [BUG-22](#bug-22) | Author's per-post figures never rendered             | P1       | ✅ **Fixed**    |
+| [BUG-23](#bug-23) | Active-user count read a field nothing writes        | P2       | ✅ **Fixed**    |
+| [BUG-24](#bug-24) | Moderation log counted engagement as an edit         | P2       | ✅ **Fixed**    |
+| [BUG-25](#bug-25) | Form labels pointed at nothing                       | P2       | ✅ **Fixed**    |
+| [BUG-26](#bug-26) | Post page shipped the Markdown editor to read        | P1       | ✅ **Fixed**    |
+| [BUG-27](#bug-27) | Avatars sent as base64 in JSON on every page         | P1       | ✅ **Fixed**    |
+| [BUG-28](#bug-28) | `vendor` chunk missed React's renderer               | P2       | ✅ **Fixed**    |
 
-**16 of 18 closed.** The two that remain are BUG-06 (the `Analytics` collection, which is
-superseded rather than broken — the figures are computed live from the event collections) and
-BUG-15 (a lint-level render pattern). BUG-16 to BUG-18 were found during remediation, two of
-them by tooling that was fixed along the way.
+**All 28 closed.** BUG-16 to BUG-18 were found during remediation, two of them by tooling
+that was fixed along the way. BUG-19 to BUG-24 came out of the full frontend-to-backend audit
+that closed the last two, BUG-25 out of writing the admin console tests, and BUG-26 to BUG-28 out of measuring the production bundle.
 
 Everything closed here that a request can reach now has a regression test in
-[the backend suite](../guides/testing.md#current-state).
+[the backend suite](../guides/testing.md#current-state), and the client half of the audit is
+covered by [the client suite](../guides/testing.md#client).
 
 ---
 
@@ -250,55 +260,202 @@ _Fix:_ resolves `../.env` explicitly, matching `index.js`.
 
 ### BUG-06
 
-**`Analytics` documents never updated.** P2 · ⚠️ Partially fixed
+**`Analytics` documents never updated.** P2 · ✅ **Fixed**
 
-The schema referenced `ref: 'Blog'` — a model that does not exist. **Fixed:** the reference
-now names `Post`, and `blogPost` is indexed.
+The schema referenced `ref: 'Blog'` — a model that does not exist. That reference was
+repointed at `Post` in an earlier pass, but the real problem was that nothing except the
+seeder ever wrote an `Analytics` document, so `GET /analytics/post/:id` answered 404 for
+every post created through the API, and where a seeded document did exist its counters were
+frozen at whatever the seed wrote.
 
-**Still open:** nothing creates or increments an `Analytics` document except the seeder, so
-`GET /analytics/post/:id` returns 404 for any post created through the API.
-
-_Recommended fix:_ remove the collection and compute per-post analytics on demand, the way
-`getUserAnalytics` already does. That eliminates a second source of truth rather than adding
-machinery to keep it in step.
+_Fix:_ the collection is gone, along with the seeder's writes to it. `GET /analytics/post/:id`
+counts `View`, `Read`, `Like` and `Comment` on demand, the way `getUserAnalytics` already
+did — one source of truth instead of two that could disagree. The endpoint now requires a
+session and is restricted to the post's author and administrators, since per-post figures are
+the author's business; the public number remains `GET /page-views/post/:postId/count`.
 
 ### BUG-15
 
-**`setState` inside an effect.** P2 · ❌ Open
+**`setState` inside an effect.** P2 · ✅ **Fixed**
 
-`WritePost`, `Settings`, `UserProfile` and `Search` hydrate local state from a query or a URL
-parameter inside `useEffect`. The pattern works but causes a cascading render, and
-`react-hooks/set-state-in-effect` flags it. (The fourth page originally listed here, `Profile`,
-no longer exists — it was folded into the workspace split.)
+`WritePost`, `Settings`, `UserProfile`, `Search`, `PostDetail` and `useDraftRecovery` hydrated
+local state from a query or a URL parameter inside `useEffect`. The pattern works, but it
+paints one frame with the stale value before correcting it — on Settings and the editor that
+reads as "your work is gone", and `PostDetail`'s version also left the like button stuck on
+its previous state when the reader signed out or moved to another story.
 
-Set to `warn` rather than `error` deliberately: refactoring form hydration without any client
-test is how regressions get shipped. Sequence it after the client half of
-[GAP-11](#gap-11).
+_Fix:_ each one adjusts state during render instead, keyed on the fetched payload itself, so
+the corrected value is there on the first paint and re-seeds only when a refetch produces a
+new object. `useDraftRecovery` reads its stored draft in a lazy state initialiser, which also
+closes a real gap: the effect ran after the first autosave could already have overwritten what
+it was about to offer back. `react-hooks/set-state-in-effect` is an `error` again.
+
+### BUG-19
+
+**`/user/:id` rendered the viewer, not the writer.** P0 · ✅ **Fixed**
+
+The public profile route is linked from every author byline, the account menu, the workspace
+sidebar, the dashboard and two admin screens — six entry points — and nothing served it. The
+page called `userService.getUser(userId)`; that function takes no argument, so the id was
+dropped and the token-scoped endpoint returned whoever was signed in. Every writer's page
+therefore showed the _viewer's_ own account, and a signed-out reader clicking a byline took a 401. The stories beneath came from the global feed filtered by author in the browser, which
+only ever saw the first page of the whole site, so most authors appeared to have written
+nothing and the counts derived from that list were wrong for the same reason.
+
+_Fix:_ `GET /users/:id/profile`, public, returning the person's name, avatar, bio, links and
+counts — with the email included only when that account turned it on in its privacy settings.
+Stories come from `GET /posts?author=<id>`, filtered and paged on the server. Covered by
+`backend/tests/profile.test.js` and `client/src/pages/UserProfile.test.jsx`.
+
+### BUG-20
+
+**Replies returned twice by the comment listing.** P1 · ✅ **Fixed**
+
+A reply carries its parent's `post` so that post-scoped queries reach it at all
+([BUG-04](#bug-04)). `GET /comments/post/:postId` had no other filter, so every reply came
+back nested inside its parent _and_ again as a top-level comment of its own — each one shown
+twice on the Responses screen, and counted twice in the total beside it.
+
+_Fix:_ `Comment.parent`, set when a reply is created, and the listing filters on
+`parent: null`. `scripts/migrate.js` backfills the field for replies already stored, reading
+each parent's `replies` array. `PostDetail` was unaffected — it renders `post.comments`, which
+replies were never added to — which is why the two screens disagreed about the same thread.
+
+### BUG-21
+
+**A repeated like answered 500.** P1 · ✅ **Fixed**
+
+`createLike` checked for an existing like and then created one. Two concurrent requests could
+both pass that check before either wrote, and the unique index then rejected the second with a
+duplicate-key error that surfaced as a 500. Every handler in the module also answered with a
+bare `{ error: '…' }`, which is not the envelope the rest of the API uses and not where the
+client reads a message from — so the UI showed its generic fallback whatever went wrong.
+
+_Fix:_ the index decides it; a duplicate key becomes a 409 with a message. The whole module
+moved onto `asyncHandler` and the standard envelope, and the two read endpoints now apply the
+same visibility rule as the rest of the API, so the likes on an unpublished story are no
+longer readable by anyone who guesses its id.
+
+### BUG-22
+
+**Author's per-post figures never rendered.** P1 · ✅ **Fixed**
+
+`PostDetail` read `analytics?.postsAnalytics`, but `GET /analytics/user/:userId` answers
+`{ success, data: { postsAnalytics, … } }`. The lookup found `undefined` on every render, so
+an author viewing their own story saw no figures however much traffic it had.
+
+_Fix:_ read through `.data`, as the dashboard already did.
+
+### BUG-23
+
+**Active-user count read a field nothing writes.** P2 · ✅ **Fixed**
+
+`GET /user-activity/all` counted `User.lastActive` against a thirty-day window. No schema
+declares `lastActive` and nothing ever wrote it, so the query matched no documents and the
+console reported zero active users on every site, however busy.
+
+_Fix:_ counted from distinct `View.user` values inside the window — rows that actually
+accumulate.
+
+### BUG-24
+
+**Moderation log counted engagement as an edit.** P2 · ✅ **Fixed**
+
+The log filtered on `{ updatedAt: { $ne: null } }`, true of every post ever created, so it
+listed the whole collection as though all of it had been moderated. The obvious correction —
+`updatedAt > createdAt` — is also wrong, and less visibly: recording a comment, a like or a
+view pushes an id onto an array on the post, so Mongoose bumps `updatedAt` and a story nobody
+had edited but several people had replied to appeared as an edit. The unit test written for
+the first fix passed; the end-to-end smoke run against a live server is what caught it.
+
+_Fix:_ `Post.editedAt`, stamped only by `postService.updatePost`, so the field carries the
+meaning the screen claims. Posts edited before it existed have none and will appear the next
+time they change.
+
+### BUG-25
+
+**Form labels pointed at nothing.** P2 · ✅ **Fixed**
+
+`Input` and `TextArea` derived the field's id as `id ?? props.name`. Where a caller passed
+neither — seventeen fields across Settings, the editor and the admin console, including every
+password box — that is `undefined`, so `htmlFor={undefined}` rendered no `for` attribute at
+all. The label was visible text sitting beside a control that assistive technology announced
+as unlabelled, and clicking it did not move focus into the field.
+
+Found by writing the admin console tests: `getByLabelText` could not find the tag-name input,
+which is the same lookup a screen reader performs.
+
+_Fix:_ a `useId` fallback in both components, so every instance has an association whether or
+not the caller supplies an id. Hints and validation messages are wired through
+`aria-describedby` at the same time, so a format rule or an error is announced with the field
+rather than being left to sighted readers.
+
+### BUG-26
+
+**Post page shipped the Markdown editor to read an article.** P1 · ✅ **Fixed**
+
+`PostDetail` imported `@uiw/react-md-editor` for its `Markdown` export. That package re-exports
+the renderer, so importing it pulled the toolbar, the command set, the textarea and the syntax
+highlighter into one 1.1 MB chunk — 376 kB over the wire, on the single action the site exists
+for, to display a page with no editing on it.
+
+_Fix:_ `@uiw/react-markdown-preview/nohighlight`, with `rehype-prism-plus` fetched separately
+and only when the post actually contains a fenced code block. Reading a post costs 126 kB
+gzipped instead of 376 kB; the editor chunk is 75 kB and loads only where writing happens.
+
+### BUG-27
+
+**Avatars sent as base64 in JSON on every page.** P1 · ✅ **Fixed**
+
+`getUser` base64-encoded the stored avatar into a data URI inside its response, and the header
+calls `getUser` on every page. A 2 MB picture became roughly 2.7 MB of JSON — re-fetched on
+every cold load, in a response the browser has no way to cache, ahead of the data the rest of
+the page needs.
+
+_Fix:_ `GET /users/:id/avatar` serves the bytes with an ETag and `Cache-Control`, so a repeat
+visit is a 304 with no body. The JSON carries `hasAvatar` and `avatarUpdatedAt`; the client
+builds the URL and the version from those. The image buffer is not read from the database on
+that path at all now.
+
+A defect in the first version of that endpoint was caught by its own test: `.lean()` returns the
+driver's `Binary` wrapper rather than a Node `Buffer`, and `Buffer.from()` on it produces an
+empty result — a 200 with the right content type and no image in it.
+
+### BUG-28
+
+**`vendor` chunk missed React's renderer.** P2 · ✅ **Fixed**
+
+`manualChunks` listed `react-dom`, but the application imports `react-dom/client`, a different
+module id that the entry did not match. React's ~130 kB renderer therefore lived in the main
+chunk and was re-downloaded on every deploy that touched any application code.
+
+_Fix:_ the real entry points are named. The main chunk fell from 720 kB to 344 kB, and what a
+returning visitor re-fetches after a deploy went from 207 kB gzipped to 98 kB.
 
 ---
 
 ## Capability gaps
 
-| ID                            | Gap                                 | Priority | Status                                                                                                                                                                                          |
-| ----------------------------- | ----------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <a id="gap-01"></a>**GAP-01** | Password reset                      | P1       | ❌ Open                                                                                                                                                                                         |
-| <a id="gap-02"></a>**GAP-02** | Email verification                  | P2       | ❌ Open                                                                                                                                                                                         |
-| <a id="gap-03"></a>**GAP-03** | Draft autosave and revision history | P2       | ❌ Open                                                                                                                                                                                         |
-| <a id="gap-04"></a>**GAP-04** | Tags wired into the editor          | P2       | ✅ **Done** — up to 5 per story, set in the editor and persisted                                                                                                                                |
-| <a id="gap-05"></a>**GAP-05** | Real search                         | P1       | ⚠️ Partial — server-side category filtering added; still an unindexed regex over titles                                                                                                         |
-| <a id="gap-06"></a>**GAP-06** | Server-side session revocation      | P1       | ✅ **Done** — `tokenVersion` on the account, compared on every request                                                                                                                          |
-| <a id="gap-07"></a>**GAP-07** | Pagination on list endpoints        | P0       | ⚠️ Partial — `/posts`, `/search`, `/comments`, `/users` and the author's own list done; `/page-views/post/:id` is capped at 200 rather than paged; `GET /likes/post/:postId` is still unbounded |
-| <a id="gap-08"></a>**GAP-08** | Notifications                       | P3       | ❌ Open                                                                                                                                                                                         |
-| <a id="gap-09"></a>**GAP-09** | Account deletion                    | P2       | ✅ **Done** — `DELETE /users/me`, sharing `purgeAccount` with the admin path                                                                                                                    |
-| <a id="gap-10"></a>**GAP-10** | Real audit log                      | P2       | ❌ Open — the moderation log is synthesised from `Post.updatedAt`                                                                                                                               |
-| <a id="gap-11"></a>**GAP-11** | Automated tests                     | P0       | ⚠️ Partial — 61 backend integration tests; **the client has none, and that is now the highest-value item**                                                                                      |
-| <a id="gap-12"></a>**GAP-12** | CI pipeline                         | P0       | ✅ **Done** — lint, format check, tests, build and a dependency audit on every push and pull request                                                                                            |
-| <a id="gap-13"></a>**GAP-13** | Database indexes                    | P0       | ✅ **Done** — 13 indexes across 8 collections                                                                                                                                                   |
-| <a id="gap-14"></a>**GAP-14** | Health and readiness endpoints      | P1       | ✅ **Done** — `GET /health`, `GET /ready`                                                                                                                                                       |
-| <a id="gap-15"></a>**GAP-15** | Structured logging                  | P2       | ❌ Open — morgan plus `console.*`                                                                                                                                                               |
-| <a id="gap-16"></a>**GAP-16** | SEO and social metadata             | P2       | ❌ Open                                                                                                                                                                                         |
-| <a id="gap-17"></a>**GAP-17** | Image upload pipeline               | P2       | ❌ Open — upload works, but the bytes live in MongoDB rather than object storage                                                                                                                |
-| <a id="gap-18"></a>**GAP-18** | Accessibility audit                 | P2       | ❌ Open                                                                                                                                                                                         |
+| ID                            | Gap                                 | Priority | Status                                                                                                                                                                                                                                     |
+| ----------------------------- | ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <a id="gap-01"></a>**GAP-01** | Password reset                      | P1       | ❌ Open                                                                                                                                                                                                                                    |
+| <a id="gap-02"></a>**GAP-02** | Email verification                  | P2       | ❌ Open                                                                                                                                                                                                                                    |
+| <a id="gap-03"></a>**GAP-03** | Draft autosave and revision history | P2       | ❌ Open                                                                                                                                                                                                                                    |
+| <a id="gap-04"></a>**GAP-04** | Tags wired into the editor          | P2       | ✅ **Done** — up to 5 per story, set in the editor and persisted                                                                                                                                                                           |
+| <a id="gap-05"></a>**GAP-05** | Real search                         | P1       | ⚠️ Partial — now matches title, body, tag names and author names, and returns enough of each story for a card; still an unindexed regex rather than a text index                                                                           |
+| <a id="gap-06"></a>**GAP-06** | Server-side session revocation      | P1       | ✅ **Done** — `tokenVersion` on the account, compared on every request                                                                                                                                                                     |
+| <a id="gap-07"></a>**GAP-07** | Pagination on list endpoints        | P0       | ⚠️ Partial — `/posts` (feed and moderation), `/search`, `/comments`, `/users`, `/user-activity/*` and the author's own list done; `/page-views/post/:id` is capped at 200 rather than paged; `GET /likes/post/:postId` is still unbounded  |
+| <a id="gap-08"></a>**GAP-08** | Notifications                       | P3       | ❌ Open                                                                                                                                                                                                                                    |
+| <a id="gap-09"></a>**GAP-09** | Account deletion                    | P2       | ✅ **Done** — `DELETE /users/me`, sharing `purgeAccount` with the admin path                                                                                                                                                               |
+| <a id="gap-10"></a>**GAP-10** | Real audit log                      | P2       | ⚠️ Partial — the moderation log now keys off `Post.editedAt` and is surfaced in the console ([BUG-24](#bug-24)); administrative actions still leave no record of their own                                                                 |
+| <a id="gap-11"></a>**GAP-11** | Automated tests                     | P0       | ⚠️ Partial — 119 backend integration tests and 73 client tests (Vitest); the client suite covers the service layer, the axios interceptors, the text helpers, the profile page and every admin screen, not yet the editor or the workspace |
+| <a id="gap-12"></a>**GAP-12** | CI pipeline                         | P0       | ✅ **Done** — lint, format check, tests, build and a dependency audit on every push and pull request                                                                                                                                       |
+| <a id="gap-13"></a>**GAP-13** | Database indexes                    | P0       | ✅ **Done** — 26 indexes across 9 collections                                                                                                                                                                                              |
+| <a id="gap-14"></a>**GAP-14** | Health and readiness endpoints      | P1       | ✅ **Done** — `GET /health`, `GET /ready`                                                                                                                                                                                                  |
+| <a id="gap-15"></a>**GAP-15** | Structured logging                  | P2       | ❌ Open — morgan plus `console.*`                                                                                                                                                                                                          |
+| <a id="gap-16"></a>**GAP-16** | SEO and social metadata             | P2       | ❌ Open                                                                                                                                                                                                                                    |
+| <a id="gap-17"></a>**GAP-17** | Image upload pipeline               | P2       | ❌ Open — upload works, but the bytes live in MongoDB rather than object storage                                                                                                                                                           |
+| <a id="gap-18"></a>**GAP-18** | Accessibility audit                 | P2       | ❌ Open                                                                                                                                                                                                                                    |
 
 ---
 
@@ -315,23 +472,27 @@ likes persist, settings save, and deep links resolve.
 Every defect in Phase 1 was one a modest test suite would have caught before merge, so this
 phase built the thing that stops them coming back.
 
-- [x] [GAP-11](#gap-11) a backend suite — 61 integration tests over auth, authorisation,
-      posts, comments, the workspace, trending and the admin console, plus a regression test
-      for each closed `BUG-xx` and `SEC-xx` a request can reach
+- [x] [GAP-11](#gap-11) a backend suite — 119 integration tests over auth, authorisation,
+      posts, comments, replies, likes, following, search, tracking, the workspace, trending,
+      moderation and the admin console, plus a regression test for each closed `BUG-xx` and
+      `SEC-xx` a request can reach
 - [x] [GAP-12](#gap-12) CI running lint, format check, tests, build and a dependency audit on
       every push and pull request
 - [x] [SEC-12](../security/checklist.md#sec-12) dependency audit in CI, failing on high and
       critical advisories
 - [x] [GAP-06](#gap-06) session revocation via `tokenVersion`
 - [x] [GAP-09](#gap-09) account deletion
-- [ ] **Client tests** — the remaining half of [GAP-11](#gap-11). CI proves the client
-      compiles, not that it behaves
+- [x] **Client tests** — the other half of [GAP-11](#gap-11). 73 Vitest tests over the service
+      layer, the axios refresh interceptor, the text helpers, the profile page and every screen
+      in the admin console. CI proved the client compiled; it now proves some of it behaves
+- [x] [BUG-15](#bug-15) form hydration refactored, and the lint rule promoted back to `error`
 - [ ] [GAP-07](#gap-07) page `GET /likes/post/:postId`, the last unbounded list
-- [ ] [BUG-15](#bug-15) refactor form hydration, now that backend tests make the API side safe
+- [ ] Extend the client suite to the editor and the workspace
 
 ### Phase 3 — Data model consolidation
 
-- [ ] [BUG-06](#bug-06) retire the `Analytics` collection
+- [x] [BUG-06](#bug-06) retire the `Analytics` collection — done; per-post figures are
+      computed from the event collections
 - [ ] Reconcile `User.posts` against `Post.user` and keep one
 - [ ] Derive like and view counts from their collections rather than the denormalised arrays
 - [ ] Add a counter reconciliation script
