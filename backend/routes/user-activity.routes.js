@@ -3,12 +3,16 @@ const router = express.Router();
 const UserActivityController = require('../controllers/user-activity.controllers');
 const AuthUser = require('../middlewares/authenticateUser');
 const authorizeSelfOrAdmin = require('../middlewares/authorizeSelfOrAdmin');
+const { validate, validateObjectId } = require('../middlewares/validate');
+const { paginationRules } = require('../validators/content.validators');
 
 // Get all user activity (admin only)
 router.get(
   '/all',
   AuthUser.authenticateUser,
   AuthUser.authorizeAdmin,
+  paginationRules,
+  validate,
   UserActivityController.getAllUserActivity,
 );
 
@@ -16,7 +20,10 @@ router.get(
 router.get(
   '/user/:userId',
   AuthUser.authenticateUser,
+  validateObjectId('userId'),
   authorizeSelfOrAdmin('userId'),
+  paginationRules,
+  validate,
   UserActivityController.getUserActivity,
 );
 
@@ -24,7 +31,10 @@ router.get(
 router.get(
   '/timeline/:userId',
   AuthUser.authenticateUser,
+  validateObjectId('userId'),
   authorizeSelfOrAdmin('userId'),
+  paginationRules,
+  validate,
   UserActivityController.getUserTimeline,
 );
 
@@ -33,6 +43,8 @@ router.get(
   '/moderation-log',
   AuthUser.authenticateUser,
   AuthUser.authorizeAdmin,
+  paginationRules,
+  validate,
   UserActivityController.getModerationLog,
 );
 
