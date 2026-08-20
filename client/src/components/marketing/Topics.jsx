@@ -1,75 +1,6 @@
 import styled, { keyframes } from 'styled-components';
-import {
-  Cpu,
-  Palette,
-  Briefcase,
-  Leaf,
-  FlaskConical,
-  Plane,
-  Code2,
-  HeartPulse,
-  UtensilsCrossed,
-  Camera,
-  Rocket,
-  BookOpen,
-  Music,
-  Landmark,
-  Dumbbell,
-  Globe2,
-  Sparkles,
-  Database,
-  Layers,
-} from 'lucide-react';
-import { text, label as labelStyle, interactive } from '../../styles/theme/mixins';
-
-/** Known topics get a face; anything else falls back to a globe. */
-const ICONS = {
-  technology: Cpu,
-  tech: Cpu,
-  cloud: Cpu,
-  programming: Code2,
-  coding: Code2,
-  webdev: Code2,
-  react: Code2,
-  typescript: Code2,
-  nodejs: Code2,
-  design: Palette,
-  uiux: Palette,
-  creative: Palette,
-  business: Briefcase,
-  startups: Rocket,
-  saas: Briefcase,
-  leadership: Briefcase,
-  lifestyle: Leaf,
-  mindset: Leaf,
-  science: FlaskConical,
-  research: FlaskConical,
-  physics: FlaskConical,
-  travel: Plane,
-  adventure: Plane,
-  nomad: Plane,
-  health: HeartPulse,
-  wellness: HeartPulse,
-  sleep: HeartPulse,
-  food: UtensilsCrossed,
-  cooking: UtensilsCrossed,
-  culinary: UtensilsCrossed,
-  photography: Camera,
-  visuals: Camera,
-  art: Palette,
-  camera: Camera,
-  space: Rocket,
-  education: BookOpen,
-  music: Music,
-  finance: Landmark,
-  fitness: Dumbbell,
-  ai: Sparkles,
-  productivity: Sparkles,
-  database: Database,
-  architecture: Layers,
-};
-
-export const topicIcon = (name = '') => ICONS[name.toLowerCase()] ?? Globe2;
+import { text } from '../../styles/theme/mixins';
+import { topicIcon } from '../../utils/topicIcons';
 
 /* ── Marquee ─────────────────────────────────────────────────────────────────
    Two bands drifting in opposite directions. The track is duplicated so the loop
@@ -146,8 +77,14 @@ const MarqueeWrap = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
 `;
 
-/** Falls back to a representative spread when the API has not answered yet. */
-const FALLBACK = [
+/**
+ * Shown only while the tag endpoint has not answered, so the band is not empty on first
+ * paint. Deliberately not a floor to pad a short list up to: the condition here used to be
+ * `topics.length >= 6 ? topics : FALLBACK`, which meant a site with five real topics
+ * displayed ten invented ones instead of its own — the marquee claimed a breadth of subject
+ * matter the site did not have, and hid the subjects it did.
+ */
+const PLACEHOLDER = [
   'Technology',
   'Design',
   'Business',
@@ -160,101 +97,35 @@ const FALLBACK = [
   'Food',
 ];
 
-export function TopicMarquee({ topics = [] }) {
-  const names = topics.length >= 6 ? topics : FALLBACK;
-  const half = Math.ceil(names.length / 2);
+/**
+ * The scrolling band of topic names on the landing page.
+ *
+ * Decorative — the pills are not links. Real topics are used whenever there are any, however
+ * few; a short list simply repeats sooner, which is honest about a young site.
+ *
+ * @param {object} props
+ * @param {string[]} props.topics topic names from the API
+ * @param {boolean} [props.loading] true while the endpoint is still answering
+ */
+export function TopicMarquee({ topics = [], loading = false }) {
+  const names = topics.length > 0 ? topics : loading ? PLACEHOLDER : [];
+
+  // Nothing published under any topic yet: an empty band is better than an invented one.
+  if (names.length === 0) return null;
+
+  /*
+    Each band repeats its items twice to loop seamlessly, so a very short list would leave a
+    visible gap mid-scroll. Repeat it up to a workable length first.
+  */
+  const filled = [...names];
+  while (filled.length < 6) filled.push(...names);
+
+  const half = Math.ceil(filled.length / 2);
 
   return (
     <MarqueeWrap>
-      <Band items={names.slice(0, half)} duration={38} />
-      <Band items={names.slice(half)} reverse duration={44} />
+      <Band items={filled.slice(0, half)} duration={38} />
+      <Band items={filled.slice(half)} reverse duration={44} />
     </MarqueeWrap>
-  );
-}
-
-/* ── Topic grid ──────────────────────────────────────────────────────────────
-   The same breadth, browsable. Post counts come from the API, so the section is
-   honest about how much is actually there. */
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const Tile = styled.button`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.xl};
-  text-align: left;
-
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  ${interactive}
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.accentContainer};
-    transform: translateY(-3px);
-  }
-
-  &:hover svg,
-  &:hover span {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-const TileIcon = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-`;
-
-const TileName = styled.span`
-  ${text('md', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const TileCount = styled.span`
-  ${labelStyle('sm')}
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-export function TopicGrid({ topics = [], categories = [], onSelect }) {
-  const items = topics.length > 0 ? topics : categories;
-
-  return (
-    <Grid>
-      {items.map((topic) => {
-        const Icon = topicIcon(topic.name);
-        const count = topic.postCount ?? topic.posts?.length ?? 0;
-
-        return (
-          <Tile key={topic._id || topic.name} onClick={() => onSelect?.(topic)}>
-            <TileIcon>
-              <Icon />
-            </TileIcon>
-            <div>
-              <TileName>{topic.name}</TileName>
-              <br />
-              <TileCount>
-                {count} {count === 1 ? 'story' : 'stories'}
-              </TileCount>
-            </div>
-          </Tile>
-        );
-      })}
-    </Grid>
   );
 }

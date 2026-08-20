@@ -1,13 +1,12 @@
 {
+  "//": "Editor support for a JavaScript-only project. There is deliberately no tsconfig.json: this codebase contains no TypeScript, and when both files exist the editor reads tsconfig and ignores this one. The path alias that used to be declared here was removed rather than wired up — nothing imported through it, Vite was never configured to resolve it, so it advertised an import style that would have failed at build time.",
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "checkJs": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
