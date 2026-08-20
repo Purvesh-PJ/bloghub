@@ -29,3 +29,28 @@ export const markdownSanitizeSchema = {
 
 /** Pass to every `MDEditor.Markdown` that renders content the server sent us. */
 export const markdownRehypePlugins = [[rehypeSanitize, markdownSanitizeSchema]];
+
+/**
+ * Loads syntax highlighting, but only for a post that has code in it.
+ *
+ * The highlighted build of the renderer carries `refractor`, which registers every language
+ * Prism supports — 1 MB minified, 350 kB over the wire, on the one action the whole site
+ * exists for. Most posts contain no code at all and paid for it anyway.
+ *
+ * The read path uses the `nohighlight` renderer and calls this when it sees a fenced block,
+ * so the article is on screen immediately and the colouring arrives a moment later. A failure
+ * here leaves plain, readable code rather than breaking the page.
+ *
+ * @returns {Promise<Function|null>} the rehype plugin, or null if it could not be loaded
+ */
+export const loadSyntaxHighlighting = async () => {
+  try {
+    const module = await import('rehype-prism-plus');
+    return module.default ?? null;
+  } catch {
+    return null;
+  }
+};
+
+/** True when `content` contains a fenced code block (CommonMark allows 3 spaces of indent). */
+export const hasCodeBlock = (content) => /^ {0,3}```/m.test(String(content ?? ''));
