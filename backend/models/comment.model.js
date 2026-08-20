@@ -21,6 +21,20 @@ const CommentSchema = new mongoose.Schema(
       ref: 'Post',
     },
 
+    /*
+      The comment this one replies to, or null for a top-level comment.
+
+      Replies carry their parent's `post` so that post-scoped queries reach them at all — but
+      that also meant a reply came back from `GET /comments/post/:postId` as a top-level
+      comment *and* nested under its parent, so every thread showed each reply twice and the
+      response count double-counted them. Listing filters on `parent: null` now.
+    */
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Comment',
+      default: null,
+    },
+
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -54,6 +68,8 @@ const CommentSchema = new mongoose.Schema(
   },
 );
 
+// Backs the top-level listing, which filters on `parent` as well as `post`.
+CommentSchema.index({ post: 1, parent: 1, createdAt: -1 });
 CommentSchema.index({ post: 1, createdAt: -1 });
 CommentSchema.index({ user: 1, createdAt: -1 });
 

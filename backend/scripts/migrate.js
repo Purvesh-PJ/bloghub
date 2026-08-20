@@ -8,7 +8,11 @@
        by walking post.comments, so every post-scoped query misses them. That is why a story
        can show "0 responses" while its comments plainly exist.
 
-    2. duplicate slugs — the slug index is unique now. Where duplicates already exist the
+    2. comment.parent — replies written before that field existed have no parent, so the
+       post-scoped listing (which now filters on `parent: null` to keep replies out of the
+       top level) would still return each of them twice.
+
+    3. duplicate slugs — the slug index is unique now. Where duplicates already exist the
        index cannot be built, so it silently is not, and nothing enforces uniqueness.
 
   Run with --dry to see what it would change and touch nothing.
@@ -22,14 +26,6 @@ const Comment = require('../models/comment.model');
 const Tag = require('../models/tag.model');
 
 const DRY = process.argv.includes('--dry');
-
-const slugify = (text) =>
-  String(text || '')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-    .slice(0, 180) || 'story';
 
 /** Writes comment.post on any comment that lacks it. */
 async function backfillCommentPosts() {
@@ -56,6 +52,55 @@ async function backfillCommentPosts() {
   }
 
   console.log(`  comments: linked ${repaired} to their post`);
+}
+
+/**
+ * Writes comment.parent on replies that predate the field.
+ *
+ * A reply carries its parent's `post`, so the post-scoped listing used to return it twice:
+ * once nested inside its parent and once as a top-level comment of its own. That listing now
+ * filters on `parent: null`, which is correct for anything written since — but every reply
+ * already in the database has no `parent` at all and would still surface as top-level. The
+ * parent is recoverable because it is exactly the comment whose `replies` array holds this
+ * one's id.
+ */
+async function backfillCommentParents() {
+  const parents = await Comment.find({ replies: { $exists: true, $ne: [] } })
+    .select('_id replies')
+    .lean();
+
+  const orphanedReplies = parents.flatMap((parent) =>
+    (parent.replies ?? []).map((replyId) => ({ replyId, parentId: parent._id })),
+  );
+
+  if (orphanedReplies.length === 0) {
+    console.log('  replies: none to link');
+    return;
+  }
+
+  const pending = await Comment.countDocuments({
+    _id: { $in: orphanedReplies.map((row) => row.replyId) },
+    parent: null,
+  });
+
+  if (pending === 0) {
+    console.log('  replies: all already carry a parent reference');
+    return;
+  }
+
+  console.log(`  replies: ${pending} missing a parent reference`);
+  if (DRY) return;
+
+  let linked = 0;
+  for (const { replyId, parentId } of orphanedReplies) {
+    const result = await Comment.updateOne(
+      { _id: replyId, parent: null },
+      { $set: { parent: parentId } },
+    );
+    linked += result.modifiedCount;
+  }
+
+  console.log(`  replies: linked ${linked} to their parent comment`);
 }
 
 /**
@@ -122,7 +167,9 @@ async function migrateTagsFromCategories() {
 
   const tagMap = new Map();
   const getOrCreateTag = async (rawName) => {
-    const clean = String(rawName || '').trim().toLowerCase();
+    const clean = String(rawName || '')
+      .trim()
+      .toLowerCase();
     if (!clean) return null;
     if (tagMap.has(clean)) return tagMap.get(clean);
     let tag = await Tag.findOne({ name: clean });
@@ -173,10 +220,14 @@ async function cleanupLegacyCategories() {
 
   if (postsWithCategoriesField > 0) {
     if (DRY) {
-      console.log(`  cleanup: would remove legacy categories field from ${postsWithCategoriesField} posts`);
+      console.log(
+        `  cleanup: would remove legacy categories field from ${postsWithCategoriesField} posts`,
+      );
     } else {
       await db.collection('posts').updateMany({}, { $unset: { categories: '' } });
-      console.log(`  cleanup: removed legacy categories field from ${postsWithCategoriesField} posts`);
+      console.log(
+        `  cleanup: removed legacy categories field from ${postsWithCategoriesField} posts`,
+      );
     }
   }
 }
@@ -204,6 +255,7 @@ async function syncIndexes() {
   await mongoose.connect(uri);
 
   await backfillCommentPosts();
+  await backfillCommentParents();
   await deduplicateSlugs();
   await migrateTagsFromCategories();
   await cleanupLegacyCategories();

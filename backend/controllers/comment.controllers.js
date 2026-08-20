@@ -1,7 +1,7 @@
 const Comment = require('../models/comment.model');
 const Post = require('../models/post.model');
 const asyncHandler = require('../middlewares/asyncHandler');
-const { createComment } = require('../services/commentServices');
+const { createComment } = require('../services/commentService');
 const { notFound, forbidden } = require('../utils/AppError');
 
 const MAX_PAGE_SIZE = 50;
@@ -32,15 +32,25 @@ exports.getPostComments = asyncHandler(async (req, res) => {
   // unpublished post exists.
   if (!canViewPost(post, req.user)) throw notFound('Post not found');
 
+  // Replies carry their parent's `post`, so an unfiltered query returned each one twice:
+  // once nested inside its parent and once as a top-level comment of its own. `parent: null`
+  // also matches documents written before the field existed, which is what the migration
+  // backfills.
+  const topLevel = { post: postId, parent: null };
+
   const [comments, total] = await Promise.all([
-    Comment.find({ post: postId })
+    Comment.find(topLevel)
       .populate('user', 'username')
-      .populate({ path: 'replies', populate: { path: 'user', select: 'username' } })
+      .populate({
+        path: 'replies',
+        options: { sort: { createdAt: 1 } },
+        populate: { path: 'user', select: 'username' },
+      })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .lean(),
-    Comment.countDocuments({ post: postId }),
+    Comment.countDocuments(topLevel),
   ]);
 
   res.status(200).json({
@@ -80,6 +90,7 @@ exports.postUserReplyComments = asyncHandler(async (req, res) => {
   const comment = await Comment.create({
     user: req.user.id,
     post: parent.post,
+    parent: parent._id,
     message,
   });
 
@@ -123,10 +134,15 @@ exports.deleteComment = asyncHandler(async (req, res) => {
   }
 
   await Comment.deleteOne({ _id: comment._id });
+
+  // Detach from the parent thread when this was itself a reply. Matched on `parent` rather
+  // than by scanning every comment's `replies` array, and clamped so the counter cannot be
+  // driven below zero by a row that was already unlinked.
   await Comment.updateOne(
-    { replies: comment._id },
+    { _id: comment.parent ?? null, replies: comment._id },
     { $pull: { replies: comment._id }, $inc: { replyCount: -1 } },
   );
+
   await Post.updateOne({ _id: comment.post }, { $pull: { comments: comment._id } });
 
   res.status(200).json({ success: true, message: 'Comment deleted successfully' });
