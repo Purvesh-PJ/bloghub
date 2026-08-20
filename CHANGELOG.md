@@ -11,6 +11,189 @@ Entry types: `Added` · `Changed` · `Deprecated` · `Removed` · `Fixed` · `Se
 
 ## [Unreleased]
 
+### Structure and conventions
+
+An organisation audit across both workspaces: naming drift, duplicated definitions, files in
+the wrong layer, and configuration nobody was using.
+
+#### Added
+
+- **`services/queryKeys.js`** — every React Query cache key in one registry. Keys were string
+  literals repeated at each call site, and a key only works if two places spell it identically:
+  `useCurrentUser` caches under one and Settings invalidates it after a save, so a typo would
+  not throw, it would quietly leave the header showing a stale name and avatar.
+- **`hooks/useTags.js`** — the same tag query was written out in five files, each with its own
+  idea of how long the answer stays fresh. They shared a cache key by coincidence.
+- **[docs/architecture/walkthrough.md](docs/architecture/walkthrough.md)** — the five-minute
+  version of the architecture: the three tiers, one request traced through every layer, what
+  each layer may and may not do, the naming rules, and the decisions worth being asked about.
+
+#### Changed
+
+- Settings declared its own `useQuery` on the `currentUser` key while already importing
+  `useCurrentUser` — two definitions of one fetch, agreeing by luck.
+- `settings.controllers.js` was the last module catching in every handler and answering a
+  hand-written 500, which reported a caller's invalid enum value as a server fault. All twelve
+  controllers use `asyncHandler` now; a local `catch` remains only where an error is being
+  _translated_ — verifying a token, or turning a duplicate key into a 409.
+- `topicIcon` moved from `components/marketing/Topics.jsx` to `utils/topicIcons.js`. It is a
+  lookup table, and the admin taxonomy screen, the search rail, the sign-in panel and the
+  footer were all importing a marketing component to reach it.
+- `likes.routes.js` → `like.routes.js` and `page-views.routes.js` → `page-view.routes.js`, so
+  every route file matches the controller beside it. `commentServices.js` → `commentService.js`.
+- `seed.js` moved from the backend root to `scripts/`, beside `migrate.js`.
+
+#### Removed
+
+- **`client/tsconfig.json`** — a Vite template leftover in a project with zero TypeScript
+  files, and worse than inert: when both exist, editor tooling reads `tsconfig.json` and
+  ignores `jsconfig.json`.
+- The `@/*` path alias declared in `jsconfig.json`. Nothing imported through it and Vite was
+  never configured to resolve it, so it advertised an import style that would have failed at
+  build time.
+
+---
+
+### Front-end performance
+
+Measured from the production build rather than guessed at. Two things dominated: the post page
+shipped a Markdown _editor_ to render an article, and the header shipped every reader's avatar
+as base64 inside a JSON response it re-fetched on every page.
+
+#### Changed
+
+- **Reading a post: 376 kB → 126 kB gzipped, a 66% cut.** `PostDetail` imported
+  `@uiw/react-md-editor` for its `Markdown` export, which dragged the toolbar, the command set,
+  the textarea and the syntax highlighter into the same chunk — 1.1 MB to look at an article
+  nobody can edit from that page. It uses `@uiw/react-markdown-preview/nohighlight` now, and
+  the editor chunk fell from 1,114 kB to 75 kB.
+- **Syntax highlighting loads only for posts that contain code.** `rehype-prism-plus` registers
+  every language Prism supports — 626 kB, a third of everything the site ships — and most posts
+  have no code in them at all. The article renders immediately without it; where there is a
+  fenced block the plugin is fetched and the code is recoloured in place.
+- **The framework is cacheable across deploys.** `manualChunks` listed `react-dom`, but the
+  application imports `react-dom/client` — a different module id — so React's renderer sat in
+  the main chunk and was re-downloaded whenever any application code changed. Naming the real
+  entry points moved 130 kB into `vendor`: the main chunk went from 720 kB to 344 kB, and a
+  returning visitor now re-fetches 98 kB gzipped instead of 207 kB.
+- **Avatars are an image again, not base64 in JSON.** `GET /users/:id/avatar` serves the bytes
+  with an ETag and `Cache-Control`, so a repeat visit is a 304 with no body. `getUser` — which
+  the header calls on every page — embedded a data URI instead: about 2.7 MB of JSON for a 2 MB
+  picture, in a response no cache could hold. It reports `hasAvatar` and `avatarUpdatedAt` now,
+  and the client builds a URL from them. The image buffer is no longer even read from the
+  database on that path.
+- The workspace and admin shells are lazy. Both were imported eagerly by `App.jsx`, so every
+  signed-out visitor downloaded the creator workspace and the whole administration console to
+  look at the landing page.
+- The post's cover image is marked `fetchPriority="high"` and decoded off the main thread. It
+  is the largest contentful paint on that page, so deferring it would be the wrong move and
+  leaving it unhinted left the browser to guess.
+
+#### Removed
+
+- `Mockups.jsx`, `FeatureGrid.jsx` and `Illustrations.jsx` — 29 kB of marketing components that
+  nothing imported.
+
+---
+
+### Frontend-to-backend audit
+
+A second pass walked every screen against every route, looking for capability that existed on
+only one side of the wire. It found one route with six links into it and no endpoint behind
+it, four admin endpoints with no screen, a set of profile fields with a service wrapper
+nothing called, and six defects — closing `BUG-06` and `BUG-15`, the last two left open.
+
+#### Added
+
+- **`GET /users/:id/profile`** — the public profile page. The client has routed `/user/:id`
+  from every author byline, the account menu, the workspace sidebar, the dashboard and two
+  admin screens since the beginning, and nothing served it (BUG-19).
+- **`GET /posts?author=<id>`** — one author's published stories, filtered and paged on the
+  server rather than pulled out of the global feed in the browser.
+- **An Activity screen in the admin console**, over the four `/user-activity/*` endpoints
+  that had existed with no service module, no query and no screen: recent responses, stories,
+  likes and opens, plus the moderation log.
+- **Pagination and bulk actions on admin Posts.** The listing asked for a flat fifty and
+  filtered them in the browser, so a site with more than fifty stories had no way to reach the
+  rest; `POST /posts/bulk` had always accepted an administrator's ids and the console had no
+  way to select anything.
+- **`DELETE /tags/:id`**, refused with 409 while stories still carry the tag. Tags could be
+  created and never removed, so a typo stayed on the discovery rail permanently.
+- **Extended profile fields in Settings** — display name, location, website and social
+  handles. `PUT /settings/profile` and its service wrapper accepted all of them and the schema
+  declared them; nothing ever sent one.
+- **Comment deletion on the post page.** The API has always allowed the comment's author, the
+  post's author and administrators to remove one; there was no control for it outside the
+  workspace.
+- **`Post.editedAt`**, distinct from `updatedAt` (BUG-24).
+- **Admin console tests** — 22 of them, driving each screen's controls through to the service
+  they call. Every button that acts on somebody else's account or content is exercised.
+- **A per-person activity view in the admin console**, over
+  `GET /user-activity/user/:userId` and `/timeline/:userId`. An administrator looking at a
+  reported account could see its row — name, email, role, join date — and nothing about what
+  it had been doing, which is the one thing that decides whether to suspend it.
+- **The public view count on a story**, and the author's own figures now come from
+  `GET /analytics/post/:id` rather than fetching every post they have ever written to display
+  one row of it.
+- **A client test suite** — 73 tests under Vitest, and CI now runs them.
+
+#### Fixed
+
+- `/user/:id` rendered the **viewer's** account for every writer, and 401'd for a signed-out
+  reader clicking a byline: the page called `getUser(userId)`, which takes no argument
+  (BUG-19).
+- Replies were returned **twice** by `GET /comments/post/:postId` — nested inside their parent
+  and again at the top level — and counted twice in the total beside them. `Comment.parent`
+  now scopes the listing; `npm run migrate` backfills it (BUG-20).
+- A repeated like answered **500** instead of 409, and the likes module answered outside the
+  standard envelope, so the client never saw a message (BUG-21).
+- An author's per-post figures never appeared on their own story: `PostDetail` read
+  `analytics.postsAnalytics` where the endpoint answers `{ data: { postsAnalytics } }`
+  (BUG-22).
+- The console reported **zero active users** on every site: the count queried
+  `User.lastActive`, a field no schema declares and nothing writes (BUG-23).
+- The moderation log listed stories nobody had edited. Recording a comment, a like or a view
+  writes to the post document, so `updatedAt` moves without the story changing (BUG-24).
+- Search matched only titles while the box above it offered "stories, tags, or authors". It
+  now matches the body, tag names and author names too, ranks title matches first, and returns
+  enough of each story for a result card to show an author and a date.
+- `GET /analytics/post/:id` read a pre-aggregated `Analytics` document that only the seeder
+  ever wrote, so it answered 404 for every post created through the API (BUG-06).
+- Six components hydrated state inside an effect, painting one frame with the stale value
+  first — on Settings and the editor that reads as "your work is gone", and on the post page
+  it left the like button stuck after signing out (BUG-15).
+- `useDraftRecovery` read the stored draft in an effect that could run after the first autosave
+  had already overwritten it.
+
+- Form fields now carry a working label. `Input` and `TextArea` derived their id from
+  `id ?? props.name`, which is `undefined` when a caller passes neither — so `htmlFor` rendered
+  no `for` attribute and the visible label pointed at nothing. Seventeen fields were affected,
+  every password box among them: assistive technology announced them as unlabelled and clicking
+  the label did not focus the field. A `useId` fallback fixes all of them at the source, and
+  hints and errors are now wired through `aria-describedby` (BUG-25).
+- The activity feed linked a deleted story to `/post/` — no id, no matching route, so the
+  administrator landed on the 404 page. It renders as plain text now.
+
+#### Removed
+
+- **Hardcoded topic lists.** The footer's "Popular Topics" were six fixed hashtags, each a
+  real link into search — on any site not using those exact words they led to an empty result
+  under a heading claiming they were popular. The landing-page marquee replaced a site's own
+  topics with ten invented ones whenever it had fewer than six. Both read the tag endpoint
+  now, which already reports a published post count per tag, and neither shows a topic with
+  nothing published under it.
+- **`POST /users/postUserProfile`** — a second write path to the profile document, doing what
+  `PUT /users/setUser` already does minus the step that keeps `User.profile` pointing at it.
+  Nothing had ever called it.
+- **`GET /likes/:id`** — a like has no identity anything navigates to.
+- **`userService.getUserPosts`** — a duplicate wrapper around the endpoint
+  `postService.getMyPosts` already covered, so two callers could drift apart.
+- The `Analytics` collection and the seeder's writes to it. Per-post figures are counted from
+  `View`, `Read`, `Like` and `Comment` on demand — one source of truth instead of two that
+  could disagree (BUG-06).
+
+---
+
 An end-to-end audit produced a register of 18 functional defects, 18 capability gaps and 15
 security findings — three of the security findings were discovered during remediation itself.
 This release closes **every security finding** and every defect a request can reach, each

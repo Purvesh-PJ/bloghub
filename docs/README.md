@@ -46,11 +46,12 @@ How this structure is chosen and when to grow it:
 
 ### architecture/ — why it is built this way
 
-| Document                                | Contents                                       |
-| --------------------------------------- | ---------------------------------------------- |
-| [overview.md](architecture/overview.md) | System shape, annotated tree, dependency rules |
-| [frontend.md](architecture/frontend.md) | Providers, routing, state ownership, data flow |
-| [backend.md](architecture/backend.md)   | Request lifecycle, layering, error handling    |
+| Document                                      | Contents                                                      |
+| --------------------------------------------- | ------------------------------------------------------------- |
+| [walkthrough.md](architecture/walkthrough.md) | The five-minute version: tiers, layers, naming, key decisions |
+| [overview.md](architecture/overview.md)       | System shape, annotated tree, dependency rules                |
+| [frontend.md](architecture/frontend.md)       | Providers, routing, state ownership, data flow                |
+| [backend.md](architecture/backend.md)         | Request lifecycle, layering, error handling                   |
 
 ### operations/ — running it
 
@@ -81,21 +82,22 @@ How this structure is chosen and when to grow it:
 Each subject has one owning document. To write about one of these, edit the owner and link to
 it — do not restate it.
 
-| Subject                              | Owner                                                    |
-| ------------------------------------ | -------------------------------------------------------- |
-| Feature catalogue and status         | [product/features.md](product/features.md)               |
-| Product journeys                     | [product/user-flows.md](product/user-flows.md)           |
-| Defect and gap backlog               | [product/roadmap.md](product/roadmap.md)                 |
-| Repository tree and dependency rules | [architecture/overview.md](architecture/overview.md)     |
-| Data model and indexes               | [reference/database.md](reference/database.md)           |
-| Endpoint reference                   | [reference/api.md](reference/api.md)                     |
-| Design tokens and UI rules           | [reference/design-system.md](reference/design-system.md) |
-| File placement and code conventions  | [guides/development.md](guides/development.md)           |
-| Install and run instructions         | [guides/getting-started.md](guides/getting-started.md)   |
-| Environment variables                | [reference/configuration.md](reference/configuration.md) |
-| Deployment and CI                    | [operations/deployment.md](operations/deployment.md)     |
-| Token lifecycle and permissions      | [security/auth.md](security/auth.md)                     |
-| Security findings                    | [security/checklist.md](security/checklist.md)           |
+| Subject                              | Owner                                                      |
+| ------------------------------------ | ---------------------------------------------------------- |
+| Feature catalogue and status         | [product/features.md](product/features.md)                 |
+| Product journeys                     | [product/user-flows.md](product/user-flows.md)             |
+| Defect and gap backlog               | [product/roadmap.md](product/roadmap.md)                   |
+| A quick tour of the whole thing      | [architecture/walkthrough.md](architecture/walkthrough.md) |
+| Repository tree and dependency rules | [architecture/overview.md](architecture/overview.md)       |
+| Data model and indexes               | [reference/database.md](reference/database.md)             |
+| Endpoint reference                   | [reference/api.md](reference/api.md)                       |
+| Design tokens and UI rules           | [reference/design-system.md](reference/design-system.md)   |
+| File placement and code conventions  | [guides/development.md](guides/development.md)             |
+| Install and run instructions         | [guides/getting-started.md](guides/getting-started.md)     |
+| Environment variables                | [reference/configuration.md](reference/configuration.md)   |
+| Deployment and CI                    | [operations/deployment.md](operations/deployment.md)       |
+| Token lifecycle and permissions      | [security/auth.md](security/auth.md)                       |
+| Security findings                    | [security/checklist.md](security/checklist.md)             |
 
 ## Issue identifiers
 
@@ -120,25 +122,26 @@ reach, each verified against a running server.
 | ---------------------------------------------------------------- | ---------------------------------------------- |
 | Core journeys — publish, read, edit, engage, moderate, configure | ✅ Working                                     |
 | Security findings                                                | ✅ 15 of 15 closed                             |
-| Database indexes                                                 | ✅ 13 across 8 collections                     |
+| Database indexes                                                 | ✅ 26 across 9 collections                     |
 | Health endpoints, security headers, rate limiting                | ✅ In place                                    |
 | Session revocation, account deletion, view deduplication         | ✅ Done                                        |
-| Backend tests                                                    | ✅ 61 integration tests, run in CI             |
+| Backend tests                                                    | ✅ 119 integration tests, run in CI            |
 | CI pipeline                                                      | ✅ Lint · format · test · build · audit        |
-| **Client tests**                                                 | ❌ **None — the largest remaining risk**       |
+| Client tests                                                     | ⚠️ 73 tests; editor and workspace uncovered    |
 | Branch protection                                                | ❌ CI reports, but nothing requires it to pass |
 | Avatar upload                                                    | ❌ Needs object storage                        |
 
 Read [product/roadmap.md](product/roadmap.md) and
-[security/checklist.md](security/checklist.md) before deploying. The next work is client tests
-and branch protection — everything else is built on top of a gate that does not yet block.
+[security/checklist.md](security/checklist.md) before deploying. The next work is branch
+protection — CI reports on every push, but nothing requires it to pass, so everything above is
+built on a gate that does not yet block.
 
 ---
 
 ## Reading paths
 
 **New contributor** → [getting started](guides/getting-started.md) →
-[architecture overview](architecture/overview.md) →
+[architecture walkthrough](architecture/walkthrough.md) →
 [development](guides/development.md)
 
 **Working on the API** → [backend](architecture/backend.md) →

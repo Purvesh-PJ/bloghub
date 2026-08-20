@@ -12,28 +12,62 @@
 
 ## Current state
 
-The backend has a working suite: **61 tests across six files**, run by Jest against a real
+The backend has a working suite: **119 tests across ten files**, run by Jest against a real
 MongoDB that `mongodb-memory-server` starts in-process. They are integration tests — Supertest
 drives the actual Express app over HTTP and the assertions read the real database — which is
 deliberate, and the reason is in [Pyramid](#pyramid) below.
 
-| Workspace  | Runner                                   | Tests | Command           |
-| ---------- | ---------------------------------------- | ----- | ----------------- |
-| `backend/` | Jest + Supertest + mongodb-memory-server | 61    | `npm test`        |
-| `client/`  | None installed                           | None  | Lint + build only |
+The client has **73 tests** under Vitest in jsdom.
 
-| File                | Tests | Covers                                                                            |
-| ------------------- | ----- | --------------------------------------------------------------------------------- |
-| `auth.test.js`      | 9     | Registration, sign-in, refresh, revocation via `tokenVersion`, suspended accounts |
-| `post.test.js`      | 11    | CRUD, draft visibility, ownership, validation, the slug's unique index            |
-| `comment.test.js`   | 6     | Posting, ownership on delete, the post's visibility rule, pagination              |
-| `workspace.test.js` | 14    | The author's own lists — stories, responses, stats — and their scoping            |
-| `trending.test.js`  | 11    | The scoring formula, the window, the minimum-views floor, the `latest` fallback   |
-| `admin.test.js`     | 10    | Role checks, suspension, promotion, deletion, the last-admin guard                |
+| Workspace  | Runner                                   | Tests | Command    |
+| ---------- | ---------------------------------------- | ----- | ---------- |
+| `backend/` | Jest + Supertest + mongodb-memory-server | 119   | `npm test` |
+| `client/`  | Vitest + Testing Library (jsdom)         | 73    | `npm test` |
+
+| File                 | Tests | Covers                                                                                                      |
+| -------------------- | ----- | ----------------------------------------------------------------------------------------------------------- |
+| `auth.test.js`       | 9     | Registration, sign-in, refresh, revocation via `tokenVersion`, suspended accounts                           |
+| `post.test.js`       | 11    | CRUD, draft visibility, ownership, validation, the slug's unique index                                      |
+| `comment.test.js`    | 6     | Posting, ownership on delete, the post's visibility rule, pagination                                        |
+| `workspace.test.js`  | 14    | The author's own lists — stories, responses, stats — and their scoping                                      |
+| `trending.test.js`   | 11    | The scoring formula, the window, the minimum-views floor, the `latest` fallback                             |
+| `admin.test.js`      | 10    | Role checks, suspension, promotion, deletion, the last-admin guard                                          |
+| `social.test.js`     | 14    | Likes and their unique index under concurrency, replies and their nesting, following                        |
+| `profile.test.js`    | 11    | The public profile endpoint, its privacy rules, and the author-filtered feed                                |
+| `discovery.test.js`  | 25    | Search across title, body, tags and authors; view/read de-duplication; the analytics and activity endpoints |
+| `moderation.test.js` | 9     | The administrator's listing — visibility filter, title search, paging, visibility counts, bulk actions      |
 
 `--runInBand` matters and is in the script: parallel workers sharing one in-memory MongoDB
 interfere with each other. `tests/setup.js` starts and stops the server and truncates
 collections between tests; `tests/env.js` supplies the secrets, so no `.env` is needed.
+
+<a id="client"></a>
+
+### Client
+
+| File                   | Tests | Covers                                                                                                                              |
+| ---------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `services.test.js`     | 18    | Every service's URL and parameters, with `api` mocked — the layer where a dropped argument silently changes which record is fetched |
+| `api.test.js`          | 10    | The axios interceptors: token attachment, the single refresh-and-replay, and each of the five ways a refresh can fail               |
+| `text.test.js`         | 14    | Markdown stripping, excerpts, and both reading-time estimates                                                                       |
+| `UserProfile.test.jsx` | 9     | That the profile page asks for the person in the URL rather than the signed-in account, and pages their stories from the server     |
+
+Two jsdom limits are worth knowing before adding to the admin file. Radix drives its menus
+and dialogs from pointer capture, which jsdom does not implement — `src/test/setup.js` stubs
+it, and without those stubs a click on a dropdown trigger hangs rather than failing. And
+opening a dialog _from_ a dropdown item recurses into a stack overflow, because the menu
+returns focus to its trigger while the dialog traps it; that path is deliberately not driven,
+and the test that would have covers what it can instead.
+
+`src/test/render.jsx` mounts a screen with the providers `main.jsx` supplies — query client,
+auth, theme and a memory router — with retries off and no cache carried between tests, so a
+component that fails a request shows its error state on the first attempt.
+
+There is also `smoke.js`-style end-to-end verification worth doing by hand before a release:
+boot the real server against an in-process MongoDB and walk the changed flows over HTTP. The
+Jest suite drives Express through Supertest, which never opens a socket — a live run is what
+caught [BUG-24](../product/roadmap.md#bug-24), where the unit test agreed with the wrong
+definition of an edit.
 
 Every one of these runs on each push and pull request — see
 [Part 2 · CI/CD](../operations/deployment.md#part-2--cicd).

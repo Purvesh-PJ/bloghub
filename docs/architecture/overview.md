@@ -27,7 +27,7 @@ workspaces.
 └───────────────────────────┬─────────────────────────────────┘
                             │ MongoDB wire protocol
 ┌───────────────────────────▼─────────────────────────────────┐
-│  MongoDB — 11 collections, 13 declared indexes              │
+│  MongoDB — 9 collections, 26 declared indexes               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,7 +45,7 @@ bloghub/
 │   ├── config/
 │   │   ├── db.js                  # Mongoose connection, events, graceful shutdown
 │   │   └── env.js                 # boot-time configuration validation
-│   ├── controllers/               # 12 modules, one per resource
+│   ├── controllers/               # 12 modules — request/response only
 │   ├── middlewares/
 │   │   ├── authenticateUser.js    # JWT verification + account check, optional auth, admin gate
 │   │   ├── authorizeSelfOrAdmin.js# scopes a :userId route to its owner
@@ -54,15 +54,18 @@ bloghub/
 │   │   ├── upload.js              # avatar upload — memory storage, type and size limits
 │   │   ├── errorHandler.js        # terminal error middleware, maps errors to statuses
 │   │   └── logger.js              # morgan, format switched by NODE_ENV
-│   ├── models/                    # 11 Mongoose schemas
-│   ├── routes/                    # 12 routers
-│   ├── services/                  # post, comment, account purge, trending scoring
-│   ├── utils/                     # AppError, visitor keying
+│   ├── models/                    # 9 Mongoose schemas, 26 declared indexes
+│   ├── routes/                    # 11 routers — paths, guards, validators, nothing else
+│   ├── services/                  # domain logic reused across controllers:
+│   │   │                          #   postService, commentService,
+│   │   │                          #   accountService (purge), trendingService (scoring)
+│   ├── utils/                     # AppError, regex escaping, visitor keying
 │   ├── validators/                # express-validator chains, one module per area
-│   ├── tests/                     # jest + supertest against an in-memory MongoDB
+│   ├── tests/                     # 10 suites, jest + supertest against in-memory MongoDB
+│   ├── scripts/
+│   │   ├── seed.js                # sample dataset, guarded against remote targets
+│   │   └── migrate.js             # non-destructive repair of an existing database
 │   ├── index.js                   # composition root
-│   ├── seed.js                    # sample dataset, guarded against remote targets
-│   ├── scripts/migrate.js         # non-destructive repair of an existing database
 │   └── package.json
 │
 ├── client/                        # React SPA · ES modules
@@ -72,24 +75,28 @@ bloghub/
 │   │   │   ├── layout/            # Header, Footer, Layout, AdminLayout,
 │   │   │   │                      #   WorkspaceLayout, PageShell, Editorial,
 │   │   │   │                      #   ThemeToggle, SkipLink, ErrorBoundary
-│   │   │   ├── marketing/         # landing-page-only sections
+│   │   │   ├── marketing/         # HeroIllustration, TopicMarquee — landing page only
 │   │   │   ├── posts/             # PostCard, AuthorByline, skeletons
 │   │   │   ├── stats/             # ReadRateBar
 │   │   │   └── ui/                # 21 token-driven primitives + barrel
-│   │   ├── config/api.js          # the single Axios instance and interceptors
+│   │   ├── config/
+│   │   │   ├── api.js             # the single Axios instance, interceptors, avatarUrl
+│   │   │   └── markdown.js        # sanitisation schema, deferred highlighting loader
 │   │   ├── context/AuthContext.jsx# authState singleton + provider + hook
 │   │   ├── guards/                # ProtectedRoute, AdminRoute
-│   │   ├── hooks/                 # useDebounced, useDraftRecovery, useCurrentUser, useReading
-│   │   ├── pages/                 # 11 pages + admin/ (4 more)
-│   │   ├── services/              # 10 API clients
-│   │   ├── styles/                # ThemeProvider + theme/
+│   │   ├── hooks/                 # useCurrentUser, useTags, useDebounced,
+│   │   │                          #   useDraftRecovery, useReading
+│   │   ├── pages/                 # 12 pages + admin/ (6) + auth/ (shell)
+│   │   ├── services/              # 10 API clients + queryKeys.js (cache key registry)
+│   │   ├── styles/                # ThemeProvider + theme/ (tokens, mixins, light, dark)
+│   │   ├── test/                  # render helper + vitest setup (helpers, not tests)
+│   │   ├── utils/                 # text helpers, topic icon map
 │   │   ├── App.jsx                # route table, lazy loading
 │   │   └── main.jsx               # provider tree
 │   ├── eslint.config.js
 │   ├── index.html
-│   ├── jsconfig.json
-│   ├── tsconfig.json              # ⚠ strict TS config in an all-JavaScript project
-│   ├── vite.config.js
+│   ├── jsconfig.json              # editor support; no tsconfig — the project is all JS
+│   ├── vite.config.js             # dev proxy, manual chunks, vitest config
 │   └── package.json
 │
 ├── docs/
@@ -221,13 +228,27 @@ pointed at it with `envDir: '../'`. Reference:
 
 ## Known structural weaknesses
 
-| Observation                                                         | Consequence                                                                                                                    |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| No root `package.json`                                              | Every command runs from a subdirectory; CI must install twice                                                                  |
-| `services/` covers only two of twelve resources                     | Most controllers talk to models directly, so the layer is a convention rather than a rule                                      |
-| ~~The router is mounted at both `/` and `/api`~~                    | Closed — mounted once, at `/api`. See [reference/api.md](../reference/api.md#base-url)                                         |
-| `client/tsconfig.json` alongside `jsconfig.json`                    | Two overlapping editor configs; the stricter one has no consumer                                                               |
-| The `@/*` alias is declared but unused, with no matching Vite alias | Using it today would break the build                                                                                           |
-| Page components run 400–1,000+ lines                                | Styled components co-located with page logic; the largest files are hard to review                                             |
-| Five of thirteen controllers still catch locally                    | Both patterns are correct; the older one picks its status further from the cause — see [backend.md](backend.md#error-handling) |
-| No client test runner                                               | The backend has 61 tests in CI; the client has none ([GAP-11](../product/roadmap.md#gap-11))                                   |
+Honest list. Each is a deliberate trade-off or an open item, not an oversight.
+
+| Observation                                 | Consequence                                                                                                                                            |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| No root `package.json`                      | Every command runs from a subdirectory; CI installs twice                                                                                              |
+| `services/` covers four of twelve resources | The rest of the controllers talk to models directly, so the layer is a convention applied where logic is shared, not a rule                            |
+| Page components run 400–1,000+ lines        | Styled components are co-located with page logic; the largest files are hard to review                                                                 |
+| Avatars are stored in MongoDB               | Fine at a 2 MB cap and now served with an ETag, but object storage is the right home ([GAP-17](../product/roadmap.md#gap-17))                          |
+| `syntax-highlight` is 225 kB gzipped        | The largest chunk in the build. Loaded only for a post containing code; shrinking it means registering a shortlist of languages instead of all of them |
+| Partial client coverage                     | 125 backend and 73 client tests in CI; the editor and the creator workspace are still uncovered ([GAP-11](../product/roadmap.md#gap-11))               |
+| No branch protection                        | CI reports on every push but nothing requires it to pass                                                                                               |
+
+### Closed since the last revision
+
+| Was                                                       | Now                                                                                            |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Router mounted at both `/` and `/api`                     | Mounted once, at `/api`                                                                        |
+| `tsconfig.json` alongside `jsconfig.json`                 | `tsconfig.json` removed — the project has no TypeScript, and it shadowed `jsconfig.json`       |
+| An `@/*` alias declared but unresolvable                  | Removed rather than wired; every import is relative                                            |
+| Five controllers catching errors locally                  | All twelve use `asyncHandler`; a local `catch` now only appears where an error is _translated_ |
+| Cache keys written as literals at each call site          | One registry in `services/queryKeys.js`                                                        |
+| The tag query duplicated across five files                | One `useTags` hook                                                                             |
+| `seed.js` at the backend root, `migrate.js` in `scripts/` | Both in `scripts/`                                                                             |
+| `likes.routes.js` / `page-views.routes.js`                | Renamed to match their controllers — every pair is now `<resource>.<layer>.js`                 |

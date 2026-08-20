@@ -153,7 +153,7 @@ Every endpoint also answers without the `/api` prefix locally — see
 | `npm run migrate` / `migrate:dry`      | Repair an existing database in place, non-destructively. `:dry` shows what would change and changes nothing |
 | `npm run lint` / `lint:fix`            | ESLint                                                                                                      |
 | `npm run format` / `format:check`      | Prettier                                                                                                    |
-| `npm test`                             | 61 integration tests. Starts its own MongoDB in-process, so it needs no database and no `.env`              |
+| `npm test`                             | 119 integration tests. Starts its own MongoDB in-process, so it needs no database and no `.env`             |
 | `npm run test:watch` / `test:coverage` | The same, watching or with a coverage report                                                                |
 
 ### `client/`
