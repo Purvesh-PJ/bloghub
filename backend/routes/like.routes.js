@@ -12,8 +12,17 @@ router.post(
   LikeControllers.createLike,
 );
 
-// Get all likes for a specific post
-router.get('/post/:postId', validateObjectId('postId'), LikeControllers.getPostLikes);
+/*
+  The two reads below are public, but a like is only as public as the post it sits on — so
+  they still need to know who is asking in order to let an author see the likes on their own
+  unpublished story. attachUserIfPresent supplies that without rejecting anonymous callers.
+*/
+router.get(
+  '/post/:postId',
+  validateObjectId('postId'),
+  AuthUser.attachUserIfPresent,
+  LikeControllers.getPostLikes,
+);
 
 // Unlike a post (requires authentication)
 router.delete(
@@ -22,8 +31,5 @@ router.delete(
   validateObjectId('postId'),
   LikeControllers.deleteLike,
 );
-
-// Get a specific like by ID
-router.get('/:id', validateObjectId('id'), LikeControllers.getLike);
 
 module.exports = router;
