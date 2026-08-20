@@ -1,32 +1,17 @@
 const path = require('path');
 const bcrypt = require('bcryptjs');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-const User = require('./models/user.model');
-const Post = require('./models/post.model');
-const Tag = require('./models/tag.model');
-const Comment = require('./models/comment.model');
-const Like = require('./models/like.model');
-const Profile = require('./models/user-profile.model');
-const View = require('./models/view.model');
-const Read = require('./models/read.model');
-const Analytics = require('./models/analytics.model');
+const User = require('../models/user.model');
+const Post = require('../models/post.model');
+const Tag = require('../models/tag.model');
+const Comment = require('../models/comment.model');
+const Like = require('../models/like.model');
+const Profile = require('../models/user-profile.model');
+const View = require('../models/view.model');
+const Read = require('../models/read.model');
 
-const { connectDB } = require('./config/db');
-
-// All 10 Multi-Categories
-const categories = [
-  'Technology',
-  'Design',
-  'Business',
-  'Lifestyle',
-  'Science',
-  'Travel',
-  'Programming',
-  'Health',
-  'Food',
-  'Photography',
-];
+const { connectDB } = require('../config/db');
 
 const users = [
   {
@@ -418,7 +403,6 @@ async function seed() {
       Profile.deleteMany({}),
       View.deleteMany({}),
       Read.deleteMany({}),
-      Analytics.deleteMany({}),
     ]);
 
     // Dynamic Tag Dictionary
@@ -626,14 +610,12 @@ async function seed() {
 
       await post.save();
 
-      // Create Analytics Document for post
-      const analytics = new Analytics({
-        blogPost: post._id,
-        totalPageViews: post.views.length + Math.floor(Math.random() * 50),
-        totalLikes: post.likes.length,
-        totalComments: post.comments.length,
-      });
-      await analytics.save();
+      /*
+        No pre-aggregated analytics document is written any more. The application never wrote
+        one — only this script did — so the totals it held drifted from the View, Read, Like
+        and Comment rows the moment anybody used the site. Every analytics endpoint now counts
+        those rows directly, which is what the seed has been creating all along.
+      */
     }
     console.log(`Added ${viewCount} views and ${readCount} completed reads with real analytics!`);
 
