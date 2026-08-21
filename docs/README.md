@@ -37,12 +37,12 @@ How this structure is chosen and when to grow it:
 
 ### reference/ — look things up
 
-| Document                                       | Contents                                          |
-| ---------------------------------------------- | ------------------------------------------------- |
-| [api.md](reference/api.md)                     | Complete endpoint catalogue and API design rules  |
-| [configuration.md](reference/configuration.md) | Complete environment variable reference           |
-| [database.md](reference/database.md)           | Collections, relationships, indexes, integrity    |
-| [design-system.md](reference/design-system.md) | Tokens, themes, primitives, layout, accessibility |
+| Document                                       | Contents                                                    |
+| ---------------------------------------------- | ----------------------------------------------------------- |
+| [api.md](reference/api.md)                     | Complete endpoint catalogue and API design rules            |
+| [configuration.md](reference/configuration.md) | Complete environment variable reference                     |
+| [database.md](reference/database.md)           | Collections, relationships, indexes, integrity              |
+| [design-system.md](reference/design-system.md) | Tokens, themes, primitives, typography, colour, iconography |
 
 ### architecture/ — why it is built this way
 
@@ -82,22 +82,23 @@ How this structure is chosen and when to grow it:
 Each subject has one owning document. To write about one of these, edit the owner and link to
 it — do not restate it.
 
-| Subject                              | Owner                                                      |
-| ------------------------------------ | ---------------------------------------------------------- |
-| Feature catalogue and status         | [product/features.md](product/features.md)                 |
-| Product journeys                     | [product/user-flows.md](product/user-flows.md)             |
-| Defect and gap backlog               | [product/roadmap.md](product/roadmap.md)                   |
-| A quick tour of the whole thing      | [architecture/walkthrough.md](architecture/walkthrough.md) |
-| Repository tree and dependency rules | [architecture/overview.md](architecture/overview.md)       |
-| Data model and indexes               | [reference/database.md](reference/database.md)             |
-| Endpoint reference                   | [reference/api.md](reference/api.md)                       |
-| Design tokens and UI rules           | [reference/design-system.md](reference/design-system.md)   |
-| File placement and code conventions  | [guides/development.md](guides/development.md)             |
-| Install and run instructions         | [guides/getting-started.md](guides/getting-started.md)     |
-| Environment variables                | [reference/configuration.md](reference/configuration.md)   |
-| Deployment and CI                    | [operations/deployment.md](operations/deployment.md)       |
-| Token lifecycle and permissions      | [security/auth.md](security/auth.md)                       |
-| Security findings                    | [security/checklist.md](security/checklist.md)             |
+| Subject                                   | Owner                                                          |
+| ----------------------------------------- | -------------------------------------------------------------- |
+| Feature catalogue and status              | [product/features.md](product/features.md)                     |
+| Product journeys                          | [product/user-flows.md](product/user-flows.md)                 |
+| Defect and gap backlog                    | [product/roadmap.md](product/roadmap.md)                       |
+| A quick tour of the whole thing           | [architecture/walkthrough.md](architecture/walkthrough.md)     |
+| Repository tree and dependency rules      | [architecture/overview.md](architecture/overview.md)           |
+| Data model and indexes                    | [reference/database.md](reference/database.md)                 |
+| Endpoint reference                        | [reference/api.md](reference/api.md)                           |
+| Design tokens and the primitive catalogue | [reference/design-system.md](reference/design-system.md)       |
+| UI rules, drift and agent guidance        | [guides/development.md](guides/development.md#design-language) |
+| File placement and code conventions       | [guides/development.md](guides/development.md)                 |
+| Install and run instructions              | [guides/getting-started.md](guides/getting-started.md)         |
+| Environment variables                     | [reference/configuration.md](reference/configuration.md)       |
+| Deployment and CI                         | [operations/deployment.md](operations/deployment.md)           |
+| Token lifecycle and permissions           | [security/auth.md](security/auth.md)                           |
+| Security findings                         | [security/checklist.md](security/checklist.md)                 |
 
 ## Issue identifiers
 
