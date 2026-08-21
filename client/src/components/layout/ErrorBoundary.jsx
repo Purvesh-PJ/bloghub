@@ -1,5 +1,14 @@
 import { Component } from 'react';
 
+/*
+  The one place in the application that does not use the theme.
+
+  This is the last line of defence: it renders when something below it has already thrown,
+  which includes ThemeProvider itself. A styled-component here would need the very context
+  that may be the thing that failed, so the fallback would crash instead of catching. Plain
+  inline styles with literal colours are deliberate, and this file is the only exception to
+  the rule that colour comes from a token.
+*/
 const styles = {
   container: {
     maxWidth: '500px',

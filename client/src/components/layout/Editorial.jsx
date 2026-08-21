@@ -33,17 +33,15 @@ export const FullBleed = styled.div`
  */
 export const Inverted = styled(FullBleed)`
   background: ${({ theme }) =>
-    theme.mode === 'light'
-      ? 'linear-gradient(135deg, #0369a1 0%, #0284c7 100%)'
-      : 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'};
-  color: #ffffff;
+    theme.mode === 'light' ? theme.gradients.brand : theme.gradients.inkDeep};
+  color: ${({ theme }) => theme.colors.textOnInk};
   padding: ${({ theme }) => theme.spacing['6xl']} 0;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
   h1,
   h2,
   h3 {
-    color: #ffffff;
+    color: ${({ theme }) => theme.colors.textOnInk};
   }
 
   ${media.down('md')`

@@ -27,6 +27,7 @@ import { HeroIllustration } from '../components/marketing/HeroIllustration';
 import { TopicMarquee } from '../components/marketing/Topics';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 import { queryKeys } from '../services/queryKeys';
+import { iconPx } from '../styles/theme';
 
 /* ── Page Shell ──────────────────────────────────────────────────────────── */
 
@@ -341,7 +342,7 @@ const CtaSection = styled.div`
   border-radius: ${({ theme }) => theme.radii['3xl']};
   padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing['2xl']};
   text-align: center;
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.textOnInk};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -356,7 +357,7 @@ const CtaSection = styled.div`
 
 const CtaTitle = styled.h2`
   ${display('md')}
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.textOnInk};
   font-weight: 800;
   letter-spacing: -0.025em;
   max-width: 640px;
@@ -388,7 +389,7 @@ const CtaHighlights = styled.div`
   svg {
     width: 14px;
     height: 14px;
-    color: #38bdf8;
+    color: ${({ theme }) => theme.colors.accentText};
   }
 `;
 
@@ -490,7 +491,7 @@ export function Home() {
             ))
           ) : posts.length === 0 ? (
             <EmptyFeed style={{ gridColumn: '1 / -1' }}>
-              <Feather size={36} style={{ opacity: 0.5 }} />
+              <Feather size={iconPx.xl} style={{ opacity: 0.5 }} />
               <h3>No stories published yet</h3>
               <p>Be the very first writer to share an insightful article with the community!</p>
               <Button size="md" onClick={() => navigate(startHref)}>
