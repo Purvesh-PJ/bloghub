@@ -1,6 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import styled, { keyframes } from 'styled-components';
 import { X } from 'lucide-react';
+import { iconPx } from '../../styles/theme';
 
 /**
  * Modal — Radix Dialog underneath.
@@ -117,7 +118,7 @@ export function Modal({
               </div>
               {showClose && (
                 <CloseButton aria-label="Close">
-                  <X size={18} />
+                  <X size={iconPx.lg} />
                 </CloseButton>
               )}
             </Header>
@@ -130,5 +131,25 @@ export function Modal({
 }
 
 // Escape hatches for callers that need to drive the dialog directly.
+/**
+ * The row of actions at the bottom of a dialog.
+ *
+ * Every dialog in the application ended with the same inline style — `display: flex`,
+ * `gap: 8`, `justifyContent: 'flex-end'`, sometimes `marginTop: 16` and sometimes not. Twelve
+ * copies of one decision, each free to drift, and the two spellings already disagreed about
+ * the gap above them.
+ *
+ * Cancel goes first, the confirming action last, matching the reading order the buttons are
+ * placed in.
+ */
+const Footer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacing.xl};
+`;
+
+Modal.Footer = Footer;
 Modal.Trigger = Dialog.Trigger;
 Modal.Close = Dialog.Close;

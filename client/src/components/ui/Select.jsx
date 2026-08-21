@@ -2,6 +2,7 @@ import * as RadixSelect from '@radix-ui/react-select';
 import styled from 'styled-components';
 import { Check, ChevronDown } from 'lucide-react';
 import { text } from '../../styles/theme/mixins';
+import { iconPx } from '../../styles/theme';
 
 /**
  * Select — Radix Select underneath.
@@ -147,7 +148,7 @@ export function Select({
         <Trigger $density={density} $error={Boolean(error)} aria-label={label}>
           <RadixSelect.Value placeholder={placeholder} />
           <Icon>
-            <ChevronDown size={16} />
+            <ChevronDown size={iconPx.md} />
           </Icon>
         </Trigger>
 
@@ -158,7 +159,7 @@ export function Select({
                 <Item key={option.value} value={option.value} disabled={option.disabled}>
                   <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
                   <ItemIndicator>
-                    <Check size={14} />
+                    <Check size={iconPx.sm} />
                   </ItemIndicator>
                 </Item>
               ))}

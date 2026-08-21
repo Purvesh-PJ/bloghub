@@ -3,6 +3,7 @@ import { AlertTriangle, RotateCw } from 'lucide-react';
 import { display, text } from '../../styles/theme/mixins';
 import { Surface } from './Surface';
 import { Button } from './Button';
+import { iconPx } from '../../styles/theme';
 
 /**
  * Error state.
@@ -78,7 +79,7 @@ export function ErrorState({ title = 'That did not load', error, onRetry, childr
       </Body>
       {onRetry && (
         <Button variant="secondary" size="sm" onClick={onRetry}>
-          <RotateCw size={14} /> Try again
+          <RotateCw size={iconPx.sm} /> Try again
         </Button>
       )}
     </Root>

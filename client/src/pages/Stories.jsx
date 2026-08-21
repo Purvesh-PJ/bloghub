@@ -40,6 +40,7 @@ import {
 } from '../components/ui';
 import { text, media, clamp } from '../styles/theme/mixins';
 import { queryKeys } from '../services/queryKeys';
+import { iconPx } from '../styles/theme';
 
 /**
  * Stories — everything to do with managing what you have written.
@@ -282,9 +283,9 @@ function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSe
   };
 
   const visibilityActions = [
-    { value: 'public', label: 'Publish story live', icon: <Globe size={14} /> },
-    { value: 'draft', label: 'Move to drafts', icon: <EyeOff size={14} /> },
-    { value: 'private', label: 'Make private', icon: <Lock size={14} /> },
+    { value: 'public', label: 'Publish story live', icon: <Globe size={iconPx.sm} /> },
+    { value: 'draft', label: 'Move to drafts', icon: <EyeOff size={iconPx.sm} /> },
+    { value: 'private', label: 'Make private', icon: <Lock size={iconPx.sm} /> },
   ].filter((option) => option.value !== (post.visibility || 'draft'));
 
   const views = stats?.views ?? post.views?.length ?? 0;
@@ -343,20 +344,20 @@ function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSe
               size="sm"
               aria-label={`Actions for ${post.title || 'Untitled'}`}
             >
-              <MoreHorizontal size={16} />
+              <MoreHorizontal size={iconPx.md} />
             </Button>
           }
         >
           <DropdownMenu.Item onSelect={() => navigate(`/edit/${post._id}`)}>
-            <Pencil size={14} /> Edit story
+            <Pencil size={iconPx.sm} /> Edit story
           </DropdownMenu.Item>
 
           <DropdownMenu.Item onSelect={() => navigate(`/post/${post._id}`)}>
-            <ExternalLink size={14} /> {isPublic ? 'View live story' : 'Preview as reader'}
+            <ExternalLink size={iconPx.sm} /> {isPublic ? 'View live story' : 'Preview as reader'}
           </DropdownMenu.Item>
 
           <DropdownMenu.Item onSelect={handleCopyLink}>
-            <Share2 size={14} /> {isPublic ? 'Copy public link' : 'Copy private link'}
+            <Share2 size={iconPx.sm} /> {isPublic ? 'Copy public link' : 'Copy private link'}
           </DropdownMenu.Item>
 
           <DropdownMenu.Separator />
@@ -374,7 +375,7 @@ function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSe
           <DropdownMenu.Separator />
 
           <DropdownMenu.Item $tone="danger" onSelect={() => onDelete(post)}>
-            <Trash2 size={14} /> Delete story
+            <Trash2 size={iconPx.sm} /> Delete story
           </DropdownMenu.Item>
         </DropdownMenu>
       </ActionsCell>
@@ -527,7 +528,7 @@ export function Stories() {
             onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'public' })}
             disabled={bulkMutation.isPending}
           >
-            <Globe size={14} /> Publish
+            <Globe size={iconPx.sm} /> Publish
           </Button>
           <Button
             size="sm"
@@ -535,7 +536,7 @@ export function Stories() {
             onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'draft' })}
             disabled={bulkMutation.isPending}
           >
-            <EyeOff size={14} /> To drafts
+            <EyeOff size={iconPx.sm} /> To drafts
           </Button>
           <Button
             size="sm"
@@ -543,7 +544,7 @@ export function Stories() {
             onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'private' })}
             disabled={bulkMutation.isPending}
           >
-            <Lock size={14} /> Make private
+            <Lock size={iconPx.sm} /> Make private
           </Button>
           <Button
             size="sm"
@@ -551,7 +552,7 @@ export function Stories() {
             onClick={() => setPendingBulk(selectedIds)}
             disabled={bulkMutation.isPending}
           >
-            <Trash2 size={14} /> Delete
+            <Trash2 size={iconPx.sm} /> Delete
           </Button>
           <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
             Cancel
@@ -630,7 +631,7 @@ export function Stories() {
           actions={
             counts.all === 0 ? (
               <Button as={Link} to="/write" size="sm">
-                <PenLine size={14} /> Write your first story
+                <PenLine size={iconPx.sm} /> Write your first story
               </Button>
             ) : undefined
           }
@@ -706,7 +707,7 @@ export function Stories() {
             : ''
         }
       >
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setPendingDelete(null)}>
             Cancel
           </Button>
@@ -717,7 +718,7 @@ export function Stories() {
           >
             {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
 
       <Modal
@@ -726,7 +727,7 @@ export function Stories() {
         title={`Delete ${pendingBulk?.length ?? 0} ${pendingBulk?.length === 1 ? 'story' : 'stories'}?`}
         description="They will be permanently removed, along with their comments and likes. This cannot be undone."
       >
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setPendingBulk(null)}>
             Cancel
           </Button>
@@ -737,7 +738,7 @@ export function Stories() {
           >
             {bulkMutation.isPending ? 'Deleting…' : 'Delete all'}
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
     </PageShell>
   );

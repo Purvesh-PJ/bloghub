@@ -427,7 +427,7 @@ export function AdminPosts() {
         }?`}
         description="They and their responses will be removed. This cannot be undone."
       >
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setPendingBulkDelete(null)}>
             Cancel
           </Button>
@@ -438,7 +438,7 @@ export function AdminPosts() {
           >
             {bulkMutation.isPending ? 'Deleting…' : 'Delete all'}
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
 
       <Modal
@@ -451,7 +451,7 @@ export function AdminPosts() {
             : ''
         }
       >
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setPendingDelete(null)}>
             Cancel
           </Button>
@@ -462,7 +462,7 @@ export function AdminPosts() {
           >
             {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
     </>
   );

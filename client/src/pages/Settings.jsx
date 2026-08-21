@@ -27,6 +27,7 @@ import { PageShell } from '../components/layout/PageShell';
 import { Button, Input, TextArea, Surface, Modal, Avatar, Skeleton } from '../components/ui';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 import { queryKeys } from '../services/queryKeys';
+import { iconPx } from '../styles/theme';
 
 // Mirrors the server-side minimum in validators/auth.validators.js.
 const MIN_PASSWORD_LENGTH = 10;
@@ -635,7 +636,8 @@ export function Settings() {
                         </PanelNote>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                           <Button type="button" variant="secondary" size="sm" as="label">
-                            <ImagePlus size={14} /> {avatarUrl || avatarFile ? 'Replace' : 'Upload'}
+                            <ImagePlus size={iconPx.sm} />{' '}
+                            {avatarUrl || avatarFile ? 'Replace' : 'Upload'}
                             <HiddenFileInput
                               type="file"
                               accept="image/jpeg,image/png,image/webp,image/gif"
@@ -928,7 +930,7 @@ export function Settings() {
                     </PanelHead>
 
                     <Button variant="dangerTonal" onClick={() => setConfirmDelete(true)}>
-                      <Trash2 size={16} /> Delete my account
+                      <Trash2 size={iconPx.md} /> Delete my account
                     </Button>
                   </Panel>
                 </>
@@ -961,14 +963,14 @@ export function Settings() {
             value={deletePassword}
             onChange={(event) => setDeletePassword(event.target.value)}
           />
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+          <Modal.Footer>
             <Button type="button" variant="secondary" onClick={() => setConfirmDelete(false)}>
               Keep my account
             </Button>
             <Button type="submit" variant="danger" disabled={deleteAccountMutation.isPending}>
               {deleteAccountMutation.isPending ? 'Deleting…' : 'Delete permanently'}
             </Button>
-          </div>
+          </Modal.Footer>
         </form>
       </Modal>
     </PageShell>

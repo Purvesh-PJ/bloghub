@@ -25,6 +25,7 @@ import { Button, Chip, EmptyState } from '../components/ui';
 import { display, text, clamp, media, interactive } from '../styles/theme/mixins';
 import { excerpt, readingTimeFromLength } from '../utils/text';
 import { queryKeys } from '../services/queryKeys';
+import { iconPx } from '../styles/theme';
 
 /* ── Styled Components (All using Design Tokens & Primitives) ────────────── */
 
@@ -380,7 +381,7 @@ export function Search() {
           />
           {draft && (
             <button className="clear-btn" onClick={clearSearch} title="Clear search">
-              <X size={14} />
+              <X size={iconPx.sm} />
             </button>
           )}
         </SearchBox>
@@ -390,7 +391,7 @@ export function Search() {
       {!query && (
         <CategoryNav>
           <Chip size="md" selected={!topic} onClick={() => setTopic('')}>
-            <Flame size={14} /> All Stories
+            <Flame size={iconPx.sm} /> All Stories
           </Chip>
           {activeTags.map((tag) => {
             const Icon = topicIcon(tag.name);
@@ -402,7 +403,7 @@ export function Search() {
                 selected={isSelected}
                 onClick={() => setTopic(tag.name)}
               >
-                <Icon size={14} />
+                <Icon size={iconPx.sm} />
                 {formatTopicTitle(tag.name)}
               </Chip>
             );
@@ -414,7 +415,7 @@ export function Search() {
       {!query && topic && (
         <ActiveFilterBar>
           <ActiveFilterText>
-            <Sparkles size={16} /> Filtered by <strong>{formatTopicTitle(topic)}</strong>
+            <Sparkles size={iconPx.md} /> Filtered by <strong>{formatTopicTitle(topic)}</strong>
             <span className="count">
               (
               {loadingPosts
@@ -424,7 +425,7 @@ export function Search() {
             </span>
           </ActiveFilterText>
           <Button size="sm" variant="ghost" onClick={() => setTopic('')}>
-            <RotateCcw size={13} /> Clear filter
+            <RotateCcw size={iconPx.sm} /> Clear filter
           </Button>
         </ActiveFilterBar>
       )}
@@ -465,11 +466,12 @@ export function Search() {
                     {/* The result carries the length of the whole body, not the body itself —
                         estimating from the 200-character excerpt gave every card the same
                         "0 min read". */}
-                    <Clock size={12} /> {readingTimeFromLength(result.contentLength)} min read
+                    <Clock size={iconPx.xs} /> {readingTimeFromLength(result.contentLength)} min
+                    read
                   </span>
                   {result.user?.username && <span>by {result.user.username}</span>}
                   <span style={{ color: '#0284c7', fontWeight: 600 }}>
-                    Read story <ArrowRight size={12} />
+                    Read story <ArrowRight size={iconPx.xs} />
                   </span>
                 </SearchResultFooter>
               </SearchResultCard>
@@ -493,7 +495,7 @@ export function Search() {
             : 'Stories will show up here as creators in the community publish them.'}
           <div style={{ marginTop: 12 }}>
             <Button size="sm" onClick={() => navigate('/write')}>
-              <PenLine size={13} /> Write a story
+              <PenLine size={iconPx.sm} /> Write a story
             </Button>
           </div>
         </EmptyState>

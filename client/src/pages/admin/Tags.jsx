@@ -20,6 +20,7 @@ import {
 } from '../../components/ui';
 import { text } from '../../styles/theme/mixins';
 import { queryKeys } from '../../services/queryKeys';
+import { iconPx } from '../../styles/theme';
 
 const Toolbar = styled.div`
   display: flex;
@@ -113,47 +114,47 @@ export function AdminTags() {
           <>
             <Toolbar>
               <Button size="sm" onClick={() => setOpen(true)}>
-                <Plus size={15} /> New tag
+                <Plus size={iconPx.sm} /> New tag
               </Button>
             </Toolbar>
 
             <Card tone="low" radius="xl" padding="sm">
-            <Table>
-              <Table.Head>
-                <tr>
-                  <th>Topic / Tag</th>
-                  <th>Published Stories</th>
-                  <th aria-label="Actions" />
-                </tr>
-              </Table.Head>
-              <Table.Body>
-                {tags.map((tag) => {
-                  const Icon = topicIcon(tag.name);
-                  return (
-                    <tr key={tag._id || tag.name}>
-                      <td>
-                        <NameCell>
-                          <Icon />#{tag.name}
-                        </NameCell>
-                      </td>
-                      <td>{tag.postCount ?? tag.posts?.length ?? 0}</td>
-                      <td style={{ textAlign: 'right' }}>
-                        <IconButton
-                          aria-label={`Remove the tag ${tag.name}`}
-                          onClick={() => setPendingDelete(tag)}
-                        >
-                          <Trash2 />
-                        </IconButton>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </Table.Body>
-            </Table>
-          </Card>
-        </>
-      )}
-    </Section>
+              <Table>
+                <Table.Head>
+                  <tr>
+                    <th>Topic / Tag</th>
+                    <th>Published Stories</th>
+                    <th aria-label="Actions" />
+                  </tr>
+                </Table.Head>
+                <Table.Body>
+                  {tags.map((tag) => {
+                    const Icon = topicIcon(tag.name);
+                    return (
+                      <tr key={tag._id || tag.name}>
+                        <td>
+                          <NameCell>
+                            <Icon />#{tag.name}
+                          </NameCell>
+                        </td>
+                        <td>{tag.postCount ?? tag.posts?.length ?? 0}</td>
+                        <td style={{ textAlign: 'right' }}>
+                          <IconButton
+                            aria-label={`Remove the tag ${tag.name}`}
+                            onClick={() => setPendingDelete(tag)}
+                          >
+                            <Trash2 />
+                          </IconButton>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </Table.Body>
+              </Table>
+            </Card>
+          </>
+        )}
+      </Section>
 
       <Modal
         open={Boolean(pendingDelete)}
@@ -161,7 +162,7 @@ export function AdminTags() {
         title={`Remove #${pendingDelete?.name ?? ''}?`}
         description="Writers can create the tag again by using it on a story."
       >
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setPendingDelete(null)}>
             Cancel
           </Button>
@@ -172,7 +173,7 @@ export function AdminTags() {
           >
             {deleteMutation.isPending ? 'Removing…' : 'Remove'}
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
 
       <Modal open={open} onOpenChange={setOpen} title="New tag / topic">

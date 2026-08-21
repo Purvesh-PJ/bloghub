@@ -20,6 +20,7 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { ThemeToggle } from './ThemeToggle';
 import { Button, Avatar, Modal, BrandMark } from '../ui';
 import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
+import { iconPx } from '../../styles/theme';
 
 const Shell = styled.div`
   display: flex;
@@ -374,7 +375,7 @@ export function WorkspaceLayout() {
             <StudioBadge>Studio</StudioBadge>
           </Brand>
           <DrawerCloseBtn onClick={closeMobile} aria-label="Close menu">
-            <X size={18} />
+            <X size={iconPx.lg} />
           </DrawerCloseBtn>
         </BrandRow>
 
@@ -401,20 +402,12 @@ export function WorkspaceLayout() {
           >
             <PenLine /> Write
           </NavLink>
-          <NavLink
-            to="/comments"
-            $active={location.pathname === '/comments'}
-            onClick={closeMobile}
-          >
+          <NavLink to="/comments" $active={location.pathname === '/comments'} onClick={closeMobile}>
             <MessageSquare /> Responses
           </NavLink>
 
           <NavSectionLabel style={{ marginTop: 8 }}>Preferences</NavSectionLabel>
-          <NavLink
-            to="/settings"
-            $active={location.pathname === '/settings'}
-            onClick={closeMobile}
-          >
+          <NavLink to="/settings" $active={location.pathname === '/settings'} onClick={closeMobile}>
             <Settings /> Settings
           </NavLink>
 
@@ -443,7 +436,7 @@ export function WorkspaceLayout() {
             <UserMeta>
               <UserName>{user?.username || 'Creator'}</UserName>
               <ProfileBadge>
-                Public Profile <ExternalLink size={10} />
+                Public Profile <ExternalLink size={iconPx.xs} />
               </ProfileBadge>
             </UserMeta>
           </UserProfileLink>
@@ -456,13 +449,16 @@ export function WorkspaceLayout() {
       <Frame>
         <Topbar>
           <TopbarLeft>
-            <MenuToggleBtn onClick={() => setMobileMenuOpen(true)} aria-label="Open navigation menu">
-              <Menu size={18} />
+            <MenuToggleBtn
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open navigation menu"
+            >
+              <Menu size={iconPx.lg} />
             </MenuToggleBtn>
 
             <Breadcrumb>
               <span className="root">Studio</span>
-              <ChevronRight size={14} />
+              <ChevronRight size={iconPx.sm} />
               <strong className="current">{getPageTitle()}</strong>
             </Breadcrumb>
           </TopbarLeft>
@@ -483,14 +479,14 @@ export function WorkspaceLayout() {
         title="Sign out everywhere?"
         description="This ends your session on every device you are signed in on. Your drafts and published stories are safely saved."
       >
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setConfirmSignOut(false)}>
             Stay signed in
           </Button>
           <Button variant="danger" onClick={logout}>
             Sign out
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
     </Shell>
   );

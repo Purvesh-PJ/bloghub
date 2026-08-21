@@ -19,6 +19,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
 import { BrandMark, Avatar, Modal, Button } from '../ui';
+import { iconPx } from '../../styles/theme';
 
 /**
  * Admin shell.
@@ -388,7 +389,7 @@ export function AdminLayout() {
             <AdminBadge>Admin</AdminBadge>
           </Brand>
           <DrawerCloseBtn onClick={closeMobile} aria-label="Close menu">
-            <X size={18} />
+            <X size={iconPx.lg} />
           </DrawerCloseBtn>
         </BrandRow>
 
@@ -429,14 +430,11 @@ export function AdminLayout() {
             <WhoMeta>
               <WhoName>{user?.username}</WhoName>
               <WhoRole>
-                <Shield size={10} /> Administrator
+                <Shield size={iconPx.xs} /> Administrator
               </WhoRole>
             </WhoMeta>
           </Who>
-          <SignOut
-            onClick={() => setConfirmSignOut(true)}
-            aria-label="Sign out"
-          >
+          <SignOut onClick={() => setConfirmSignOut(true)} aria-label="Sign out">
             <LogOut />
           </SignOut>
         </Foot>
@@ -445,13 +443,16 @@ export function AdminLayout() {
       <Frame>
         <Topbar>
           <TopbarLeft>
-            <MenuToggleBtn onClick={() => setMobileMenuOpen(true)} aria-label="Open navigation menu">
-              <Menu size={18} />
+            <MenuToggleBtn
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open navigation menu"
+            >
+              <Menu size={iconPx.lg} />
             </MenuToggleBtn>
 
             <Breadcrumb>
               <span className="root">Admin</span>
-              <ChevronRight size={14} />
+              <ChevronRight size={iconPx.sm} />
               <strong className="current">{getPageTitle()}</strong>
             </Breadcrumb>
           </TopbarLeft>
@@ -474,7 +475,7 @@ export function AdminLayout() {
         title="Sign out of Administrator Console?"
         description="Your administrative session will be ended securely."
       >
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setConfirmSignOut(false)}>
             Stay signed in
           </Button>
@@ -487,7 +488,7 @@ export function AdminLayout() {
           >
             Sign out
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
     </Shell>
   );

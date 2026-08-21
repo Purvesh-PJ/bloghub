@@ -33,6 +33,7 @@ import {
 } from '../../components/ui';
 import { text } from '../../styles/theme/mixins';
 import { queryKeys } from '../../services/queryKeys';
+import { iconPx } from '../../styles/theme';
 
 /**
  * The account directory, and the actions an administrator can take on one.
@@ -215,14 +216,14 @@ export function AdminUsers() {
                                 size="sm"
                                 aria-label={`Actions for ${user.username}`}
                               >
-                                <MoreHorizontal size={16} />
+                                <MoreHorizontal size={iconPx.md} />
                               </Button>
                             }
                           >
                             <DropdownMenu.Item
                               onSelect={() => navigate(`/admin/users/${user._id}/activity`)}
                             >
-                              <Activity size={14} /> View activity
+                              <Activity size={iconPx.sm} /> View activity
                             </DropdownMenu.Item>
 
                             <DropdownMenu.Separator />
@@ -233,7 +234,7 @@ export function AdminUsers() {
                                   suspendMutation.mutate({ id: user._id, suspended: false })
                                 }
                               >
-                                <CircleCheck size={14} /> Restore access
+                                <CircleCheck size={iconPx.sm} /> Restore access
                               </DropdownMenu.Item>
                             ) : (
                               <DropdownMenu.Item
@@ -241,7 +242,7 @@ export function AdminUsers() {
                                   suspendMutation.mutate({ id: user._id, suspended: true })
                                 }
                               >
-                                <Ban size={14} /> Suspend account
+                                <Ban size={iconPx.sm} /> Suspend account
                               </DropdownMenu.Item>
                             )}
 
@@ -252,13 +253,13 @@ export function AdminUsers() {
                               <DropdownMenu.Item
                                 onSelect={() => roleMutation.mutate({ id: user._id, admin: false })}
                               >
-                                <ShieldOff size={14} /> Revoke administrator
+                                <ShieldOff size={iconPx.sm} /> Revoke administrator
                               </DropdownMenu.Item>
                             ) : (
                               <DropdownMenu.Item
                                 onSelect={() => roleMutation.mutate({ id: user._id, admin: true })}
                               >
-                                <Shield size={14} /> Make administrator
+                                <Shield size={iconPx.sm} /> Make administrator
                               </DropdownMenu.Item>
                             )}
 
@@ -268,7 +269,7 @@ export function AdminUsers() {
                               $tone="danger"
                               onSelect={() => setPendingDelete(user)}
                             >
-                              <Trash2 size={14} /> Delete account
+                              <Trash2 size={iconPx.sm} /> Delete account
                             </DropdownMenu.Item>
                           </DropdownMenu>
                         )}
@@ -318,14 +319,14 @@ export function AdminUsers() {
             onChange={(event) => setPassword(event.target.value)}
             hint="Holding an admin session is not by itself authority to destroy an account."
           />
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+          <Modal.Footer>
             <Button type="button" variant="secondary" onClick={() => setPendingDelete(null)}>
               Cancel
             </Button>
             <Button type="submit" variant="danger" disabled={deleteMutation.isPending}>
               {deleteMutation.isPending ? 'Deleting…' : 'Delete permanently'}
             </Button>
-          </div>
+          </Modal.Footer>
         </form>
       </Modal>
     </>

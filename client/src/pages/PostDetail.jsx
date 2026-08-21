@@ -844,7 +844,7 @@ export function PostDetail() {
             : 'This cannot be undone.'
         }
       >
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setPendingCommentDelete(null)}>
             Cancel
           </Button>
@@ -855,7 +855,7 @@ export function PostDetail() {
           >
             {deleteCommentMutation.isPending ? 'Removing…' : 'Remove'}
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
 
       <Modal
@@ -864,7 +864,7 @@ export function PostDetail() {
         title="Delete this post?"
         description={`"${post.title}" and its responses will be removed. This cannot be undone.`}
       >
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setConfirmDelete(false)}>
             Cancel
           </Button>
@@ -875,7 +875,7 @@ export function PostDetail() {
           >
             {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
     </>
   );

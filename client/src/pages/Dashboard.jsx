@@ -35,6 +35,7 @@ import {
 } from '../components/ui';
 import { text, label as labelStyle, media, clamp, display } from '../styles/theme/mixins';
 import { queryKeys } from '../services/queryKeys';
+import { iconPx } from '../styles/theme';
 
 /**
  * Dashboard — how the writing is doing.
@@ -351,7 +352,7 @@ export function Dashboard() {
           <Avatar src={avatarUrl} name={user?.username} size="lg" />
           <CreatorDetails>
             <CreatorName>
-              Welcome back, {firstName} <Sparkles size={18} />
+              Welcome back, {firstName} <Sparkles size={iconPx.lg} />
             </CreatorName>
             <CreatorBio>
               {bio || 'How your writing is doing. Manage what you have written under Stories.'}
@@ -361,7 +362,7 @@ export function Dashboard() {
 
         {(user?._id || user?.user_id) && (
           <Button as={Link} to={`/user/${user._id || user.user_id}`} variant="secondary" size="sm">
-            <User size={14} /> View public profile
+            <User size={iconPx.sm} /> View public profile
           </Button>
         )}
       </CreatorBanner>
@@ -381,7 +382,10 @@ export function Dashboard() {
         </FirstRun>
       ) : (
         <>
-          <Section title="Performance Overview" note="Aggregated readership across all your stories">
+          <Section
+            title="Performance Overview"
+            note="Aggregated readership across all your stories"
+          >
             <MetricGrid>
               <StatTile
                 label="Total story views"
