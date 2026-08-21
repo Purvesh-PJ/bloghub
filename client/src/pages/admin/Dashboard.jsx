@@ -6,7 +6,7 @@ import { FileText, Users, Hash, PenLine, ArrowRight } from 'lucide-react';
 
 import { postService } from '../../services/postService';
 import { analyticsService } from '../../services/analyticsService';
-import { PageHeader, Section } from '../../components/layout/PageShell';
+import { Section } from '../../components/layout/PageShell';
 import { ReadRateHeadline } from '../../components/stats/ReadRateBar';
 import { Button, Card, Surface, Badge, EmptyState, Skeleton, StatTile } from '../../components/ui';
 import { text, media, clamp } from '../../styles/theme/mixins';
@@ -116,10 +116,6 @@ export function AdminDashboard() {
   if (isLoading) {
     return (
       <div aria-hidden="true">
-        <PageHeader
-          title="Overview"
-          subtitle="How much is being published, and how much of it is being read."
-        />
         <Stats>
           {Array.from({ length: 4 }).map((_, i) => (
             <Stat key={i}>
@@ -157,17 +153,6 @@ export function AdminDashboard() {
 
   return (
     <>
-      <PageHeader
-        badge="Overview"
-        title="Overview"
-        subtitle="How much is being published, and how much of it is being read across BlogHub."
-        actions={
-          <Button as={Link} to="/write">
-            <PenLine /> New post
-          </Button>
-        }
-      />
-
       <Stats>
         {stats.map((stat) => (
           <Card key={stat.label} tone="low" radius="lg" padding="lg">

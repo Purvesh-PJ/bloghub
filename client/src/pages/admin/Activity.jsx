@@ -6,7 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Activity as ActivityIcon } from 'lucide-react';
 
 import { activityService } from '../../services/activityService';
-import { PageHeader, Section } from '../../components/layout/PageShell';
+import { Section } from '../../components/layout/PageShell';
 import {
   Card,
   Tabs,
@@ -179,12 +179,6 @@ export function AdminActivity() {
 
   return (
     <>
-      <PageHeader
-        badge="Audit & Streams"
-        title="Activity"
-        subtitle="Responses, likes, opens and edits across the site, newest first."
-      />
-
       <Section>
         <Stats>
           <StatTile label="Active this month" value={activity?.activeUsers ?? '—'} />
