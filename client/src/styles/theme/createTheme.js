@@ -284,6 +284,14 @@ export function createTheme(ramps, mode) {
       // Darker, for large surfaces that carry text of their own.
       brandDeep: `linear-gradient(135deg, ${step(a, 10)} 0%, ${step(a, 11)} 100%)`,
       /*
+        Neutral counterpart to `brand`, for a dark editorial surface that should not read as
+        branded. Built from the neutral surface steps so it tracks the palette rather than
+        being the pair of slate hexes it replaced.
+      */
+      inkDeep: isLight
+        ? `linear-gradient(135deg, ${step(n, 12)} 0%, ${step(n, 11)} 100%)`
+        : `linear-gradient(135deg, ${step(n, 1)} 0%, ${step(n, 3)} 100%)`,
+      /*
         For gradient *text*, which sits on the page background rather than being a surface.
         Steps 11 and 12 are the only two Radix guarantees for contrast, and they are what a
         headline needs — the solid steps used above measure 1.6:1 on white, which is a

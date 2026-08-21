@@ -102,7 +102,7 @@ const StatusPill = styled.span`
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #10b981;
+    background: ${({ theme }) => theme.colors.successSolid};
   }
 `;
 
@@ -226,8 +226,8 @@ const BottomBar = styled.div`
     svg {
       width: 13px;
       height: 13px;
-      color: #ef4444;
-      fill: #ef4444;
+      color: ${({ theme }) => theme.colors.dangerSolid};
+      fill: ${({ theme }) => theme.colors.dangerSolid};
     }
   }
 `;

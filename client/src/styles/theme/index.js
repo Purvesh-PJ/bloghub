@@ -1,5 +1,5 @@
 // Theme exports
-export { tokens } from './tokens';
+export { tokens, iconPx } from './tokens';
 export { typography, typographyAliases } from './typography';
 export { createTheme } from './createTheme';
 export { lightTheme } from './lightTheme';

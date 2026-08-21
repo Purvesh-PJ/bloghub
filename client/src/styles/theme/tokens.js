@@ -2,6 +2,24 @@
  * Mode-independent tokens — identical in light and dark.
  */
 
+/**
+ * The icon scale, as numbers.
+ *
+ * `lucide-react` takes a numeric `size` prop, and a styled block takes a CSS length. Both are
+ * derived from this one object so the two spellings cannot drift apart — `iconSize` below is
+ * built from it.
+ *
+ * Prefer sizing in CSS (`theme.iconSize.sm`) when the icon sits inside a styled component.
+ * Use `iconPx.sm` for an icon dropped straight into JSX with no styled wrapper to target.
+ */
+export const iconPx = {
+  xs: 12, // dense metadata rows, timestamps
+  sm: 14, // default — inline with `sm` text, buttons, menu items
+  md: 16, // inline with `md` text, table cells, inputs
+  lg: 20, // section headers, empty-state and tile icons
+  xl: 32, // hero and feature marks
+};
+
 export const tokens = {
   /** 4px base, with generous upper steps. Whitespace is most of the premium feel. */
   spacing: {
@@ -36,6 +54,19 @@ export const tokens = {
     full: '9999px', // buttons, avatars, pills — the default for anything clickable
   },
 
+  /**
+   * Icon sizes.
+   *
+   * Icons were sized two different ways — a `size={n}` prop on the lucide component in some
+   * places, `svg { width }` in the styled block in others — across nine values: 10, 12, 13,
+   * 14, 15, 16, 17, 18, 24. Nobody chooses 13 over 14 over 15 deliberately; those are the
+   * fingerprints of each control being sized by eye on its own.
+   *
+   * Four steps, each paired with the text size it sits beside, so an icon in a row of `sm`
+   * text is the same size in every such row.
+   */
+  iconSize: Object.fromEntries(Object.entries(iconPx).map(([step, value]) => [step, `${value}px`])),
+
   breakpoints: {
     sm: '640px',
     md: '768px',
@@ -68,8 +99,16 @@ export const tokens = {
   },
 
   /**
-   * Density presets. Reading and marketing surfaces use `comfortable`; dashboards and
-   * tables use `compact`. Same components, two rhythms.
+   * Density presets.
+   *
+   * The intent was two rhythms from the same components — `comfortable` for reading and
+   * marketing surfaces, `compact` for dashboards and tables. In practice only `Select` reads
+   * these, so the second rhythm does not exist: dashboards and tables are sized by their own
+   * padding like everything else.
+   *
+   * Kept because `Select` depends on it and the idea is sound, but it is a one-component
+   * token today, not a system. Applying it properly means threading a density prop through
+   * the table, row and control primitives — a real piece of work, not a rename.
    */
   density: {
     comfortable: {

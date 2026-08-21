@@ -143,7 +143,7 @@ const PointIcon = styled.span`
   flex-shrink: 0;
   border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.gradients.brand};
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.textOnInk};
   box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
 
   svg {
