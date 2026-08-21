@@ -11,6 +11,7 @@ import { Card, EmptyState, ErrorState, Skeleton, StatTile, Button } from '../../
 import { ReadRateHeadline } from '../../components/stats/ReadRateBar';
 import { text, clamp, media } from '../../styles/theme/mixins';
 import { queryKeys } from '../../services/queryKeys';
+import { iconPx } from '../../styles/theme';
 
 /**
  * One person's activity.
@@ -248,7 +249,7 @@ export function AdminPersonActivity() {
         </PersonMeta>
 
         <Button as={Link} to={`/user/${userId}`} variant="secondary" size="sm">
-          <ExternalLink size={14} /> View public page
+          <ExternalLink size={iconPx.sm} /> View public page
         </Button>
       </HeaderBar>
 

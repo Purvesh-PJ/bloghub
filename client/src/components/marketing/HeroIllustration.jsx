@@ -12,6 +12,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { media, text } from '../../styles/theme/mixins';
+import { iconPx } from '../../styles/theme';
 
 const floatSlow = keyframes`
   0%, 100% { transform: translateY(0px) rotate(0deg); }
@@ -440,7 +441,7 @@ export function HeroIllustration() {
         </RateIcon>
         <RateInfo>
           <strong>
-            Deep Read Attention <CheckCircle2 size={13} color="#10b981" />
+            Deep Read Attention <CheckCircle2 size={iconPx.sm} color="#10b981" />
           </strong>
           <span>Zero popups · 100% ad-free</span>
         </RateInfo>

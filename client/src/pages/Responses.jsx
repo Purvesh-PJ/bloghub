@@ -23,6 +23,7 @@ import {
 } from '../components/ui';
 import { text, media } from '../styles/theme/mixins';
 import { queryKeys } from '../services/queryKeys';
+import { iconPx } from '../styles/theme';
 
 /**
  * Responses — what readers have said, and the only place an author can moderate it.
@@ -318,7 +319,7 @@ export function Responses() {
                       aria-label={`Remove response from ${comment.user?.username || 'this reader'}`}
                       onClick={() => setPendingDelete(comment)}
                     >
-                      <Trash2 size={15} />
+                      <Trash2 size={iconPx.sm} />
                     </Button>
                   </Entry>
                 ))}
@@ -341,7 +342,7 @@ export function Responses() {
         <Card tone="low" radius="md" padding="md" style={{ marginTop: 8 }}>
           <Message>{pendingDelete?.message}</Message>
         </Card>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setPendingDelete(null)}>
             Keep it
           </Button>
@@ -352,7 +353,7 @@ export function Responses() {
           >
             {deleteMutation.isPending ? 'Removing…' : 'Remove'}
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
     </PageShell>
   );

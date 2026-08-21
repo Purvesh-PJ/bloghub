@@ -17,6 +17,7 @@ import { readingTime } from '../utils/text';
 import { markdownRehypePlugins } from '../config/markdown';
 import { useDraftRecovery, useBeforeUnload, useNavigationGuard } from '../hooks/useDraftRecovery';
 import { queryKeys } from '../services/queryKeys';
+import { iconPx } from '../styles/theme';
 
 // Mirrors the server-side cap in validators/content.validators.js.
 const MAX_TAGS = 5;
@@ -478,7 +479,7 @@ export function WritePost() {
     <PageShell>
       {recovered && (
         <RecoveryBanner role="status">
-          <RotateCcw size={16} />
+          <RotateCcw size={iconPx.md} />
           <span>
             Unsaved work from{' '}
             {formatDistanceToNow(new Date(recovered.savedAt), { addSuffix: true })} was found on
@@ -550,11 +551,11 @@ export function WritePost() {
             >
               {preview ? (
                 <>
-                  <Pencil size={15} /> Keep writing
+                  <Pencil size={iconPx.sm} /> Keep writing
                 </>
               ) : (
                 <>
-                  <Eye size={15} /> Preview mode
+                  <Eye size={iconPx.sm} /> Preview mode
                 </>
               )}
             </Button>
@@ -586,7 +587,7 @@ export function WritePost() {
             <TagRow>
               {tags.map((tag) => (
                 <Chip key={tag} size="sm" selected onClick={() => removeTag(tag)}>
-                  #{tag} <X size={12} />
+                  #{tag} <X size={iconPx.xs} />
                 </Chip>
               ))}
             </TagRow>

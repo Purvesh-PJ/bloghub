@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './Button';
 import { text, media } from '../../styles/theme/mixins';
+import { iconPx } from '../../styles/theme';
 
 /**
  * Previous / next paging with a position label.
@@ -64,7 +65,7 @@ export function Pagination({ page, pages, total, noun = 'items', onChange }) {
           disabled={page <= 1}
           onClick={() => onChange(page - 1)}
         >
-          <ChevronLeft size={14} /> Previous
+          <ChevronLeft size={iconPx.sm} /> Previous
         </Button>
         <Button
           size="sm"
@@ -72,7 +73,7 @@ export function Pagination({ page, pages, total, noun = 'items', onChange }) {
           disabled={page >= pages}
           onClick={() => onChange(page + 1)}
         >
-          Next <ChevronRight size={14} />
+          Next <ChevronRight size={iconPx.sm} />
         </Button>
       </Controls>
     </Root>
