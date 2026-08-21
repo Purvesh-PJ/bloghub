@@ -1,10 +1,12 @@
 # Design System
 
-> **Scope:** the visual language and how to compose it — tokens, themes, primitive components,
-> layout, interaction, feedback and accessibility. Merges what were separate design-system and
-> ui-guidelines documents.
-> **Excludes:** component file organisation
-> ([architecture/frontend.md](../architecture/frontend.md)), journeys
+> **Scope:** the visual vocabulary — tokens, themes, primitives, typography, colour, layout,
+> interaction, feedback and iconography. This is what you look something up in.
+> **Excludes:** the rules for applying it — how to add a token or a primitive, the review
+> checklist, the current drift, and the guidance for agents — all of which live in
+> [guides/development.md](../guides/development.md#design-language), because a rule belongs
+> beside the other rules rather than in a catalogue. Also excludes component file organisation
+> ([architecture/frontend.md](../architecture/frontend.md)) and journeys
 > ([product/user-flows.md](../product/user-flows.md)).
 >
 > Rendered screenshots of the shipped UI are in
@@ -17,8 +19,10 @@
 
 1. **Reading comes first.** The article is the product. Chrome recedes; typography and
    whitespace carry the experience.
-2. **One accent.** Indigo in light mode, violet in dark. Colour marks the primary action and
-   nothing else; status colours only signal status.
+2. **One accent.** A single sky-blue ramp — Radix `sky` in light, `skyDark` in dark. Colour
+   marks the primary action and nothing else; status colours only signal status. (This read
+   "indigo in light, violet in dark" until the accent was changed in the code and the
+   sentence was not.)
 3. **Depth through space, not lines.** Prefer spacing and subtle elevation over rules.
 4. **Every state is designed.** Loading, empty, error and success are part of the screen.
 5. **Both themes are first class.** Dark mode is a peer implementation, not a filter.
@@ -437,8 +441,30 @@ Dates use `date-fns` as `MMM d, yyyy`. Relative time is reserved for activity fe
 `lucide-react` is the icon set. (`@radix-ui/react-icons` ships as a dependency of the Radix
 themes package and should not be introduced in new code.)
 
-16–20px inline with text, 24px standalone; icons inherit `currentColor`; an icon-only control
-needs an `aria-label`; icons decorate, never carry meaning alone.
+Sizes come from `theme.iconSize.*` — `xs` 12, `sm` 14, `md` 16, `lg` 20, `xl` 32. Pair the
+icon with the text beside it: `sm` text takes an `sm` icon.
+
+Two spellings, one source. `theme.iconSize.*` gives a CSS length for a styled block;
+`iconPx.*` (exported from `styles/theme`) gives the number lucide's `size` prop takes for an
+icon dropped straight into JSX. `iconSize` is derived from `iconPx`, so they cannot drift.
+
+Prefer CSS when the icon sits inside a styled component, so the size lives with the rest of
+that component's appearance:
+
+```js
+svg {
+  width: ${({ theme }) => theme.iconSize.sm};
+  height: ${({ theme }) => theme.iconSize.sm};
+}
+```
+
+Icons inherit `currentColor`; an icon-only control needs an `aria-label`; icons decorate and
+never carry meaning alone.
+
+This section used to say "16–20px inline, 24px standalone", which nothing followed — the
+codebase had icons at 10, 12, 13, 14, 15, 16, 17, 18 and 24px, set two different ways. Nobody
+picks 13 over 14 over 15 deliberately; those are the fingerprints of each control being sized
+by eye. The scale exists so that decision is made once.
 
 ---
 
@@ -447,18 +473,18 @@ needs an `aria-label`; icons decorate, never carry meaning alone.
 Semantic markup and a global focus ring are in place; **no audit has been run**
 ([GAP-18](../product/roadmap.md#gap-18)).
 
-| Area         | Requirement                                                                        |
-| ------------ | ---------------------------------------------------------------------------------- |
-| Structure    | One `<h1>` per page; heading levels descend without skipping                       |
-| Landmarks    | `<header>`, `<nav>`, `<main>`, `<footer>` used for their purpose                   |
-| Focus        | Visible on every interactive element; never `outline: none` without a replacement  |
-| Keyboard     | Every action reachable; modals trap focus and close on Escape (Radix handles this) |
-| Contrast     | 4.5:1 body, 3:1 large text and UI boundaries, **in both themes**                   |
-| Images       | Meaningful images carry `alt`; decorative use `alt=""`                             |
-| Controls     | Icon-only buttons carry `aria-label`; toggles expose `aria-pressed`                |
-| Forms        | Labels programmatically associated; errors linked with `aria-describedby`          |
-| Motion       | Respect `prefers-reduced-motion` beyond a colour fade                              |
-| Live regions | Toasts announce through `aria-live`                                                |
+| Area         | Requirement                                                                                                                                                                                                                  |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Structure    | One `<h1>` per page; heading levels descend without skipping                                                                                                                                                                 |
+| Landmarks    | `<header>`, `<nav>`, `<main>`, `<footer>` used for their purpose                                                                                                                                                             |
+| Focus        | Visible on every interactive element; never `outline: none` without a replacement                                                                                                                                            |
+| Keyboard     | Every action reachable; modals trap focus and close on Escape (Radix handles this)                                                                                                                                           |
+| Contrast     | 4.5:1 body, 3:1 large text and UI boundaries, **in both themes**                                                                                                                                                             |
+| Images       | Meaningful images carry `alt`; decorative use `alt=""`                                                                                                                                                                       |
+| Controls     | Icon-only buttons carry `aria-label`; toggles expose `aria-pressed`                                                                                                                                                          |
+| Forms        | Labels programmatically associated; errors linked with `aria-describedby`. Enforced in `Input`/`TextArea` via a `useId` fallback — this was a requirement the code did not meet until [BUG-25](../product/roadmap.md#bug-25) |
+| Motion       | Respect `prefers-reduced-motion` beyond a colour fade                                                                                                                                                                        |
+| Live regions | Toasts announce through `aria-live`                                                                                                                                                                                          |
 
 **Before merging a UI change:** tab through with no mouse, toggle both themes, check contrast
 on any new pairing, resize to 375px.
@@ -477,29 +503,3 @@ on any new pairing, resize to 375px.
 | Fonts          | System stacks only — do not add a web font without measuring |
 
 ---
-
-## Extending the system
-
-**A token** — add to `tokens.js` (mode-independent) or to _both_ theme files
-(mode-dependent). A key in only one theme causes an undefined value in the other.
-
-**A primitive** — create `components/ui/<Name>.jsx`, export named, add to `index.js`, document
-its props above.
-
-**A variant** — extend the variant map inside the component, not at the call site.
-
-**Never** — inline a raw colour, spacing value, radius or z-index in a page component.
-
----
-
-## Component checklist
-
-- [ ] All values from theme tokens — no inline hex, px spacing or raw z-index
-- [ ] Reuses a `components/ui` primitive rather than restyling a raw element
-- [ ] Loading, empty and error states handled
-- [ ] Works at 375px, 768px and 1440px
-- [ ] Works in both themes
-- [ ] Keyboard operable with a visible focus ring
-- [ ] Interactive elements have accessible names
-- [ ] Styling props are `$`-prefixed transient props
-- [ ] No business logic inside a `components/ui` primitive

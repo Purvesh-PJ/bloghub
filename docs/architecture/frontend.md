@@ -348,4 +348,4 @@ inside the right guard; fetch with `useQuery`; handle loading, empty and error.
 call `axios` directly.
 
 **A primitive** — see
-[reference/design-system.md](../reference/design-system.md#extending-the-system).
+[guides/development.md](../guides/development.md#adding-to-it).

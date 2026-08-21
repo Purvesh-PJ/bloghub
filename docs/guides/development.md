@@ -1,12 +1,13 @@
 # Conventions
 
-> **Scope:** where a new file belongs, how to write the code inside it, and how it gets
-> reviewed. Merges what were separate folder-structure, coding-standards and code-review
+> **Scope:** where a new file belongs, how to write the code inside it, how to work within the
+> design language, and how it all gets reviewed. Merges what were separate folder-structure, coding-standards and code-review
 > documents, because a review checklist that restates the standards is duplication.
 > **Excludes:** the repository tree
 > ([architecture/overview.md](../architecture/overview.md)), tool configuration
 > ([code-quality.md](code-quality.md)), API contract rules
-> ([reference/api.md](../reference/api.md)).
+> ([reference/api.md](../reference/api.md)), and the design vocabulary itself
+> ([reference/design-system.md](../reference/design-system.md)).
 
 Formatting is not a matter of opinion here — Prettier decides it, and it is never a review
 comment.
@@ -107,6 +108,84 @@ A primitive that needs to fetch is not a primitive.
 | A shared component in `pages/`       | Nothing but `App.jsx` may import a page              | `components/` at the right tier                 |
 | A `.env` inside a workspace          | Both read the root `.env`                            | Add the key to the root file and `.env.example` |
 | A second Axios instance              | Two auth paths, two refresh behaviours               | `client/src/config/api.js`                      |
+
+## Design language
+
+The vocabulary itself — tokens, colour roles, the primitive catalogue, typography, iconography
+— is reference material and lives in
+[reference/design-system.md](../reference/design-system.md). What follows is how to work
+within it.
+
+### Adding to it
+
+**A token** — add to `tokens.js` (mode-independent) or to _both_ theme files (mode-dependent).
+A key in only one theme is an undefined value in the other.
+
+**A primitive** — `components/ui/<Name>.jsx`, named export, add to `index.js`, document its
+props above it.
+
+**A variant** — extend the variant map inside the component, never at the call site.
+
+**When to promote** — a one-off stays a local styled component in the file that needs it, built
+from tokens. It moves into `ui/` on the **second** use. Promoting on the first produces
+primitives shaped around a single caller.
+
+**Never** — inline a raw colour, spacing value, radius, icon size or z-index in a page or
+component.
+
+### Known drift
+
+The honest state, so nobody assumes a clean slate. None of it blocks; all of it is what the
+checklist exists to stop growing.
+
+| Drift                                                   | Count | Note                                                                                                                                                                   |
+| ------------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inline `style={{}}` for layout, with raw px             | 75    | Mostly `marginTop` and one-off flex rows. `Container.jsx` exports `Flex` and `Box` that do this properly and are still used **zero** times                             |
+| Raw px in `gap` / `padding` / `margin` in styled blocks | 118   | Should be `theme.spacing.*`                                                                                                                                            |
+| Raw `font-size`                                         | 25    | Against 184 correct uses of the type mixins — 88% adoption                                                                                                             |
+| `density` tokens                                        | 1     | Only `Select` reads them, so the "two rhythms" idea is a token, not a system. Applying it means threading a density prop through the table, row and control primitives |
+
+**Closed so far:** every hardcoded hex outside `ErrorBoundary` and the hero illustration now
+resolves to a token; the two `Editorial` gradients became `gradients.brand` and a new
+`gradients.inkDeep`; all **55** ad-hoc `size={n}` icon props moved onto the five-step scale
+(they were spread across nine values — 10, 12, 13, 14, 15, 16, 17, 18, 36); the twelve copies
+of the dialog action row became `Modal.Footer`; and three claims that the code had long since
+contradicted — the accent colour, the icon sizing rule and the density presets — were
+corrected rather than left to mislead.
+
+**Still open, and why:** the remaining 75 inline styles and 118 raw spacing values are
+mechanical but touch a large surface with no visual change to show for it, so they are worth
+doing in a pass of their own rather than folded into unrelated work. Nothing on the list is a
+defect; each is a place where a future edit could drift further.
+
+Highest-value item if you are picking one up: `Flex`/`Box` exported and unused while 75 inline
+styles do the same job. It is also the most mechanical.
+
+### For an agent working in this repository
+
+**Do not invent a value.** Every colour, space, radius, icon size, shadow and duration already
+exists in `client/src/styles/theme/`. If you are about to type a number or a hex, find the
+token instead. If none fits, say so — that is a design decision and it belongs to a person, not
+to a plausible-looking guess.
+
+**Do not invent a component.** Check the primitive catalogue first. A hand-rolled dropdown or
+dialog will be missing focus management and ARIA that `ui/` already has, and it will not look
+like the rest of the application.
+
+**Do not invent data.** This applies to the visual layer as much as the API layer: no
+placeholder counts, no sample usernames, no fake chart values, no hardcoded "popular topics".
+If a screen needs data no endpoint provides, that is a gap to report, not to fill with text
+that looks real. The footer's topic list, the landing marquee and several admin figures were
+each fixed for exactly this reason — all three displayed invented content convincingly enough
+that nobody noticed.
+
+**Match the file you are in.** Comment density, naming and structure vary by area; the
+surrounding code is the specification.
+
+**When a rule and the surrounding code disagree,** the rule wins for new code, and the
+disagreement is recorded in [Known drift](#known-drift) rather than spread further.
+
+---
 
 ## Import order
 
@@ -395,12 +474,18 @@ Correctness first — style is already automated.
 
 **Frontend**
 
-- [ ] Loading, error and empty states handled?
+- [ ] Loading, error and empty states handled with `Skeleton` / `EmptyState` / `ErrorState`?
 - [ ] Server state in React Query rather than `useState` + `useEffect`?
 - [ ] Do mutations invalidate what they changed?
-- [ ] All values from theme tokens?
-- [ ] Works in both themes and at 375px?
+- [ ] All values from theme tokens — no raw colour, spacing, icon size or z-index?
+- [ ] Icons sized from `theme.iconSize.*` in CSS, not a `size={n}` prop?
+- [ ] Anything clickable at `radii.full`; cards and panels at `lg` / `xl`?
+- [ ] Behaviour — opening, focus, selection — from a Radix-backed primitive, never hand-rolled?
+- [ ] Works in both themes and at 375px, 768px and 1440px?
 - [ ] Keyboard operable with a visible focus ring?
+- [ ] Accessible names present — a visible label passed as `label`, icon-only as `aria-label`?
+- [ ] Styling props `$`-prefixed transient props?
+- [ ] Nothing on screen invented — no placeholder counts, sample names or fake values?
 - [ ] Stable list keys?
 
 **Architecture**
