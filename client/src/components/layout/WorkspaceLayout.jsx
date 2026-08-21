@@ -333,28 +333,6 @@ const TopbarRight = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const FeedLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  ${text('xs', 'medium')}
-  text-decoration: none;
-  ${interactive}
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-  }
-
-  ${media.down('sm')`
-    display: none;
-  `}
-`;
-
 const Content = styled.main`
   flex: 1;
   min-width: 0;
@@ -451,7 +429,7 @@ export function WorkspaceLayout() {
 
           <NavSectionLabel style={{ marginTop: 8 }}>Explore</NavSectionLabel>
           <NavLink to="/" onClick={closeMobile}>
-            <Globe /> Reader Feed
+            <Globe /> Public Feed
           </NavLink>
         </Nav>
 
@@ -490,17 +468,7 @@ export function WorkspaceLayout() {
           </TopbarLeft>
 
           <TopbarRight>
-            <FeedLink to="/">
-              <Globe size={13} /> Reader Feed
-            </FeedLink>
-
             <ThemeToggle />
-
-            {!location.pathname.startsWith('/write') && (
-              <Button size="sm" as={Link} to="/write">
-                <PenLine size={14} /> New Story
-              </Button>
-            )}
           </TopbarRight>
         </Topbar>
 

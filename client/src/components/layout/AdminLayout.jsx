@@ -8,13 +8,12 @@ import {
   Hash,
   Activity,
   LogOut,
-  ArrowLeft,
   Menu,
   X,
   ChevronRight,
   Shield,
   Compass,
-  PenLine,
+  Globe,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
@@ -332,28 +331,6 @@ const TopbarRight = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const SiteLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  ${text('xs', 'medium')}
-  text-decoration: none;
-  ${interactive}
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-  }
-
-  ${media.down('sm')`
-    display: none;
-  `}
-`;
-
 const Main = styled.main`
   flex: 1;
   min-width: 0;
@@ -442,7 +419,7 @@ export function AdminLayout() {
             <Compass /> Creator Studio
           </NavItem>
           <NavItem to="/" $active={false} onClick={closeMobile}>
-            <ArrowLeft /> Back to site
+            <Globe /> Public Feed
           </NavItem>
         </Nav>
 
@@ -480,15 +457,7 @@ export function AdminLayout() {
           </TopbarLeft>
 
           <TopbarRight>
-            <SiteLink to="/">
-              <ArrowLeft size={13} /> Live Site
-            </SiteLink>
-
             <ThemeToggle />
-
-            <Button size="sm" as={Link} to="/write">
-              <PenLine size={14} /> New Post
-            </Button>
           </TopbarRight>
         </Topbar>
 
