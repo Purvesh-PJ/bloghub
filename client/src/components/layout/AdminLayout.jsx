@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Shield,
   Compass,
+  PenLine,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
@@ -484,6 +485,10 @@ export function AdminLayout() {
             </SiteLink>
 
             <ThemeToggle />
+
+            <Button size="sm" as={Link} to="/write">
+              <PenLine size={14} /> New Post
+            </Button>
           </TopbarRight>
         </Topbar>
 

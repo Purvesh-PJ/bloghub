@@ -6,7 +6,7 @@ import { ArrowLeft, FileText, MessageSquare, Heart, Eye, ExternalLink } from 'lu
 
 import { activityService } from '../../services/activityService';
 import { analyticsService } from '../../services/analyticsService';
-import { PageHeader, Section } from '../../components/layout/PageShell';
+import { Section } from '../../components/layout/PageShell';
 import { Card, EmptyState, ErrorState, Skeleton, StatTile, Button } from '../../components/ui';
 import { ReadRateHeadline } from '../../components/stats/ReadRateBar';
 import { text, clamp, media } from '../../styles/theme/mixins';
@@ -24,13 +24,41 @@ import { queryKeys } from '../../services/queryKeys';
  * merges posts, comments, replies and likes into one time-ordered list.
  */
 
+const HeaderBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+  flex-wrap: wrap;
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.surfaceContainerLow};
+  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const PersonMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const PersonName = styled.h3`
+  ${text('md', 'semibold')}
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+const PersonSub = styled.span`
+  ${text('xs')}
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
 const Back = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 6px;
   ${text('sm', 'medium')}
   color: ${({ theme }) => theme.colors.textMuted};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
 
   &:hover {
     color: ${({ theme }) => theme.colors.accentText};
@@ -161,7 +189,6 @@ export function AdminPersonActivity() {
   if (activityLoading) {
     return (
       <div aria-hidden="true">
-        <PageHeader title="Activity" subtitle="Loading…" />
         <Stats>
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} $width="100%" $height={78} $radius="lg" />
@@ -205,24 +232,25 @@ export function AdminPersonActivity() {
 
   return (
     <>
-      <Back to="/admin/users">
-        <ArrowLeft /> Back to people
-      </Back>
+      <HeaderBar>
+        <PersonMeta>
+          <Back to="/admin/users">
+            <ArrowLeft /> Back
+          </Back>
+          <div>
+            <PersonName>{person?.username ?? 'Activity'}</PersonName>
+            <PersonSub>
+              {person?.createdAt
+                ? `${person.email} · joined ${ago(person.createdAt)}`
+                : 'Account timeline and metrics'}
+            </PersonSub>
+          </div>
+        </PersonMeta>
 
-      <PageHeader
-        badge="Account Timeline"
-        title={person?.username ?? 'Activity'}
-        subtitle={
-          person?.createdAt
-            ? `${person.email} · joined ${ago(person.createdAt)}`
-            : 'What this account has been doing.'
-        }
-        actions={
-          <Button as={Link} to={`/user/${userId}`} variant="secondary" size="sm">
-            <ExternalLink /> View public page
-          </Button>
-        }
-      />
+        <Button as={Link} to={`/user/${userId}`} variant="secondary" size="sm">
+          <ExternalLink size={14} /> View public page
+        </Button>
+      </HeaderBar>
 
       <Section>
         {/* Totals count everything the account has done, not the page of the stream below. */}

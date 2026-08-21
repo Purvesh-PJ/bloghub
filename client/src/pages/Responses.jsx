@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 import { postService } from '../services/postService';
 import { commentService } from '../services/commentService';
-import { PageShell, PageHeader } from '../components/layout/PageShell';
+import { PageShell } from '../components/layout/PageShell';
 import {
   Button,
   Surface,
@@ -175,10 +175,6 @@ export function Responses() {
   if (postsLoading) {
     return (
       <PageShell>
-        <PageHeader
-          title="Responses"
-          subtitle="What readers have said on your stories, and where you moderate them."
-        />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} aria-hidden="true">
           <Skeleton $width="300px" $height={40} $radius="md" />
           <Surface $tone="low" $radius="xl" $padding="md">
@@ -207,11 +203,6 @@ export function Responses() {
 
   return (
     <PageShell>
-      <PageHeader
-        title="Responses"
-        subtitle="What readers have said on your stories, and where you moderate them."
-      />
-
       {posts.length === 0 ? (
         <EmptyState
           icon={MessageSquare}

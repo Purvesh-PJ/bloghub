@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import { postService } from '../services/postService';
 import { useTags } from '../hooks/useTags';
 import { useTheme } from '../styles/ThemeProvider';
-import { PageShell, PageHeader } from '../components/layout/PageShell';
+import { PageShell } from '../components/layout/PageShell';
 import { Button, Card, Input, Chip, Loading } from '../components/ui';
 import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
 import { readingTime } from '../utils/text';
@@ -476,27 +476,6 @@ export function WritePost() {
 
   return (
     <PageShell>
-      <PageHeader
-        badge={isEditing ? 'Editing Story' : 'Composer'}
-        title={isEditing ? 'Edit post' : 'New post'}
-        subtitle={
-          preview ? 'This is how it will read once published.' : 'Markdown, with a live preview.'
-        }
-        actions={
-          <Button variant="secondary" onClick={() => setPreview((current) => !current)}>
-            {preview ? (
-              <>
-                <Pencil /> Keep writing
-              </>
-            ) : (
-              <>
-                <Eye /> Preview
-              </>
-            )}
-          </Button>
-        }
-      />
-
       {recovered && (
         <RecoveryBanner role="status">
           <RotateCcw size={16} />
@@ -563,6 +542,24 @@ export function WritePost() {
         </Main>
 
         <Aside>
+          <Card tone="low" radius="lg" padding="md">
+            <Button
+              variant={preview ? 'primary' : 'secondary'}
+              fullWidth
+              onClick={() => setPreview((current) => !current)}
+            >
+              {preview ? (
+                <>
+                  <Pencil size={15} /> Keep writing
+                </>
+              ) : (
+                <>
+                  <Eye size={15} /> Preview mode
+                </>
+              )}
+            </Button>
+          </Card>
+
           <Card tone="low" radius="lg" padding="lg">
             <AsideLabel>Who can see it</AsideLabel>
             <Choices>

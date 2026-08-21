@@ -23,7 +23,7 @@ import { settingsService } from '../services/settingsService';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../styles/ThemeProvider';
-import { PageShell, PageHeader } from '../components/layout/PageShell';
+import { PageShell } from '../components/layout/PageShell';
 import { Button, Input, TextArea, Surface, Modal, Avatar, Skeleton } from '../components/ui';
 import { display, text, media, interactive } from '../styles/theme/mixins';
 import { queryKeys } from '../services/queryKeys';
@@ -582,12 +582,6 @@ export function Settings() {
 
   return (
     <PageShell $width="wide">
-      <PageHeader
-        badge="Preferences"
-        title="Settings"
-        subtitle="Your account settings, creator profile, notifications, and appearance."
-      />
-
       <Layout>
         <Nav>
           {TABS.map((item) => (

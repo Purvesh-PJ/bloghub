@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { tagService } from '../../services/tagService';
 import { useTags } from '../../hooks/useTags';
 import { topicIcon } from '../../utils/topicIcons';
-import { PageHeader, Section } from '../../components/layout/PageShell';
+import { Section } from '../../components/layout/PageShell';
 import {
   Button,
   Card,
@@ -20,6 +20,14 @@ import {
 } from '../../components/ui';
 import { text } from '../../styles/theme/mixins';
 import { queryKeys } from '../../services/queryKeys';
+
+const Toolbar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
 
 const NameCell = styled.span`
   display: inline-flex;
@@ -88,17 +96,6 @@ export function AdminTags() {
 
   return (
     <>
-      <PageHeader
-        badge="Taxonomy"
-        title="Tags & Topics"
-        subtitle="Dynamic topics and tags created by writers and readers across BlogHub."
-        actions={
-          <Button onClick={() => setOpen(true)}>
-            <Plus /> New tag
-          </Button>
-        }
-      />
-
       <Section>
         {tags.length === 0 ? (
           <EmptyState
@@ -113,7 +110,14 @@ export function AdminTags() {
             Tags help writers categorize stories and help readers discover relevant topics.
           </EmptyState>
         ) : (
-          <Card tone="low" radius="xl" padding="sm">
+          <>
+            <Toolbar>
+              <Button size="sm" onClick={() => setOpen(true)}>
+                <Plus size={15} /> New tag
+              </Button>
+            </Toolbar>
+
+            <Card tone="low" radius="xl" padding="sm">
             <Table>
               <Table.Head>
                 <tr>
@@ -147,8 +151,9 @@ export function AdminTags() {
               </Table.Body>
             </Table>
           </Card>
-        )}
-      </Section>
+        </>
+      )}
+    </Section>
 
       <Modal
         open={Boolean(pendingDelete)}

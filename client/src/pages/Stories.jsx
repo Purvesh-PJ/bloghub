@@ -22,7 +22,7 @@ import toast from 'react-hot-toast';
 import { useDebounced } from '../hooks/useDebounced';
 import { postService } from '../services/postService';
 import { analyticsService } from '../services/analyticsService';
-import { PageShell, PageHeader } from '../components/layout/PageShell';
+import { PageShell } from '../components/layout/PageShell';
 import { ReadRateBar } from '../components/stats/ReadRateBar';
 import {
   Button,
@@ -518,16 +518,6 @@ export function Stories() {
 
   return (
     <PageShell>
-      <PageHeader
-        title="Stories"
-        subtitle="Everything you have written — published, drafted and private."
-        actions={
-          <Button as={Link} to="/write">
-            <PenLine /> Write a story
-          </Button>
-        }
-      />
-
       {selectedIds.length > 0 && (
         <BulkBar>
           <BulkCount>{selectedIds.length} selected on this page</BulkCount>

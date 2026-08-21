@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import { formatDistanceToNow } from 'date-fns';
 import {
-  PenLine,
   Search as SearchIcon,
   MoreHorizontal,
   Eye,
@@ -19,7 +18,7 @@ import toast from 'react-hot-toast';
 
 import { postService } from '../../services/postService';
 import { useDebounced } from '../../hooks/useDebounced';
-import { PageHeader, Section } from '../../components/layout/PageShell';
+import { Section } from '../../components/layout/PageShell';
 import {
   Button,
   Card,
@@ -230,15 +229,6 @@ export function AdminPosts() {
   if (isLoading) {
     return (
       <div aria-hidden="true">
-        <PageHeader
-          title="Posts"
-          subtitle="Loading directory…"
-          actions={
-            <Button as={Link} to="/write">
-              <PenLine /> New post
-            </Button>
-          }
-        />
         <Card tone="low" radius="xl" style={{ padding: 20 }}>
           {Array.from({ length: 6 }).map((_, i) => (
             <div
@@ -265,17 +255,6 @@ export function AdminPosts() {
 
   return (
     <>
-      <PageHeader
-        badge="Moderation"
-        title="Posts"
-        subtitle={`${counts.all} stories across BlogHub, including drafts and private posts.`}
-        actions={
-          <Button as={Link} to="/write">
-            <PenLine /> New post
-          </Button>
-        }
-      />
-
       <Section>
         {selectedIds.length > 0 && (
           <BulkBar>

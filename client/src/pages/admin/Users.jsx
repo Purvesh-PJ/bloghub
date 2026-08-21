@@ -16,7 +16,7 @@ import toast from 'react-hot-toast';
 
 import { userService } from '../../services/userService';
 import { useAuth } from '../../context/AuthContext';
-import { PageHeader, Section } from '../../components/layout/PageShell';
+import { Section } from '../../components/layout/PageShell';
 import {
   Button,
   Card,
@@ -115,7 +115,6 @@ export function AdminUsers() {
   if (isLoading) {
     return (
       <div aria-hidden="true">
-        <PageHeader title="People" subtitle="Loading directory…" />
         <Card tone="low" radius="xl" style={{ padding: 20 }}>
           {Array.from({ length: 6 }).map((_, i) => (
             <div
@@ -145,10 +144,7 @@ export function AdminUsers() {
 
   if (isError) {
     return (
-      <>
-        <PageHeader title="People" />
-        <ErrorState title="The directory did not load" error={error} onRetry={() => refetch()} />
-      </>
+      <ErrorState title="The directory did not load" error={error} onRetry={() => refetch()} />
     );
   }
 
@@ -158,12 +154,6 @@ export function AdminUsers() {
 
   return (
     <>
-      <PageHeader
-        badge="Directory"
-        title="People"
-        subtitle={`${pagination.total} ${pagination.total === 1 ? 'account' : 'accounts'} registered across BlogHub.`}
-      />
-
       <Section>
         {users.length === 0 ? (
           <EmptyState icon={UsersIcon} title="Nobody here yet">
