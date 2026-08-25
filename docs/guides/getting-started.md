@@ -17,8 +17,14 @@
 | MongoDB     | 6 or newer, local or Atlas | `mongosh --eval "db.version()"` |
 | Git         | any recent                 | `git --version`                 |
 
-No Node version is pinned — there is no `engines` field and no `.nvmrc`. Node 18+ is required
-by Vite 7 and React 19.
+```mermaid
+flowchart TD
+    A["1. Clone Repository\n<code>git clone & cd bloghub</code>"] --> B["2. Configure Secrets\n<code>cp .env.example .env</code>"]
+    B --> C["3. Install Workspaces\n<code>cd backend && npm i</code>\n<code>cd ../client && npm i</code>"]
+    C --> D["4. Seed Database (Optional)\n<code>npm run seed</code> (Creates 15 users, 99 stories)"]
+    D --> E["5. Run Dev Servers\n<code>backend: npm run dev (:4000)</code>\n<code>client: npm run dev (:3000)</code>"]
+    E --> F["6. Verification\nOpen <code>http://localhost:3000</code>\nLogin with Demo Accounts"]
+```
 
 ---
 
@@ -153,18 +159,19 @@ Every endpoint also answers without the `/api` prefix locally — see
 | `npm run migrate` / `migrate:dry`      | Repair an existing database in place, non-destructively. `:dry` shows what would change and changes nothing |
 | `npm run lint` / `lint:fix`            | ESLint                                                                                                      |
 | `npm run format` / `format:check`      | Prettier                                                                                                    |
-| `npm test`                             | 119 integration tests. Starts its own MongoDB in-process, so it needs no database and no `.env`             |
+| `npm test`                             | 125 integration tests. Starts its own MongoDB in-process, so it needs no database and no `.env`             |
 | `npm run test:watch` / `test:coverage` | The same, watching or with a coverage report                                                                |
 
 ### `client/`
 
-| Script                            | Purpose                           |
-| --------------------------------- | --------------------------------- |
-| `npm run dev`                     | Vite dev server on port 3000      |
-| `npm run build`                   | Production bundle → `client/dist` |
-| `npm run preview`                 | Serve the built bundle            |
-| `npm run lint` / `lint:fix`       | ESLint                            |
-| `npm run format` / `format:check` | Prettier                          |
+| Script                            | Purpose                            |
+| --------------------------------- | ---------------------------------- |
+| `npm run dev`                     | Vite dev server on port 3000       |
+| `npm test`                        | 73 Vitest unit and component tests |
+| `npm run build`                   | Production bundle → `client/dist`  |
+| `npm run preview`                 | Serve the built bundle             |
+| `npm run lint` / `lint:fix`       | ESLint                             |
+| `npm run format` / `format:check` | Prettier                           |
 
 ---
 

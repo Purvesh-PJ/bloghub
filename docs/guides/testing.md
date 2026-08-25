@@ -12,7 +12,7 @@
 
 ## Current state
 
-The backend has a working suite: **119 tests across ten files**, run by Jest against a real
+The backend has a working suite: **125 tests across ten files**, run by Jest against a real
 MongoDB that `mongodb-memory-server` starts in-process. They are integration tests — Supertest
 drives the actual Express app over HTTP and the assertions read the real database — which is
 deliberate, and the reason is in [Pyramid](#pyramid) below.
@@ -21,7 +21,7 @@ The client has **73 tests** under Vitest in jsdom.
 
 | Workspace  | Runner                                   | Tests | Command    |
 | ---------- | ---------------------------------------- | ----- | ---------- |
-| `backend/` | Jest + Supertest + mongodb-memory-server | 119   | `npm test` |
+| `backend/` | Jest + Supertest + mongodb-memory-server | 125   | `npm test` |
 | `client/`  | Vitest + Testing Library (jsdom)         | 73    | `npm test` |
 
 | File                 | Tests | Covers                                                                                                      |
@@ -30,10 +30,10 @@ The client has **73 tests** under Vitest in jsdom.
 | `post.test.js`       | 11    | CRUD, draft visibility, ownership, validation, the slug's unique index                                      |
 | `comment.test.js`    | 6     | Posting, ownership on delete, the post's visibility rule, pagination                                        |
 | `workspace.test.js`  | 14    | The author's own lists — stories, responses, stats — and their scoping                                      |
-| `trending.test.js`   | 11    | The scoring formula, the window, the minimum-views floor, the `latest` fallback                             |
+| `trending.test.js`   | 10    | The scoring formula, the window, the minimum-views floor, the `latest` fallback                             |
 | `admin.test.js`      | 10    | Role checks, suspension, promotion, deletion, the last-admin guard                                          |
 | `social.test.js`     | 14    | Likes and their unique index under concurrency, replies and their nesting, following                        |
-| `profile.test.js`    | 11    | The public profile endpoint, its privacy rules, and the author-filtered feed                                |
+| `profile.test.js`    | 17    | The public profile endpoint, its privacy rules, and the author-filtered feed                                |
 | `discovery.test.js`  | 25    | Search across title, body, tags and authors; view/read de-duplication; the analytics and activity endpoints |
 | `moderation.test.js` | 9     | The administrator's listing — visibility filter, title search, paging, visibility counts, bulk actions      |
 
@@ -51,6 +51,7 @@ collections between tests; `tests/env.js` supplies the secrets, so no `.env` is 
 | `api.test.js`          | 10    | The axios interceptors: token attachment, the single refresh-and-replay, and each of the five ways a refresh can fail               |
 | `text.test.js`         | 14    | Markdown stripping, excerpts, and both reading-time estimates                                                                       |
 | `UserProfile.test.jsx` | 9     | That the profile page asks for the person in the URL rather than the signed-in account, and pages their stories from the server     |
+| `admin.test.jsx`       | 22    | Every admin screen — posts moderation, category management, user promotion/suspension, bulk actions                                 |
 
 Two jsdom limits are worth knowing before adding to the admin file. Radix drives its menus
 and dialogs from pointer capture, which jsdom does not implement — `src/test/setup.js` stubs
@@ -86,14 +87,48 @@ Being honest about the gaps matters more than the count:
 
 ## Pyramid
 
+```mermaid
+graph TB
+    subgraph TestingPyramid["BlogHub Testing Pyramid"]
+        E2E["<b>End-to-End Tests (10%)</b><br/>Playwright · Critical user journeys & smoke runs"]
+        Integration["<b>Integration Tests (60% - Primary Investment)</b><br/>Jest + Supertest + mongodb-memory-server<br/>125 Real API + Database tests"]
+        Unit["<b>Unit Tests (30%)</b><br/>Vitest + React Testing Library (73 client tests)<br/>Pure text helpers, queryKeys, regex & validators"]
+    end
+
+    E2E --> Integration
+    Integration --> Unit
 ```
-              ╱╲
-             ╱E2E╲          few · slow · high confidence · brittle
-            ╱──────╲        critical journeys only
-           ╱ Integr. ╲      moderate · realistic · best value here
-          ╱────────────╲    HTTP + database
-         ╱     Unit     ╲   many · fast · isolated
-        ╱────────────────╲  pure logic, services, components
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Runner as 🤖 Jest Test Runner
+    participant Setup as ⚙️ tests/setup.js
+    participant MongoMemory as 🍃 mongodb-memory-server
+    participant Supertest as 🧪 Supertest Client
+    participant App as 📦 Express App
+    participant Mongoose as 🔌 Mongoose ODM
+
+    Runner->>Setup: Global beforeAll()
+    Setup->>MongoMemory: MongoMemoryServer.create()
+    MongoMemory-->>Setup: In-Memory URI (mongodb://127.0.0.1:port)
+    Setup->>Mongoose: mongoose.connect(inMemoryUri)
+
+    loop Per Test Suite
+        Setup->>MongoMemory: Truncate / Clear Collections
+        Runner->>Supertest: request(app).post('/api/auth/signin')
+        Supertest->>App: Direct HTTP invocation
+        App->>Mongoose: User.findOne(...)
+        Mongoose->>MongoMemory: Execute query
+        MongoMemory-->>Mongoose: Document result
+        Mongoose-->>App: Query response
+        App-->>Supertest: 200 OK + JWT
+        Supertest-->>Runner: Assert status & body properties
+    end
+
+    Runner->>Setup: Global afterAll()
+    Setup->>Mongoose: mongoose.disconnect()
+    Setup->>MongoMemory: MongoMemoryServer.stop()
 ```
 
 | Level       | Share | Count target | Runtime budget |

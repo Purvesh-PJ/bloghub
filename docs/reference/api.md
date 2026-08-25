@@ -102,6 +102,22 @@ Both are mounted outside the rate limiter.
 
 ## Endpoints
 
+```mermaid
+graph LR
+    API["🌐 /api"]
+
+    API --> Auth["🔐 /auth (Sign-up, Sign-in, Refresh, Password, Sign-out)"]
+    API --> Posts["📰 /posts (CRUD, Feed, Trending, MyPosts, Visibility)"]
+    API --> Comments["💬 /comments (Threaded comments, Replies, Moderation)"]
+    API --> Users["👤 /users (Profiles, Follows, Stats, User Settings & Admin)"]
+    API --> Tags["🔖 /tags (Taxonomy CRUD)"]
+    API --> Search["🔍 /search (Regex query across title, body, author)"]
+    API --> Social["❤️ /likes · 👁️ /page-views (Engagement tracking)"]
+    API --> Analytics["📊 /analytics & /user-activity (Author & Admin metrics)"]
+    API --> Settings["⚙️ /settings (Email notifications & preferences)"]
+    API --> Health["💓 /health · 🩺 /ready (Ops probes)"]
+```
+
 Legend — **Auth:** `—` public · `✓` any authenticated user · `self` caller must match the
 path id (admins bypass) · `owner` resource ownership (admins bypass) · `admin` admin role.
 **Shape:** `envelope` · `bare` · `error-only`.

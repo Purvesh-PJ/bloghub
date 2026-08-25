@@ -15,6 +15,33 @@ discover and engage with them, and administrators moderate the catalogue. It shi
 experiences from one codebase: a public reading surface, an authenticated authoring and
 analytics surface, and an admin console.
 
+```mermaid
+mindmap
+  root((BlogHub))
+    📖 Readers
+      Feed & Discovery
+      Trending Scoring
+      Search by Title
+      Post Detail & Markdown Render
+      Likes, Views & Read Rate
+      Threaded Comments & Replies
+      Author Follows & Public Profiles
+    ✍️ Writers
+      Split Markdown Editor
+      Cover Images & Slugs
+      Draft / Private / Public Control
+      Workspace Dashboard
+      Stories Management & Bulk Actions
+      Personal Read-Through Analytics
+      Responses Moderation
+    🛡️ Admins
+      Site-Wide Metrics Console
+      Post Catalogue Moderation
+      Category Management
+      User Accounts & Roles
+      Session Revocation & Suspension
+```
+
 ---
 
 ## Actors
@@ -156,7 +183,7 @@ after it — see [security/auth.md](../security/auth.md).
 | Health and readiness endpoints         | ✅     | `GET /health`, `GET /ready`                                                                                                                                                      |
 | Security headers                       | ✅     | `helmet`                                                                                                                                                                         |
 | Rate limiting                          | ⚠️     | A general and an auth-specific limiter, keyed to the real client address behind Vercel's proxy. The store is per-instance, so limits are approximate across serverless instances |
-| Automated tests                        | ⚠️     | 119 backend integration tests and 73 client tests; the editor and the workspace are not covered yet ([GAP-11](roadmap.md#gap-11))                                                |
+| Automated tests                        | ⚠️     | 125 backend integration tests and 73 client tests; the editor and the workspace are not covered yet ([GAP-11](roadmap.md#gap-11))                                                |
 | CI pipeline                            | ✅     | Lint, format check, tests, build and a dependency audit on every push                                                                                                            |
 | Server-side rendering / SEO metadata   | ❌     | SPA only, one static `<title>` ([GAP-16](roadmap.md#gap-16))                                                                                                                     |
 | Internationalisation                   | ❌     | English strings inlined                                                                                                                                                          |
@@ -172,4 +199,4 @@ after it — see [security/auth.md](../security/auth.md).
 | **Availability**  | Health and readiness endpoints exist; nothing polls them yet ([runbook](../operations/runbook.md))                                                                                                                                                                                                  |
 | **Security**      | All fifteen audit findings closed. Remaining work is defence in depth, not open holes: a Content-Security-Policy, a shared rate-limit store, email verification and password reset ([checklist](../security/checklist.md))                                                                          |
 | **Accessibility** | Semantic markup and a global focus ring; no audit run ([GAP-18](roadmap.md#gap-18))                                                                                                                                                                                                                 |
-| **Testability**   | 119 backend integration tests against an in-process MongoDB, plus 73 client tests under Vitest, run in CI. The client suite covers the service layer, the axios interceptors, the text helpers and the profile page; the editor and the workspace are still uncovered ([GAP-11](roadmap.md#gap-11)) |
+| **Testability**   | 125 backend integration tests against an in-process MongoDB, plus 73 client tests under Vitest, run in CI. The client suite covers the service layer, the axios interceptors, the text helpers and the profile page; the editor and the workspace are still uncovered ([GAP-11](roadmap.md#gap-11)) |

@@ -12,6 +12,16 @@
 Formatting is not a matter of opinion here — Prettier decides it, and it is never a review
 comment.
 
+```mermaid
+flowchart LR
+    A["Branch: feature/xxx"] --> B["Code against design tokens & models"]
+    B --> C["Local Verification:\n• npm run lint\n• npm run format:check\n• npm test"]
+    C --> D["Submit Pull Request"]
+    D --> E["GitHub Actions CI Gate:\nLint ➔ Format ➔ Test ➔ Build ➔ Audit"]
+    E -- Pass --> F["Code Review & Merge"]
+    E -- Fail --> B
+```
+
 ---
 
 # Part 1 — Where files go

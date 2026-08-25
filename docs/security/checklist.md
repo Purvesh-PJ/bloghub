@@ -35,6 +35,39 @@ running server or by measurement in a browser, not by inspection alone.
 | [SEC-14](#sec-14) | Rate limiting keyed to the proxy, not the client      | High     | ✅ **Fixed** |
 | [SEC-15](#sec-15) | Roles read from the token, never re-checked           | High     | ✅ **Fixed** |
 
+```mermaid
+flowchart TD
+    subgraph EdgeLayer["1. Edge & Transport Defense"]
+        TLS["HTTPS / TLS 1.3 Transport"]
+        Helmet["Helmet Security Headers (CSP, HSTS, X-Frame-Options)"]
+        Cors["CORS (Origin & Credentials Validation)"]
+        Rate["Rate Limiting (General & Auth-Specific IP Windows)"]
+    end
+
+    subgraph AuthLayer["2. Identity & Access Guard"]
+        JWT["Dual-Token JWT Validation (Access 15m / Refresh 7d)"]
+        Revoke["tokenVersion Session Revocation Check"]
+        Suspended["Account Suspension Gate"]
+        RoleGuard["RBAC (Admin / Self-or-Admin Parameter Scoping)"]
+    end
+
+    subgraph DataSanitization["3. Input Validation & Content Sanitization"]
+        Val["express-validator Rules & ObjectId Guards"]
+        XSS["DOMPurify Markdown Sanitization Schema"]
+        Upload["Multer Memory Buffer Size/Mime-Type Limits"]
+    end
+
+    subgraph PersistenceSecurity["4. Database & Storage Security"]
+        Indexes["MongoDB Unique & Compound Indexes"]
+        Projection["Strict Password/Email Exposure Projections"]
+        Visibility["Server-side Visibility Filters (Draft/Private)"]
+    end
+
+    EdgeLayer --> AuthLayer
+    AuthLayer --> DataSanitization
+    DataSanitization --> PersistenceSecurity
+```
+
 Every ✅ below was verified by request against a running server, not by inspection alone.
 
 ---

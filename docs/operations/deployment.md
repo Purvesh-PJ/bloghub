@@ -13,20 +13,30 @@
 
 **Vercel**, hosting both halves from one repository, with **MongoDB Atlas** as the database.
 
-```
-                    ┌──────────────────────┐
-   Browser ────────▶│  Vercel Edge Network │
-                    └───────┬──────────┬───┘
-              /api/*        │          │   everything else
-                            ▼          ▼
-                ┌────────────────┐  ┌──────────────────┐
-                │ Serverless Fn  │  │ Static assets    │
-                │ backend/index  │  │ client/dist      │
-                └───────┬────────┘  └──────────────────┘
-                        ▼
-              ┌──────────────────┐
-              │  MongoDB Atlas   │
-              └──────────────────┘
+```mermaid
+graph TB
+    Browser["🌐 Browser (Client User)"]
+
+    subgraph VercelEdge["Vercel Global Edge Network"]
+        Router{"Path Routing"}
+    end
+
+    subgraph CDN["Static Asset CDN"]
+        Static["client/dist\n(HTML, JS Chunks, CSS, Icons)"]
+    end
+
+    subgraph Serverless["Serverless Runtime (@vercel/node)"]
+        Lambda["backend/index.js\nExpress API Handler"]
+    end
+
+    subgraph CloudDB["MongoDB Atlas Database"]
+        Atlas[("🍃 MongoDB Cluster\n(M0/M10 Replica Set)")]
+    end
+
+    Browser -->|HTTPS Request| Router
+    Router -->|"/ (everything else)"| Static
+    Router -->|"/api/*"| Lambda
+    Lambda -->|TLS / Mongoose Connection| Atlas
 ```
 
 ## `vercel.json`
@@ -217,16 +227,31 @@ set to the client's.
 
 # Part 2 — CI/CD
 
-## Current state
+```mermaid
+flowchart TD
+    Push(["🐙 Git Push / Pull Request"]) --> CI["GitHub Actions (ci.yml)"]
 
-`.github/workflows/ci.yml` runs on every push to `main` and every pull request against it.
+    subgraph ParallelJobs["Parallel CI Execution"]
+        BackendJob["<b>Backend Job</b>\n• npm run lint\n• npm run format:check\n• npm test (125 Jest tests)"]
+        ClientJob["<b>Client Job</b>\n• npm run lint\n• npm run format:check\n• npm run test (73 Vitest)\n• npm run build"]
+        AuditJob["<b>Security Audit Job</b>\n• npm audit (backend)\n• npm audit (client)\n(Fails on high/critical)"]
+    end
+
+    CI --> BackendJob
+    CI --> ClientJob
+    CI --> AuditJob
+
+    BackendJob & ClientJob & AuditJob --> Gate{"All Jobs Green?"}
+    Gate -- Yes --> Deploy["🚀 Automatic Deployment to Vercel"]
+    Gate -- No --> Block["❌ Build Blocked / Failed Status"]
+```
 
 | Stage                          | Status                                            |
 | ------------------------------ | ------------------------------------------------- |
 | Lint (both workspaces)         | ✓ `npm run lint`                                  |
 | Format check (both workspaces) | ✓ `npm run format:check`                          |
-| Backend tests                  | ✓ 61 tests, `jest --runInBand`                    |
-| Client build                   | ✓ `npm run build`                                 |
+| Backend tests                  | ✓ 125 tests, `jest --runInBand`                   |
+| Client tests & build           | ✓ 73 tests (Vitest) + `npm run build`             |
 | Dependency audit               | ✓ `npm audit --audit-level=high`, both workspaces |
 | Deploy                         | ✓ Automatic via Vercel                            |
 

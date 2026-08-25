@@ -9,14 +9,23 @@ Every document below owns exactly one subject and cross-references rather than r
 
 ## Layout
 
-```
-docs/
-├── guides/          "I need to do something"
-├── reference/       "I need to look something up"
-├── architecture/    "why is it built this way"
-├── operations/      "it's running / it broke"
-├── product/         what it does, what's planned
-└── security/        identity, permissions, findings
+```mermaid
+graph TD
+    DocsRoot["📚 docs/ (Documentation Hub)"]
+
+    DocsRoot --> Guides["📖 guides/ (How-To & Developer Workflows)"]
+    DocsRoot --> Ref["📐 reference/ (Lookup Catalogs & Contracts)"]
+    DocsRoot --> Arch["🏛️ architecture/ (Design Decisions & Internals)"]
+    DocsRoot --> Ops["⚙️ operations/ (Deployment & Incident Runbooks)"]
+    DocsRoot --> Prod["🎯 product/ (Capabilities & Roadmaps)"]
+    DocsRoot --> Sec["🔒 security/ (Authentication & Audit Findings)"]
+
+    Guides --> G1["getting-started.md · development.md<br/>code-quality.md · testing.md · troubleshooting.md"]
+    Ref --> R1["api.md · configuration.md<br/>database.md · design-system.md"]
+    Arch --> A1["walkthrough.md · overview.md<br/>frontend.md · backend.md · decisions.md (ADRs)"]
+    Ops --> O1["deployment.md · runbook.md"]
+    Prod --> P1["features.md · user-flows.md · roadmap.md"]
+    Sec --> S1["auth.md · checklist.md"]
 ```
 
 How this structure is chosen and when to grow it:
@@ -34,6 +43,7 @@ How this structure is chosen and when to grow it:
 | [development.md](guides/development.md)         | Where files go, how to write them, how they are reviewed     |
 | [code-quality.md](guides/code-quality.md)       | ESLint, Prettier, the TypeScript position, dependency health |
 | [testing.md](guides/testing.md)                 | Strategy, tooling and conventions for every level            |
+| [troubleshooting.md](guides/troubleshooting.md) | Common local development issues, port conflicts, CORS, Atlas |
 
 ### reference/ — look things up
 
@@ -52,6 +62,7 @@ How this structure is chosen and when to grow it:
 | [overview.md](architecture/overview.md)       | System shape, annotated tree, dependency rules                |
 | [frontend.md](architecture/frontend.md)       | Providers, routing, state ownership, data flow                |
 | [backend.md](architecture/backend.md)         | Request lifecycle, layering, error handling                   |
+| [decisions.md](architecture/decisions.md)     | Architecture Decision Records (ADRs: ADR-001 to ADR-006)      |
 
 ### operations/ — running it
 
@@ -95,8 +106,11 @@ it — do not restate it.
 | UI rules, drift and agent guidance        | [guides/development.md](guides/development.md#design-language) |
 | File placement and code conventions       | [guides/development.md](guides/development.md)                 |
 | Install and run instructions              | [guides/getting-started.md](guides/getting-started.md)         |
+| Local troubleshooting and FAQ             | [guides/troubleshooting.md](guides/troubleshooting.md)         |
+| Architectural decision records (ADRs)     | [architecture/decisions.md](architecture/decisions.md)         |
 | Environment variables                     | [reference/configuration.md](reference/configuration.md)       |
 | Deployment and CI                         | [operations/deployment.md](operations/deployment.md)           |
+| Production runbook and triage             | [operations/runbook.md](operations/runbook.md)                 |
 | Token lifecycle and permissions           | [security/auth.md](security/auth.md)                           |
 | Security findings                         | [security/checklist.md](security/checklist.md)                 |
 
@@ -126,7 +140,7 @@ reach, each verified against a running server.
 | Database indexes                                                 | ✅ 26 across 9 collections                     |
 | Health endpoints, security headers, rate limiting                | ✅ In place                                    |
 | Session revocation, account deletion, view deduplication         | ✅ Done                                        |
-| Backend tests                                                    | ✅ 119 integration tests, run in CI            |
+| Backend tests                                                    | ✅ 125 integration tests, run in CI            |
 | CI pipeline                                                      | ✅ Lint · format · test · build · audit        |
 | Client tests                                                     | ⚠️ 73 tests; editor and workspace uncovered    |
 | Branch protection                                                | ❌ CI reports, but nothing requires it to pass |
