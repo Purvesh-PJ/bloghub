@@ -20,12 +20,13 @@ question it answers is not "how many people opened this" but "how many finished 
 
 ## The three tiers
 
-```
-Browser  ──HTTPS/JSON──▶  API  ──wire protocol──▶  MongoDB
-React 19                  Express 4                9 collections
-Vite                      JWT (access + refresh)   26 indexes
-TanStack Query            Mongoose
-styled-components
+```mermaid
+flowchart LR
+    Browser["🌐 Browser (React 19 SPA)\nVite · TanStack Query · styled-components"]
+    -- "HTTPS / JSON\nBearer JWT" -->
+    API["⚙️ API (Express 4 / Node.js 18+)\nJWT Auth · Mongoose ODM"]
+    API -- "Wire Protocol" -->
+    DB[("🍃 MongoDB (6+)\n9 Collections · 26 Indexes")]
 ```
 
 **Why a SPA and not server rendering.** The reading experience is the product, and most of
@@ -39,23 +40,29 @@ gap](../product/roadmap.md#gap-16) rather than pretended away.
 
 Following one request tells you most of the architecture. A reader opens a story:
 
-```
-GET /api/posts/:id
-   │
-   ├─ helmet                 security headers
-   ├─ cors                   origin pinned to CLIENT_URL in production
-   ├─ rate limit             300 req / 15 min per client
-   │
-   ├─ routes/post.routes.js  ── path, guards and validators only. No logic.
-   │     ├─ validateObjectId('id')      rejects a malformed id as 400, not 500
-   │     └─ attachUserIfPresent         optional auth: sets req.user, never rejects
-   │
-   ├─ controllers/post.controllers.js  ── request in, response out
-   │     └─ visibility check: a draft is 404 to everyone but its author and admins
-   │
-   ├─ models/post.model.js   ── schema, constraints, indexes
-   │
-   └─ middlewares/errorHandler.js  ── the single place a thrown error becomes a status
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Reader as 👤 Reader (Browser)
+    participant Route as 🛣️ post.routes.js
+    participant MW as 🛡️ Middlewares (Helmet / CORS / RateLimit)
+    participant Auth as 🔑 attachUserIfPresent
+    participant Val as 🔍 validateObjectId
+    participant Ctrl as 🎛️ post.controllers.js
+    participant Model as 📦 Post Model
+    participant DB as 🍃 MongoDB
+
+    Reader->>MW: GET /api/posts/:id
+    MW->>Route: Pass through security headers & rate limits
+    Route->>Val: Check :id format
+    Val->>Auth: Valid ObjectId
+    Auth->>Ctrl: Attach req.user (if Bearer token present)
+    Ctrl->>Model: Post.findById(id).populate(...)
+    Model->>DB: Query post document
+    DB-->>Model: Return document
+    Model-->>Ctrl: Hydrated Post
+    Note over Ctrl: Visibility Guard: Drafts return 404<br/>unless author or admin
+    Ctrl-->>Reader: 200 OK { success: true, data: post }
 ```
 
 Every layer has one job, and the boundary is enforceable by reading a file: a route with an
@@ -90,16 +97,24 @@ directly rather than being wrapped for symmetry's sake.
 
 ## Frontend layers
 
-```
-pages/          fetch data, own page state, compose
-  ├── hooks/          shared queries and behaviour (useCurrentUser, useTags, useReading)
-  ├── services/       every HTTP call — and queryKeys.js, the cache key registry
-  │     └── config/api.js   the single Axios instance: token attach, refresh, retry
-  └── components/
-        ├── ui/         token-driven primitives — no data fetching, no business rules
-        ├── posts/      domain components
-        ├── layout/     shells and chrome
-        └── marketing/  landing page only
+```mermaid
+graph TD
+    Pages["📄 pages/ (Data Fetching & State Orchestration)"]
+    Hooks["🪝 hooks/ (useCurrentUser, useTags, useReading)"]
+    Services["🔌 services/ (API clients & queryKeys registry)"]
+    Axios["🌐 config/api.js (Axios Instance & Interceptors)"]
+    Components["🧩 components/ (Pure Presentational UI)"]
+    UI["🎨 components/ui/ (21 Token-driven Primitives)"]
+    Posts["📰 components/posts/ (PostCard, Byline, Skeletons)"]
+    Layout["🖼️ components/layout/ (Page Shells, Outlets, Chrome)"]
+
+    Pages --> Hooks
+    Pages --> Services
+    Services --> Axios
+    Pages --> Components
+    Components --> UI
+    Components --> Posts
+    Components --> Layout
 ```
 
 **One rule decides most placements:** _does it fetch?_ Pages fetch. Components render what

@@ -285,13 +285,23 @@ adopt structured logging, and is impossible today.
 
 # Part 3 — Troubleshooting
 
-## Diagnostic order
+```mermaid
+flowchart TD
+    Incident([🚨 Production Incident Alert]) --> CheckHealth{"Check Probes (/health & /ready)"}
 
-```
-1. Is it reproducible?    Another browser, incognito, another account
-2. Which layer?           Browser console → network tab → API logs → database
-3. Did it ever work?      git log on the relevant path
-4. Environment or code?   Does it happen locally? On a preview?
+    CheckHealth -- 503 / DB Fail --> Atlas["1. Inspect MongoDB Atlas Status\nCheck Connection Pool & Whitelist"]
+    CheckHealth -- 200 Ready --> NetStatus{"Inspect HTTP Status Codes"}
+
+    NetStatus -- 401 / 403 Spike --> AuthIssue["Auth Incident:\nCheck JWT Secret rotation, tokenVersion bump"]
+    NetStatus -- 429 Spike --> RateLimit["DDoS / Throttling:\nCheck RateLimiter IP logs & proxy headers"]
+    NetStatus -- 500 Spike --> ServerErr["Backend Exception:\nCheck Vercel Runtime Logs for stack trace"]
+    NetStatus -- Client UI Blank --> FrontErr["Frontend Exception:\nInspect Browser Console & ErrorBoundary"]
+
+    Atlas & AuthIssue & RateLimit & ServerErr & FrontErr --> Action{"Resolution Action"}
+
+    Action -- Bad Release --> Rollback["Promote Previous Deployment on Vercel"]
+    Action -- Config Error --> FixEnv["Update Environment Variables & Redeploy"]
+    Action -- Bug in Code --> Hotfix["Create hotfix branch ➔ CI Gate ➔ Merge"]
 ```
 
 The network tab is the fastest triage tool: the status code alone separates auth (401/403),

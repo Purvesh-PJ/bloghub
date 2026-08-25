@@ -52,19 +52,33 @@ rather than left to imply that the switches did something.
 
 ## 1. Registration
 
-```
-/register → username, email, password, confirm → Submit
-  ⇢ POST /auth/signup
-      ├─ express-validator: all four fields
-      │    ✗ → 400 with field errors
-      ├─ normalise: email lowercased and trimmed by the schema
-      ├─ User.findOne({ $or: [email, username] })
-      │    ✗ match → 409
-      ├─ bcrypt.hash(password, salt=10)
-      ├─ User.create(...)
-      │    ✗ duplicate key from the unique index → 409
-      └─ UserProfile.create({ user })
-  → 201 → toast → navigate to /login
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 User
+    participant App as 🌐 Client (/register)
+    participant API as ⚙️ API (POST /auth/signup)
+    participant DB as 🍃 MongoDB
+
+    User->>App: Input username, email, password, confirm
+    App->>API: POST /api/auth/signup
+    API->>API: express-validator checks all 4 fields
+    alt Validation Failure
+        API-->>App: 400 Bad Request with field errors
+        App-->>User: Display field error messages
+    else Validation Success
+        API->>DB: User.findOne({ $or: [email, username] })
+        alt Account Exists
+            DB-->>API: Conflict found
+            API-->>App: 409 Conflict
+            App-->>User: Toast: Email or username taken
+        else Unique Account
+            API->>DB: User.create(...) & UserProfile.create(...)
+            DB-->>API: Documents created
+            API-->>App: 201 Created
+            App-->>User: Success toast & navigate to /login
+        end
+    end
 ```
 
 Registration does not sign the user in. Uniqueness is enforced by the database, so two
@@ -74,19 +88,30 @@ concurrent registrations cannot both succeed.
 
 ## 2. Sign in
 
-```
-/login → credential (email OR username) + password → Submit
-  ⇢ POST /auth/signin        [max 10 failed attempts / 15 min per IP]
-      ├─ User.findOne({ $or: [email, username] })
-      │    ✗ → 401 — message deliberately does not say which field was wrong
-      ├─ bcrypt.compare
-      │    ✗ → 401, same message
-      └─ issue accessToken (15m, JWT_SECRET, type: access)
-                refreshToken (7d, JWT_REFRESH_SECRET, type: refresh)
-  → 200 { accessToken, refreshToken, userdata }
-  → authState.setState → localStorage["auth-storage"]
-  → subscribers notified → header switches to the member view
-  → navigate(location.state.from ?? "/", { replace: true })
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 User
+    participant App as 🌐 Client (/login)
+    participant API as ⚙️ API (POST /auth/signin)
+    participant DB as 🍃 MongoDB
+
+    User->>App: Input credential + password
+    App->>API: POST /api/auth/signin
+    Note over API: Rate limiter: max 10 failed attempts / 15m
+    API->>DB: User.findOne({ $or: [email, username] })
+    alt Account Not Found
+        API-->>App: 401 Unauthorized (generic error)
+    else Account Found
+        API->>API: bcrypt.compare(password, hash)
+        alt Password Mismatch
+            API-->>App: 401 Unauthorized (generic error)
+        else Password Valid
+            API-->>App: 200 OK { accessToken, refreshToken, userdata }
+            Note over App: authState updated & saved to localStorage<br/>Subscribers notified (Header changes to member)
+            App-->>User: Redirect to previous location (or /)
+        end
+    end
 ```
 
 `authState` is a plain object outside React so the Axios interceptor can read the current
@@ -97,17 +122,35 @@ token without a hook — see
 
 ## 3. Authenticated request and silent refresh
 
-```
-component → service → api.request
-  ├─ request interceptor: Authorization: Bearer <accessToken>
-  ⇢ API — authenticateUser verifies signature, expiry, and type === 'access'
-  └─ response interceptor
-       ├─ 2xx → return
-       └─ 401 and not already retried
-            ├─ mark _retry
-            ⇢ POST /auth/refreshToken { refreshToken }   (bare axios, no recursion)
-            ├─ success → store the new access token → replay the original request
-            └─ ✗ → authState.logout() → redirect to /login
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Component as 📄 React Component
+    participant Axios as 🌐 Axios Interceptor (config/api.js)
+    participant API as ⚙️ Express API
+    participant AuthStorage as 💾 localStorage / authState
+
+    Component->>Axios: api.get('/posts')
+    Axios->>API: GET /api/posts (Headers: Bearer <accessToken>)
+    alt Token Valid
+        API-->>Axios: 200 OK Response
+        Axios-->>Component: return response.data
+    else Token Expired (401 Unauthorized)
+        API-->>Axios: 401 Unauthorized
+        Note over Axios: Response interceptor catches 401 & not yet _retry
+        Axios->>API: POST /api/auth/refreshToken { refreshToken } (via bare axios)
+        alt Refresh Succeeded
+            API-->>Axios: 200 OK { data: { accessToken: newAccessToken } }
+            Axios->>AuthStorage: Update authState.accessToken
+            Axios->>API: Replay original GET /api/posts (Headers: Bearer <newAccessToken>)
+            API-->>Axios: 200 OK Response
+            Axios-->>Component: return response.data
+        else Refresh Failed / Expired
+            API-->>Axios: 401 Unauthorized
+            Axios->>AuthStorage: authState.logout()
+            Axios-->>Component: Hard redirect to /login
+        end
+    end
 ```
 
 A refresh token presented as an access token is rejected with 401 — different secret and a
@@ -191,25 +234,49 @@ Like state survives a reload because `Post.likes` is maintained and populated on
 
 ---
 
-## 6. Publishing
+## 6. Publishing and Post Lifecycle
 
+```mermaid
+stateDiagram-v2
+    [*] --> Draft: Save Draft\n(Author only)
+    [*] --> Public: Direct Publish\n(Public Feed)
+
+    Draft --> Public: Publish Action\n(Enters Feed & Trending)
+    Draft --> Private: Mark Private\n(Author & Direct Link only)
+
+    Public --> Draft: Unpublish\n(Removed from Public Feed)
+    Public --> Private: Restrict Access
+
+    Private --> Public: Make Public
+    Private --> Draft: Revert to Draft
+
+    Public --> [*]: Delete Post\n(Soft/Hard delete & counter decrement)
+    Draft --> [*]: Delete Post
+    Private --> [*]: Delete Post
 ```
-/write → WritePost mounts
-  ⇢ GET /categories
-  → title → slug auto-derives
-  → Markdown editor with preview toggle
-  → optional cover image URL
-  → multi-select categories
-  → Save draft | Publish
 
-  client guards: title, content and slug non-empty
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Author as ✍️ Author
+    participant Editor as 📝 WritePost Component
+    participant API as ⚙️ Express API
+    participant DB as 🍃 MongoDB
 
-  ⇢ POST /posts { title, slug, content, imageURL, visibility }
-       └─ visibility validated against the enum, default draft
-  → 201 { postId }
-  → if categories selected ⇢ POST /categories/categoriesCollection
-       └─ ✗ not the owner → 403
-  → navigate to /post/:postId
+    Author->>Editor: Enter Title, Markdown Content, Categories
+    Author->>Editor: Click "Publish Story"
+    Editor->>API: POST /api/posts { title, slug, content, visibility: "public" }
+    API->>API: Validate input (title, slug, content)
+    API->>DB: Post.create(...) & UserProfile.inc(postCount)
+    DB-->>API: Saved Post { _id: postId }
+    API-->>Editor: 201 Created { postId }
+
+    opt Categories Selected
+        Editor->>API: POST /api/categories/categoriesCollection { postId, categories }
+        API->>DB: Link Post with Category documents
+        DB-->>API: Categories Updated
+    end
+    Editor-->>Author: Navigate to /post/:postId
 ```
 
 Publishing with `visibility: 'public'` puts the post on the home feed immediately.

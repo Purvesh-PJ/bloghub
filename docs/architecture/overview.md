@@ -13,22 +13,31 @@
 A **three-tier application in a single repository** with two independently installed
 workspaces.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Browser                                                    │
-│  React 19 SPA · Vite · styled-components · TanStack Query   │
-└───────────────────────────┬─────────────────────────────────┘
-                            │ HTTPS · JSON · Bearer token
-┌───────────────────────────▼─────────────────────────────────┐
-│  API                                                        │
-│  Node.js · Express 4 · JWT · Mongoose ODM                   │
-│  helmet → cors → rate limit → routes → middleware           │
-│         → controllers → services → models                   │
-└───────────────────────────┬─────────────────────────────────┘
-                            │ MongoDB wire protocol
-┌───────────────────────────▼─────────────────────────────────┐
-│  MongoDB — 9 collections, 26 declared indexes               │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph ClientTier["Client Tier (SPA)"]
+        Browser["🌐 Browser Client\nReact 19 · Vite 7 · TanStack Query 5\nstyled-components 6"]
+    end
+
+    subgraph APITier["API Gateway & Application Tier"]
+        ExpressApp["⚙️ Express 4 API (Node.js 18+)\nhelmet · cors · rate-limit · JWT\nMongoose 7 ODM"]
+
+        subgraph Pipeline["Processing Pipeline"]
+            MW["Middleware Chain\nLogger ➔ Helmet ➔ CORS ➔ RateLimiter ➔ JWT Auth"]
+            Controllers["Controllers & Validators"]
+            Services["Domain Services (Post, Comment, Trending, Account)"]
+        end
+    end
+
+    subgraph DataTier["Persistence Tier"]
+        MongoDB[("🍃 MongoDB Database\n9 Collections · 26 Indexes")]
+    end
+
+    Browser -- "HTTPS / JSON\nAuthorization: Bearer <JWT>" --> ExpressApp
+    ExpressApp --> MW
+    MW --> Controllers
+    Controllers --> Services
+    Services -- "Mongoose Wire Protocol" --> MongoDB
 ```
 
 There is **no root `package.json`** and no workspace manager. `backend/` and `client/` are
@@ -113,71 +122,50 @@ bloghub/
 
 ## Workspace boundaries
 
-| Property      | `backend/`                  | `client/`                  |
-| ------------- | --------------------------- | -------------------------- |
-| Module system | CommonJS                    | ES modules                 |
-| Language      | JavaScript                  | JavaScript + JSX           |
-| Runtime       | Node.js 18+                 | Browser                    |
-| Entry point   | `index.js`                  | `src/main.jsx`             |
-| Build step    | None                        | Vite → `client/dist`       |
-| Install       | `cd backend && npm install` | `cd client && npm install` |
-| Test runner   | Jest + Supertest, 61 tests  | **None installed**         |
+| Property      | `backend/`                   | `client/`                           |
+| ------------- | ---------------------------- | ----------------------------------- |
+| Module system | CommonJS                     | ES modules                          |
+| Language      | JavaScript                   | JavaScript + JSX                    |
+| Runtime       | Node.js 18+                  | Browser                             |
+| Entry point   | `index.js`                   | `src/main.jsx`                      |
+| Build step    | None                         | Vite → `client/dist`                |
+| Install       | `cd backend && npm install`  | `cd client && npm install`          |
+| Test runner   | Jest + Supertest (125 tests) | Vitest + Testing Library (73 tests) |
 
 The two share no code. Their only contract is the HTTP API
 ([reference/api.md](../reference/api.md)).
 
 ---
 
-## Backend layers
-
-```
-HTTP request
-   ▼
-index.js ─────────── composition root: config validation, env, database,
-   │                 middleware order, health endpoints, mounting
-   ▼
-logger ───────────── morgan request line
-   ▼
-helmet ───────────── security headers
-   ▼
-cors → body parsers (1 MB limit)
-   ▼
-rate limit ───────── 300/15min general · 10 failed/15min on /auth
-   ▼
-routes/*.routes.js ─ path → middleware chain → controller. No logic.
-   ▼
-authenticateUser ─── verifies the token, populates req.user
-authorizeAdmin ───── asserts the admin role
-authorizeSelfOrAdmin scopes a :userId route to its owner
-   ▼
-controllers/ ─────── read the request, call services or models,
-   │                 choose the status code, shape the response
-   ▼
-services/ ────────── multi-step persistence reused by more than one caller
-   ▼
-models/ ──────────── schemas, constraints and indexes
-   ▼
-MongoDB
+```mermaid
+flowchart TD
+    Req([HTTP Request]) --> Root["index.js (Composition Root)"]
+    Root --> Log["logger (Morgan)"]
+    Log --> Sec["helmet (Security Headers)"]
+    Sec --> Body["cors + body parsers (1 MB)"]
+    Body --> Rate["rate limit (General / Auth)"]
+    Rate --> Routes["routes/*.routes.js (Mounting)"]
+    Routes --> Auth{"Auth Middlewares\n(authenticateUser / authorizeAdmin / authorizeSelfOrAdmin)"}
+    Auth --> Valid["validate (express-validator)"]
+    Valid --> Ctrl["controllers/ (Request & Response Handling)"]
+    Ctrl --> Svc["services/ (Domain Logic Reuse)"]
+    Svc --> Model["models/ (Mongoose Schemas & Indexes)"]
+    Ctrl --> Model
+    Model --> DB[(MongoDB Instance)]
 ```
 
 Detail in [backend.md](backend.md).
 
 ## Frontend layers
 
-```
-main.jsx ────── ErrorBoundary → QueryClient → Router → Auth → Theme
-   ▼
-App.jsx ─────── route table, lazy loading, Suspense boundary
-   ▼
-guards/ ─────── route-level access decisions (UX, not security)
-   ▼
-components/layout/ ─ page shells with an <Outlet />
-   ▼
-pages/ ──────── data orchestration: queries, mutations, local state
-   ▼
-services/ ───── one function per endpoint; returns response.data
-   ▼
-config/api.js ─ the single Axios instance; token attach and refresh
+```mermaid
+flowchart TD
+    Main["main.jsx (Provider Composition)"] --> App["App.jsx (Route Table & Code Splitting)"]
+    App --> Guards["guards/ (ProtectedRoute / AdminRoute UX)"]
+    Guards --> Layout["components/layout/ (Page Shells & Outlets)"]
+    Layout --> Pages["pages/ (UI & TanStack Query Orchestration)"]
+    Pages --> Services["services/ (API Service Client Functions)"]
+    Services --> Axios["config/api.js (Axios Instance & Auth Interceptors)"]
 ```
 
 Detail in [frontend.md](frontend.md).

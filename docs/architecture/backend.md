@@ -104,28 +104,37 @@ the connection.
 
 ---
 
-## Request lifecycle
+```mermaid
+flowchart TD
+    Req([HTTP Request: /api/resource]) --> Log["morgan (Request Logging)"]
+    Log --> Sec["helmet (Security Headers)"]
+    Sec --> Cors["cors (Origin & Credentials)"]
+    Cors --> Body["express.json + urlencoded (1MB limit)"]
+    Body --> Rate{"Rate Limiter\n(/auth: 10/15min, general: 300/15min)"}
 
-```
-Client · Authorization: Bearer <accessToken>
-  ▼
-morgan → helmet → cors → body parsers → rate limit
-  ▼
-Router match ─────── /api/posts/:id → routes/post.routes.js
-  ▼
-authenticateUser ─── verifies signature, expiry and type === 'access'
-  │                  ✗ → 401
-attachUserIfPresent  optional variant: populates req.user, never rejects
-  ▼
-authorizeAdmin ───── admin role required          ✗ → 403
-authorizeSelfOrAdmin :userId must be the caller   ✗ → 403
-  ▼
-Controller ───────── validate → call a service or model
-  │                  → choose the status code → send JSON
-  ▼
-Service ──────────── multi-step persistence, throws on failure
-  ▼
-Model ────────────── Mongoose query → MongoDB
+    Rate -- Exceeded --> E429[429 Too Many Requests]
+    Rate -- Allowed --> Router["Express Router (/api)"]
+
+    Router --> Guards{"Auth Guards"}
+    Guards -- "authenticateUser" --> CheckAuth{Valid JWT?}
+    CheckAuth -- No --> E401[401 Unauthorized]
+    CheckAuth -- Yes --> RoleCheck{Role / Owner Check}
+    RoleCheck -- Unauthorized --> E403[403 Forbidden]
+    RoleCheck -- Authorized --> Val["express-validator Rules"]
+
+    Guards -- "attachUserIfPresent" --> Val
+
+    Val -- Validation Errors --> E400[400 Bad Request]
+    Val -- Passed --> Ctrl["Controller Action"]
+
+    Ctrl --> Svc["Service / Model Query"]
+    Svc --> DB[(MongoDB Wire)]
+    DB --> Svc
+    Svc --> Ctrl
+    Ctrl --> Res([200 / 201 JSON Response])
+
+    E429 & E401 & E403 & E400 -. "throw / next(err)" .-> ErrMW["errorHandler Middleware"]
+    ErrMW --> ErrRes([JSON Error Envelope])
 ```
 
 ---

@@ -34,16 +34,42 @@
 Styling is CSS-in-JS via **styled-components v6**. No utility framework, no global stylesheet
 beyond `GlobalStyles`. Every value a component needs comes from the theme object.
 
-```
-client/src/styles/
-├── ThemeProvider.jsx        # context, mode persistence, system-preference listener
-└── theme/
-    ├── index.js             # barrel
-    ├── tokens.js            # mode-independent values
-    ├── typography.js        # mode-independent type scale
-    ├── lightTheme.js        # light colours + shadows
-    ├── darkTheme.js         # dark colours + shadows
-    └── GlobalStyles.js      # reset, element defaults, .post-content, utilities
+```mermaid
+graph TD
+    subgraph Tokens["Theme Tokens & Palette"]
+        Mode["Theme Mode\n(light / dark / system)"]
+        TokensBase["tokens.js\nspacing · radii · breakpoints · zIndices · layout"]
+        Type["typography.js\nfontFamilies · fontSizes · fontWeights · lineHeights"]
+        Light["lightTheme.js\nRadix Sky + Slate + Shadows"]
+        Dark["darkTheme.js\nRadix SkyDark + SlateDark + Shadows"]
+    end
+
+    subgraph Assembly["ThemeProvider Assembly"]
+        Provider["ThemeProvider\nFlat theme object merge"]
+    end
+
+    subgraph Primitives["21 UI Primitives (components/ui/)"]
+        Buttons["Button, IconButton, Link"]
+        Surfaces["Card, Modal, Drawer, Dropdown"]
+        Inputs["Input, Textarea, Select, Checkbox"]
+        Feedback["Badge, Spinner, Alert, Skeleton"]
+    end
+
+    subgraph LayoutAndPages["Domain & Pages"]
+        Layouts["Header, Footer, WorkspaceLayout, AdminLayout"]
+        PagesComp["Home, PostDetail, WritePost, Stories, Dashboard"]
+    end
+
+    Mode --> Provider
+    TokensBase --> Provider
+    Type --> Provider
+    Light --> Provider
+    Dark --> Provider
+
+    Provider --> Primitives
+    Primitives --> Layouts
+    Primitives --> PagesComp
+    Layouts --> PagesComp
 ```
 
 The theme handed to styled-components is a flat merge:

@@ -14,35 +14,37 @@
 Stateless **JWT bearer authentication** with an access/refresh pair. No session store, no
 server-side token registry, no cookies.
 
-```
-┌────────┐  credentials   ┌────────┐   verify    ┌──────────┐
-│ Client │───────────────▶│  API   │────────────▶│ MongoDB  │
-│        │◀───────────────│        │             │  users   │
-└───┬────┘  access +      └────────┘             └──────────┘
-    │       refresh
-    │ localStorage["auth-storage"]
-    │ Authorization: Bearer <access>
-    └──────────────────────────▶ every subsequent request
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 User / Browser
+    participant API as ⚙️ Express API
+    participant DB as 🍃 MongoDB (users collection)
+
+    User->>API: POST /api/auth/signin { credential, password }
+    API->>DB: User.findOne({ $or: [email, username] })
+    DB-->>API: User document (with bcrypt password hash)
+    API->>API: bcrypt.compare(password, hash)
+    API->>API: Mint AccessToken (15m, JWT_SECRET)<br/>Mint RefreshToken (7d, JWT_REFRESH_SECRET)
+    API-->>User: 200 OK { accessToken, refreshToken, userdata }
+    Note over User: Saved to localStorage["auth-storage"]<br/>authState singleton updated
+    User->>API: GET /api/posts (Headers: Authorization: Bearer <accessToken>)
+    API->>API: Verify token signature + load User.tokenVersion
+    API-->>User: 200 OK Protected Resource
 ```
 
 ## Registration
 
-```
-validate (validators/auth.validators.js → signUpRules)
-   username 3–30, [A-Za-z0-9_-] · valid email · password ≥ 10 · confirmation matches
-        ✗ → 400 with field errors
-        ▼
-schema normalises email (lowercase, trim)
-        ▼
-User.findOne({ $or: [email, username] })    ✗ found → 409
-        ▼
-bcrypt.genSalt(12) → bcrypt.hash
-        ▼
-User.create(...)     ✗ duplicate key (unique index) → 409
-        ▼
-UserProfile.create({ user })
-        ▼
-201 — no session is created; the user must sign in
+```mermaid
+flowchart TD
+    RegReq([POST /api/auth/signup]) --> Val["express-validator (username, email, password, confirm)"]
+    Val -- Invalid --> E400[❌ 400 Bad Request]
+    Val -- Valid --> Norm["Mongoose schema normalises email (lowercase, trim)"]
+    Norm --> CheckDup["User.findOne({ $or: [email, username] })"]
+    CheckDup -- Exists --> E409[❌ 409 Conflict]
+    CheckDup -- Unique --> Hash["bcrypt.hash(password, salt=12)"]
+    Hash --> CreateUser["User.create(...) & UserProfile.create(...)"]
+    CreateUser --> S201([✅ 201 Created — user must sign in])
 ```
 
 Uniqueness is enforced by **unique indexes on `email` and `username`**, not by the
@@ -51,19 +53,18 @@ error is translated to the same 409 the pre-check returns.
 
 ## Sign in
 
-```
-{ credential, password }        email OR username
-        ▼
-[rate limit: 10 failed attempts / 15 minutes per IP]
-        ▼
-User.findOne({ $or: [{ email: lower(credential) }, { username: credential }] })
-        ✗ → 401 "Invalid email/username or password"
-        ▼
-bcrypt.compare        ✗ → 401, the same message
-        ▼
-issueTokens(user)
-        ▼
-200 { accessToken, refreshToken, userdata }
+```mermaid
+flowchart TD
+    LoginReq([POST /api/auth/signin]) --> Rate{"authLimiter (max 10 failed / 15m)"}
+    Rate -- Exceeded --> E429[❌ 429 Too Many Requests]
+    Rate -- Allowed --> Find["User.findOne({ $or: [email, username] })"]
+    Find -- Not Found --> E401[❌ 401 Invalid email/username or password]
+    Find -- Found --> SuspCheck{account.suspended?}
+    SuspCheck -- Yes --> E401Susp[❌ 401 Account suspended]
+    SuspCheck -- No --> Compare["bcrypt.compare(password, hash)"]
+    Compare -- No Match --> E401
+    Compare -- Matches --> Issue["issueTokens(user)<br/>(AccessToken 15m, RefreshToken 7d)"]
+    Issue --> S200([✅ 200 { accessToken, refreshToken, userdata }])
 ```
 
 `userdata` carries `user_id`, `username`, `email` and `roles` — never the hash.
@@ -214,14 +215,31 @@ The client calls the endpoint first but never lets a failure keep somebody signe
 expired session or an offline browser must still be able to sign out locally.
 
 This used to be client-side only. Nothing was sent, and the tokens stayed valid until they
-expired, so "sign out" meant "this browser forgets" rather than anything an attacker holding a
-captured token would notice.
-
-### Revocation
+expired, so "sign out" mea### Revocation
 
 One integer does all of it. Both tokens carry the `tokenVersion` they were minted with;
 `authenticateUser` compares that against the stored value and rejects a mismatch. Bumping the
 field is therefore a revocation of everything outstanding.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as 🛡️ Administrator / User
+    participant API as ⚙️ Express API
+    participant DB as 🍃 MongoDB (User Document)
+    actor Stolen as 🦹 Attacker / Old Session
+
+    Admin->>API: POST /api/auth/signout (or Admin Suspends User)
+    API->>DB: User.findByIdAndUpdate(userId, { $inc: { tokenVersion: 1 } })
+    DB-->>API: tokenVersion updated (e.g. 0 ➔ 1)
+    API-->>Admin: 200 OK Signed Out
+
+    Note over Stolen: Attacker attempts to use old JWT (tokenVersion: 0)
+    Stolen->>API: GET /api/posts (Bearer JWT with tokenVersion: 0)
+    API->>DB: Load account from DB (tokenVersion: 1)
+    API->>API: Compare tokenVersion: 0 !== 1 (Mismatch!)
+    API-->>Stolen: 401 Unauthorized (Token Revoked)
+```
 
 | Event                             | Effect                                            |
 | --------------------------------- | ------------------------------------------------- |
@@ -249,15 +267,24 @@ There is no UI for granting a role.
 
 ## Enforcement layers
 
-```
-1. UI visibility        Header hides the admin link
-                        ↳ cosmetic only
-2. Route guards         AdminRoute / ProtectedRoute redirect
-                        ↳ user experience only — bypassable by typing a URL
-─────────────────── the security boundary ───────────────────
-3. Route middleware     authenticateUser → authorizeAdmin
-                                        → authorizeSelfOrAdmin(param)
-4. Resource ownership   post.user === req.user.id, inside the controller
+```mermaid
+graph TB
+    subgraph ClientLayers["Client-Side UX (Not a Security Boundary)"]
+        UI["1. UI Component Visibility\n(Header hides admin links, conditional buttons)"]
+        Guards["2. React Route Guards\n(ProtectedRoute, AdminRoute redirects)"]
+    end
+
+    subgraph Boundary["🛡️ THE SECURITY BOUNDARY"]
+        direction TB
+        MW["3. Express Route Middleware\n(authenticateUser ➔ authorizeAdmin ➔ authorizeSelfOrAdmin)"]
+        Ctrl["4. Controller Business Rules\n(Draft visibility checks, status filters)"]
+        DB["5. Database Constraints\n(Unique compound indexes, schema types)"]
+    end
+
+    UI --> Guards
+    Guards -. "Bypassable via direct HTTP" .-> MW
+    MW --> Ctrl
+    Ctrl --> DB
 ```
 
 Layers 1 and 2 exist so users are not shown actions they cannot perform. **Every protected
@@ -371,8 +398,8 @@ comment short of deleting the post.
 | `GET /analytics/post/:id`             | ✓   | ✓   | —   | ✓   | Counters only          |
 | `GET /analytics/user/:userId`         | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin` |
 | `GET /analytics/admin`                | ✗   | ✗   | —   | ✓   | `authorizeAdmin`       |
-| `POST /analytics/view/:postId`        | ⚠   | ⚠   | —   | ✓   | Rate-limited only      |
-| `POST /analytics/read/:postId`        | ⚠   | ⚠   | —   | ✓   | Rate-limited only      |
+| `POST /analytics/view/:postId`        | ⚠  | ⚠  | —   | ✓   | Rate-limited only      |
+| `POST /analytics/read/:postId`        | ⚠  | ⚠  | —   | ✓   | Rate-limited only      |
 | `GET /user-activity/all`              | ✗   | ✗   | —   | ✓   | `authorizeAdmin`       |
 | `GET /user-activity/user/:userId`     | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin` |
 | `GET /user-activity/timeline/:userId` | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin` |

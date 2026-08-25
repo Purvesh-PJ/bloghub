@@ -35,6 +35,25 @@ Consequences:
 `backend/config/env.js` runs before the database connection and exits non-zero on a
 misconfiguration, so a broken deployment fails at boot rather than on a user's first request.
 
+```mermaid
+flowchart TD
+    Start([Process Boot]) --> Load[Load root .env via dotenv]
+    Load --> CheckSecret{JWT_SECRET set?}
+    CheckSecret -- No --> ErrSecret[❌ Exit 1: JWT_SECRET required]
+    CheckSecret -- Yes --> CheckEnv{NODE_ENV === 'production'?}
+
+    CheckEnv -- No --> ConnectDB[(Connect to MongoDB)]
+    CheckEnv -- Yes --> CheckProd{CLIENT_URL set &<br/>JWT_SECRET ≥ 32 chars?}
+
+    CheckProd -- No --> ErrProd[❌ Exit 1: Production config invalid]
+    CheckProd -- Yes --> CheckRefresh{JWT_REFRESH_SECRET === JWT_SECRET?}
+
+    CheckRefresh -- Yes (Identical) --> ErrRefresh[❌ Exit 1: Secrets must differ]
+    CheckRefresh -- No (Different) --> ConnectDB
+
+    ConnectDB --> ServerStart([Server Listening / Serverless Ready])
+```
+
 | Check                               | Scope                             |
 | ----------------------------------- | --------------------------------- |
 | `JWT_SECRET` present                | All environments                  |

@@ -20,67 +20,117 @@ and `updatedAt` automatically.
 
 ## Collections
 
-Eleven models. Two dead ones — `Setting` and the unused `categoryServices` — were deleted
-during remediation.
+Nine active Mongoose models and collections.
 
-| Model         | Collection     | Purpose                             | Status                                                           |
-| ------------- | -------------- | ----------------------------------- | ---------------------------------------------------------------- |
-| `User`        | `users`        | Account and credentials             | Active                                                           |
-| `UserProfile` | `userprofiles` | Bio, avatar, social graph, counters | Active                                                           |
-| `UserSetting` | `usersettings` | Preferences                         | Active                                                           |
-| `Post`        | `posts`        | Article content                     | Active                                                           |
-| `Comment`     | `comments`     | Comments and replies                | Active                                                           |
-| `Category`    | `categories`   | Editorial grouping                  | Active                                                           |
-| `Tag`         | `tags`         | Keyword grouping                    | Declared, unused by the UI                                       |
-| `Like`        | `likes`        | One like event                      | Active                                                           |
-| `View`        | `views`        | One page-view event                 | Active                                                           |
-| `Read`        | `reads`        | One read-completion event           | Active, rarely written                                           |
-| `Analytics`   | `analytics`    | Per-post counters                   | **Stale** — seeder only ([BUG-06](../product/roadmap.md#bug-06)) |
+| Model         | Collection     | Purpose                             | Status                 |
+| ------------- | -------------- | ----------------------------------- | ---------------------- |
+| `User`        | `users`        | Account and credentials             | Active                 |
+| `UserProfile` | `userprofiles` | Bio, avatar, social graph, counters | Active                 |
+| `UserSetting` | `usersettings` | Preferences                         | Active                 |
+| `Post`        | `posts`        | Article content                     | Active                 |
+| `Comment`     | `comments`     | Comments and nested replies         | Active                 |
+| `Tag`         | `tags`         | Topic and keyword taxonomy          | Active                 |
+| `Like`        | `likes`        | One like event                      | Active                 |
+| `View`        | `views`        | One page-view event                 | Active                 |
+| `Read`        | `reads`        | One read-completion event           | Active, rarely written |
 
 ---
 
 ## Entity relationships
 
-```
-                    ┌──────────────┐
-                    │     User     │
-                    │  username U  │  U = unique index
-                    │  email    U  │
-                    │  password    │
-                    │  roles[]     │
-                    └──┬───┬───┬───┘
-            profile 1:1│   │   │1:N posts[]  (denormalised)
-                       │   │   └──────────────┐
-                       │   │settings 1:1      │
-        ┌──────────────▼┐  │            ┌─────▼────────┐
-        │  UserProfile  │  │            │     Post     │
-        │  bio, image   │  │            │  title, slug │
-        │  fullName     │  │            │  content     │
-        │  location     │  │            │  imageURL    │
-        │  website      │  │            │  visibility  │
-        │  socialLinks  │  │            │  user →      │
-        │  followers[]  │  │            │  tags[]      │
-        │  followings[] │  │            │  categories[]│
-        │  postCount    │  │            │  views[]     │
-        │  *Count       │  │            │  likes[]     │
-        └───────────────┘  │            │  comments[]  │
-                  ┌────────▼──────┐     └──┬──┬──┬──┬──┘
-                  │  UserSetting  │        │  │  │  │
-                  │  theme        │        │  │  │  │
-                  │  emailNotifs  │        │  │  │  │
-                  │  privacy{}    │        │  │  │  │
-                  │  appearance{} │        │  │  │  │
-                  └───────────────┘        │  │  │  │
-      ┌──────────┬───────────┬─────────────┘  │  │  └──────────┐
-      │          │           │                │  │             │
-┌─────▼────┐ ┌───▼────┐ ┌────▼─────┐ ┌────────▼┐ ▼        ┌────▼─────┐
-│ Category │ │  Tag   │ │ Comment  │ │  Like   │ View     │Analytics │
-│ name   U │ │ name U │ │ message  │ │ user →  │ user →   │ blogPost │
-│ posts[]  │ │ posts[]│ │ user →   │ │ post →  │ post →   │ → Post   │
-└──────────┘ └────────┘ │ post →   │ │  (U pair)│         └──────────┘
-                        │ replies[]│ └─────────┘   ┌──────┐
-                        └──────────┘               │ Read │
-                                                   └──────┘
+```mermaid
+erDiagram
+    User ||--|| UserProfile : "has profile (1:1)"
+    User ||--|| UserSetting : "has settings (1:1)"
+    User ||--o{ Post : "authors (1:N)"
+    User ||--o{ Comment : "writes (1:N)"
+    User ||--o{ Like : "places (1:N)"
+    User ||--o{ View : "triggers (1:N)"
+    User ||--o{ Read : "completes (1:N)"
+
+    Post ||--o{ Comment : "contains (1:N)"
+    Post ||--o{ Like : "receives (1:N)"
+    Post ||--o{ View : "tracks (1:N)"
+    Post ||--o{ Read : "measures (1:N)"
+    Post }o--o{ Tag : "tagged with (M:N)"
+
+    Comment ||--o{ Comment : "nested replies (1:N)"
+
+    User {
+        ObjectId _id PK
+        string username "UK"
+        string email "UK"
+        string password
+        string_array roles
+        number tokenVersion
+        boolean suspended
+        datetime suspendedAt
+    }
+
+    UserProfile {
+        ObjectId _id PK
+        ObjectId user FK "UK"
+        string fullName
+        string bio
+        string location
+        string website
+        number postCount
+        number followersCount
+        number followingsCount
+    }
+
+    UserSetting {
+        ObjectId _id PK
+        ObjectId user FK "UK"
+        string theme
+        boolean emailNotifications
+    }
+
+    Post {
+        ObjectId _id PK
+        ObjectId user FK
+        string title
+        string slug "Index"
+        string content
+        string imageURL
+        string visibility "draft | private | public"
+    }
+
+    Comment {
+        ObjectId _id PK
+        ObjectId user FK
+        ObjectId post FK
+        string message
+        ObjectId_array replies
+        number replyCount
+    }
+
+
+    Tag {
+        ObjectId _id PK
+        string name "UK"
+        ObjectId_array posts
+    }
+
+    Like {
+        ObjectId _id PK
+        ObjectId user FK "UK Compound"
+        ObjectId post FK "UK Compound"
+    }
+
+    View {
+        ObjectId _id PK
+        ObjectId user FK
+        ObjectId post FK
+        string visitorKey "Index"
+    }
+
+    Read {
+        ObjectId _id PK
+        ObjectId user FK
+        ObjectId post FK
+        string visitorKey "Index"
+    }
 ```
 
 Several relationships are stored on **both** sides — see
@@ -273,8 +323,8 @@ application.
 
 Several relationships are stored twice, maintained by separate writes with no transaction.
 
-| Pair                                          | Maintained by                  | Risk                                                                                     |
-| --------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
+| Pair                                           | Maintained by                  | Risk                                                                                     |
+| ---------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
 | `Post.comments` ↔ `Comment.post`              | `createComment`, reply handler | Both sides now written, including replies                                                |
 | `Post.likes` ↔ `likes` collection             | `createLike`, `deleteLike`     | Both sides now written                                                                   |
 | `Post.views` ↔ `views` collection             | **Nothing at runtime**         | Array stays empty outside seed data                                                      |

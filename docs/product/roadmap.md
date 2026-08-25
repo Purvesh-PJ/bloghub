@@ -448,7 +448,7 @@ returning visitor re-fetches after a deploy went from 207 kB gzipped to 98 kB.
 | <a id="gap-08"></a>**GAP-08** | Notifications                       | P3       | ❌ Open                                                                                                                                                                                                                                    |
 | <a id="gap-09"></a>**GAP-09** | Account deletion                    | P2       | ✅ **Done** — `DELETE /users/me`, sharing `purgeAccount` with the admin path                                                                                                                                                               |
 | <a id="gap-10"></a>**GAP-10** | Real audit log                      | P2       | ⚠️ Partial — the moderation log now keys off `Post.editedAt` and is surfaced in the console ([BUG-24](#bug-24)); administrative actions still leave no record of their own                                                                 |
-| <a id="gap-11"></a>**GAP-11** | Automated tests                     | P0       | ⚠️ Partial — 119 backend integration tests and 73 client tests (Vitest); the client suite covers the service layer, the axios interceptors, the text helpers, the profile page and every admin screen, not yet the editor or the workspace |
+| <a id="gap-11"></a>**GAP-11** | Automated tests                     | P0       | ⚠️ Partial — 125 backend integration tests and 73 client tests (Vitest); the client suite covers the service layer, the axios interceptors, the text helpers, the profile page and every admin screen, not yet the editor or the workspace |
 | <a id="gap-12"></a>**GAP-12** | CI pipeline                         | P0       | ✅ **Done** — lint, format check, tests, build and a dependency audit on every push and pull request                                                                                                                                       |
 | <a id="gap-13"></a>**GAP-13** | Database indexes                    | P0       | ✅ **Done** — 26 indexes across 9 collections                                                                                                                                                                                              |
 | <a id="gap-14"></a>**GAP-14** | Health and readiness endpoints      | P1       | ✅ **Done** — `GET /health`, `GET /ready`                                                                                                                                                                                                  |
@@ -461,6 +461,17 @@ returning visitor re-fetches after a deploy went from 207 kB gzipped to 98 kB.
 
 ## Plan
 
+```mermaid
+flowchart LR
+    P1["✅ <b>Phase 1</b><br/>Correctness & Safety<br/>• 28 Bugs fixed<br/>• 15 SEC findings closed"]
+    P2["✅ <b>Phase 2</b><br/>Foundations<br/>• 125 Backend tests<br/>• 73 Client Vitest tests<br/>• CI Pipeline & Gating"]
+    P3["⏳ <b>Phase 3</b><br/>Data Model Consolidation<br/>• Reconcile User.posts<br/>• Dynamic count derivation<br/>• Counter integrity scripts"]
+    P4["🔮 <b>Phase 4</b><br/>Product Depth<br/>• Password reset (GAP-01)<br/>• S3 Avatar Storage (GAP-17)<br/>• Text-indexed Search (GAP-05)"]
+    P5["🚀 <b>Phase 5</b><br/>Scale & Polish<br/>• Structured JSON logs (GAP-15)<br/>• Audit logging (GAP-10)<br/>• Accessibility & SEO"]
+
+    P1 --> P2 --> P3 --> P4 --> P5
+```
+
 ### ✅ Phase 1 — Correctness and safety _(complete)_
 
 Twelve defects and eight security findings closed, each verified against a running server.
@@ -472,7 +483,7 @@ likes persist, settings save, and deep links resolve.
 Every defect in Phase 1 was one a modest test suite would have caught before merge, so this
 phase built the thing that stops them coming back.
 
-- [x] [GAP-11](#gap-11) a backend suite — 119 integration tests over auth, authorisation,
+- [x] [GAP-11](#gap-11) a backend suite — 125 integration tests over auth, authorisation,
       posts, comments, replies, likes, following, search, tracking, the workspace, trending,
       moderation and the admin console, plus a regression test for each closed `BUG-xx` and
       `SEC-xx` a request can reach

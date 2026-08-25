@@ -30,19 +30,15 @@ are controlled by hand with `useState`. Either adopt them or drop them.
 
 ---
 
-## Provider composition
-
-`client/src/main.jsx`. The nesting order is deliberate.
-
-```jsx
-<React.StrictMode>
-  <ErrorBoundary>                       // catches render errors from everything below
-    <QueryClientProvider>               // server-state cache
-      <BrowserRouter>                   // history — above anything that navigates
-        <AuthProvider>                  // session — guards depend on it
-          <ThemeProvider>               // styled-components theme + GlobalStyles
-            <App />
-            <Toaster position="top-right" />
+```mermaid
+graph TD
+    Strict["<React.StrictMode>"] --> EB["<ErrorBoundary>\nGlobal render error boundary"]
+    EB --> QC["<QueryClientProvider client={queryClient}>\nTanStack Server State Cache"]
+    QC --> Router["<BrowserRouter>\nReact Router 7 History"]
+    Router --> Auth["<AuthProvider>\nSession state & tokenVersion"]
+    Auth --> Theme["<ThemeProvider>\nstyled-components tokens & GlobalStyles"]
+    Theme --> App["<App />\nRoute table & lazy components"]
+    Theme --> Toast["<Toaster position='top-right' />\nGlobal Notifications"]
 ```
 
 `ErrorBoundary` is outermost so a failure in any provider still renders a recovery screen.
@@ -113,18 +109,24 @@ No Redux, Zustand or Jotai, and none is needed.
 
 ### Authentication state
 
-`client/src/context/AuthContext.jsx` is a deliberate two-part design.
+```mermaid
+flowchart LR
+    subgraph NonReact["Non-React Module Scope"]
+        AS["<b>authState Singleton</b>\n• user, tokens, isAuthenticated\n• persist() ➔ localStorage\n• subscribe(listener)"]
+    end
 
-```
-authState  ─ a plain module-scope object
-             ├─ user, accessToken, refreshToken, isAuthenticated
-             ├─ setState / setAccessToken / logout
-             ├─ persist() → localStorage["auth-storage"]
-             └─ subscribe(listener)
-                        │
-AuthProvider ───────────┘  mirrors into React state and exposes
-                           { …state, setAuth, setAccessToken, setUser,
-                             logout, isLoggedIn, isAdmin }
+    subgraph ReactWorld["React Component Tree"]
+        AP["<b>AuthProvider Context</b>\nMirrors authState into React State\nExposes: useAuth() hook"]
+        Components["<b>React Components & Guards</b>\nProtectedRoute, AdminRoute, Header"]
+    end
+
+    subgraph Network["Network Layer"]
+        Axios["<b>Axios Interceptor</b>\nReads authState.accessToken synchronously"]
+    end
+
+    AS -- "subscribe()" --> AP
+    AP --> Components
+    AS -. "direct synchronous read" .-> Axios
 ```
 
 **Why the singleton exists:** the Axios interceptor is not a React component and cannot call
@@ -141,17 +143,28 @@ Trade-off: tokens in `localStorage` are readable by any script on the origin —
 
 ## Data flow
 
-```
-Page component
-   │  useQuery / useMutation
-   ▼
-TanStack Query          cache hit returns immediately; miss calls queryFn
-   ▼
-services/<name>Service  one function per endpoint, returns response.data
-   ▼
-config/api.js           Axios instance + request/response interceptors
-   ▼
-Express API
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Page as 📄 Page Component
+    participant Query as ⚡ TanStack Query
+    participant Svc as 🔌 services/<name>Service
+    participant Axios as 🌐 config/api.js (Axios)
+    participant API as ⚙️ Express Backend
+
+    Page->>Query: useQuery(['posts', params])
+    alt Cache Hit (Fresh)
+        Query-->>Page: Return cached data immediately
+    else Cache Miss / Stale
+        Query->>Svc: Execute queryFn
+        Svc->>Axios: api.get('/posts', { params })
+        Note over Axios: Attach Bearer Access Token
+        Axios->>API: HTTP GET /api/posts
+        API-->>Axios: 200 OK Response
+        Axios-->>Svc: response
+        Svc-->>Query: return response.data
+        Query-->>Page: Update UI with fresh server data
+    end
 ```
 
 ### Service layer

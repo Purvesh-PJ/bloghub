@@ -13,6 +13,14 @@
 ESLint 9 with flat config in both workspaces. No shared base — the module systems and globals
 differ.
 
+```mermaid
+flowchart LR
+    Dev["👨‍💻 Developer Push / PR"] --> Lint["🔍 ESLint 9 (Flat Config)\nbackend: . (CommonJS)\nclient: src (ESM + React Hooks)"]
+    Lint --> Format["📐 Prettier 3\nCode Style & Consistency Check"]
+    Format --> Audit["🛡️ npm audit\nBlock High & Critical Vulnerabilities"]
+    Audit --> Status([✅ Quality Gate Passed])
+```
+
 |                      | `backend/`                           | `client/`                     |
 | -------------------- | ------------------------------------ | ----------------------------- |
 | Config               | `eslint.config.js` (CommonJS)        | `eslint.config.js` (ESM)      |
@@ -121,7 +129,7 @@ the decision is visible and reviewed.
 Machine-decided. Never a review comment.
 
 | Option          | `backend/` | `client/`        |
-| --------------- | ---------- | ---------------- |
+| --------------- | ---------- | ---------------- | ----------- |
 | `semi`          | `true`     | `true`           |
 | `singleQuote`   | `true`     | `true`           |
 | `tabWidth`      | `2`        | `2`              |
