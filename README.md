@@ -95,7 +95,7 @@ Below is the visual gallery across BlogHub's reading surfaces, editor studios, c
       <sub>Server-filtered stories table with bulk actions and visibility toggles (<code>/stories</code>)</sub>
     </td>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/admin-wordspace.png" alt="Admin Management Workspace" width="100%" />
+      <img src="client/public/screenshots/admin-workspace.png" alt="Admin Management Workspace" width="100%" />
       <br/><strong>🛡️ Admin Moderation Workspace</strong><br/>
       <sub>Site-wide health metrics, story catalog moderation, and user management (<code>/admin</code>)</sub>
     </td>
