@@ -15,7 +15,7 @@ files so a single value cannot drift out of step.
 
 | Workspace  | Mechanism                                                                                 |
 | ---------- | ----------------------------------------------------------------------------------------- |
-| `backend/` | `dotenv.config({ path: path.resolve(__dirname, '../.env') })` in `index.js` and `seed.js` |
+| `backend/` | `dotenv.config({ path: path.resolve(__dirname, '../.env') })` in `index.js` and `scripts/seed.js` |
 | `client/`  | `envDir: '../'` in `vite.config.js`                                                       |
 
 Consequences:
@@ -80,7 +80,7 @@ flowchart TD
 | `JWT_ACCESS_EXPIRES_IN`  | No          | `15m`                      | `auth.controllers.js`                                            | Access token lifetime                                                                                                                                                                |
 | `JWT_REFRESH_EXPIRES_IN` | No          | `7d`                       | `auth.controllers.js`                                            | Refresh token lifetime                                                                                                                                                               |
 | `VERCEL`                 | Auto        | —                          | `index.js`                                                       | Set by the platform; suppresses `app.listen`                                                                                                                                         |
-| `SEED_ALLOW_REMOTE`      | No          | —                          | `seed.js`                                                        | Must equal `yes` before the seeder will touch a non-local database. The seeder empties every collection first, so without this guard one careless command destroys a live deployment |
+| `SEED_ALLOW_REMOTE`      | No          | —                          | `scripts/seed.js`                                                | Must equal `yes` before the seeder will touch a database whose URI is not `localhost` or `127.0.0.1`. The seeder empties every collection first, so without this guard one careless command destroys a live deployment |
 
 ### Client
 
@@ -134,9 +134,11 @@ JWT_REFRESH_SECRET=test-refresh-secret-not-for-production
 ```
 
 Under `NODE_ENV=test`, `index.js` skips `connectDB()` so a test harness owns the connection.
-Integration tests should use `mongodb-memory-server` rather than a URI —
-[guides/testing.md](../guides/testing.md). This template is for end-to-end runs,
-which need a real server, and the database name **must** contain `_e2e` for the guard to pass.
+The installed integration suite uses `mongodb-memory-server` and needs no URI and no `.env`
+at all — `tests/env.js` supplies the secrets ([guides/testing.md](../guides/testing.md)).
+This template is for the end-to-end runs that would need a real server. The `_e2e` suffix is
+a convention proposed for that suite's own guard; the **seeder's** guard checks the host for
+`localhost` / `127.0.0.1`, not the database name.
 
 ### Production
 
@@ -185,8 +187,10 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
   and refresh.
 - Minimum 32 bytes; 48 is better.
 - Rotating `JWT_SECRET` invalidates every access token; rotating `JWT_REFRESH_SECRET`
-  invalidates every session. That is the correct emergency response to a suspected leak, and
-  currently the **only** way to force sign-out
+  invalidates every session. That is a correct emergency response to a suspected leak, but it
+  is no longer the only way to force sign-out: incrementing an account's `tokenVersion` —
+  which sign-out, a password change, a suspension and a demotion all do — revokes that
+  account's tokens without touching anybody else's
   ([GAP-06](../product/roadmap.md#gap-06)).
 - Never commit, log, or send over chat.
 
@@ -208,7 +212,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 | Issue                                          | Impact                                                                   | Fix                                             |
 | ---------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------- |
 | Three accepted names for one URI               | Ambiguity about which is authoritative                                   | Settle on one, delete the fallbacks             |
-| No schema validation                           | Typos in optional variables surface at runtime                           | Validate with `zod` at boot — already installed |
+| No schema validation                           | Typos in optional variables surface at runtime                           | Validate at boot with a schema library          |
 | `JWT_REFRESH_SECRET` falls back in development | A developer may never set it, so local behaviour differs from production | Acceptable; the warning makes it visible        |
 
 ---

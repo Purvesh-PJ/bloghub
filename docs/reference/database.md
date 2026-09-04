@@ -10,11 +10,11 @@
 
 ## Engine
 
-MongoDB via **Mongoose 7.2**. Connection handling is in `backend/config/db.js`; the URI is
+MongoDB via **Mongoose 8**. Connection handling is in `backend/config/db.js`; the URI is
 read from `MONGODB_URI`, `MONGO_DB_URI` or `DB_URI`, in that order.
 
-Every schema uses `{ timestamps: true }` except `Analytics`, so documents carry `createdAt`
-and `updatedAt` automatically.
+Every schema uses `{ timestamps: true }`, so documents carry `createdAt` and `updatedAt`
+automatically.
 
 ---
 
@@ -82,24 +82,28 @@ erDiagram
     UserSetting {
         ObjectId _id PK
         ObjectId user FK "UK"
-        string theme
+        string theme "light | dark | system"
         boolean emailNotifications
+        object privacySettings
+        object appearance
     }
 
     Post {
         ObjectId _id PK
         ObjectId user FK
         string title
-        string slug "Index"
+        string slug "UK"
         string content
         string imageURL
         string visibility "draft | private | public"
+        datetime editedAt
     }
 
     Comment {
         ObjectId _id PK
         ObjectId user FK
         ObjectId post FK
+        ObjectId parent FK "null = top level"
         string message
         ObjectId_array replies
         number replyCount
@@ -169,7 +173,7 @@ unhelpful sense: nothing could be taken back before it expired.
 | Field                                            | Type                            | Notes                                                                 |
 | ------------------------------------------------ | ------------------------------- | --------------------------------------------------------------------- |
 | `user`                                           | ObjectId → `User`               | required, **unique index**                                            |
-| `image.data` / `image.contentType`               | Buffer / String                 | Receives a path string today ([BUG-07](../product/roadmap.md#bug-07)) |
+| `image.data` / `image.contentType`               | Buffer / String                 | The avatar bytes; served by `GET /users/:id/avatar` ([BUG-07](../product/roadmap.md#bug-07)) |
 | `bio`, `fullName`, `location`, `website`         | String                          | trimmed                                                               |
 | `socialLinks`                                    | `{ twitter, github, linkedin }` |                                                                       |
 | `followers` / `followings`                       | [ObjectId → `User`]             |                                                                       |
@@ -199,15 +203,15 @@ Previously `new mongoose.Schema({})` — an empty schema that silently discarded
 | ------------ | ---------------------------- | --------------------------------------- |
 | `user`       | ObjectId → `User`            | author                                  |
 | `title`      | String                       | required                                |
-| `slug`       | String                       | required, indexed                       |
-| `content`    | String                       | required, Markdown                      |
+| `slug`       | String                       | required, **unique index**              |
+| `content`    | String                       | required, Markdown, max 100,000 chars   |
 | `imageURL`   | String                       | optional cover image                    |
 | `visibility` | `draft \| private \| public` | default `draft`, **written by the API** |
-| `tags`       | [ObjectId → `Tag`]           | never populated by the UI               |
-| `categories` | [ObjectId → `Category`]      |                                         |
+| `tags`       | [ObjectId → `Tag`]           | up to 5, set in the editor              |
 | `views`      | [ObjectId → `View`]          | seeder only                             |
 | `likes`      | [ObjectId → `Like`]          | maintained at runtime                   |
 | `comments`   | [ObjectId → `Comment`]       | maintained at runtime                   |
+| `editedAt`   | Date                         | stamped only by `postService.updatePost`, so "edited" means edited rather than engaged with ([BUG-24](../product/roadmap.md#bug-24)) |
 
 ### `Comment`
 
@@ -215,16 +219,20 @@ Previously `new mongoose.Schema({})` — an empty schema that silently discarded
 | -------------------- | ---------------------- | ----------------------------------- |
 | `user`               | ObjectId → `User`      | author                              |
 | `post`               | ObjectId → `Post`      | set on replies too                  |
-| `message`            | String                 |                                     |
+| `message`            | String                 | max 5,000 characters                |
+| `parent`             | ObjectId → `Comment`   | the comment this replies to, `null` for a top-level comment. Listing filters on it, which is what stopped replies coming back twice ([BUG-20](../product/roadmap.md#bug-20)) |
 | `replies`            | [ObjectId → `Comment`] | self-reference, one level in the UI |
 | `replyCount`         | Number                 | default 0                           |
 | `likes` / `dislikes` | [ObjectId → `User`]    | no endpoint writes these            |
 | `date`               | Date                   | redundant with `createdAt`          |
 
-### `Category` and `Tag`
+### `Tag`
 
-`name` (String, required, **unique index**) and `posts` (array of references), plus
-timestamps.
+`name` (String, required, lowercased, max 30, **unique index**) and `posts` (array of
+references), plus timestamps.
+
+There is no `Category` model. Categories were folded into tags;
+`backend/scripts/migrate.js` drops the legacy collection and unsets `Post.categories`.
 
 ### `Like`, `View`, `Read`
 
@@ -242,38 +250,47 @@ requests came from the same place. One row per key per post per 6-hour window.
 `View` and `Read` are also what the trending ranking counts; see
 [api.md](api.md#how-trending-is-ranked).
 
-### `Analytics`
+### The removed `Analytics` collection
 
-`blogPost` → `Post` (indexed; the reference previously named a non-existent `Blog` model),
-plus `totalPageViews`, `totalLikes`, `totalComments`. Written only by the seeder.
+There was an `Analytics` model holding pre-aggregated totals. Nothing in the running
+application ever wrote one — only the seeder did — so on any real database
+`GET /analytics/post/:id` answered 404 for every post. It has been deleted; the figures are
+now counted from `View`, `Read`, `Like` and `Comment`, which are the rows that actually
+accumulate ([BUG-06](../product/roadmap.md#bug-06)).
 
 ---
 
 ## Indexes
 
-Thirteen indexes across eight collections, all declared in the schema files so they travel
-with the model.
+**Twenty** declared indexes across nine collections (29 counting the automatic `_id` on each),
+all declared in the schema files so they travel with the model.
 
-| Collection            | Index                                                      | Purpose                                         |
-| --------------------- | ---------------------------------------------------------- | ----------------------------------------------- |
-| `users`               | `{ email: 1 }` unique                                      | Sign-in lookup; prevents duplicate accounts     |
-| `users`               | `{ username: 1 }` unique                                   | Same                                            |
-| `posts`               | `{ visibility: 1, createdAt: -1 }`                         | The public feed                                 |
-| `posts`               | `{ user: 1, createdAt: -1 }`                               | Author feeds and My Posts                       |
-| `posts`               | `{ slug: 1 }`                                              | Slug lookups                                    |
-| `comments`            | `{ post: 1, createdAt: -1 }`                               | Comment threads                                 |
-| `comments`            | `{ user: 1, createdAt: -1 }`                               | Activity and timeline                           |
-| `likes`               | `{ post: 1, user: 1 }` unique                              | Prevents duplicate likes                        |
-| `likes`               | `{ user: 1, createdAt: -1 }`                               | Activity feed                                   |
-| `views`               | `{ post: 1, createdAt: -1 }`                               | Analytics counts                                |
-| `views`               | `{ user: 1, createdAt: -1 }`                               | Activity feed                                   |
-| `reads`               | `{ post: 1, createdAt: -1 }`, `{ user: 1, createdAt: -1 }` | Read-rate calculation                           |
-| `userprofiles`        | `{ user: 1 }` unique                                       | Looked up on nearly every authenticated request |
-| `categories` / `tags` | `{ name: 1 }` unique                                       | Lookups are by name                             |
+| Collection     | Index                                       | Purpose                                              |
+| -------------- | ------------------------------------------- | ---------------------------------------------------- |
+| `users`        | `{ email: 1 }` unique                       | Sign-in lookup; prevents duplicate accounts          |
+| `users`        | `{ username: 1 }` unique                    | Same                                                 |
+| `posts`        | `{ visibility: 1, createdAt: -1 }`          | The public feed                                      |
+| `posts`        | `{ user: 1, createdAt: -1 }`                | Author feeds and My Posts                            |
+| `posts`        | `{ editedAt: -1 }`                          | The moderation log                                   |
+| `posts`        | `{ slug: 1 }` **unique**                    | Slug lookups; a repeatable slug cannot identify a post |
+| `comments`     | `{ post: 1, parent: 1, createdAt: -1 }`     | The top-level listing, which filters on `parent`     |
+| `comments`     | `{ post: 1, createdAt: -1 }`                | Comment threads                                      |
+| `comments`     | `{ user: 1, createdAt: -1 }`                | Activity and timeline                                |
+| `likes`        | `{ post: 1, user: 1 }` unique               | Prevents duplicate likes                             |
+| `likes`        | `{ user: 1, createdAt: -1 }`                | Activity feed                                        |
+| `views`        | `{ post: 1, createdAt: -1 }`                | Analytics counts                                     |
+| `views`        | `{ post: 1, visitorKey: 1, createdAt: -1 }` | The per-visitor de-duplication check                 |
+| `views`        | `{ user: 1, createdAt: -1 }`                | Activity feed                                        |
+| `reads`        | `{ post: 1, createdAt: -1 }`                | Read-rate calculation                                |
+| `reads`        | `{ post: 1, visitorKey: 1, createdAt: -1 }` | The per-visitor de-duplication check                 |
+| `reads`        | `{ user: 1, createdAt: -1 }`                | Reading history                                      |
+| `userprofiles` | `{ user: 1 }` unique                        | Looked up on nearly every authenticated request      |
+| `usersettings` | `{ user: 1 }` unique                        | One settings document per account                    |
+| `tags`         | `{ name: 1 }` unique                        | Lookups are by name                                  |
 
-**Not indexed:** the search regex. `GET /search/:query` still performs a collection scan —
-adding a text index would change matching from substring to whole-word, which is a UX
-decision, not a mechanical one ([GAP-05](../product/roadmap.md#gap-05)).
+**Not indexed:** the search regex. `GET /search/:query` still performs a collection scan over
+titles and bodies — adding a text index would change matching from substring to whole-word,
+which is a UX decision, not a mechanical one ([GAP-05](../product/roadmap.md#gap-05)).
 
 ### Migration note
 
@@ -297,25 +314,30 @@ keep on the day it was added.
 ### Population
 
 `GET /posts/:id` performs the deepest population — author, likes, comments, each comment's
-author, each comment's replies and their authors, plus categories. Always pass a projection
+author, each comment's replies and their authors, plus tags. Always pass a projection
 (`'username'`) so password hashes and email addresses never leave the database.
 
-`GET /posts` populates only `user` and `categories`, and is paginated. It previously
-populated all comments for every post in the collection — the most expensive query in the
-application.
+`GET /posts` populates only `user` and `tags`, and is paginated. It previously populated all
+comments for every post in the collection — the most expensive query in the application.
 
 ### Aggregation
 
-- **Search** — `$match` on visibility and a title regex, `$sort`, `$limit`, `$project` a
-  200-character excerpt.
+- **Trending** — four `$lookup` sub-pipelines counting views, reads, likes and comments inside
+  a 14-day window, a `$match` floor on views, then the weighted `$addFields` score and `$sort`.
+- **Tag counts** — `$lookup` from `posts` filtered to `visibility: 'public'`, then `$size`.
 - **Admin analytics** — `$lookup` from `views` into `posts` and from `posts` into `users`,
   then `$addFields`, `$sort`, `$limit`, `$project`.
+- **Visibility counts** — `$group` on `visibility`, so the moderation and workspace tab counts
+  reflect the whole collection rather than the page being shown.
+
+Search is a `Post.find()` rather than an aggregation: a `$or` over the title and body regexes
+plus tag and author ids resolved in two prior queries.
 
 ### Counting
 
-`getUserAnalytics` issues `countDocuments` per post inside a `Promise.all`, so an author with
-50 posts triggers 100 count queries. A single `$group` would replace all of them — now that
-`views` and `reads` are indexed on `post`, each is cheap, but the count is still N+1.
+`getUserAnalytics` counts views and reads with one grouped aggregation per collection
+(`countByPost`). It used to issue `countDocuments` per post, so an author with 50 posts
+triggered 100 queries on every dashboard load.
 
 ---
 
@@ -329,7 +351,7 @@ Several relationships are stored twice, maintained by separate writes with no tr
 | `Post.likes` ↔ `likes` collection             | `createLike`, `deleteLike`     | Both sides now written                                                                   |
 | `Post.views` ↔ `views` collection             | **Nothing at runtime**         | Array stays empty outside seed data                                                      |
 | `User.posts` ↔ `Post.user`                    | `createPost`, `deletePost`     | Two sources of truth for authorship; the story list reads one, analytics reads the other |
-| `Category.posts` ↔ `Post.categories`          | Category controllers           | Writes are now awaited                                                                   |
+| `Tag.posts` ↔ `Post.tags`                     | `postService`, `deletePost`    | Both sides written; deleting a post pulls its id from every tag                          |
 | `UserProfile.followers/followings` ↔ counters | `followUser`, `unfollowUser`   | Array and counter can disagree if one write fails                                        |
 | `UserProfile.postCount` ↔ actual count        | `postBlogs`, `deletePost`      | Now targets the post's author, not the requester                                         |
 
@@ -345,12 +367,12 @@ script. Tracked in [Phase 3](../product/roadmap.md#phase-3--data-model-consolida
 
 No referential integrity at the database level; the only cascade is manual.
 
-| Operation         | Cascade behaviour                                                                                                                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Delete a post     | Pulls the id from referencing categories, deletes attached comments, pulls from the author's `User.posts`, decrements the author's `postCount`. **Leaves orphaned** likes, views and reads |
-| Delete a user     | **Not implemented** ([GAP-09](../product/roadmap.md#gap-09))                                                                                                                               |
-| Delete a category | **Not implemented** — would leave dangling ids in `Post.categories`                                                                                                                        |
-| Delete a comment  | Only as part of post deletion; replies are not removed                                                                                                                                     |
+| Operation        | Cascade behaviour                                                                                                                                                                       |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Delete a post    | Pulls the id from referencing tags, deletes attached comments, pulls from the author's `User.posts`, decrements the author's `postCount`. **Leaves orphaned** likes, views and reads    |
+| Delete a user    | Implemented — `accountService.purgeAccount`, shared by `DELETE /users/me` and the administrator's `DELETE /users/:id` ([GAP-09](../product/roadmap.md#gap-09))                          |
+| Delete a tag     | `DELETE /tags/:id` **refuses with 409** while any story still carries the tag, rather than leaving dangling ids in `Post.tags`                                                          |
+| Delete a comment | Removed with its replies by `DELETE /comments/:id`, and in bulk as part of post deletion                                                                                                |
 
 No multi-document transactions are used, although MongoDB Atlas replica sets support them.
 `createPost` and `createComment` approximate one with a compensating delete.
@@ -359,9 +381,11 @@ No multi-document transactions are used, although MongoDB Atlas replica sets sup
 
 ## Seed data
 
-`backend/seed.js` (`npm run seed`) **clears every collection** and rebuilds a demo dataset:
-10 categories, 15 users (14 members and 1 administrator), 22 public posts, ~112 comments,
-~170 likes, ~671 views, and one `Analytics` document per post.
+`backend/scripts/seed.js` (`npm run seed`) **clears every collection** and rebuilds a demo
+dataset: 15 users (14 creators and 1 administrator) and 99 stories — 84 public, 10 drafts and
+5 private — spread over 10 topic groups whose names become tags. Each public story then gets
+2–6 comments, 2–9 likes and 15–54 views, with a share of those views marked as completed
+reads. The counts vary per run because they are randomised.
 
 | Role          | Email               | Password      |
 | ------------- | ------------------- | ------------- |
@@ -373,6 +397,8 @@ Two things to know:
 1. It is **destructive**. Never point it at a database you care about.
 2. It resolves the root `.env` explicitly — a bare `dotenv.config()` looked in `backend/` and
    found nothing ([BUG-18](../product/roadmap.md#bug-18)).
+3. It refuses a non-local target unless `SEED_ALLOW_REMOTE=yes` is set. The guard tests the
+   URI for `localhost` or `127.0.0.1`, not the database name.
 
 ---
 

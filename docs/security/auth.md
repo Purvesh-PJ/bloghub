@@ -58,19 +58,26 @@ flowchart TD
     LoginReq([POST /api/auth/signin]) --> Rate{"authLimiter (max 10 failed / 15m)"}
     Rate -- Exceeded --> E429[❌ 429 Too Many Requests]
     Rate -- Allowed --> Find["User.findOne({ $or: [email, username] })"]
-    Find -- Not Found --> E401[❌ 401 Invalid email/username or password]
-    Find -- Found --> SuspCheck{account.suspended?}
-    SuspCheck -- Yes --> E401Susp[❌ 401 Account suspended]
-    SuspCheck -- No --> Compare["bcrypt.compare(password, hash)"]
+    Find -- Not Found --> Dummy["bcrypt.compare against a dummy hash<br/>(constant work, no timing oracle)"]
+    Dummy --> E401[❌ 401 Invalid email/username or password]
+    Find -- Found --> Compare["bcrypt.compare(password, hash)"]
     Compare -- No Match --> E401
-    Compare -- Matches --> Issue["issueTokens(user)<br/>(AccessToken 15m, RefreshToken 7d)"]
+    Compare -- Matches --> SuspCheck{account.suspended?}
+    SuspCheck -- Yes --> E403Susp[❌ 403 AccountSuspended]
+    SuspCheck -- No --> Issue["issueTokens(user)<br/>(AccessToken 15m, RefreshToken 7d)"]
     Issue --> S200([✅ 200 { accessToken, refreshToken, userdata }])
 ```
 
 `userdata` carries `user_id`, `username`, `email` and `roles` — never the hash.
 
 The identical 401 for both failure modes is deliberate: the endpoint cannot be used to
-enumerate accounts.
+enumerate accounts. When no account matches, the handler still runs a bcrypt comparison
+against a fixed dummy hash at the same cost, so response timing does not answer "is this
+address registered?" either.
+
+**Suspension is checked after the password, not before.** A 403 returned before the password
+was verified would let anyone discover which addresses belong to suspended accounts without
+knowing the credential.
 
 ## Token contract
 
@@ -215,7 +222,9 @@ The client calls the endpoint first but never lets a failure keep somebody signe
 expired session or an offline browser must still be able to sign out locally.
 
 This used to be client-side only. Nothing was sent, and the tokens stayed valid until they
-expired, so "sign out" mea### Revocation
+expired, so "sign out" meant only that this browser forgot them.
+
+### Revocation
 
 One integer does all of it. Both tokens carry the `tokenVersion` they were minted with;
 `authenticateUser` compares that against the stored value and rejects a mismatch. Bumping the
@@ -261,9 +270,11 @@ authentication already performs.
 | ------------- | ---------------------------------- | --------------------------------------------------------------------------------------------- |
 | _(anonymous)_ | No token                           | Read published content, register, sign in                                                     |
 | `user`        | Default on registration            | Author, engage, manage own content, view own analytics                                        |
-| `admin`       | Manual database edit or the seeder | Everything above, plus the console, site-wide analytics, user listing, moderation of any post |
+| `admin`       | The seeder, `PATCH /users/:id/role`, or a manual database edit | Everything above, plus the console, site-wide analytics, user listing, moderation of any post |
 
-There is no UI for granting a role.
+An administrator can promote and demote from the admin console's Users screen. The route
+refuses to act on the caller's own account, and a demotion bumps `tokenVersion`, so the
+demoted session stops immediately rather than at expiry.
 
 ## Enforcement layers
 
@@ -324,7 +335,9 @@ String-to-string comparison (ObjectId equality is not reference equality); admin
 bypass, enabling moderation; and the check runs **after** the existence check, so a missing
 resource returns 404 rather than leaking existence through a 403.
 
-Applied to `PUT /posts/:id`, `DELETE /posts/:id`, and both category-attachment endpoints.
+Applied to `PUT /posts/:id` and `DELETE /posts/:id`. `POST /posts/bulk` enforces the same rule
+through the query rather than per document: the filter is scoped to the caller unless they are
+an administrator, so an id belonging to somebody else simply matches nothing.
 
 ---
 
@@ -351,55 +364,63 @@ Applied to `PUT /posts/:id`, `DELETE /posts/:id`, and both category-attachment e
 | `GET /users/getUser`          | ✗   | ✓   | —   | ✓   | Scoped to the token subject              |
 | `PUT /users/setUser`          | ✗   | ✓   | —   | ✓   | Scoped                                   |
 | `GET /users/getUserPosts`     | ✗   | ✓   | —   | ✓   | Scoped                                   |
-| `POST /users/postUserProfile` | ✗   | ✓   | —   | ✓   | Scoped                                   |
 | `GET /users/getUserProfile`   | ✗   | ✓   | —   | ✓   | Scoped                                   |
-| `POST /users/followUser`      | ✗   | ✓   | —   | ✓   | Actor from the token; 409 on self-follow |
+| `POST /users/followUser`      | ✗   | ✓   | —   | ✓   | Actor from the token; 400 on self-follow |
 | `POST /users/unfollowUser`    | ✗   | ✓   | —   | ✓   | Actor from the token                     |
 | `GET /users/isFollowing/:id`  | ✗   | ✓   | —   | ✓   | Scoped                                   |
+| `DELETE /users/me`            | ✗   | ✓   | —   | ✓   | Scoped; password re-confirmed. Refused for the last administrator |
+| `GET /users/:id/profile`      | ✓   | ✓   | ✓   | ✓   | Public by design. Email only when that account opted in |
+| `GET /users/:id/avatar`       | ✓   | ✓   | ✓   | ✓   | Public — an `<img>` cannot send an Authorization header |
+| `PATCH /users/:id/suspension` | ✗   | ✗   | —   | ✓   | `authorizeAdmin`; never the caller's own account |
+| `PATCH /users/:id/role`       | ✗   | ✗   | —   | ✓   | `authorizeAdmin`; never the caller's own account |
+| `DELETE /users/:id`           | ✗   | ✗   | —   | ✓   | `authorizeAdmin` + the administrator's own password; never their own account |
 
-### Categories and tags
+### Tags
 
-| Endpoint                                         | A   | U   | O   | X   | Enforcement             |
-| ------------------------------------------------ | --- | --- | --- | --- | ----------------------- |
-| `GET /categories`, `GET /tags`                   | ✓   | ✓   | —   | ✓   | Public read is intended |
-| `POST /categories`                               | ✗   | ✗   | —   | ✓   | `authorizeAdmin`        |
-| `POST /tags`                                     | ✗   | ✗   | —   | ✓   | `authorizeAdmin`        |
-| `POST /categories/categoriesCollection`          | ✗   | ✗   | ✓   | ✓   | + post ownership        |
-| `PUT /categories/updateCategoriesCollection/:id` | ✗   | ✗   | ✓   | ✓   | + post ownership        |
+There is no `/categories` router; categories were folded into tags.
+
+| Endpoint           | A   | U   | O   | X   | Enforcement                                      |
+| ------------------ | --- | --- | --- | --- | ------------------------------------------------ |
+| `GET /tags`        | ✓   | ✓   | —   | ✓   | Public read is intended                          |
+| `POST /tags`       | ✗   | ✗   | —   | ✓   | `authorizeAdmin`                                 |
+| `DELETE /tags/:id` | ✗   | ✗   | —   | ✓   | `authorizeAdmin`; 409 while any story carries it |
+
+A writer attaches tags on the story itself, so the authorisation is the post's own ownership
+check on `POST` / `PUT /posts`.
 
 ### Comments
 
 | Endpoint                     | A   | U        | O   | X   | Enforcement                              |
 | ---------------------------- | --- | -------- | --- | --- | ---------------------------------------- |
-| `GET /comments/post/:postId` | ✗   | optional | —   | ✓   | Paginated; follows the post's visibility |
-| `DELETE /comments/:id`       | ✓   | ✓        | —   | ✓   | Comment author, post author, or admin    |
-| `POST /comments`             | ✗   | ✓        | —   | ✓   | Author from the token                    |
-| `POST /comments/replies`     | ✗   | ✓        | —   | ✓   | Author from the token; parent validated  |
+| `GET /comments/post/:postId` | ✓   | optional | —   | ✓   | Optional auth; paginated; follows the post's visibility |
+| `POST /comments`             | ✗   | ✓        | —   | ✓   | Author from the token                                  |
+| `POST /comments/replies`     | ✗   | ✓        | —   | ✓   | Author from the token; parent validated                |
+| `DELETE /comments/:id`       | ✗   | ✗        | ✓   | ✓   | Comment author, post author, or admin                  |
 
-No update or delete exists, so there is nothing to authorise — but also no way to remove a
-comment short of deleting the post.
+There is no comment **edit** endpoint, so there is nothing to authorise there. Deletion
+exists and is owner-scoped.
 
 ### Likes and page views
 
 | Endpoint                             | A   | U        | O   | X   | Enforcement                                                |
 | ------------------------------------ | --- | -------- | --- | --- | ---------------------------------------------------------- |
-| `POST /likes`                        | ✗   | ✓        | —   | ✓   | Actor from the token; unique index                         |
-| `DELETE /likes/post/:postId`         | ✗   | ✓        | —   | ✓   | Deletes only the caller's own like                         |
-| `GET /likes/post/:postId`            | ✓   | ✓        | —   | ✓   | Usernames only, no emails                                  |
-| `GET /likes/:id`                     | ✓   | ✓        | —   | ✓   |                                                            |
-| `POST /analytics/view/:postId`       | ✗   | optional | —   | ✓   | One row per visitor per 6h ([SEC-04](checklist.md#sec-04)) |
-| `GET /page-views/post/:postId`       | ✓   | ✓        | —   | ✓   | Usernames only                                             |
-| `GET /page-views/post/:postId/count` | ✓   | ✓        | —   | ✓   |                                                            |
+| `POST /likes`                        | ✗   | ✓        | —   | ✓   | Actor from the token; unique index; 404 for a post the caller cannot see |
+| `DELETE /likes/post/:postId`         | ✗   | ✓        | —   | ✓   | Deletes only the caller's own like                                       |
+| `GET /likes/post/:postId`            | ✓   | ✓        | —   | ✓   | Optional auth; follows the post's visibility. Usernames only, no emails  |
+| `GET /page-views/post/:postId`       | ✗   | ✗        | ✓   | ✓   | Author or admin — the rows carry reader ids                              |
+| `GET /page-views/post/:postId/count` | ✓   | ✓        | —   | ✓   | The public open count                                                    |
 
 ### Analytics and activity
 
 | Endpoint                              | A   | U   | O   | X   | Enforcement            |
 | ------------------------------------- | --- | --- | --- | --- | ---------------------- |
-| `GET /analytics/post/:id`             | ✓   | ✓   | —   | ✓   | Counters only          |
-| `GET /analytics/user/:userId`         | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin` |
-| `GET /analytics/admin`                | ✗   | ✗   | —   | ✓   | `authorizeAdmin`       |
-| `POST /analytics/view/:postId`        | ⚠  | ⚠  | —   | ✓   | Rate-limited only      |
-| `POST /analytics/read/:postId`        | ⚠  | ⚠  | —   | ✓   | Rate-limited only      |
+| `GET /analytics/post/:id`             | ✗   | ✗   | ✓   | ✓   | Post author or admin, checked in the handler |
+| `GET /analytics/user/:userId`         | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin`                       |
+| `GET /analytics/me`                   | ✗   | ✓   | —   | ✓   | Scoped to the token, takes no id             |
+| `GET /analytics/me/reading`           | ✗   | ✓   | —   | ✓   | Scoped to the token, takes no id             |
+| `GET /analytics/admin`                | ✗   | ✗   | —   | ✓   | `authorizeAdmin`                             |
+| `POST /analytics/view/:postId`        | ✓   | ✓   | —   | ✓   | Open by design — a reader does not sign in to be counted. Rate-limited, and de-duplicated per visitor per post over 6h ([SEC-04](checklist.md#sec-04)) |
+| `POST /analytics/read/:postId`        | ✓   | ✓   | —   | ✓   | Same                                         |
 | `GET /user-activity/all`              | ✗   | ✗   | —   | ✓   | `authorizeAdmin`       |
 | `GET /user-activity/user/:userId`     | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin` |
 | `GET /user-activity/timeline/:userId` | ✗   | ✗   | ✓   | ✓   | `authorizeSelfOrAdmin` |
@@ -471,5 +492,5 @@ when the third role appears, not before.
 | 4   | Scope `:userId` routes to the caller        | Low    | ✅ Done                                              |
 | 5   | ~~Server-side revocation~~                  | Medium | ✅ Done — `tokenVersion`, no extra collection needed |
 | 6   | Refresh-token rotation with reuse detection | Medium | ❌ Open                                              |
-| 7   | Password strength beyond 6 characters       | Low    | ❌ Open                                              |
-| 8   | Content-Security-Policy header              | Medium | ❌ Open                                              |
+| 7   | Password strength                           | Low    | ✅ Done — minimum 10 characters, maximum 128, no leading or trailing space |
+| 8   | Content-Security-Policy on the **app** HTML | Medium | ❌ Open — `helmet()` sets a CSP on API responses, but the SPA shell is served by Vercel's static build and carries none |

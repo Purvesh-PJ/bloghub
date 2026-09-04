@@ -38,8 +38,8 @@ beyond `GlobalStyles`. Every value a component needs comes from the theme object
 graph TD
     subgraph Tokens["Theme Tokens & Palette"]
         Mode["Theme Mode\n(light / dark / system)"]
-        TokensBase["tokens.js\nspacing · radii · breakpoints · zIndices · layout"]
-        Type["typography.js\nfontFamilies · fontSizes · fontWeights · lineHeights"]
+        TokensBase["tokens.js\nspacing · radii · iconSize · breakpoints\nzIndices · layout · density · motion"]
+        Type["typography.js\nfonts · display · text · label\nweights · tracking · leading"]
         Light["lightTheme.js\nRadix Sky + Slate + Shadows"]
         Dark["darkTheme.js\nRadix SkyDark + SlateDark + Shadows"]
     end
@@ -49,10 +49,10 @@ graph TD
     end
 
     subgraph Primitives["21 UI Primitives (components/ui/)"]
-        Buttons["Button, IconButton, Link"]
-        Surfaces["Card, Modal, Drawer, Dropdown"]
-        Inputs["Input, Textarea, Select, Checkbox"]
-        Feedback["Badge, Spinner, Alert, Skeleton"]
+        Buttons["Button, IconButton, Chip"]
+        Surfaces["Surface, Card, Modal, DropdownMenu"]
+        Inputs["Input, TextArea, Select, Tabs"]
+        Feedback["Badge, Alert, Spinner, Skeleton, EmptyState, ErrorState"]
     end
 
     subgraph LayoutAndPages["Domain & Pages"]
@@ -95,18 +95,29 @@ const Card = styled.div`
 
 ### Spacing — `theme.spacing`
 
-8px rhythm with a 4px half-step: `xs` 4 · `sm` 8 · `md` 16 · `lg` 24 · `xl` 32 · `xxl` 48.
+A **4px** base with generous upper steps — whitespace is most of the premium feel.
+
+`0` · `px` 1 · `xs` 4 · `sm` 8 · `md` 12 · `lg` 16 · `xl` 24 · `2xl` 32 · `3xl` 48 ·
+`4xl` 64 · `5xl` 96 · `6xl` 128 · `7xl` 160.
+
+There is no `xxl`; the large steps are numeric (`2xl` upward).
 
 ### Radii — `theme.radii`
 
-| Token  | Value  | Use                 |
-| ------ | ------ | ------------------- |
-| `sm`   | 6px    | Badges, inline code |
-| `md`   | 8px    | Buttons, inputs     |
-| `lg`   | 12px   | Cards, images       |
-| `xl`   | 16px   | Modals              |
-| `2xl`  | 20px   | Hero surfaces       |
-| `full` | 9999px | Avatars, pills      |
+Large, soft radii. This is the most visible single decision in the design language —
+containers are rounded generously and interactive controls are fully pill-shaped.
+
+| Token  | Value  | Use                                                  |
+| ------ | ------ | ---------------------------------------------------- |
+| `none` | 0      |                                                      |
+| `xs`   | 6px    | Inline code, the tightest corners                    |
+| `sm`   | 10px   | Chips, tags, small inputs                            |
+| `md`   | 14px   | Inputs, menu items                                   |
+| `lg`   | 20px   | Cards, panels                                        |
+| `xl`   | 28px   | Large cards, dialogs                                 |
+| `2xl`  | 36px   | Hero surfaces, feature panels                        |
+| `3xl`  | 48px   | Full-bleed sections                                  |
+| `full` | 9999px | Buttons, avatars, pills — the default for anything clickable |
 
 ### Breakpoints — `theme.breakpoints`
 
@@ -115,58 +126,79 @@ const Card = styled.div`
 
 ### Z-index — `theme.zIndices`
 
-`base` 0 · `dropdown` 100 · `sticky` 200 · `overlay` 300 · `modal` 400 · `toast` 500.
+`base` 0 · `raised` 10 · `sticky` 200 · `dropdown` 300 · `overlay` 400 · `modal` 500 ·
+`toast` 600.
 
 Never write a raw z-index. Add a rung to the ladder if one is missing.
 
 ### Layout — `theme.layout`
 
-| Token             | Value  | Meaning                            |
-| ----------------- | ------ | ---------------------------------- |
-| `headerHeight`    | 60px   | Fixed header offset                |
-| `sidebarWidth`    | 260px  | Admin sidebar                      |
-| `maxContentWidth` | 1200px | Page container ceiling             |
-| `contentWidth`    | 680px  | Reading measure for article bodies |
+| Token            | Value  | Meaning                                       |
+| ---------------- | ------ | --------------------------------------------- |
+| `headerHeight`   | 56px   | Fixed header offset                           |
+| `sidebarWidth`   | 260px  | Admin sidebar                                 |
+| `maxWidth`       | 1200px | Wide marketing / dashboard shell              |
+| `maxWidthNarrow` | 760px  | Focused pages — settings, forms               |
+| `contentWidth`   | 720px  | Reading measure, roughly 70 characters        |
+| `maxWidthAuth`   | 440px  | Centred auth cards                            |
 
-### Transitions — `theme.transitions`
+### Motion — `theme.motion` and `theme.transitions`
 
-`fast` 150ms (colour, opacity) · `normal` 200ms (most state changes) · `slow` 300ms (layout) ·
-`spring` 300ms cubic-bezier (playful entrances).
+`theme.motion` holds the raw parts: `instant` 80ms · `fast` 140ms · `base` 220ms ·
+`slow` 320ms, plus `easing` `cubic-bezier(0.32, 0.72, 0, 1)` and `easingOut`
+`cubic-bezier(0.16, 1, 0.3, 1)`. Nothing snaps.
+
+`theme.transitions` pairs each duration with an easing, ready to drop into a `transition`
+declaration: `fast` 140ms · `normal` 220ms · `slow` 320ms · `spring` 420ms (the `easingOut`
+curve, for entrances).
 
 ---
 
 ## Typography
 
-System font stacks — no web fonts, so no font-loading shift.
+One sans stack for everything, one mono stack for code.
 
-| Role            | Stack                                                                        |
-| --------------- | ---------------------------------------------------------------------------- |
-| `fonts.body`    | `-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, …`    |
-| `fonts.heading` | `-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, …` |
-| `fonts.mono`    | `"SF Mono", "Fira Code", Menlo, Monaco, Consolas, monospace`                 |
+| Role                                 | Stack                                                                                                    |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `fonts.ui` / `display` / `reading`   | `'Inter Variable', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, …`        |
+| `fonts.mono`                         | `'SF Mono', 'Cascadia Code', 'Fira Code', 'Roboto Mono', Menlo, Consolas, monospace`                     |
 
-> `index.html` still preconnects to `fonts.googleapis.com` although no Google font is
-> requested. Dead markup, safe to remove.
+`fonts.body` and `fonts.heading` still resolve — they are aliases onto `ui` and `display`.
 
-### Scale — `theme.fontSizes`
+**Two web fonts are loaded**, so this is not a system-stack-only design:
 
-| Token  | rem / px    |     | Token | rem / px   |
-| ------ | ----------- | --- | ----- | ---------- |
-| `xs`   | 0.75 / 12   |     | `2xl` | 1.5 / 24   |
-| `sm`   | 0.8125 / 13 |     | `3xl` | 1.875 / 30 |
-| `md`   | 0.9375 / 15 |     | `4xl` | 2.25 / 36  |
-| `base` | 1 / 16      |     | `5xl` | 2.75 / 44  |
-| `lg`   | 1.125 / 18  |     |       |            |
-| `xl`   | 1.25 / 20   |     |       |            |
+- **Inter Variable**, self-hosted through `@fontsource-variable/inter`, imported at the top of
+  `main.jsx`. It ships with the bundle, so there is no third-party request.
+- **Plus Jakarta Sans**, requested from Google Fonts by a `<link>` in `index.html`. The
+  `preconnect` hints beside it are load-bearing — do not remove them while that stylesheet is
+  there.
 
-Body copy defaults to `md` (15px); article bodies step up to `lg` (18px).
+Both have a full system fallback stack behind them, so a blocked font degrades rather than
+breaking.
 
-**Weights** `normal` 400 · `medium` 500 · `semibold` 600 · `bold` 700.
-**Line heights** `none` 1 · `tight` 1.2 · `snug` 1.35 · `normal` 1.5 · `relaxed` 1.65 ·
+### Scale
+
+Two scales, each entry `[size, lineHeight, …]`.
+
+`theme.display` — headlines: `xs` 20px · `sm` 24px · `md` 36px · `lg` 48px · `xl` 64px ·
+`2xl` 80px, with tight tracking and weights from 600 to 800.
+
+`theme.text` — body and interface: `xs` 12px · `sm` 14px · `md` 16px · `lg` 18px · `xl` 20px.
+
+Body copy defaults to `md` (16px); article bodies step up to `lg` (18px). `theme.label`
+carries the uppercase eyebrow sizes: `xs` 11px · `sm` 12px · `md` 13px.
+
+`theme.fontSizes` is a flat compatibility alias over both: `xs` 12 · `sm` 14 · `md` 16 ·
+`base` 16 · `lg` 18 · `xl` 20 · `2xl` 20 · `3xl` 24 · `4xl` 36 · `5xl` 48.
+
+**Weights** `regular` 400 · `medium` 500 · `semibold` 600 · `bold` 700 · `black` 800.
+**Leading** `none` 1 · `tight` 1.15 · `snug` 1.3 · `normal` 1.5 · `relaxed` 1.65 ·
 `loose` 1.8.
-**Tracking** `tighter` −0.03em through `wider` 0.03em.
+**Tracking** `tightest` −0.045em · `tighter` −0.03em · `tight` −0.02em · `normal` 0 ·
+`wide` 0.01em · `caps` 0.08em.
 
-Headings default to `semibold` with `tight` tracking; article bodies use `loose` line height.
+Headings default to `semibold` or heavier with `tight` tracking; article bodies use `relaxed`
+to `loose` leading.
 
 ---
 
@@ -246,6 +278,7 @@ resolve — `createTheme` aliases them onto the tokens above so nothing broke du
 | `brandBar`  | 10 → 8, horizontal | Thin progress and accent bars            |
 | `brandDeep` | 10 → 11            | Large surfaces that carry their own text |
 | `brandText` | 11 → 12            | **Gradient text only**                   |
+| `inkDeep`   | neutral surfaces   | The dark editorial surface, built from the neutral steps so it does not read as branded |
 
 `brandText` exists because of a real regression: `gradient` + `background-clip: text` on a
 headline used `brand`, whose steps are fills, and the result measured **1.6:1** against the page.
@@ -255,8 +288,13 @@ that.
 
 ### Elevation — `theme.shadows`
 
-`none`, `xs`–`xl`, plus intent-named `card`, `cardHover`, `focus` and `focusRing`. Dark-mode
-shadows are deeper to stay visible. `focusRing` is a two-layer ring applied globally to
+The scale is `none`, `sm`–`xl` and `glow`. On top of it sit intent-named aliases, so a call
+site says what the surface *is* rather than how deep its shadow is: `xs` and `card` and
+`raised` (= `sm`), `cardHover` (= `md`), `popover` (= `lg`), `overlay` (= `xl`), plus `focus`
+and `focusRing`.
+
+Dark-mode shadows are deeper to stay visible, and `glow` is tinted with the accent rather than
+neutral. `focusRing` is a two-layer ring — page colour then `lineFocus` — applied globally to
 `*:focus-visible`.
 
 ---
@@ -351,7 +389,7 @@ hand-rolled here would be an approximation of accessibility rather than the real
 
 | Shell           | Component     | Structure                                       |
 | --------------- | ------------- | ----------------------------------------------- |
-| Public / member | `Layout`      | Fixed `Header` (60px) → `<Outlet />` → `Footer` |
+| Public / member | `Layout`      | Fixed `Header` (56px) → `<Outlet />` → `Footer` |
 | Admin           | `AdminLayout` | Fixed 260px sidebar → content area              |
 
 ```
@@ -359,30 +397,37 @@ hand-rolled here would be an approximation of accessibility rather than the real
 │ HEADER  BlogHub [search] [Write] (avatar ▾)  │   │ Admin     │              │
 ├──────────────────────────────────────────────┤   │ Dashboard │              │
 │                                              │   │ Posts     │  <Outlet />  │
-│                 <Outlet />                   │   │ Categories│              │
+│                 <Outlet />                   │   │ Tags      │              │
 │                                              │   │ Users     │              │
-├──────────────────────────────────────────────┤   │ Settings  │              │
+├──────────────────────────────────────────────┤   │ Activity  │              │
 │ FOOTER                                       │   └───────────┴──────────────┘
 └──────────────────────────────────────────────┘
 ```
 
-The avatar menu holds Profile, My posts, Analytics, Settings and Sign out, plus an Admin entry
-for admin accounts. Signed-out visitors see `Sign in` and `Get started` instead.
+The admin sidebar is Dashboard, Posts, Tags, Users and Activity, plus links back to the
+creator workspace and the public site. There is no admin settings page — it was a set of
+toggles wired to nothing, so it was removed.
+
+The avatar menu holds My Public Profile, Settings and Sign out, plus a Dashboard entry and an
+Admin entry for admin accounts. Signed-out visitors see `Sign in` and `Get started` instead.
 
 ### Widths
 
-| Content        | Width  | Token                    |
-| -------------- | ------ | ------------------------ |
-| Article body   | 680px  | `layout.contentWidth`    |
-| Page container | 1200px | `layout.maxContentWidth` |
+| Content        | Width  | Token                   |
+| -------------- | ------ | ----------------------- |
+| Article body   | 720px  | `layout.contentWidth`   |
+| Focused pages  | 760px  | `layout.maxWidthNarrow` |
+| Page container | 1200px | `layout.maxWidth`       |
+| Auth card      | 440px  | `layout.maxWidthAuth`   |
 
-Never let a paragraph exceed `contentWidth` — 680px is roughly 70–80 characters, the readable
+Never let a paragraph exceed `contentWidth` — 720px is roughly 70–80 characters, the readable
 band.
 
 ### Spacing
 
-Vertical rhythm is a multiple of 8px. Section separation `xl` or `xxl`; card padding `lg`,
-dropping to `md` on mobile; related controls `sm` apart, unrelated groups `lg` apart.
+Vertical rhythm steps in multiples of the 4px base. Section separation `3xl` or `4xl`; card
+padding `xl`, dropping to `lg` on mobile; related controls `sm` apart, unrelated groups `xl`
+apart.
 
 ### Responsive
 
@@ -444,7 +489,7 @@ block with a route home. Never surface a raw exception or stack trace.
 
 1. Every field has a visible label — placeholders illustrate format, never replace a label.
 2. Validate on submit, not every keystroke; re-validate once a field is corrected.
-3. Errors name the fix: "Password must be at least 6 characters".
+3. Errors name the fix: "Password must be between 10 and 128 characters".
 4. The submit button carries the mutation's pending state.
 5. Set `autoComplete` correctly — `username`, `current-password`, `new-password`, `email`.
 6. Destructive submits are confirmed through a `Modal`, with the action named on the button
@@ -464,8 +509,7 @@ Dates use `date-fns` as `MMM d, yyyy`. Relative time is reserved for activity fe
 
 ## Iconography
 
-`lucide-react` is the icon set. (`@radix-ui/react-icons` ships as a dependency of the Radix
-themes package and should not be introduced in new code.)
+`lucide-react` is the only icon set, and the only one installed. Do not add another.
 
 Sizes come from `theme.iconSize.*` — `xs` 12, `sm` 14, `md` 16, `lg` 20, `xl` 32. Pair the
 icon with the text beside it: `sm` text takes an `sm` icon.
@@ -490,7 +534,8 @@ never carry meaning alone.
 This section used to say "16–20px inline, 24px standalone", which nothing followed — the
 codebase had icons at 10, 12, 13, 14, 15, 16, 17, 18 and 24px, set two different ways. Nobody
 picks 13 over 14 over 15 deliberately; those are the fingerprints of each control being sized
-by eye. The scale exists so that decision is made once.
+by eye. The scale exists so that decision is made once — all 55 ad-hoc `size={n}` props have
+since moved onto it.
 
 ---
 
@@ -522,10 +567,10 @@ on any new pairing, resize to 375px.
 | Practice       | Detail                                                       |
 | -------------- | ------------------------------------------------------------ |
 | Code splitting | Every page lazily loaded via `lazyPage`                      |
-| Vendor chunks  | `vendor`, `radix`, `editor` split in `vite.config.js`        |
+| Vendor chunks  | `vendor`, `radix`, `markdown-preview`, `syntax-highlight`, `editor` split in `vite.config.js` |
 | Images         | Always set `alt`; `GlobalStyles` applies `max-width: 100%`   |
 | Lists          | Stable entity-id keys, never an array index                  |
 | Memoisation    | Only for measured problems                                   |
-| Fonts          | System stacks only — do not add a web font without measuring |
+| Fonts          | Inter is self-hosted and variable; Plus Jakarta Sans comes from Google Fonts. Do not add a third without measuring |
 
 ---

@@ -129,22 +129,22 @@ description. Use them in commit messages and pull request titles.
 
 ## Current state
 
-An end-to-end audit in August 2026 found 18 functional defects, 18 capability gaps and 15
-security findings. Remediation closed **every security finding** and every defect a request can
-reach, each verified against a running server.
+An end-to-end audit in August 2026 found 28 functional defects, 18 capability gaps and 15
+security findings. Remediation closed **every security finding** and **every defect**, each
+verified against a running server.
 
 | Area                                                             | Status                                         |
 | ---------------------------------------------------------------- | ---------------------------------------------- |
 | Core journeys — publish, read, edit, engage, moderate, configure | ✅ Working                                     |
 | Security findings                                                | ✅ 15 of 15 closed                             |
-| Database indexes                                                 | ✅ 26 across 9 collections                     |
+| Database indexes                                                 | ✅ 20 declared across 9 collections            |
 | Health endpoints, security headers, rate limiting                | ✅ In place                                    |
 | Session revocation, account deletion, view deduplication         | ✅ Done                                        |
 | Backend tests                                                    | ✅ 125 integration tests, run in CI            |
 | CI pipeline                                                      | ✅ Lint · format · test · build · audit        |
 | Client tests                                                     | ⚠️ 73 tests; editor and workspace uncovered    |
 | Branch protection                                                | ❌ CI reports, but nothing requires it to pass |
-| Avatar upload                                                    | ❌ Needs object storage                        |
+| Avatar upload                                                    | ✅ Works; bytes live in MongoDB, not object storage ([GAP-17](product/roadmap.md#gap-17)) |
 
 Read [product/roadmap.md](product/roadmap.md) and
 [security/checklist.md](security/checklist.md) before deploying. The next work is branch

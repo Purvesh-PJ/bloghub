@@ -54,24 +54,28 @@ graph TB
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "backend/index.js" },
+    { "src": "/(.*)", "dest": "/client/$1", "continue": true },
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" },
+    { "src": "/(.*)", "dest": "/client/index.html" },
   ],
 }
 ```
 
 Routes evaluate top to bottom:
 
-| Order | Rule                    | Effect                                                |
-| ----- | ----------------------- | ----------------------------------------------------- |
-| 1     | `/api/(.*)`             | Everything under `/api` reaches the function          |
-| 2     | `handle: filesystem`    | Real static files are served directly                 |
-| 3     | `/(.*)` → `/index.html` | **SPA fallback** — the client router handles the path |
+| Order | Rule                                   | Effect                                                              |
+| ----- | -------------------------------------- | ------------------------------------------------------------------- |
+| 1     | `/api/(.*)`                            | Everything under `/api` reaches the function                        |
+| 2     | `/(.*)` → `/client/$1`, `continue`     | Rewrites into the static build's output, then keeps matching        |
+| 3     | `handle: filesystem`                   | Real static files are served directly                               |
+| 4     | `/(.*)` → `/client/index.html`         | **SPA fallback** — the client router handles the path               |
 
-The fallback closed [BUG-12](../product/roadmap.md#bug-12): the previous rule rewrote to
-`client/$1`, so `/post/abc123` mapped to a file that does not exist and every shared link,
-deep link and refresh on an inner route returned 404. A dead `/uploads/(.*)` route pointing
-at a directory that never exists in a deployment was removed at the same time.
+The fallback closed [BUG-12](../product/roadmap.md#bug-12). Previously the last rule rewrote
+to `client/$1` with no `continue`, so `/post/abc123` mapped to a file that does not exist and
+every shared link, deep link and refresh on an inner route returned 404. The rewrite now
+carries `continue: true` so the filesystem handler gets a chance first, and the terminal rule
+serves the shell. A dead `/uploads/(.*)` route pointing at a directory that never exists in a
+deployment was removed at the same time.
 
 > `builds`/`routes` is the legacy v2 format. It works, but `buildCommand`, `outputDirectory`
 > and `rewrites` are better supported and clearer. Worth migrating.
@@ -164,8 +168,8 @@ push to a branch  → preview deployment at a unique URL
 merge to main     → production deployment
 ```
 
-Every pull request gets a preview. Use it — until CI exists, it is the only pre-production
-verification this project has.
+Every pull request gets a preview. Use it alongside CI: the pipeline proves the code is sound,
+the preview proves the deployment is.
 
 ### Verification checklist
 
@@ -178,8 +182,8 @@ curl -s $BASE/api/posts | head -c 200          # paginated envelope
 curl -sI $BASE/api/posts | grep -i strict-transport   # helmet is active
 
 # security regressions
-curl -o /dev/null -w "%{http_code}\n" -X POST $BASE/api/categories \
-  -H 'Content-Type: application/json' -d '{"category":"x"}'   # expect 401
+curl -o /dev/null -w "%{http_code}\n" -X POST $BASE/api/tags \
+  -H 'Content-Type: application/json' -d '{"name":"x"}'       # expect 401
 curl -o /dev/null -w "%{http_code}\n" $BASE/api/posts/507f1f77bcf86cd799439011  # expect 404
 ```
 
@@ -282,7 +286,7 @@ overnight for a transitive advisory in a build tool, which teaches people to ign
 | Backend tests      | Yes                    | Where this codebase's defects actually live                              |
 | Client build       | Yes                    | A broken build must never reach deploy                                   |
 | Dependency audit   | Yes, at high and above | Below that, advisory noise outweighs the signal                          |
-| Client tests       | Not yet                | No runner ([GAP-11](../product/roadmap.md#gap-11))                       |
+| Client tests       | Yes                    | 73 Vitest tests; the editor and workspace are still uncovered ([GAP-11](../product/roadmap.md#gap-11)) |
 | E2E                | Not yet                | No suite; would run post-merge when there is one                         |
 | Coverage threshold | Not yet                | `npm run test:coverage` reports; ratchet before enforcing                |
 
@@ -292,9 +296,10 @@ in CI with hundreds of `Delete ␍` errors on a change that touched nothing. Do 
 
 ## What is still missing
 
-1. **Client tests.** The `client` job proves the bundle compiles. A component can throw on
-   render and CI stays green — which is exactly how several runtime crashes reached the
-   deployed app.
+1. **Full client coverage.** The `client` job runs 73 Vitest tests and builds the bundle, but
+   the editor and the creator workspace have none, so a render-time crash there still passes
+   CI — which is exactly how several runtime crashes reached the deployed app
+   ([GAP-11](../product/roadmap.md#gap-11)).
 2. **Branch protection.** The checks run but nothing requires them to pass, so CI reports
    rather than gates.
 3. **E2E on merge**, once a suite exists.
@@ -336,6 +341,6 @@ request can read it. Vercel deployment needs no GitHub secret; the Git integrati
 | Client coverage is partial         | A render-time crash in the editor or the workspace still passes CI | [GAP-11](../product/roadmap.md#gap-11) |
 | No cached database connection      | Connection exhaustion under load                                   | [above](#connection-handling)          |
 | Rate limits are per-instance       | Approximate enforcement on serverless                              | [above](#rate-limiting)                |
-| Avatar upload cannot work          | Read-only filesystem                                               | [BUG-07](../product/roadmap.md#bug-07) |
+| Avatar bytes live in MongoDB       | Works on a read-only filesystem, but Mongo is not a CDN            | [GAP-17](../product/roadmap.md#gap-17) |
 | Legacy `builds`/`routes` format    | Harder to maintain                                                 | [above](#verceljson)                   |
 | Nothing polls the health endpoints | An outage is discovered by a user                                  | [runbook.md](runbook.md)               |

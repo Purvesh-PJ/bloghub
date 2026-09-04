@@ -36,16 +36,16 @@ flowchart TD
 
 ### 1. Boot Failures & Configuration Errors
 
-#### Symptom: `FATAL CONFIGURATION ERROR: JWT_SECRET is required`
+#### Symptom: `[Config] Missing required environment variables: JWT_SECRET`
 
 - **Cause:** The backend process did not find a `.env` file at the repository root, or `JWT_SECRET` is blank.
 - **Fix:**
-  1. Ensure you copied `.env.example` to `.env` in the **root** directory (`d:\repos\bloghub\.env`), not inside `backend/`.
+  1. Ensure you copied `.env.example` to `.env` in the **repository root**, beside `README.md` — not inside `backend/` or `client/`, where it is ignored.
   2. Verify that `JWT_SECRET` has a non-empty string value.
 
-#### Symptom: `FATAL CONFIGURATION ERROR: JWT_REFRESH_SECRET must differ from JWT_SECRET in production`
+#### Symptom: `[Config] JWT_REFRESH_SECRET must differ from JWT_SECRET`
 
-- **Cause:** `JWT_REFRESH_SECRET` and `JWT_SECRET` have the exact same value.
+- **Cause:** `JWT_REFRESH_SECRET` and `JWT_SECRET` have the exact same value, and `NODE_ENV=production`. Outside production this is a warning, not a failure.
 - **Fix:** Generate two distinct random hex keys:
   ```bash
   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
@@ -73,9 +73,9 @@ flowchart TD
   1. Start MongoDB service (`net start MongoDB` on Windows, or `brew services start mongodb-community` on macOS).
   2. Alternatively, use a free cloud instance on [MongoDB Atlas](https://www.mongodb.com/atlas) and update `MONGO_DB_URI` in `.env`.
 
-#### Symptom: `Seeder refused to run against non-local database`
+#### Symptom: `Refusing to seed a non-local database.`
 
-- **Cause:** `npm run seed` was executed with a remote MongoDB URI (e.g. Atlas) without the safety override. The seeder deletes all collections before repopulating.
+- **Cause:** `npm run seed` was executed with a MongoDB URI that is not `localhost` or `127.0.0.1`, without the safety override. The seeder deletes all collections before repopulating.
 - **Fix:** If you are certain you want to wipe and seed the remote target:
   ```bash
   SEED_ALLOW_REMOTE=yes npm run seed

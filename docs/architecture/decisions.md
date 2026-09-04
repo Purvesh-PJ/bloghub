@@ -47,7 +47,7 @@ BlogHub requires stateless authentication that functions seamlessly across local
 
 1. Issue short-lived `accessToken` (15m, signed with `JWT_SECRET`, `type: access`).
 2. Issue long-lived `refreshToken` (7d, signed with `JWT_REFRESH_SECRET`, `type: refresh`).
-3. Maintain an integer `tokenVersion` on the `User` model. Any increment invalidates all outstanding refresh tokens immediately.
+3. Maintain an integer `tokenVersion` on the `User` model. Both token types are stamped with it, so any increment invalidates every outstanding access **and** refresh token immediately.
 4. Store tokens in browser `localStorage` under `"auth-storage"` managed by an `authState` singleton module.
 
 ### Alternatives Considered
@@ -57,8 +57,8 @@ BlogHub requires stateless authentication that functions seamlessly across local
 
 ### Consequences
 
-- **Positive**: Zero database read on standard API hits; instant revocation via `tokenVersion` when needed; seamless serverless operation.
-- **Trade-off**: `localStorage` is vulnerable to XSS; strict input sanitization (`DOMPurify` schema in markdown renderer) and CSP headers via `helmet` are strictly mandatory ([SEC-08](../security/checklist.md#sec-08)).
+- **Positive**: No session store to run; instant revocation and demotion via `tokenVersion`; seamless serverless operation.
+- **Trade-off**: `localStorage` is vulnerable to XSS, so strict sanitization of rendered Markdown (`rehype-sanitize`, in `client/src/config/markdown.js`) is mandatory ([SEC-13](../security/checklist.md#sec-13)). And revocation is not free: `authenticateUser` reads the account on every authenticated request to compare `tokenVersion` and re-read roles, which is one indexed lookup per request ([SEC-15](../security/checklist.md#sec-15)).
 
 ---
 
@@ -85,7 +85,7 @@ The repository houses both the Express backend and React SPA. Developers and CI 
 
 ### Context
 
-The backend codebase utilizes Node.js with Express 4, Mongoose 7, and standard CommonJS (`require`/`module.exports`). The frontend utilizes modern Vite 7 and React 19 which natively use ES Modules (`import`/`export`).
+The backend codebase utilizes Node.js with Express 4, Mongoose 8, and standard CommonJS (`require`/`module.exports`). The frontend utilizes modern Vite 7 and React 19 which natively use ES Modules (`import`/`export`).
 
 ### Decision
 
@@ -110,7 +110,7 @@ Use `mongodb-memory-server` to spin up an isolated, in-process MongoDB instance 
 
 ### Consequences
 
-- **Positive**: Tests run anywhere (local machines, GitHub Actions CI) with zero external setup; test isolation is guaranteed by wiping collections before each test suite.
+- **Positive**: Tests run anywhere (local machines, GitHub Actions CI) with zero external setup; test isolation is guaranteed by wiping every collection in an `afterEach`, so a failure leaves its state inspectable.
 - **Trade-off**: In-memory binary download on first test run; tests must run serially (`--runInBand`) to avoid database state collision.
 
 ---
@@ -143,9 +143,9 @@ Social actions (likes, follows, views, reads) must be idempotent, performant, an
 ### Decision
 
 1. Enforce business rules at the MongoDB schema level using **unique compound indexes**:
-   - `Like`: `{ user: 1, post: 1 }` (unique)
+   - `Like`: `{ post: 1, user: 1 }` (unique)
    - `UserProfile`: `followers` / `followings` arrays with `$addToSet` and `$pull`
-2. Maintain denormalized counters (`postCount`, `followerCount`, `followingCount`) on `UserProfile` updated atomically alongside graph operations.
+2. Maintain denormalized counters (`postCount`, `followersCount`, `followingsCount`) on `UserProfile` updated atomically alongside graph operations.
 
 ### Consequences
 

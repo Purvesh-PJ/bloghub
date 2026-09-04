@@ -26,7 +26,7 @@ flowchart LR
     -- "HTTPS / JSON\nBearer JWT" -->
     API["⚙️ API (Express 4 / Node.js 18+)\nJWT Auth · Mongoose ODM"]
     API -- "Wire Protocol" -->
-    DB[("🍃 MongoDB (6+)\n9 Collections · 26 Indexes")]
+    DB[("🍃 MongoDB (6+)\n9 Collections · 20 Indexes")]
 ```
 
 **Why a SPA and not server rendering.** The reading experience is the product, and most of

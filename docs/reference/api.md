@@ -111,7 +111,7 @@ graph LR
     API --> Comments["💬 /comments (Threaded comments, Replies, Moderation)"]
     API --> Users["👤 /users (Profiles, Follows, Stats, User Settings & Admin)"]
     API --> Tags["🔖 /tags (Taxonomy CRUD)"]
-    API --> Search["🔍 /search (Regex query across title, body, author)"]
+    API --> Search["🔍 /search (Regex across title, body, tags, authors)"]
     API --> Social["❤️ /likes · 👁️ /page-views (Engagement tracking)"]
     API --> Analytics["📊 /analytics & /user-activity (Author & Admin metrics)"]
     API --> Settings["⚙️ /settings (Email notifications & preferences)"]
@@ -145,7 +145,7 @@ account on each request and on refresh, never taken from the token payload.
 
 | Method | Path              | Auth  | Notes                                                                                                                                                                                                                                                                                                                 | Shape                            |
 | ------ | ----------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| GET    | `/posts`          | —     | **Published posts only**, paginated, newest first. `?category=<name>` filters against the whole collection — an unknown name matches nothing rather than being ignored, which would return the unfiltered feed. Admins may pass `?all=true` for the unfiltered moderation list; the flag is ignored for everyone else | envelope + pagination            |
+| GET    | `/posts`          | —     | **Published posts only**, paginated, newest first. `?tag=` (aliases `?topic=`, `?category=`) filters by tag name against the whole collection — an unknown name matches nothing rather than being ignored, which would return the unfiltered feed. Also `?author=<userId>` and `?q=<title>`. Admins may pass `?all=true` for the unfiltered moderation list, with `?visibility=`; both are ignored for everyone else | envelope + pagination + `counts` |
 | GET    | `/posts/:id`      | —     | Author, likes, comments, replies and categories populated. Non-public posts return 404 unless the caller is the author or an admin                                                                                                                                                                                    | envelope                         |
 | POST   | `/posts`          | ✓     | Body `title, slug?, content, imageURL?, visibility?, tags?`. `visibility` validated against `draft \| private \| public`, default `draft`. Up to 5 tags, created on demand                                                                                                                                            | envelope + `postId`              |
 | GET    | `/posts/trending` | —     | Ranked by recent engagement, capped at 50. Carries `trendedBy`: `engagement` when a ranking was possible, `latest` when too little has happened in the window. Each post gains `trending: { score, readRate, views, reads }`                                                                                          | envelope + `trendedBy`, `window` |
@@ -167,49 +167,52 @@ Slugs are unique; a collision is resolved by appending `-2`, `-3`, … The route
 
 ### Users — `/users`
 
-| Method | Path                    | Auth  | Notes                                                                                                                               | Shape                            |
-| ------ | ----------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| GET    | `/users`                | admin | `?page=1&limit=10`                                                                                                                  | envelope + pagination            |
-| GET    | `/users/getUser`        | ✓     | The signed-in user with profile                                                                                                     | **`User` key**, not `data`       |
-| PUT    | `/users/setUser`        | ✓     | `multipart/form-data`: `username, email, bio`, file `image`                                                                         | envelope                         |
-| GET    | `/users/getUserPosts`   | ✓     | The caller's own posts, including drafts. `?page&limit&visibility&sort&q`; `sort` ∈ `newest \| oldest \| title \| updated`          | envelope + pagination + `counts` |
-| DELETE | `/users/me`             | ✓     | Body `password`. Deletes the account, its posts, and the comments and likes on them. Refused for the last remaining administrator   | envelope                         |
-| PATCH  | `/users/:id/suspension` | admin | Body `suspended`. Reversible; bumps `tokenVersion`, so the account is signed out everywhere at once and sign-in is refused with 403 | envelope                         |
-| PATCH  | `/users/:id/role`       | admin | Body `admin`. Promotion applies on the target's next request; revocation also bumps `tokenVersion`                                  | envelope                         |
-| DELETE | `/users/:id`            | admin | Body `password` — the _administrator's_ own. Cascades like self-deletion                                                            | envelope                         |
+| Method | Path                     | Auth  | Notes                                                                                                                               | Shape                            |
+| ------ | ------------------------ | ----- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| GET    | `/users`                 | admin | `?page=1&limit=10`, capped at 50                                                                                                    | envelope + pagination            |
+| GET    | `/users/getUser`         | ✓     | The signed-in user with profile                                                                                                     | **`User` key**, not `data`       |
+| PUT    | `/users/setUser`         | ✓     | `multipart/form-data`: `username, email, bio`, file `image`. 409 on a username or email clash                                       | envelope                         |
+| GET    | `/users/getUserPosts`    | ✓     | The caller's own posts, including drafts. `?page&limit&visibility&sort&q`; `sort` ∈ `newest \| oldest \| title \| updated`          | envelope + pagination + `counts` |
+| GET    | `/users/getUserProfile`  | ✓     | The caller's profile                                                                                                                | envelope                         |
+| DELETE | `/users/me`              | ✓     | Body `password`. Deletes the account, its posts, and the comments and likes on them. Refused for the last remaining administrator    | envelope                         |
+| POST   | `/users/followUser`      | ✓     | Body `toFollowId`. 400 on self-follow                                                                                               | envelope                         |
+| POST   | `/users/unfollowUser`    | ✓     | Body `toUnfollowId`                                                                                                                 | envelope                         |
+| GET    | `/users/isFollowing/:id` | ✓     |                                                                                                                                     | `{ isFollowing }`                |
+| GET    | `/users/:id/profile`     | —     | Somebody else's public page. The email is included only when that account opted into showing it                                     | envelope                         |
+| GET    | `/users/:id/avatar`      | —     | The avatar as an image, with an `ETag`; 304 on revalidate, 404 when the account has none                                            | image bytes                      |
+| PATCH  | `/users/:id/suspension`  | admin | Body `suspended`. Reversible; bumps `tokenVersion`, so the account is signed out everywhere at once and sign-in is refused with 403 | envelope                         |
+| PATCH  | `/users/:id/role`        | admin | Body `admin`. Promotion applies on the target's next request; revocation also bumps `tokenVersion`                                  | envelope                         |
+| DELETE | `/users/:id`             | admin | Body `password` — the _administrator's_ own. Cascades like self-deletion                                                            | envelope                         |
 
 None of the three administrator routes will act on the caller's own account: settings is where
 you change your own, so a mis-click cannot suspend or delete the account doing the clicking.
 That rule is also what makes a "last administrator" check unnecessary here — the actor is
 always an administrator other than the target — so it lives on self-deletion instead, which is
 the one path that can leave the console with nobody in it.
-| POST | `/users/postUserProfile` | ✓ | Creates a profile | bare object |
-| GET | `/users/getUserProfile` | ✓ | The caller's profile | envelope |
-| POST | `/users/followUser` | ✓ | Body `toFollowId`. 409 on self-follow | envelope |
-| POST | `/users/unfollowUser` | ✓ | Body `toUnfollowId` | envelope |
-| GET | `/users/isFollowing/:id` | ✓ | | `{ isFollowing }` |
 
-Avatar upload is broken — [BUG-07](../product/roadmap.md#bug-07).
+There is deliberately no `POST /users/postUserProfile`. It upserted the same record
+`PUT /users/setUser` already writes, minus the step that keeps `User.profile` pointing at the
+document, and nothing on the client ever called it.
 
-### Categories — `/categories`
-
-| Method | Path                                         | Auth      | Notes                                                                                                                                                                                                                            | Shape         |
-| ------ | -------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| GET    | `/categories`                                | —         | Each carries `postCount`. Categories with no published stories are omitted, so a reader is never offered a filter that leads nowhere; `?withEmpty=true` returns all of them, which is what the editor and the admin console need | envelope      |
-| POST   | `/categories`                                | **admin** | Body `{ category }`. 409 when it already exists                                                                                                                                                                                  | envelope, 201 |
-| POST   | `/categories/categoriesCollection`           | **owner** | Body `{ categories: [name], postId }`. Reports unknown names in `data.unknown`                                                                                                                                                   | envelope      |
-| PUT    | `/categories/updateCategoriesCollection/:id` | **owner** | Body `{ selectedCategories, removedCategories }`                                                                                                                                                                                 | envelope      |
-
-Ownership is checked against the target post; administrators bypass.
+Avatar upload works end to end — memory storage, a 2 MB cap and a MIME allowlist
+([BUG-07](../product/roadmap.md#bug-07)). The bytes live in MongoDB rather than object
+storage, which is [GAP-17](../product/roadmap.md#gap-17).
 
 ### Tags — `/tags`
 
-| Method | Path    | Auth      | Shape    |
-| ------ | ------- | --------- | -------- |
-| GET    | `/tags` | —         | envelope |
-| POST   | `/tags` | **admin** | envelope |
+There is no `/categories` router. Categories were folded into tags;
+`backend/scripts/migrate.js` drops the legacy collection and unsets the field. `?category=`
+survives only as a query alias for `?tag=` on `GET /posts`.
 
-No client code writes tags yet ([GAP-04](../product/roadmap.md#gap-04)).
+| Method | Path        | Auth      | Notes                                                                                                   | Shape    |
+| ------ | ----------- | --------- | ------------------------------------------------------------------------------------------------------- | -------- |
+| GET    | `/tags`     | —         | Each carries `postCount` over **published** posts only, most-used first                                 | envelope |
+| POST   | `/tags`     | **admin** | Body `{ name }`, lowercased. 200 with the existing row when it already exists, 201 when created         | envelope |
+| DELETE | `/tags/:id` | **admin** | Refuses with 409 while stories still carry the tag, and says how many, rather than leaving dangling ids | envelope |
+
+Writers attach tags on the story itself — up to five, sent as `tags` on `POST` / `PUT /posts`
+and created on demand ([GAP-04](../product/roadmap.md#gap-04)). The admin console manages the
+vocabulary at `/admin/tags`.
 
 ### Comments — `/comments`
 
@@ -227,7 +230,7 @@ callers, has been removed.
 
 | Method | Path             | Auth | Notes                                                                                                                                                         | Shape    |
 | ------ | ---------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| GET    | `/search/:query` | —    | Public posts only, case-insensitive title regex with metacharacters escaped, newest first, `?limit` capped at 50. Returns `title` and a 200-character excerpt | envelope |
+| GET    | `/search/:query` | —    | Public posts only, case-insensitive regex with metacharacters escaped, matching **title, body, tag names and author username**. Title matches sort first, then recency; `?limit` default 20, capped at 50. Each result carries the author, tags, a 200-character excerpt and `contentLength` | envelope + `count` |
 
 The term belongs in `?q=` rather than the path — fix alongside
 [GAP-05](../product/roadmap.md#gap-05).
@@ -236,10 +239,9 @@ The term belongs in `?q=` rather than the path — fix alongside
 
 | Method | Path                  | Auth | Notes                                                                                           | Shape         |
 | ------ | --------------------- | ---- | ----------------------------------------------------------------------------------------------- | ------------- |
-| POST   | `/likes`              | ✓    | Body `{ postId }`. 400 when already liked, 404 when the post is missing. Maintains `Post.likes` | envelope, 201 |
-| DELETE | `/likes/post/:postId` | ✓    | 404 when no like exists. Maintains `Post.likes`                                                 | envelope      |
-| GET    | `/likes/post/:postId` | —    | Usernames only — no email addresses                                                             | bare array    |
-| GET    | `/likes/:id`          | —    |                                                                                                 | bare object   |
+| POST   | `/likes`              | ✓    | Body `{ postId }`. 409 when already liked, 404 when the post is missing or not visible to the caller. Maintains `Post.likes` | envelope, 201      |
+| DELETE | `/likes/post/:postId` | ✓    | 404 when no like exists. Maintains `Post.likes`                                                                              | envelope           |
+| GET    | `/likes/post/:postId` | —    | Optional auth, so an author sees the likes on their own unpublished story. Usernames only — no email addresses               | envelope + `count` |
 
 A unique index on `(post, user)` enforces one like per user per post.
 
@@ -258,25 +260,25 @@ and the only path that applies per-visitor de-duplication. The unauthenticated `
 
 | Method | Path                      | Auth     | Notes                                                                                                                                              | Shape                                                                            |
 | ------ | ------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| GET    | `/analytics/post/:id`     | —        | Reads the stale `Analytics` collection; 404 for anything unseeded ([BUG-06](../product/roadmap.md#bug-06))                                         | bare object                                                                      |
+| GET    | `/analytics/post/:id`     | owner    | Views, reads, likes, comments and read rate, counted from the event collections. Author and administrators only; the public number is `GET /page-views/post/:postId/count` ([BUG-06](../product/roadmap.md#bug-06)) | envelope                                                                         |
 | GET    | `/analytics/user/:userId` | **self** | Totals, per-post breakdown, top five. 403 for another user's id                                                                                    | envelope, `data: { totalViews, totalReads, readRate, postsAnalytics, topPosts }` |
 | GET    | `/analytics/me`           | ✓        | The same figures for the caller, taking no id                                                                                                      | as above                                                                         |
 | GET    | `/analytics/me/reading`   | ✓        | What the caller has opened and finished                                                                                                            | envelope, `data: { unfinished, finished, … }`                                    |
-| GET    | `/analytics/admin`        | admin    | Site totals, top posts, top authors, recent views                                                                                                  | bare object                                                                      |
-| POST   | `/analytics/view/:postId` | optional | Records one view per visitor per 6 hours. Anonymous visitors are keyed by a salted hash of their address; 404 for a post they could not be reading | envelope + `counted`                                                             |
+| GET    | `/analytics/admin`        | admin    | Site totals, top posts, top authors, recent views                                                                                                  | envelope                                                                         |
+| POST   | `/analytics/view/:postId` | optional | Records one view per visitor per 6 hours. Anonymous visitors are keyed by a salted hash of their address; 404 for a post they could not be reading. 201 when counted, 200 with `counted: false` when de-duplicated | envelope + `counted`                                                             |
 | POST   | `/analytics/read/:postId` | optional | Same de-duplication as above                                                                                                                       | envelope + `counted`                                                             |
 
 ### User activity — `/user-activity`
 
 | Method | Path                              | Auth     | Notes                                                                      | Shape       |
 | ------ | --------------------------------- | -------- | -------------------------------------------------------------------------- | ----------- |
-| GET    | `/user-activity/all`              | admin    | Recent posts, comments, likes and views, each paginated                    | bare object |
-| GET    | `/user-activity/user/:userId`     | **self** | 403 for another user's id                                                  | bare object |
-| GET    | `/user-activity/timeline/:userId` | **self** | Merged timeline, capped at 20                                              | bare array  |
-| GET    | `/user-activity/moderation-log`   | admin    | Synthesised from `Post.updatedAt` ([GAP-10](../product/roadmap.md#gap-10)) | bare object |
+| GET    | `/user-activity/all`              | admin    | Recent posts, comments, likes and views, each paginated                                              | envelope              |
+| GET    | `/user-activity/user/:userId`     | **self** | 403 for another user's id                                                                            | envelope              |
+| GET    | `/user-activity/timeline/:userId` | **self** | Merged timeline, capped at 20                                                                        | envelope              |
+| GET    | `/user-activity/moderation-log`   | admin    | Stories edited since publication, keyed off `Post.editedAt` ([GAP-10](../product/roadmap.md#gap-10)) | envelope + pagination |
 
-`getAllUserActivity` counts users by a `lastActive` field no schema declares, so
-`activeUsers` is always 0.
+`activeUsers` is derived from recent `View` rows. It used to count a `lastActive` field no
+schema declared, so it was always 0 ([BUG-23](../product/roadmap.md#bug-23)).
 
 ### Settings — `/settings`
 
@@ -300,19 +302,18 @@ Settings now persist — see [BUG-05](../product/roadmap.md#bug-05).
 
 | Resource         | Endpoints | Public | Authenticated | Admin |
 | ---------------- | --------- | ------ | ------------- | ----- |
-| `/auth`          | 3         | 3      | 0             | 0     |
-| `/posts`         | 5         | 2      | 3             | 0     |
-| `/users`         | 9         | 0      | 8             | 1     |
-| `/categories`    | 4         | 1      | 2             | 1     |
-| `/tags`          | 2         | 1      | 0             | 1     |
-| `/comments`      | 3         | 1      | 2             | 0     |
+| `/auth`          | 5         | 3      | 2             | 0     |
+| `/posts`         | 7         | 3      | 4             | 0     |
+| `/users`         | 14        | 2      | 8             | 4     |
+| `/tags`          | 3         | 1      | 0             | 2     |
+| `/comments`      | 4         | 1      | 3             | 0     |
 | `/search`        | 1         | 1      | 0             | 0     |
-| `/likes`         | 4         | 2      | 2             | 0     |
-| `/page-views`    | 4         | 4      | 0             | 0     |
-| `/analytics`     | 5         | 3      | 1             | 1     |
+| `/likes`         | 3         | 1      | 2             | 0     |
+| `/page-views`    | 2         | 1      | 1             | 0     |
+| `/analytics`     | 7         | 2      | 4             | 1     |
 | `/user-activity` | 4         | 0      | 2             | 2     |
 | `/settings`      | 7         | 0      | 7             | 0     |
-| **Total**        | **51**    | **18** | **27**        | **6** |
+| **Total**        | **57**    | **15** | **33**        | **9** |
 
 Plus two unauthenticated operations endpoints.
 
@@ -350,7 +351,6 @@ Group these into one versioned change rather than letting them drift.
 
 | Change                                                          | Reason                                                    |
 | --------------------------------------------------------------- | --------------------------------------------------------- |
-| Remove the unprefixed mount; serve `/api` only                  | One surface to secure and document                        |
 | Apply the envelope to the remaining bare responses              | Removes per-endpoint unwrapping                           |
 | Rename `/users` action paths to REST resources                  | `getUser` → `GET /users/me`                               |
 | Move the search term to `?q=`                                   | Path parameters are identifiers                           |
