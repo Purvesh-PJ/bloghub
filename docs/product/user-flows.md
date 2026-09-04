@@ -25,8 +25,10 @@ Notation: `→` step transition, `⇢` network call, `✗` failure branch.
 | `/settings`           | Member | `Settings`                                            |
 | `/admin`              | Admin  | `AdminDashboard`                                      |
 | `/admin/posts`        | Admin  | `AdminPosts`                                          |
-| `/admin/categories`   | Admin  | `AdminCategories`                                     |
+| `/admin/tags`         | Admin  | `AdminTags`                                           |
 | `/admin/users`        | Admin  | `AdminUsers`                                          |
+| `/admin/activity`     | Admin  | `AdminActivity`                                       |
+| `/admin/users/:userId/activity` | Admin | `AdminPersonActivity`                        |
 | `*`                   | Public | `NotFound`                                            |
 
 Member routes are wrapped in `ProtectedRoute`, admin routes in `AdminRoute`. Both redirect to
@@ -39,11 +41,12 @@ The workspace used to be one page that mixed statistics with post management, wh
 neither was good at its job. It is now three pages split by the question each answers, and the
 old paths redirect rather than 404:
 
-| Old route    | Redirects to |
-| ------------ | ------------ |
-| `/profile`   | `/dashboard` |
-| `/my-posts`  | `/stories`   |
-| `/analytics` | `/dashboard` |
+| Old route           | Redirects to  |
+| ------------------- | ------------- |
+| `/profile`          | `/dashboard`  |
+| `/my-posts`         | `/stories`    |
+| `/analytics`        | `/dashboard`  |
+| `/admin/categories` | `/admin/tags` |
 
 There is no `/admin/settings`. It was a page of toggles wired to nothing, so it was removed
 rather than left to imply that the switches did something.
@@ -171,12 +174,12 @@ mismatched `type` claim.
 The API returns only `visibility: 'public'` posts, so no browser-side filter is required.
 Responses are cached for five minutes and are not refetched on window focus.
 
-The landing page has **no in-page category filter**. It had one, and it was removed: it
+The landing page has **no in-page topic filter**. It had one, and it was removed: it
 filtered only the posts already in memory, so it looked like a search of the platform while
 actually searching one page, and it competed with the ranking the page exists to present.
 
 What remains in the hero is a row of popular-topic shortcuts, which **navigate** to
-`/search?category=<name>` rather than filtering in place. The distinction matters: the landing
+`/search?topic=<name>` rather than filtering in place. The distinction matters: the landing
 page presents, `/search` filters, and the filtering is done by the server against the whole
 collection.
 
@@ -193,7 +196,7 @@ is the way to reach the rest.
   ⇢ GET /posts/:id     → queryKey ["post", id]
        ├─ ✗ unknown id → 404 → "Post not found" screen
        ├─ non-public and viewer is not the author or an admin → 404
-       └─ author, likes, comments, replies, categories populated
+       └─ author, likes, comments, replies, tags populated
   ⇢ POST /analytics/view/:id   (fire and forget)
   → cover image, title, author card, Markdown body, comment thread
   → author sees Edit and Delete
@@ -225,7 +228,7 @@ Reply → type → Submit
 ```
 click like
   ⇢ POST /likes { postId }     or DELETE /likes/post/:postId
-       ├─ ✗ already liked → 400 (unique index also enforces it)
+       ├─ ✗ already liked → 409 (the unique index is what actually enforces it)
        └─ Like document written and Post.likes kept in step
   → invalidate ["post", id]
 ```
@@ -250,7 +253,7 @@ stateDiagram-v2
     Private --> Public: Make Public
     Private --> Draft: Revert to Draft
 
-    Public --> [*]: Delete Post\n(Soft/Hard delete & counter decrement)
+    Public --> [*]: Delete Post\n(Hard delete, cascade & counter decrement)
     Draft --> [*]: Delete Post
     Private --> [*]: Delete Post
 ```
@@ -263,7 +266,7 @@ sequenceDiagram
     participant API as ⚙️ Express API
     participant DB as 🍃 MongoDB
 
-    Author->>Editor: Enter Title, Markdown Content, Categories
+    Author->>Editor: Enter Title, Markdown Content, Tags
     Author->>Editor: Click "Publish Story"
     Editor->>API: POST /api/posts { title, slug, content, visibility: "public" }
     API->>API: Validate input (title, slug, content)
@@ -271,19 +274,15 @@ sequenceDiagram
     DB-->>API: Saved Post { _id: postId }
     API-->>Editor: 201 Created { postId }
 
-    opt Categories Selected
-        Editor->>API: POST /api/categories/categoriesCollection { postId, categories }
-        API->>DB: Link Post with Category documents
-        DB-->>API: Categories Updated
-    end
+    Note over Editor,DB: Tags travel on the post itself — up to 5,<br/>created on demand inside createPost
     Editor-->>Author: Navigate to /post/:postId
 ```
 
 Publishing with `visibility: 'public'` puts the post on the home feed immediately.
 
-Category attachment is a second request from the mutation's success handler. If it fails the
-post still exists, uncategorised; the response now reports unknown category names rather than
-failing silently.
+Tags are written by the same request that creates the post. `postService.createPost` resolves
+each name to a `Tag` document, creating it when it does not exist, and keeps `Tag.posts` in
+step. There is no second request to fail halfway.
 
 ---
 
@@ -292,13 +291,17 @@ failing silently.
 ```
 /edit/:id → WritePost in edit mode
   ⇢ GET /posts/:id   (enabled only when editing)
-  → form hydrates; the original category list is snapshotted for diffing
+  → form hydrates from the fetched post, including its tags
   → Save
   ⇢ PUT /posts/:id
        ├─ ✗ missing → 404
        ├─ ✗ not author and not admin → 403
-       └─ updates title, slug, content, imageURL, and visibility when sent
-  → diff categories → ⇢ PUT /categories/updateCategoriesCollection/:id if changed
+       ├─ title, content and imageURL fall back to their stored values when omitted
+       ├─ `visibility` and `tags` are written only when the caller sent them, so a
+       │    partial save cannot unpublish a live post or clear its tags
+       ├─ the slug is re-derived only when one was sent or the title changed
+       └─ `editedAt` is stamped on every successful update — that is what makes it
+            mean "the author changed this" rather than "the document was written to"
   → navigate to /post/:id
 ```
 
@@ -320,7 +323,7 @@ work and a reload or a shared link reproduces the same view.
   → Publish/Unpublish ⇢ PUT /posts/:id { visibility }
   → Delete → confirmation modal → ⇢ DELETE /posts/:id
        ├─ 404 missing, 403 not owner or admin
-       ├─ pull the id from referencing categories
+       ├─ pull the id from referencing tags
        ├─ delete attached comments
        ├─ pull from User.posts (the author's)
        ├─ delete the post
@@ -382,12 +385,13 @@ opening each post in turn.
 ## 11. Following
 
 ```
-/user/:userId → ⇢ GET /posts (filtered client-side to this author)
-              → ⇢ GET /users/isFollowing/:userId
+/user/:userId → ⇢ GET /users/:userId/profile   (public; no token needed)
+              → ⇢ GET /posts?author=:userId&page  (server-side, paged)
+              → ⇢ GET /users/isFollowing/:userId  (only when signed in)
   → Follow   ⇢ POST /users/followUser { toFollowId }
-       ├─ ✗ self-follow → 409
-       ├─ ✗ target profile missing → 404
-       └─ both sides and both counters updated
+       ├─ ✗ self-follow → 400
+       ├─ ✗ target account missing → 404
+       └─ both sides and both counters updated, each with a guarded $addToSet
   → Unfollow ⇢ POST /users/unfollowUser — mirror
 ```
 
@@ -402,12 +406,14 @@ leaves the relationship one-sided.
 header search → /search → type
   ⇢ GET /search/:query
        ├─ regex metacharacters escaped
-       ├─ match public posts by title, newest first, capped at 50
-       └─ project title + a 200-character excerpt with HTML stripped
+       ├─ match public posts on title, body, tag names and author username;
+       │    title matches first, then newest; capped at 50
+       └─ project the author, tags, cover, a 200-character excerpt with markup
+            stripped, and the full body length for a reading-time estimate
   → results → /post/:id
 ```
 
-Titles only. Content, authors, tags and categories are not searched, and the regex cannot use
+Content, tags and authors are all searched now. What remains is that the regex cannot use
 an index ([GAP-05](roadmap.md#gap-05)).
 
 ---
@@ -433,10 +439,10 @@ listener only auto-switches while no explicit choice is stored.
 /admin (AdminRoute: authenticated AND roles contains "admin")
   ├─ Dashboard   ⇢ GET /posts?all=true → ["allPosts"], GET /analytics/admin
   ├─ Posts       ⇢ GET /posts?all=true — includes drafts and private posts
-  ├─ Categories  ⇢ GET /categories; create via POST /categories (admin-only)
+  ├─ Tags        ⇢ GET /tags; create via POST /tags, remove via DELETE /tags/:id (admin-only)
   └─ Users       ⇢ GET /users?page=n → ["admin-users", page]
                  ⇢ PATCH /users/:id/suspension { suspended }
-                 ⇢ PATCH /users/:id/role       { role }
+                 ⇢ PATCH /users/:id/role       { admin: true | false }
                  ⇢ DELETE /users/:id
 ```
 

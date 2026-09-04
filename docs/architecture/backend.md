@@ -14,7 +14,7 @@
 | ---------------- | ------------------ | ------------------------------------ |
 | Runtime          | Node.js            | Unpinned — no `engines`, no `.nvmrc` |
 | Framework        | Express            | 4.18                                 |
-| ODM              | Mongoose           | 7.2                                  |
+| ODM              | Mongoose           | 8.24                                 |
 | Authentication   | jsonwebtoken       | 9.0                                  |
 | Password hashing | bcryptjs           | 2.4                                  |
 | Validation       | express-validator  | 7.0                                  |
@@ -72,12 +72,14 @@ already carry it, so an old `VITE_API_URL` keeps working without the second moun
 ### Serverless-aware startup
 
 ```js
-if (process.env.NODE_ENV !== "production" || !process.env.VERCEL)
-  app.listen(PORT);
+const shouldListen = process.env.NODE_ENV !== "test" && !process.env.VERCEL;
+if (shouldListen) app.listen(PORT);
 module.exports = app;
 ```
 
-Locally the process listens; on Vercel the export is invoked per request.
+Locally the process listens; on Vercel the export is invoked per request, and under Jest
+Supertest drives the app directly. Binding a port in either of those cases is at best useless
+and at worst a leaked handle that keeps the test runner alive.
 
 ### Health endpoints
 
@@ -143,7 +145,7 @@ flowchart TD
 
 ### `routes/`
 
-Twelve routers declaring paths and their middleware chain. No logic.
+Eleven routers declaring paths and their middleware chain. No logic.
 
 ```js
 router.get("/", AuthUser.attachUserIfPresent, PostControllers.getBlogs);
@@ -188,9 +190,9 @@ collection:
 | ----------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `postService`     | `createPost`    | Create → load the author → push onto `User.posts` → delete the post again if the author is missing                                             |
 |                   | `updatePost`    | Validate required fields → `findByIdAndUpdate` with validators                                                                                 |
-| `commentServices` | `createComment` | Create → load the post → push onto `Post.comments` → delete the comment again if the post is missing                                           |
-| `accountService`  | `purgeAccount`  | Delete the account's posts and everything attached to them, then its own comments, likes, views, reads, profile and settings, then the account |
-| `trendingService` | `scoreTrending` | Aggregate views, likes, comments and reads over a window and rank them                                                                         |
+| `commentService`  | `createComment` | Create → load the post → push onto `Post.comments` → delete the comment again if the post is missing                                           |
+| `accountService`  | `purgeAccount`  | Delete the account's posts, its own comments, likes, views, reads, profile and settings, plus everything other people left on its posts → pull its post ids out of every `Tag.posts` and its own id out of every follower and following list → recompute the follower counters from the trimmed arrays → delete the account |
+| `trendingService` | `getTrendingPosts` | Aggregate views, likes, comments and reads over a 14-day window, apply the minimum-views floor, score and rank                              |
 
 Services take plain values, never `req` or `res`, and signal failure by throwing. The
 compensating deletes are a manual substitute for the transactions this codebase does not use.
@@ -201,7 +203,7 @@ definitions of "deleted", one of which leaves data behind.
 
 ### `models/`
 
-Eleven Mongoose schemas with constraints and indexes declared alongside them — see
+Nine Mongoose schemas with constraints and twenty declared indexes alongside them — see
 [database.md](../reference/database.md).
 
 ---
@@ -215,10 +217,10 @@ Intended:
 { "success": false, "message": "…", "error": "MachineCode" }
 ```
 
-Applied inconsistently. Handlers migrated during remediation (posts, categories, settings,
-likes, comments) use the envelope; several others still return a bare array or object, and
-`GET /users/getUser` returns its record under a `User` key. Each variation forces the client
-to special-case unwrapping. The per-endpoint shape is marked in
+Applied almost everywhere. `GET /users/getUser` is the notable exception — it returns its
+record under a `User` key rather than `data` — and a few handlers add a sibling key beside
+`data` (`count`, `counts`, `postId`, `affected`, `trendedBy`, `counted`). Each variation
+forces the client to special-case unwrapping. The per-endpoint shape is marked in
 [reference/api.md](../reference/api.md).
 
 ---
@@ -247,10 +249,10 @@ and multer faults into 4xx, and withholds stack traces outside development.
 `asyncHandler` is what makes this safe: an `async` handler that rejects without it produces an
 unhandled rejection and a hung request, because Express 4 does not await handlers.
 
-**Migration is partial.** Eight of thirteen controller modules use this pattern; the rest still
-catch locally, log with a `[handlerName]` prefix and respond directly. Both behave correctly —
-the older ones are simply more repetitive, and their status codes are chosen further from the
-cause.
+**Migration is complete.** All twelve controller modules use this pattern. A local `catch`
+now appears only where an error is being _translated_ rather than swallowed — verifying a
+token in `auth.controllers.js`, and turning a duplicate-key collision into a 409 in
+`like.controllers.js`.
 
 ### Status codes
 
@@ -261,7 +263,7 @@ cause.
 | 401       | Missing, malformed, expired or wrong-type token; bad credentials               |
 | 403       | Authenticated but not permitted                                                |
 | 404       | Not found — also returned for a non-public post, so existence is not confirmed |
-| 409       | Conflict — duplicate account or category, self-follow                          |
+| 409       | Conflict — duplicate account, duplicate like, a tag still in use               |
 | 429       | Rate limited                                                                   |
 | 500       | Unhandled failure                                                              |
 | 501       | Endpoint exists, capability not implemented (`PUT /settings/security`)         |
@@ -318,9 +320,11 @@ previous inline configuration ([SEC-05](../security/checklist.md#sec-05)).
 
 Memory rather than disk because a serverless filesystem is read-only and per-invocation:
 anything written there is unreachable by the next request. The validated buffer is stored on the
-profile document (`UserProfile.image = { data: Buffer, contentType }`) and served back as a data
-URI, which makes avatar upload work on Vercel with no external service
-([BUG-07](../product/roadmap.md#bug-07)).
+profile document (`UserProfile.image = { data: Buffer, contentType }`) and served back from its
+own endpoint, `GET /users/:id/avatar`, with an `ETag` so the browser can cache it — rather than
+base64-encoded into every `getUser` response ([BUG-07](../product/roadmap.md#bug-07),
+[BUG-27](../product/roadmap.md#bug-27)). Avatar upload therefore works on Vercel with no
+external service.
 
 That is the right trade for this project and the wrong one at scale: image bytes inflate every
 document read that populates a profile, and MongoDB is not a CDN. Object storage is the proper

@@ -294,14 +294,15 @@ verified against a running server, and adds the test suite and pipeline that kee
 - `attachUserIfPresent` middleware for public routes whose response varies for a signed-in
   viewer.
 - `postService.getAllPosts()` on the client for the admin moderation view.
-- Complete technical documentation under `docs/` — 20 documents with a single-source-of-truth
+- Complete technical documentation under `docs/` — 23 documents with a single-source-of-truth
   map and stable issue identifiers.
 - Repository community files: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, this
   changelog, and GitHub issue and pull request templates.
-- **A backend test suite** — 61 integration tests over auth, posts, comments, the workspace,
-  trending and the admin console. Jest and Supertest drive the real Express app against a
-  MongoDB that `mongodb-memory-server` starts in-process, so `npm test` needs no database and no
-  `.env` (GAP-11).
+- **A backend test suite** — now 125 integration tests across ten suites, over auth, posts,
+  comments, the workspace, trending, discovery, moderation, profiles, social and the admin
+  console. Jest and Supertest drive the real Express app against a MongoDB that
+  `mongodb-memory-server` starts in-process, so `npm test` needs no database and no `.env`
+  (GAP-11).
 - **A CI pipeline** — lint, format check, tests, client build and a dependency audit on every
   push and pull request, in three parallel jobs (GAP-12).
 - A trending ranking. Score is `views + likes×3 + comments×5 + reads×5` over a 14-day window,

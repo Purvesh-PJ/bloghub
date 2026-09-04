@@ -10,7 +10,7 @@ the client authentication path.
 **Second audit:** 2026-08-17, commit `fc8892d` — repeat pass over the same surface plus the
 rendering path, which the first audit had not covered. Found SEC-13, the worst issue in either
 round.
-**Remediation:** 2026-08-18 — all 13 findings closed, each verified by request against a
+**Remediation:** 2026-08-18 — all 15 findings closed, each verified by request against a
 running server or by measurement in a browser, not by inspection alone.
 
 ---
@@ -39,7 +39,7 @@ running server or by measurement in a browser, not by inspection alone.
 flowchart TD
     subgraph EdgeLayer["1. Edge & Transport Defense"]
         TLS["HTTPS / TLS 1.3 Transport"]
-        Helmet["Helmet Security Headers (CSP, HSTS, X-Frame-Options)"]
+        Helmet["Helmet Security Headers on /api (HSTS, X-Frame-Options, nosniff)"]
         Cors["CORS (Origin & Credentials Validation)"]
         Rate["Rate Limiting (General & Auth-Specific IP Windows)"]
     end
@@ -53,7 +53,7 @@ flowchart TD
 
     subgraph DataSanitization["3. Input Validation & Content Sanitization"]
         Val["express-validator Rules & ObjectId Guards"]
-        XSS["DOMPurify Markdown Sanitization Schema"]
+        XSS["rehype-sanitize Markdown Schema"]
         Upload["Multer Memory Buffer Size/Mime-Type Limits"]
     end
 
@@ -112,6 +112,11 @@ wrote would have hidden everything.
 
 `category.routes.js` and `tag.routes.js` applied no middleware, so anonymous callers could
 create taxonomy and **re-categorise anyone's post**.
+
+> The `/categories` router has since been removed entirely — categories were folded into
+> tags, and a writer now attaches tags on the story itself, behind the post's own ownership
+> check. The endpoints named below no longer exist; the remaining taxonomy writes are
+> `POST /tags` and `DELETE /tags/:id`, both admin-only.
 
 **Fix**
 
@@ -287,7 +292,9 @@ bearer-token SPA — httpOnly cookies bring CSRF requirements and complicate a c
 Trade-off table in [auth.md](auth.md#storage-trade-off). What changed is that a leaked token
 can now be killed rather than merely waited out.
 
-**Still worth adding:** a Content-Security-Policy header. [SEC-13](#sec-13) closed the one
+**Still worth adding:** a Content-Security-Policy header **on the application shell**.
+`helmet()` sets one on API responses, but the SPA's HTML is served by Vercel's static build
+and carries none, so it does not protect the rendering path. [SEC-13](#sec-13) closed the one
 XSS that existed; CSP is the defence in depth for the next one.
 
 ---
@@ -333,7 +340,7 @@ first sign-in, in production, to a user.
 | `GET /posts/trending`          | Capped at 50                                               |
 | `GET /search/:query`           | Capped at 50, sorted by recency                            |
 | `GET /comments/post/:postId`   | Paginated, capped at 50                                    |
-| `GET /likes/post/:postId`      | Bounded                                                    |
+| `GET /likes/post/:postId`      | **Still unbounded** — the last unpaged list ([GAP-07](../product/roadmap.md#gap-07)) |
 | `GET /page-views/post/:postId` | Capped at 200, and now author-or-admin only                |
 | `GET /users`                   | Paginated, capped at 50                                    |
 | `GET /users/getUserPosts`      | Paginated, capped at 50                                    |
@@ -476,7 +483,7 @@ outstanding remediation.
 
 | Order | Item                           | Effort     | Note                                                                                         |
 | ----- | ------------------------------ | ---------- | -------------------------------------------------------------------------------------------- |
-| 1     | Content-Security-Policy header | Half a day | [SEC-13](#sec-13) closed the XSS that existed; CSP is the guard for the next one             |
+| 1     | Content-Security-Policy on the app shell | Half a day | `helmet()` covers `/api`; the statically served SPA HTML carries no CSP. [SEC-13](#sec-13) closed the XSS that existed; CSP is the guard for the next one |
 | 2     | Shared rate-limit store        | Half a day | Makes the [SEC-14](#sec-14) limits exact across serverless instances rather than approximate |
 | 3     | Email verification at sign-up  | 1 day      | An address is currently taken on trust                                                       |
 | 4     | Password reset                 | 1 day      | No recovery path exists; a forgotten password is a lost account                              |

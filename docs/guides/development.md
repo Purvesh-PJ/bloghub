@@ -51,9 +51,9 @@ router.use("/widgets", widgetRoutes);
 (`page-view.controllers.js`); services are camelCase (`postService.js`); model names are
 singular PascalCase.
 
-> Existing exceptions: `likes.routes.js` is plural, and `commentServices.js` is plural while
-> `postService.js` is singular. Follow the convention for new files; do not propagate the
-> exceptions.
+> These used to have exceptions — `likes.routes.js` and `page-views.routes.js` were plural,
+> and `commentServices.js` was plural while `postService.js` was singular. All have been
+> renamed; every route file now has a controller of the same name.
 
 ## Frontend
 
@@ -152,7 +152,7 @@ checklist exists to stop growing.
 | ------------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Inline `style={{}}` for layout, with raw px             | 75    | Mostly `marginTop` and one-off flex rows. `Container.jsx` exports `Flex` and `Box` that do this properly and are still used **zero** times                             |
 | Raw px in `gap` / `padding` / `margin` in styled blocks | 118   | Should be `theme.spacing.*`                                                                                                                                            |
-| Raw `font-size`                                         | 25    | Against 184 correct uses of the type mixins — 88% adoption                                                                                                             |
+| Raw `font-size`                                         | 9     | Against 169 correct uses of the type mixins — 95% adoption                                                                                                             |
 | `density` tokens                                        | 1     | Only `Select` reads them, so the "two rhythms" idea is a token, not a system. Applying it means threading a density prop through the table, row and control primitives |
 
 **Closed so far:** every hardcoded hex outside `ErrorBoundary` and the hero illustration now
@@ -258,34 +258,25 @@ the root cause of [BUG-05](../product/roadmap.md#bug-05).
 ### Controller
 
 ```js
-exports.getPost = async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id).populate(
-      "user",
-      "username",
-    );
+const asyncHandler = require("../middlewares/asyncHandler");
+const { notFound } = require("../utils/AppError");
 
-    if (!post) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Post not found", error: "NotFound" });
-    }
+exports.getPost = asyncHandler(async (req, res) => {
+  const post = await Post.findById(req.params.id).populate("user", "username");
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Post found", data: post });
-  } catch (error) {
-    console.error("[getPost]", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "An internal error occurred" });
-  }
-};
+  if (!post) throw notFound("Post not found");
+
+  res.status(200).json({ success: true, message: "Post found", data: post });
+});
 ```
 
-One exported function per endpoint. Always `return` the response call. Identity is
-`req.user.id`. Choose the specific status code. Never leak an internal message. Prefix the
-log with the handler name.
+One exported function per endpoint, wrapped in `asyncHandler`. **Do not write a local
+`try`/`catch`** — state the failure by throwing an `AppError` helper (`badRequest`,
+`unauthorized`, `forbidden`, `notFound`, `conflict`) and let `errorHandler` choose the
+response. All twelve controllers work this way; a local `catch` appears only where an error is
+being _translated_, such as turning a duplicate-key collision into a 409.
+
+Identity is `req.user.id`. Choose the specific status code. Never leak an internal message.
 
 ### Service
 

@@ -20,7 +20,7 @@ flowchart TD
     end
 
     subgraph APITier["API Gateway & Application Tier"]
-        ExpressApp["⚙️ Express 4 API (Node.js 18+)\nhelmet · cors · rate-limit · JWT\nMongoose 7 ODM"]
+        ExpressApp["⚙️ Express 4 API (Node.js 18+)\nhelmet · cors · rate-limit · JWT\nMongoose 8 ODM"]
 
         subgraph Pipeline["Processing Pipeline"]
             MW["Middleware Chain\nLogger ➔ Helmet ➔ CORS ➔ RateLimiter ➔ JWT Auth"]
@@ -30,7 +30,7 @@ flowchart TD
     end
 
     subgraph DataTier["Persistence Tier"]
-        MongoDB[("🍃 MongoDB Database\n9 Collections · 26 Indexes")]
+        MongoDB[("🍃 MongoDB Database\n9 Collections · 20 Indexes")]
     end
 
     Browser -- "HTTPS / JSON\nAuthorization: Bearer <JWT>" --> ExpressApp
@@ -63,7 +63,7 @@ bloghub/
 │   │   ├── upload.js              # avatar upload — memory storage, type and size limits
 │   │   ├── errorHandler.js        # terminal error middleware, maps errors to statuses
 │   │   └── logger.js              # morgan, format switched by NODE_ENV
-│   ├── models/                    # 9 Mongoose schemas, 26 declared indexes
+│   ├── models/                    # 9 Mongoose schemas, 20 declared indexes
 │   ├── routes/                    # 11 routers — paths, guards, validators, nothing else
 │   ├── services/                  # domain logic reused across controllers:
 │   │   │                          #   postService, commentService,
@@ -84,7 +84,7 @@ bloghub/
 │   │   │   ├── layout/            # Header, Footer, Layout, AdminLayout,
 │   │   │   │                      #   WorkspaceLayout, PageShell, Editorial,
 │   │   │   │                      #   ThemeToggle, SkipLink, ErrorBoundary
-│   │   │   ├── marketing/         # HeroIllustration, TopicMarquee — landing page only
+│   │   │   ├── marketing/         # HeroIllustration, Topics (TopicMarquee) — landing only
 │   │   │   ├── posts/             # PostCard, AuthorByline, skeletons
 │   │   │   ├── stats/             # ReadRateBar
 │   │   │   └── ui/                # 21 token-driven primitives + barrel
@@ -203,8 +203,7 @@ sent back.
 | `.env.example`          | Humans          | Committed template                               |
 | `vercel.json`           | Vercel          | Two builds, API routing, SPA fallback            |
 | `client/vite.config.js` | Vite            | Port 3000, `envDir: '../'`, manual chunks        |
-| `client/jsconfig.json`  | Editors         | Path alias, JSX hints                            |
-| `client/tsconfig.json`  | Nothing         | See [code-quality.md](../guides/code-quality.md) |
+| `client/jsconfig.json`  | Editors         | JSX hints. There is no `tsconfig.json`           |
 | `*/eslint.config.js`    | ESLint 9        | Flat config per workspace                        |
 | `*/.prettierrc`         | Prettier        | Formatting per workspace                         |
 

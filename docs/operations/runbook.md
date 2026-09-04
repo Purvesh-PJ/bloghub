@@ -83,7 +83,7 @@ on **two consecutive** failures — a single serverless cold start can exceed a 
 | Slow queries     | Any over 100ms                                                 |
 | Collection scans | Any — the search regex is the known offender                   |
 
-Atlas's Performance Advisor recommends indexes from real traffic. With 26 indexes now
+Atlas's Performance Advisor recommends indexes from real traffic. With 20 indexes now
 declared it should have far less to say than before.
 
 ### Business signals
@@ -314,9 +314,9 @@ Check these before investigating.
 | Symptom                                                | Cause                                                                                                                           |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | Avatar upload rejected                                 | Over the 2 MB cap, or a type outside the JPEG/PNG/WebP/GIF allowlist                                                            |
-| `GET /analytics/post/:id` returns 404 for a real post  | [BUG-06](../product/roadmap.md#bug-06) — `Analytics` documents are seeder-only                                                  |
+| `GET /analytics/post/:id` returns 403                  | Working as intended — per-post figures are the author's and an administrator's. The public count is `GET /page-views/post/:postId/count` |
 | Only the first page is reachable from the landing feed | [GAP-07](../product/roadmap.md#gap-07) — the landing page does not consume pagination; `/search` does                           |
-| Search misses obvious matches                          | [GAP-05](../product/roadmap.md#gap-05) — titles only, no content search                                                         |
+| Search misses obvious matches                          | [GAP-05](../product/roadmap.md#gap-05) — title, body, tags and authors are matched, but by an unindexed substring regex, so word-stem and fuzzy matches still miss |
 | Trending looks like "latest"                           | Correct behaviour when nothing clears the minimum-views floor in the 14-day window. The response says so: `trendedBy: 'latest'` |
 
 **Recently fixed** — if you see one of these, it is a regression and needs a test:
@@ -440,13 +440,15 @@ everyone at least once.
 ### `useAuth must be used within an AuthProvider` / `Cannot read properties of undefined (reading 'colors')`
 
 The component rendered outside its provider — commonly in a test without providers. Use the
-`renderWithProviders` helper from
-[testing.md](../guides/testing.md#client-integration).
+`renderWithProviders` helper from `client/src/test/render.jsx`; see
+[testing.md](../guides/testing.md#client).
 
 ### Stale data after a mutation
 
 The mutation did not invalidate the right key. `['posts']` (public feed) and `['allPosts']`
-(admin, includes drafts) are **deliberately different datasets** — check the
+(admin, includes drafts) are **deliberately different datasets**. Every key comes from
+`services/queryKeys.js`; each group exposes `all`, so invalidate the family rather than
+guessing at a parameterised variant — check the
 [key table](../architecture/frontend.md#query-keys).
 
 ## API
@@ -456,10 +458,12 @@ The mutation did not invalidate the right key. `['posts']` (public feed) and `['
 Production returns a generic message by design. Read the cause in the Vercel Runtime Logs, or
 reproduce locally with `NODE_ENV=development`, which includes the message and stack.
 
-### 403 on a category or analytics request
+### 403 on a tag or analytics request
 
-Both are now scoped. Categories require post ownership; `:userId` routes require the id to be
-the caller's. Confirm the token subject matches.
+Both are now scoped. `POST /tags` and `DELETE /tags/:id` require the `admin` role; `:userId`
+routes require the id to be the caller's, and per-post analytics require post ownership.
+Confirm the token subject and roles match. Note that `DELETE /tags/:id` answers **409**, not
+403, when stories still carry the tag.
 
 ### A slow or timing-out request
 
@@ -479,7 +483,7 @@ tells you what happened:
 | -------------------------- | ---------------------------------------------------------- |
 | `email_1` / `username_1`   | Duplicate account attempt — the API translates this to 409 |
 | `post_1_user_1` on `likes` | Duplicate like, or a like written with a null post         |
-| `name_1` on `categories`   | Duplicate category                                         |
+| `name_1` on `tags`         | Duplicate tag name — names are lowercased before insert     |
 
 ### Adding an index fails
 
@@ -521,7 +525,7 @@ db.posts.find({ visibility: "public" }).explain("executionStats");
 // COLLSCAN in winningPlan.stage confirms it
 ```
 
-Thirteen indexes are declared — verify they exist in the target database. Indexes are created
+Twenty indexes are declared — verify they exist in the target database. Indexes are created
 on connection, so a database that predates a schema change may lack them.
 
 ### The database is empty after a command
@@ -534,7 +538,8 @@ snapshot.
 ### A shared post link 404s
 
 Fixed by the SPA fallback ([BUG-12](../product/roadmap.md#bug-12)). If it recurs, check the
-`routes` block in `vercel.json` — the catch-all must target `/index.html`.
+`routes` block in `vercel.json` — the catch-all must target `/client/index.html`, and the
+rewrite above it must carry `continue: true` so the filesystem handler still gets a chance.
 
 ### `MongoServerError: connection pool cleared`
 

@@ -16,18 +16,19 @@ agree to uphold it.
 
 | Contribution             | Start here                                                                                                                                                                                                      |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Add client tests**     | [docs/guides/testing.md](./docs/guides/testing.md) — the backend has 61 integration tests; the client has none, so CI proves it compiles and nothing more. **This is the highest-value contribution available** |
+| **Cover the editor and workspace** | [docs/guides/testing.md](./docs/guides/testing.md) — 125 backend and 73 client tests run in CI, but the Markdown editor and the creator workspace have none, so a render-time crash there still goes green. **This is the highest-value contribution available** ([GAP-11](./docs/product/roadmap.md#gap-11)) |
 | Extend the backend suite | [docs/guides/testing.md](./docs/guides/testing.md) — `backend/tests/`, Jest and Supertest against an in-process MongoDB. `npm test` needs no database of its own                                                |
 | Fix a known defect       | [docs/product/roadmap.md](./docs/product/roadmap.md) — every item has an ID, a file reference and a proposed fix                                                                                                |
-| Harden further           | [docs/security/checklist.md](./docs/security/checklist.md) — all fifteen findings are closed; what remains is defence in depth (a CSP, a shared rate-limit store, email verification, password reset)           |
+| Harden further           | [docs/security/checklist.md](./docs/security/checklist.md) — all fifteen findings are closed; what remains is defence in depth (a CSP on the app shell, a shared rate-limit store, email verification, password reset) |
 | Report a bug             | [Open an issue](../../issues/new?template=bug_report.md)                                                                                                                                                        |
 | Propose a feature        | [Open an issue](../../issues/new?template=feature_request.md) — discuss before building                                                                                                                         |
 | Improve documentation    | [docs/](./docs/README.md) — check the SSOT map first so you edit the owning document                                                                                                                            |
 
-**Good first issues:** [BUG-15](./docs/product/roadmap.md#bug-15) (form hydration — do this
-after tests exist), [GAP-04](./docs/product/roadmap.md#gap-04) (wire tags into the editor; the
-model, routes and service already exist), and paginating the remaining list endpoints
-([SEC-11](./docs/security/checklist.md#sec-11)).
+**Good first issues:** paginating `GET /likes/post/:postId`, the last unbounded list
+([GAP-07](./docs/product/roadmap.md#gap-07)); moving the search term from the path to `?q=`
+([GAP-05](./docs/product/roadmap.md#gap-05)); and adding `@eslint/js` and `globals` to
+`client/package.json`, which the flat config imports but never declares
+([code-quality.md](./docs/guides/code-quality.md#known-backend-gaps)).
 
 ---
 
@@ -64,11 +65,11 @@ Then run the API and the client in separate terminals with `npm run dev`.
 4. **Update the owning document.** Each subject has exactly one home — see the
    [SSOT map](./docs/README.md#single-source-of-truth). Documentation changes belong in the same
    pull request as the code.
-5. **Run the checks locally.**
+5. **Run the checks locally.** These are exactly what CI runs.
 
    ```bash
-   cd backend && npm run lint && npm run format:check
-   cd ../client && npm run lint && npm run format:check && npm run build
+   cd backend && npm run lint && npm run format:check && npm test
+   cd ../client && npm run lint && npm run format:check && npm test && npm run build
    ```
 
 6. **Commit** using Conventional Commits.
@@ -186,17 +187,19 @@ The details live in the documentation; these are the rules that most often come 
 ## Testing
 
 ```bash
-cd backend && npm test        # 61 tests, in-process MongoDB, no setup needed
+cd backend && npm test        # 125 integration tests, in-process MongoDB, no setup needed
+cd client  && npm test        # 73 Vitest tests in jsdom
 ```
 
-**A backend bug fix ships with a regression test named for its tracking ID.** The suite exists
+**A bug fix ships with a regression test named for its tracking ID.** The suites exist
 precisely so a closed defect stays closed.
 
-**A client change still has to be verified by hand** — there is no client runner yet
-([GAP-11](./docs/product/roadmap.md#gap-11)). Say in the pull request what you actually
-exercised, in both themes and at 375px. Establishing that runner is the most valuable
-contribution available; [docs/guides/testing.md](./docs/guides/testing.md) specifies the tooling
-and the order to build it in.
+**A change to the editor or the creator workspace still has to be verified by hand** — those
+are the two areas the client suite does not reach ([GAP-11](./docs/product/roadmap.md#gap-11)).
+Say in the pull request what you actually exercised, in both themes and at 375px. Extending
+coverage there is the most valuable contribution available;
+[docs/guides/testing.md](./docs/guides/testing.md) specifies the tooling and the order to build
+it in.
 
 ---
 

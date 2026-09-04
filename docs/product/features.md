@@ -21,7 +21,7 @@ mindmap
     📖 Readers
       Feed & Discovery
       Trending Scoring
-      Search by Title
+      Search across Title, Body, Tags & Authors
       Post Detail & Markdown Render
       Likes, Views & Read Rate
       Threaded Comments & Replies
@@ -37,7 +37,7 @@ mindmap
     🛡️ Admins
       Site-Wide Metrics Console
       Post Catalogue Moderation
-      Category Management
+      Tag Vocabulary Management
       User Accounts & Roles
       Session Revocation & Suspension
 ```
@@ -93,10 +93,9 @@ after it — see [security/auth.md](../security/auth.md).
 | Markdown editor with live preview   | ✅     | `@uiw/react-md-editor`                                                                       |
 | Auto-generated URL slug             | ✅     | Client-side, editable                                                                        |
 | Cover image by URL                  | ✅     | Optional, on both create and edit                                                            |
-| Assign categories                   | ✅     | Selected at write time, reconciled on edit, ownership enforced                               |
 | Draft / private / public visibility | ✅     | Persisted and enforced server-side                                                           |
 | Edit an existing post               | ✅     | Works with or without a cover image                                                          |
-| Delete a post                       | ✅     | Cascades to comments and category back-references                                            |
+| Delete a post                       | ✅     | Cascades to comments and tag back-references                                                 |
 | Ownership enforcement               | ✅     | Author or `admin` only, on edit and delete                                                   |
 | Assign tags                         | ✅     | Up to 5 per story, set in the editor and persisted on the post ([GAP-04](roadmap.md#gap-04)) |
 | Autosave / revision history         | ❌     | [GAP-03](roadmap.md#gap-03)                                                                  |
@@ -108,11 +107,11 @@ after it — see [security/auth.md](../security/auth.md).
 | Landing page with hero, feed and a trending list | ✅     | The category strip and creator widgets were removed — they repeated what the feed already showed                                                                                                          |
 | Drafts and private posts hidden from the public  | ✅     | Enforced by the API, not the browser                                                                                                                                                                      |
 | Author can preview their own unpublished post    | ✅     | Optional-auth on the detail endpoint                                                                                                                                                                      |
-| Filter by category                               | ✅     | On `/search`, as a server-side query over the whole collection, with a per-category count so no filter leads to an empty page. The landing page's topic pills link into it rather than filtering in place |
+| Filter by tag                                    | ✅     | On `/search`, as a server-side query over the whole collection, with a per-tag count so no filter leads to an empty page. The landing page's topic pills link into it rather than filtering in place     |
 | Trending                                         | ✅     | Views + likes×3 + comments×5 + reads×5 over 14 days, with a minimum-views floor; falls back to latest and says so                                                                                         |
 | Post detail with rendered Markdown               | ✅     |                                                                                                                                                                                                           |
 | Paginated feed                                   | ✅     | `?page` and `?limit`, default 20, capped at 50                                                                                                                                                            |
-| Search posts by title                            | ⚠️     | Public-only, capped, metacharacters escaped — but still an unindexed regex over titles ([GAP-05](roadmap.md#gap-05))                                                                                      |
+| Search stories, tags and authors                 | ⚠️     | Matches title, body, tag names and author username. Public-only, capped, metacharacters escaped — but still an unindexed regex rather than a text index ([GAP-05](roadmap.md#gap-05))                    |
 | Infinite scroll                                  | ❌     | The API supports paging; the UI does not consume it yet                                                                                                                                                   |
 
 ## 4. Social engagement
@@ -141,7 +140,7 @@ after it — see [security/auth.md](../security/auth.md).
 | Page-view tracking                                    | ✅     | Deduplicated per visitor per post in a 6-hour window, so refreshing does not inflate the count ([SEC-04](../security/checklist.md#sec-04)) |
 | Read tracking                                         | ✅     | `useReading` records a read on real scroll depth and dwell; the endpoint had existed with nothing calling it                               |
 | Reading activity for the signed-in member             | ✅     | `GET /analytics/me/reading`                                                                                                                |
-| Per-post analytics document                           | ⚠️     | Only the seeder maintains it ([BUG-06](roadmap.md#bug-06))                                                                                 |
+| Per-post figures for the author                       | ✅     | Views, reads, likes, comments and read rate, counted live from the event collections; author and admin only. The pre-aggregated `Analytics` collection is gone ([BUG-06](roadmap.md#bug-06))               |
 
 ## 6. Profile and settings
 
@@ -152,7 +151,7 @@ after it — see [security/auth.md](../security/auth.md).
 | Notification, privacy and appearance preferences                     | ✅     | Schema-backed; partial updates do not blank sibling fields                                                      |
 | Extended profile fields — full name, location, website, social links | ✅     | Declared on `UserProfile`                                                                                       |
 | Light / dark theme with system preference                            | ✅     | Persisted in local storage                                                                                      |
-| Upload an avatar                                                     | ✅     | 2 MB cap, MIME allowlist, stored on the profile document and served as a data URI ([BUG-07](roadmap.md#bug-07)) |
+| Upload an avatar                                                     | ✅     | 2 MB cap, MIME allowlist, stored on the profile document and served from `GET /users/:id/avatar` with an `ETag` ([BUG-07](roadmap.md#bug-07), [BUG-27](roadmap.md#bug-27)) |
 | Delete account                                                       | ✅     | `DELETE /users/me`, password-confirmed, purging posts, comments, likes, views, reads and both profile sides     |
 
 ## 7. Administration
@@ -162,13 +161,13 @@ after it — see [security/auth.md](../security/auth.md).
 | Admin dashboard with site totals | ✅     |                                                                          |
 | Post management including drafts | ✅     | `?all=true`, honoured only for administrators                            |
 | Delete any post                  | ✅     | Counters adjust against the post's author                                |
-| Category management              | ✅     | Creation is admin-only                                                   |
+| Tag vocabulary management        | ✅     | `/admin/tags`. Creation and deletion are admin-only; deletion refuses while stories still carry the tag |
 | Paginated user listing           | ✅     |                                                                          |
 | Suspend and restore an account   | ✅     | Revokes live sessions immediately                                        |
 | Promote and demote               | ✅     | Demotion revokes live sessions; the last administrator cannot be removed |
 | Delete any account               | ✅     | Same `purgeAccount` path as self-deletion                                |
 | Admin settings page              | ➖     | Removed. It was a placeholder of switches wired to nothing               |
-| Audit log                        | ⚠️     | Synthesised from `Post.updatedAt` ([GAP-10](roadmap.md#gap-10))          |
+| Audit log                        | ⚠️     | Stories edited since publication, keyed off `Post.editedAt`. Administrative actions still leave no record of their own ([GAP-10](roadmap.md#gap-10)) |
 
 ## 8. Platform
 
@@ -177,7 +176,7 @@ after it — see [security/auth.md](../security/auth.md).
 | Responsive layout                      | ✅     | 375px through 1440px                                                                                                                                                             |
 | Light and dark themes                  | ✅     | Two complete token sets                                                                                                                                                          |
 | Route-based code splitting             | ✅     | Every page lazily loaded                                                                                                                                                         |
-| Vendor chunk splitting                 | ✅     | `vendor`, `radix`, `editor`                                                                                                                                                      |
+| Vendor chunk splitting                 | ✅     | `vendor`, `radix`, `markdown-preview`, `syntax-highlight`, `editor`                                                                                                              |
 | Client-side error boundary             | ✅     |                                                                                                                                                                                  |
 | Deep links and refresh on inner routes | ✅     | SPA fallback in `vercel.json`                                                                                                                                                    |
 | Health and readiness endpoints         | ✅     | `GET /health`, `GET /ready`                                                                                                                                                      |
@@ -194,7 +193,7 @@ after it — see [security/auth.md](../security/auth.md).
 
 | Attribute         | Current state                                                                                                                                                                                                                                                                                       |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Performance**   | Route-level code splitting, a 5-minute query cache, paginated feed, and 26 indexes across 9 collections. `GET /posts` no longer populates every comment — previously the most expensive query in the application                                                                                    |
+| **Performance**   | Route-level code splitting, a 5-minute query cache, paginated feed, and 20 declared indexes across 9 collections. `GET /posts` no longer populates every comment — previously the most expensive query in the application                                                                          |
 | **Scalability**   | Stateless API. Remaining bottlenecks: the unindexed search regex, the unbounded `GET /likes/post/:postId`, and rate-limit counters held in each instance's memory rather than a shared store                                                                                                        |
 | **Availability**  | Health and readiness endpoints exist; nothing polls them yet ([runbook](../operations/runbook.md))                                                                                                                                                                                                  |
 | **Security**      | All fifteen audit findings closed. Remaining work is defence in depth, not open holes: a Content-Security-Policy, a shared rate-limit store, email verification and password reset ([checklist](../security/checklist.md))                                                                          |

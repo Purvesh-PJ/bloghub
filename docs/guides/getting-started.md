@@ -97,8 +97,9 @@ Or create a free Atlas cluster, allow your IP, and paste the connection string i
 cd backend && npm run seed
 ```
 
-Creates 10 categories, 15 accounts and 99 stories — 84 public, 10 drafts and 5 private — plus
-comments, likes, views and reads.
+Creates 15 accounts and 99 stories — 84 public, 10 drafts and 5 private — across 10 topic
+groups whose names become tags, plus comments, likes, views and completed reads. The
+engagement counts are randomised, so they differ between runs.
 
 > ⚠️ **The seeder deletes every document in every collection first.**
 >
@@ -142,8 +143,9 @@ curl http://localhost:4000/api/users/getUser \
   -H "Authorization: Bearer <accessToken>"
 ```
 
-Every endpoint also answers without the `/api` prefix locally — see
-[reference/api.md](../reference/api.md#base-url).
+The router is mounted **only** at `/api`; the bare mount was removed. `client/src/config/api.js`
+appends the prefix when `VITE_API_URL` does not already carry it, so an existing `.env` keeps
+working — see [reference/api.md](../reference/api.md#base-url).
 
 ---
 
@@ -156,7 +158,7 @@ Every endpoint also answers without the `/api` prefix locally — see
 | `npm start`                            | Run without a watcher                                                                                       |
 | `npm run dev`                          | nodemon, restarts on change                                                                                 |
 | `npm run seed`                         | Reset and repopulate the database                                                                           |
-| `npm run migrate` / `migrate:dry`      | Repair an existing database in place, non-destructively. `:dry` shows what would change and changes nothing |
+| `npm run migrate` / `migrate:dry`      | Repair an existing database in place: backfill comment `post` and `parent` links, de-duplicate slugs, derive tags for old posts, then drop the obsolete `categories` collection and field. No user content is deleted. `:dry` reports what it would change and touches nothing |
 | `npm run lint` / `lint:fix`            | ESLint                                                                                                      |
 | `npm run format` / `format:check`      | Prettier                                                                                                    |
 | `npm test`                             | 125 integration tests. Starts its own MongoDB in-process, so it needs no database and no `.env`             |

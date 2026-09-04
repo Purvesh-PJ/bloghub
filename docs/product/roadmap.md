@@ -138,9 +138,10 @@ and the reader base64-encoded that string back, producing a data URI containing 
 filename rather than an image.
 
 _Fix:_ `multer.memoryStorage()` with a 2 MB cap and a MIME allowlist
-([SEC-05](../security/checklist.md#sec-05)), the **bytes** written to
-`UserProfile.image = { data: Buffer, contentType }`, and `avatarDataUri()` encoding those bytes
-on read. No filesystem is involved, so it works on Vercel unchanged.
+([SEC-05](../security/checklist.md#sec-05)) and the **bytes** written to
+`UserProfile.image = { data: Buffer, contentType }`. No filesystem is involved, so it works on
+Vercel unchanged. The read path was later moved off base64-in-JSON and onto its own cacheable
+endpoint, `GET /users/:id/avatar` ([BUG-27](#bug-27)).
 
 _Verified:_ uploaded through the settings page, the avatar renders after a reload.
 
@@ -198,8 +199,10 @@ The catch-all rewrote `/(.*)` to `client/$1`, so `/post/abc123` mapped to a file
 not exist and the SPA shell was never served. Every shared link and every refresh on an
 inner route failed.
 
-_Fix:_ unmatched paths rewrite to `/index.html`. The dead `/uploads/(.*)` route — pointing at
-a directory that never exists in a deployment — was removed.
+_Fix:_ the rewrite into the static build carries `continue: true` so the filesystem handler
+still gets a chance, and the terminal rule serves `/client/index.html`. The dead
+`/uploads/(.*)` route — pointing at a directory that never exists in a deployment — was
+removed.
 
 ### BUG-13
 
@@ -225,7 +228,7 @@ without credentials. Production refuses to boot without `CLIENT_URL`
 
 ### BUG-16
 
-**Seeder wrote `posts` instead of `post` on every like.** ✅ `backend/seed.js`
+**Seeder wrote `posts` instead of `post` on every like.** ✅ `backend/scripts/seed.js`
 
 `new Like({ user, posts: post._id })` — the plural is not a schema field, so every seeded
 like stored `post: null` and was unqueryable by post. This is why like counts appeared broken
@@ -247,7 +250,7 @@ Found by enabling `react/jsx-no-undef`, one of the rules registered but never tu
 
 ### BUG-18
 
-**Seeder could not find the root `.env`.** ✅ `backend/seed.js`
+**Seeder could not find the root `.env`.** ✅ `backend/scripts/seed.js`
 
 `require('dotenv').config()` with no path resolves against `backend/`, where no `.env`
 exists, so `npm run seed` exited on a missing database URI.
@@ -256,7 +259,11 @@ _Fix:_ resolves `../.env` explicitly, matching `index.js`.
 
 ---
 
-## Open
+## Fixed — found in the later audits
+
+BUG-06 and BUG-15 were open when the register was first written; BUG-19 onward came out of the
+full frontend-to-backend audit, the admin console tests and the bundle measurement. All are
+closed.
 
 ### BUG-06
 
@@ -450,7 +457,7 @@ returning visitor re-fetches after a deploy went from 207 kB gzipped to 98 kB.
 | <a id="gap-10"></a>**GAP-10** | Real audit log                      | P2       | ⚠️ Partial — the moderation log now keys off `Post.editedAt` and is surfaced in the console ([BUG-24](#bug-24)); administrative actions still leave no record of their own                                                                 |
 | <a id="gap-11"></a>**GAP-11** | Automated tests                     | P0       | ⚠️ Partial — 125 backend integration tests and 73 client tests (Vitest); the client suite covers the service layer, the axios interceptors, the text helpers, the profile page and every admin screen, not yet the editor or the workspace |
 | <a id="gap-12"></a>**GAP-12** | CI pipeline                         | P0       | ✅ **Done** — lint, format check, tests, build and a dependency audit on every push and pull request                                                                                                                                       |
-| <a id="gap-13"></a>**GAP-13** | Database indexes                    | P0       | ✅ **Done** — 26 indexes across 9 collections                                                                                                                                                                                              |
+| <a id="gap-13"></a>**GAP-13** | Database indexes                    | P0       | ✅ **Done** — 20 declared indexes across 9 collections (29 counting the automatic `_id`)                                                                                                                                                   |
 | <a id="gap-14"></a>**GAP-14** | Health and readiness endpoints      | P1       | ✅ **Done** — `GET /health`, `GET /ready`                                                                                                                                                                                                  |
 | <a id="gap-15"></a>**GAP-15** | Structured logging                  | P2       | ❌ Open — morgan plus `console.*`                                                                                                                                                                                                          |
 | <a id="gap-16"></a>**GAP-16** | SEO and social metadata             | P2       | ❌ Open                                                                                                                                                                                                                                    |
@@ -464,7 +471,7 @@ returning visitor re-fetches after a deploy went from 207 kB gzipped to 98 kB.
 ```mermaid
 flowchart LR
     P1["✅ <b>Phase 1</b><br/>Correctness & Safety<br/>• 28 Bugs fixed<br/>• 15 SEC findings closed"]
-    P2["✅ <b>Phase 2</b><br/>Foundations<br/>• 125 Backend tests<br/>• 73 Client Vitest tests<br/>• CI Pipeline & Gating"]
+    P2["✅ <b>Phase 2</b><br/>Foundations<br/>• 125 Backend tests<br/>• 73 Client Vitest tests<br/>• CI pipeline (reports; no branch protection yet)"]
     P3["⏳ <b>Phase 3</b><br/>Data Model Consolidation<br/>• Reconcile User.posts<br/>• Dynamic count derivation<br/>• Counter integrity scripts"]
     P4["🔮 <b>Phase 4</b><br/>Product Depth<br/>• Password reset (GAP-01)<br/>• S3 Avatar Storage (GAP-17)<br/>• Text-indexed Search (GAP-05)"]
     P5["🚀 <b>Phase 5</b><br/>Scale & Polish<br/>• Structured JSON logs (GAP-15)<br/>• Audit logging (GAP-10)<br/>• Accessibility & SEO"]
@@ -474,7 +481,7 @@ flowchart LR
 
 ### ✅ Phase 1 — Correctness and safety _(complete)_
 
-Twelve defects and eight security findings closed, each verified against a running server.
+All 28 defects and all 15 security findings closed, each verified against a running server.
 The application now does what it claims: posts publish, drafts stay private, edits succeed,
 likes persist, settings save, and deep links resolve.
 

@@ -51,7 +51,7 @@ collections between tests; `tests/env.js` supplies the secrets, so no `.env` is 
 | `api.test.js`          | 10    | The axios interceptors: token attachment, the single refresh-and-replay, and each of the five ways a refresh can fail               |
 | `text.test.js`         | 14    | Markdown stripping, excerpts, and both reading-time estimates                                                                       |
 | `UserProfile.test.jsx` | 9     | That the profile page asks for the person in the URL rather than the signed-in account, and pages their stories from the server     |
-| `admin.test.jsx`       | 22    | Every admin screen — posts moderation, category management, user promotion/suspension, bulk actions                                 |
+| `admin.test.jsx`       | 22    | Every admin screen — posts moderation, tag management, user promotion/suspension, bulk actions                                      |
 
 Two jsdom limits are worth knowing before adding to the admin file. Radix drives its menus
 and dialogs from pointer capture, which jsdom does not implement — `src/test/setup.js` stubs
@@ -64,11 +64,11 @@ and the test that would have covers what it can instead.
 auth, theme and a memory router — with retries off and no cache carried between tests, so a
 component that fails a request shows its error state on the first attempt.
 
-There is also `smoke.js`-style end-to-end verification worth doing by hand before a release:
-boot the real server against an in-process MongoDB and walk the changed flows over HTTP. The
-Jest suite drives Express through Supertest, which never opens a socket — a live run is what
-caught [BUG-24](../product/roadmap.md#bug-24), where the unit test agreed with the wrong
-definition of an edit.
+One kind of verification has no file and is worth doing by hand before a release: boot the
+real server and walk the changed flows over HTTP. The Jest suite drives Express through
+Supertest, which never opens a socket — a live run is what caught
+[BUG-24](../product/roadmap.md#bug-24), where the test agreed with the wrong definition of an
+edit.
 
 Every one of these runs on each push and pull request — see
 [Part 2 · CI/CD](../operations/deployment.md#part-2--cicd).
@@ -77,11 +77,14 @@ Every one of these runs on each push and pull request — see
 
 Being honest about the gaps matters more than the count:
 
-- **No client tests.** CI lints and builds the client, which catches syntax and import errors
-  but nothing about behaviour. The tooling choice below (Vitest + Testing Library) is a
-  recommendation, not something installed.
+- **Parts of the client.** The service layer, the axios interceptors, the text helpers, the
+  profile page and every admin screen are covered. The **editor and the creator workspace are
+  not** ([GAP-11](../product/roadmap.md#gap-11)) — a render-time crash there still passes CI.
 - **No end-to-end tests.** The flows have been driven by hand against a running app, including
-  a headless-browser sweep of every page; that verification is not repeatable in CI.
+  a headless-browser sweep of every page; that verification is not repeatable in CI. Playwright
+  is a recommendation below, not something installed.
+- **No MSW.** The client suite mocks the `api` module directly. MSW is proposed below so the
+  interceptors run for real against an intercepted network.
 - **Coverage is not enforced.** `npm run test:coverage` reports, but no threshold gates a
   merge.
 
@@ -133,9 +136,12 @@ sequenceDiagram
 
 | Level       | Share | Count target | Runtime budget |
 | ----------- | ----- | ------------ | -------------- |
-| Unit        | ~60%  | 120–180      | < 10s          |
-| Integration | ~30%  | 50–80        | < 60s          |
+| Integration | ~60%  | 120–180      | < 60s          |
+| Unit        | ~30%  | 50–80        | < 10s          |
 | End-to-end  | ~10%  | 8–15         | < 5min         |
+
+The usual pyramid puts unit tests at the base. This one is deliberately inverted, for the
+reason stated immediately below.
 
 **Integration deserves the heaviest early investment.** Nearly every defect in this codebase
 lived at the controller-to-database seam — an undeclared schema field, a dropped property, a
@@ -150,16 +156,15 @@ are thin and the mistakes are in how the layers connect.
 | -------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Backend unit + integration | **Jest** + **Supertest** — _installed_  | The app exports without listening, so Supertest drives it directly                                                            |
 | Backend test database      | **mongodb-memory-server** — _installed_ | Real Mongoose semantics in process — essential, since strict-mode field dropping is only observable against a real connection |
-| Frontend unit + component  | **Vitest** + **React Testing Library**  | Vitest reuses the existing Vite config                                                                                        |
-| API mocking in the client  | **MSW**                                 | Intercepts at the network layer, so `services/` and the Axios interceptors run for real                                       |
-| End-to-end                 | **Playwright**                          | Cross-browser, auto-waiting, good tracing                                                                                     |
+| Frontend unit + component  | **Vitest** + **React Testing Library** — _installed_ | Vitest reuses the existing Vite config; the suite runs in jsdom                                                   |
+| API mocking in the client  | **MSW** — _not installed_               | Would intercept at the network layer, so `services/` and the Axios interceptors run for real. Today the suite mocks the `api` module |
+| End-to-end                 | **Playwright** — _not installed_        | Cross-browser, auto-waiting, good tracing                                                                                     |
 
-The backend half of this is already done. What remains is the client:
+Both suites are in place. What remains is MSW and an end-to-end runner:
 
 ```bash
 cd client
-npm install --save-dev vitest @testing-library/react @testing-library/jest-dom \
-  @testing-library/user-event jsdom msw
+npm install --save-dev msw
 
 npm install --save-dev --save-exact @playwright/test
 npx playwright install --with-deps
@@ -171,8 +176,12 @@ npx playwright install --with-deps
 "test:watch": "jest --watch --runInBand",
 "test:coverage": "jest --coverage --runInBand"
 
-// client/package.json — proposed
+// client/package.json — present
 "test": "vitest run",
+"test:watch": "vitest",
+"test:coverage": "vitest run --coverage"
+
+// client/package.json — proposed
 "test:e2e": "playwright test"
 ```
 
@@ -205,23 +214,32 @@ describe('POST /posts', () => {
 
 ## Layout
 
+As it exists today:
+
 ```
 backend/tests/
-├── setup.js          in-memory MongoDB, env, per-test cleanup
-├── factories.js      makeUser, makeAdmin, tokenFor, makePost
-├── unit/
-└── integration/
+├── env.js            secrets, loaded before the app asserts its config
+├── setup.js          in-memory MongoDB, syncIndexes, per-test cleanup
+└── <area>.test.js    ten suites, flat — auth, post, comment, social, profile,
+                      discovery, moderation, workspace, trending, admin
 
 client/src/
-├── setupTests.js
-├── mocks/handlers.js
-├── test/renderWithProviders.jsx
-├── services/__tests__/
-└── components/ui/__tests__/
+├── test/setup.js     jsdom shims, including the pointer-capture stubs Radix needs
+├── test/render.jsx   renderWithProviders — the provider tree from main.jsx
+├── config/api.test.js
+├── services/services.test.js
+├── utils/text.test.js
+├── pages/UserProfile.test.jsx
+└── pages/admin/admin.test.jsx
 ```
 
-Backend tests are centralised and mirror the source tree; client tests sit beside the code
-they cover.
+Backend suites are flat and named by the area they cover rather than mirroring the source
+tree, because an integration test usually crosses several modules. Client tests sit beside
+the code they cover.
+
+There is no `factories.js` and no `unit/` or `integration/` split — each backend suite builds
+the fixtures it needs. Extracting shared factories is worthwhile once a third suite wants the
+same one.
 
 ---
 
@@ -379,7 +397,8 @@ exports.tokenFor = (user) =>
   );
 ```
 
-Never reuse `backend/seed.js` — it targets the real database and wipes every collection.
+Never reuse `backend/scripts/seed.js` — it targets the configured database and wipes every
+collection.
 
 ### Authorisation — the highest-value suite
 
@@ -429,8 +448,8 @@ it("hides drafts from anonymous callers (SEC-01)", async () => {
 it("rejects a refresh token as an access token (SEC-06)", async () => {
   /* … 401 */
 });
-it("requires authentication to create a category (SEC-02)", async () => {
-  /* … 401 */
+it("requires an admin to create a tag (SEC-02)", async () => {
+  /* … 401 without a token, 403 as a member */
 });
 it("persists user settings (BUG-05)", async () => {
   /* … reads back dark */

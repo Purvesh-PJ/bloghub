@@ -51,7 +51,7 @@ Traditional blogging software optimizes for superficial page impressions (clicks
 
 | 📖 Reader-Centric                                                                                                                                                         | ✍️ Modern Author Studio                                                                                                                                 | 🛡️ Platform Governance                                                                                                                                                       |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| • Clean 680px typography reading measure<br/>• Sanitized Markdown rendering (DOMPurify)<br/>• 14-day dynamic trending algorithm<br/>• Threaded nested discussions & likes | • Split-pane live Markdown preview<br/>• Auto-derived custom SEO slugs<br/>• Cover image & topic taxonomy<br/>• Real-time read-rate analytics dashboard | • Full public/private story moderation<br/>• User management & role promotion<br/>• Instant session revocation (`tokenVersion`)<br/>• In-memory isolated integration testing |
+| • Clean 720px typography reading measure<br/>• Sanitized Markdown rendering (rehype-sanitize)<br/>• 14-day dynamic trending algorithm<br/>• Threaded nested discussions & likes | • Split-pane live Markdown preview<br/>• Auto-derived custom SEO slugs<br/>• Cover image & topic taxonomy<br/>• Real-time read-rate analytics dashboard | • Full public/private story moderation<br/>• User management & role promotion<br/>• Instant session revocation (`tokenVersion`)<br/>• In-memory isolated integration testing |
 
 ---
 
@@ -73,7 +73,7 @@ Below is the visual gallery across BlogHub's reading surfaces, editor studios, c
     <td width="50%" align="center">
       <img src="client/public/screenshots/post.png" alt="Focused Reader View" width="100%" />
       <br/><strong>📖 Focused Reading View</strong><br/>
-      <sub>680px reading column, author byline, atomic likes, and threaded replies (<code>/post/:id</code>)</sub>
+      <sub>720px reading column, author byline, atomic likes, and threaded replies (<code>/post/:id</code>)</sub>
     </td>
   </tr>
   <tr>
@@ -115,11 +115,11 @@ Below is the visual gallery across BlogHub's reading surfaces, editor studios, c
 - **Synchronized Markdown Editor:** Split-screen writing with instant syntax-highlighted preview.
 - **Enforced Visibility State Machine:** Secure server-side isolation between `draft`, `private`, and `public` states.
 - **Slug Management:** Auto-generated URL slugs with custom edit overrides.
-- **Cover Image & Tags:** Header artwork support with multi-category classification.
+- **Cover Image & Tags:** Header artwork support, plus up to five tags per story, created on demand.
 
 ### 2. 📖 Reading & Social Features
 
-- **Editorial Typography:** Tailored 680px reading column with seamless Light/Dark theming.
+- **Editorial Typography:** Tailored 720px reading column with seamless Light/Dark theming.
 - **14-Day Trending Algorithm:** Dynamic ranking weighted by recent verified read completions.
 - **Threaded Discussions:** Nested comment hierarchies with parent-child reply trees.
 - **Idempotent Social Graph:** MongoDB compound unique indexes prevent duplicate likes or follow anomalies under high concurrency.
@@ -134,7 +134,7 @@ Below is the visual gallery across BlogHub's reading surfaces, editor studios, c
 
 - **Dual-Token JWT:** Short-lived access tokens (15m) + refresh tokens (7d) with silent Axios interceptor renewal.
 - **Instant Session Revocation:** Any credential change increments `tokenVersion`, immediately terminating active tokens across all devices.
-- **Defense in Depth:** Helmet HTTP security headers, CORS origin pinning, input sanitization via express-validator, and DOMPurify XSS protection.
+- **Defense in Depth:** Helmet HTTP security headers, CORS origin pinning, input sanitization via express-validator, and `rehype-sanitize` stripping dangerous markup out of rendered Markdown.
 
 ---
 
@@ -151,7 +151,7 @@ flowchart TB
         subgraph ClientTier["🌐 CLIENT TIER (React 19 SPA)"]
             direction TB
             UI["🎨 UI Components\n• 18 Code-Split Routes\n• 21 styled-components\n• Radix Slate/Sky Themes"]
-            Editor["✍️ Markdown Studio\n• Synchronized Split-View\n• DOMPurify Sanitizer"]
+            Editor["✍️ Markdown Studio\n• Synchronized Split-View\n• rehype-sanitize Schema"]
             ClientState["⚡ State & Networking\n• TanStack Query v5\n• Axios 401 Interceptors"]
             UI & Editor --> ClientState
         end
@@ -185,9 +185,9 @@ flowchart TB
 
         subgraph PersistenceTier["🍃 PERSISTENCE TIER"]
             direction TB
-            ODM["Mongoose 7.2 ODM Engine"]
+            ODM["Mongoose 8 ODM Engine"]
 
-            subgraph DBCollections["MongoDB 6+ (26 Indexes)"]
+            subgraph DBCollections["MongoDB 6+ (20 Declared Indexes)"]
                 direction TB
                 C_Users[("👤 users & userprofiles")]
                 C_Posts[("📰 posts & tags")]
@@ -214,8 +214,8 @@ flowchart TB
 | Layer           | Primary Tech                   | Key Packages & Tooling                                                                                                   |
 | :-------------- | :----------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
 | **Frontend**    | **React 19.2** (Vite 7)        | **TanStack Query 5**, **styled-components 6**, **React Router 7**, **Axios**, **@uiw/react-md-editor**, **lucide-react** |
-| **Backend**     | **Node.js 18+** (Express 4)    | **Mongoose 7**, **jsonwebtoken**, **bcryptjs**, **express-validator**, **helmet**, **express-rate-limit**, **multer**    |
-| **Database**    | **MongoDB 6.0+** (Local/Atlas) | 9 Collections, 26 Declared Unique & Compound Indexes, Atomic Updates                                                     |
+| **Backend**     | **Node.js 18+** (Express 4)    | **Mongoose 8**, **jsonwebtoken**, **bcryptjs**, **express-validator**, **helmet**, **express-rate-limit**, **multer**    |
+| **Database**    | **MongoDB 6.0+** (Local/Atlas) | 9 Collections, 20 Declared Unique & Compound Indexes, Atomic Updates                                                     |
 | **Testing**     | **Jest & Vitest**              | **mongodb-memory-server** (In-process DB), **Supertest**, **React Testing Library**                                      |
 | **CI/CD & Ops** | **GitHub Actions & Vercel**    | Automated Linting, Prettier Format Checks, 198 Tests, Dependency Audits                                                  |
 
@@ -333,10 +333,10 @@ bloghub/
 ├── backend/                    # Express 4 REST API (CommonJS)
 │   ├── config/                 # db.js (MongoDB), env.js (Boot validation)
 │   ├── controllers/            # 12 HTTP request/response controllers
-│   ├── middlewares/            # JWT auth, role authorization, errorHandler, rateLimiter
+│   ├── middlewares/            # JWT auth, role authorization, validation, upload, errorHandler
 │   ├── models/                 # 9 Mongoose schemas (User, Post, Comment, Tag, Like, etc.)
 │   ├── routes/                 # 11 Express router modules mounted under /api
-│   ├── services/               # Reusable domain services (postService, accountService)
+│   ├── services/               # postService, commentService, accountService, trendingService
 │   ├── tests/                  # 125 integration tests (Jest + mongodb-memory-server)
 │   ├── validators/             # express-validator schema rule sets
 │   ├── index.js                # Server entry point & composition root
@@ -346,7 +346,7 @@ bloghub/
 │   ├── public/screenshots/     # UI preview assets & screenshot gallery
 │   ├── src/
 │   │   ├── components/         # ui/ (21 design primitives), posts/, layout/, marketing/
-│   │   ├── config/             # api.js (Axios client), markdown.js (DOMPurify rules)
+│   │   ├── config/             # api.js (Axios client), markdown.js (rehype-sanitize schema)
 │   │   ├── context/            # AuthContext.jsx & authState singleton
 │   │   ├── guards/             # ProtectedRoute.jsx, AdminRoute.jsx
 │   │   ├── hooks/              # useCurrentUser, useReading, useTags, useDraftRecovery
@@ -396,7 +396,7 @@ bloghub/
 
 ## 📚 Documentation Hub
 
-BlogHub maintains an exhaustive, industry-grade documentation suite in **[`docs/`](docs/README.md)** organized by the **Diátaxis framework**:
+BlogHub maintains an exhaustive, industry-grade documentation suite in **[`docs/`](docs/README.md)**, split the way Docker, Kubernetes, Stripe and React split theirs — **guides** (doing), **reference** (looking up), **architecture** (why), plus **operations**, **product** and **security**. The rule behind the split is in **[documentation-guide.md](docs/documentation-guide.md)**:
 
 <div align="center">
 
@@ -404,7 +404,7 @@ BlogHub maintains an exhaustive, industry-grade documentation suite in **[`docs/
 | :------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **🏛️ Architecture**       | **[System Overview](docs/architecture/overview.md)**<br/>**[Walkthrough](docs/architecture/walkthrough.md)**<br/>**[Frontend](docs/architecture/frontend.md)** • **[Backend](docs/architecture/backend.md)**<br/>**[ADRs (Decisions)](docs/architecture/decisions.md)** | • Monorepo layout & workspace boundaries<br/>• End-to-end request lifecycle tour<br/>• Provider trees, query caching & Express pipeline<br/>• Architectural Decision Records (ADR-001 to ADR-006)                                          |
 | **📖 Guides**             | **[Getting Started](docs/guides/getting-started.md)**<br/>**[Development](docs/guides/development.md)**<br/>**[Testing Guide](docs/guides/testing.md)**<br/>**[Troubleshooting](docs/guides/troubleshooting.md)**<br/>**[Code Quality](docs/guides/code-quality.md)**   | • Step-by-step setup & verification<br/>• File placement rules & coding standards<br/>• Test pyramid & in-memory runner guide<br/>• Common local errors & diagnostic tree<br/>• ESLint flat configs & Prettier standards                   |
-| **📐 Reference**          | **[API Contract](docs/reference/api.md)**<br/>**[Database & ERD](docs/reference/database.md)**<br/>**[Configuration](docs/reference/configuration.md)**<br/>**[Design System](docs/reference/design-system.md)**                                                        | • 51-endpoint catalog & schemas<br/>• Mongoose models, indexes & Mermaid ERD<br/>• Environment variable dictionary<br/>• 21 UI primitives & Light/Dark tokens                                                                              |
+| **📐 Reference**          | **[API Contract](docs/reference/api.md)**<br/>**[Database & ERD](docs/reference/database.md)**<br/>**[Configuration](docs/reference/configuration.md)**<br/>**[Design System](docs/reference/design-system.md)**                                                        | • 57-endpoint catalog & schemas<br/>• Mongoose models, indexes & Mermaid ERD<br/>• Environment variable dictionary<br/>• 21 UI primitives & Light/Dark tokens                                                                              |
 | **⚙️ Operations**         | **[Deployment & CI/CD](docs/operations/deployment.md)**<br/>**[Operations Runbook](docs/operations/runbook.md)**                                                                                                                                                        | • Vercel serverless topology & CI/CD pipeline<br/>• Health probes, incident triage & logging                                                                                                                                               |
 | **🎯 Product & Security** | **[Features](docs/product/features.md)** • **[User Flows](docs/product/user-flows.md)**<br/>**[Roadmap](docs/product/roadmap.md)**<br/>**[Auth & RBAC](docs/security/auth.md)**<br/>**[Security Checklist](docs/security/checklist.md)**                                | • Complete capability matrix by persona<br/>• State machine & interaction sequence diagrams<br/>• Bug/Gap backlog & release phases<br/>• Dual JWT token lifecycle & session revocation<br/>• Security audit findings (`SEC-xx`) & defenses |
 

@@ -23,10 +23,13 @@
 | Icons            | lucide-react           | 0.562   |
 | Notifications    | react-hot-toast        | 2.6     |
 | Dates            | date-fns               | 4.1     |
-| Dialog primitive | `@radix-ui/themes`     | 3.2     |
+| Headless UI      | `@radix-ui/react-*`    | dialog, dropdown-menu, select, tabs, avatar |
+| Typeface         | `@fontsource-variable/inter` | 5.3 |
 
-`react-hook-form`, `@hookform/resolvers` and `zod` are installed but imported nowhere — forms
-are controlled by hand with `useState`. Either adopt them or drop them.
+Forms are controlled by hand with `useState`; no form library is installed. `@radix-ui/themes`
+is **not** a dependency — only the individual headless primitives are, and the themes package
+was removed because it was never given a stylesheet or a provider, so everything built on it
+rendered unstyled.
 
 ---
 
@@ -34,16 +37,21 @@ are controlled by hand with `useState`. Either adopt them or drop them.
 graph TD
     Strict["<React.StrictMode>"] --> EB["<ErrorBoundary>\nGlobal render error boundary"]
     EB --> QC["<QueryClientProvider client={queryClient}>\nTanStack Server State Cache"]
-    QC --> Router["<BrowserRouter>\nReact Router 7 History"]
-    Router --> Auth["<AuthProvider>\nSession state & tokenVersion"]
+    QC --> RP["<RouterProvider router={router}>\ncreateBrowserRouter — a data router"]
+    RP --> Auth["<AuthProvider>\nSession state & tokens"]
     Auth --> Theme["<ThemeProvider>\nstyled-components tokens & GlobalStyles"]
     Theme --> App["<App />\nRoute table & lazy components"]
     Theme --> Toast["<Toaster position='top-right' />\nGlobal Notifications"]
 ```
 
-`ErrorBoundary` is outermost so a failure in any provider still renders a recovery screen.
-`AuthProvider` sits above `ThemeProvider` because guards consume auth and theming consumes
-nothing.
+`ErrorBoundary` sits directly inside `StrictMode`, above every other provider, so a failure in
+any of them still renders a recovery screen. `AuthProvider` sits above `ThemeProvider` because
+guards consume auth and theming consumes nothing.
+
+**It is a data router, not `BrowserRouter`.** `main.jsx` builds a `createBrowserRouter` with a
+single catch-all route that renders `<App />`, whose `<Routes>` declaration is unchanged. The
+reason for the swap is `useBlocker`, which the editor needs to stop an in-app navigation from
+discarding unsaved work and which is only available under a data router.
 
 ### Query client defaults
 
@@ -100,7 +108,7 @@ review comment on this codebase.
 
 | Kind               | Owner                       | Examples                                             |
 | ------------------ | --------------------------- | ---------------------------------------------------- |
-| **Server state**   | TanStack Query              | posts, categories, comments, analytics, users        |
+| **Server state**   | TanStack Query              | posts, tags, comments, analytics, users              |
 | **Session state**  | `authState` + `AuthContext` | user, tokens, `isAuthenticated`                      |
 | **Theme state**    | `ThemeProvider`             | light/dark mode                                      |
 | **Local UI state** | `useState` in the component | form fields, open modals, active tab, carousel index |
@@ -190,7 +198,9 @@ handle the inconsistent server envelopes described in
 `client/src/config/api.js` is the only place an instance is created.
 
 ```
-baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+baseURL = withApiPrefix(import.meta.env.VITE_API_URL ?? 'http://localhost:4000')
+          → appends '/api' unless the configured value already ends with it,
+            so an existing .env keeps working after the bare mount was removed
 
 request interceptor   → Authorization: Bearer <authState.accessToken>
 
@@ -205,27 +215,38 @@ trigger their own refresh; a shared in-flight promise would coalesce them.
 
 ### Query keys
 
-| Key                                 | Data                                    | Used by                             |
-| ----------------------------------- | --------------------------------------- | ----------------------------------- |
-| `['posts']`, `['posts', { topic }]` | **Published** posts, paginated          | Home, Search                        |
-| `['trendingPosts']`                 | The ranked list, last 14 days           | Home                                |
-| `['allPosts']`                      | **All** posts incl. drafts — admin only | Admin Dashboard, Admin Posts        |
-| `['post', id]`                      | One post with comments and likes        | PostDetail, WritePost (edit)        |
-| `['postComments', postId]`          | One story's responses                   | Responses                           |
-| `['categories']`                    | Categories                              | Search, WritePost, Admin Categories |
-| `['myPosts', params]`               | The signed-in author's own posts        | Stories, Dashboard, Responses       |
-| `['myAnalytics']`                   | The signed-in author's figures          | Dashboard, Stories                  |
-| `['readingActivity']`               | What this account has been reading      | Dashboard                           |
-| `['currentUser']`                   | The signed-in user record               | Header, Settings                    |
-| `['userSettings']`                  | Persisted preferences                   | Settings                            |
-| `['user', userId]`                  | A public author record                  | UserProfile                         |
-| `['isFollowing', userId]`           | Follow state                            | UserProfile                         |
-| `['userAnalytics', userId]`         | Per-author analytics, self-or-admin     | UserProfile                         |
-| `['adminAnalytics']`                | Site-wide analytics                     | Admin Dashboard                     |
-| `['admin-users', page]`             | Paginated users                         | Admin Users                         |
-| `['search', query]`                 | Search results                          | Search                              |
+Every key is declared in `services/queryKeys.js` and built by a factory function; nothing
+spells one out at a call site.
 
-Convention: resource name first, then identifiers, general to specific.
+| Factory                          | Key                              | Used by                       |
+| -------------------------------- | -------------------------------- | ----------------------------- |
+| `posts.feed(params)`             | `['posts', params]`              | Home, Search                  |
+| `posts.trending(params)`         | `['trendingPosts', params]`      | Home                          |
+| `posts.moderation(params)`       | `['allPosts', params]`           | Admin Dashboard, Admin Posts  |
+| `posts.detail(id)`               | `['post', id]`                   | PostDetail, WritePost (edit)  |
+| `posts.mine(params)`             | `['myPosts', params]`            | Stories, Dashboard, Responses |
+| `posts.byAuthor(id, page)`       | `['authorPosts', id, page]`      | UserProfile                   |
+| `comments.forPost(postId)`       | `['postComments', postId]`       | PostDetail, Responses         |
+| `tags.all`                       | `['tags']`                       | Search, WritePost, Admin Tags |
+| `search(term)`                   | `['search', term]`               | Search                        |
+| `currentUser()`                  | `['currentUser']`                | Header, Settings              |
+| `settings.all`                   | `['userSettings']`               | Settings                      |
+| `profiles.detail(userId)`        | `['publicProfile', userId]`      | UserProfile                   |
+| `profiles.ownDetails()`          | `['userProfileDetails']`         | Settings                      |
+| `profiles.following(userId)`     | `['isFollowing', userId]`        | UserProfile                   |
+| `analytics.mine()`               | `['myAnalytics']`                | Dashboard, Stories            |
+| `analytics.forPost(postId)`      | `['postAnalytics', postId]`      | Stories                       |
+| `analytics.viewsForPost(postId)` | `['postViews', postId]`          | PostDetail                    |
+| `analytics.reading()`            | `['readingActivity']`            | Dashboard                     |
+| `analytics.site()`               | `['adminAnalytics']`             | Admin Dashboard               |
+| `analytics.forUser(userId)`      | `['personAnalytics', userId]`    | Admin PersonActivity          |
+| `admin.users(page)`              | `['admin-users', page]`          | Admin Users                   |
+| `admin.activity(page)`           | `['adminActivity', page]`        | Admin Activity                |
+| `admin.moderationLog(page)`      | `['adminModerationLog', page]`   | Admin Activity                |
+
+Convention: resource name first, then identifiers, general to specific. Each group also
+exposes `all`, so a mutation can invalidate the whole family without knowing which
+parameterised variants happen to be cached.
 
 **`['myPosts', params]` carries its parameters in the key**, because filtering, sorting, paging
 and searching all happen on the server. Two different filters are two different results, so
@@ -261,7 +282,7 @@ Simple and always correct, at the cost of a refetch. No optimistic updates are u
 components/
 ├── layout/     Header, Footer, Layout, AdminLayout, WorkspaceLayout, PageShell,
 │               Editorial, ThemeToggle, SkipLink, ErrorBoundary
-├── marketing/  FeatureGrid, Topics, Mockups, Illustrations — landing page only
+├── marketing/  HeroIllustration, Topics (exports TopicMarquee) — landing page only
 ├── posts/      PostCard, PostCardSkeleton, PostDetailSkeleton, AuthorByline
 ├── stats/      ReadRateBar
 └── ui/         21 token-driven primitives + a barrel index
@@ -324,7 +345,7 @@ it to an error tracker is the highest-value frontend observability work availabl
 | Conditional queries    | `WritePost`, `useCurrentUser` | `enabled:` avoids a pointless fetch — and, for `useCurrentUser`, a 401 on every anonymous page load   |
 | Server-side filtering  | `Stories`, `Search`           | Filter, sort and search are query parameters, so the browser never holds a list it then hides most of |
 | Memoised theme         | `ThemeProvider`               | Not rebuilt every render                                                                              |
-| System fonts           | `typography.js`               | No web-font download or layout shift                                                                  |
+| Self-hosted variable font | `main.jsx`                 | Inter ships with the bundle rather than being fetched from a third party at runtime                   |
 | Server-side pagination | `postService`                 | The feed no longer downloads every post with all comments populated                                   |
 
 **Current constraint:** the landing feed requests one page and does not paginate further

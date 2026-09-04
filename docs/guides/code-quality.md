@@ -36,11 +36,11 @@ Both workspaces lint clean:
 
 ```
 backend: 0 errors, 0 warnings
-client:  0 errors, 26 warnings
+client:  0 errors, 0 warnings
 ```
 
-The client's 26 remaining warnings are unused imports and `exhaustive-deps` hints — real but
-non-blocking.
+The client's 26 remaining warnings — unused imports and `exhaustive-deps` hints — have since
+been cleared.
 
 ## The React plugin gap, and what it hid
 
@@ -66,15 +66,18 @@ rules: {
   'react/prop-types': 'off',              // no runtime type checking in use
   'react/no-unescaped-entities': 'off',   // apostrophes in copy are intentional
   'react-hooks/exhaustive-deps': 'warn',
-  'react-hooks/set-state-in-effect': 'warn',
+  'react-hooks/set-state-in-effect': 'error',
   'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
   'no-console': 'off',
 }
 ```
 
-`set-state-in-effect` is a **warning** deliberately: four pages hydrate form state from a
-query inside an effect, and refactoring that across four pages without a test suite is how
-regressions ship. Tracked as [BUG-15](../product/roadmap.md#bug-15).
+`set-state-in-effect` was a **warning** while four pages hydrated form state from a query
+inside an effect — a pattern that works but paints one frame with the stale value before
+correcting it, which on Settings and the editor reads as "your work is gone". All four now
+adjust state during render instead, keyed on the fetched payload, so the rule is an **error**
+again: the next one cannot land quietly. Tracked as
+[BUG-15](../product/roadmap.md#bug-15).
 
 ## Known backend gaps
 
@@ -128,14 +131,14 @@ the decision is visible and reviewed.
 
 Machine-decided. Never a review comment.
 
-| Option          | `backend/` | `client/`        |
+| Option          | `backend/` | `client/`        | Note        |
 | --------------- | ---------- | ---------------- | ----------- |
-| `semi`          | `true`     | `true`           |
-| `singleQuote`   | `true`     | `true`           |
-| `tabWidth`      | `2`        | `2`              |
-| `printWidth`    | `100`      | `100`            |
+| `semi`          | `true`     | `true`           |             |
+| `singleQuote`   | `true`     | `true`           |             |
+| `tabWidth`      | `2`        | `2`              |             |
+| `printWidth`    | `100`      | `100`            |             |
 | `trailingComma` | **`all`**  | **`es5`**        | ⚠ diverges |
-| `arrowParens`   | `always`   | default `always` |
+| `arrowParens`   | `always`   | default `always` |             |
 
 ## The `trailingComma` divergence
 
@@ -153,11 +156,11 @@ arguments are added, supported by every runtime this project targets. One reform
 
 ## Enforcement asymmetry
 
-| Layer      | Backend                                                | Client         |
-| ---------- | ------------------------------------------------------ | -------------- |
-| Lint       | **Integrated** — formatting violations are lint errors | Not integrated |
-| Pre-commit | None                                                   | None           |
-| CI         | None ([GAP-12](../product/roadmap.md#gap-12))          | None           |
+| Layer      | Backend                                                | Client                                    |
+| ---------- | ------------------------------------------------------ | ----------------------------------------- |
+| Lint       | **Integrated** — formatting violations are lint errors | Not integrated                            |
+| Pre-commit | None                                                   | None                                      |
+| CI         | `lint` + `format:check` on every push and PR           | `lint` + `format:check` on every push and PR |
 
 A formatting mistake in `backend/` fails `npm run lint`; the same mistake in `client/` passes
 lint and is caught only by `format:check`. Resolve by either integrating Prettier into the
@@ -186,44 +189,30 @@ type-checks, and no runtime validation is in use.
 | Source files                       | `.js` and `.jsx` only                            |
 | `typescript` dependency            | Present in `client/` devDependencies, **unused** |
 | `@types/react`, `@types/react-dom` | Present, unused                                  |
-| `client/tsconfig.json`             | Present, strict, **no consumer**                 |
+| `client/tsconfig.json`             | **Removed** — it shadowed `jsconfig.json`        |
 | `client/jsconfig.json`             | Present, used by editors                         |
 | Type-check script                  | None                                             |
-| Runtime validation                 | `zod` installed, imported nowhere                |
+| Runtime validation                 | None — `zod` is not installed                    |
 | Prop types                         | Disabled                                         |
 
-## The configuration drift
+## The configuration drift — mostly resolved
 
-Two overlapping configs that disagree, and the stricter one is inert:
+There were two overlapping configs that disagreed, and the stricter one was inert.
+`tsconfig.json` had no `allowJs`, no `jsx` and no `paths`, yet TypeScript prefers it over
+`jsconfig.json`, so editors read a config that type-checked nothing and could not see the
+`@/*` alias. Both the file and the unresolvable alias have been removed; every import is
+relative, and `jsconfig.json` is the only editor config.
 
-| Setting   | `jsconfig.json` | `tsconfig.json`                             |
-| --------- | --------------- | ------------------------------------------- |
-| `target`  | ES2020          | ES2022                                      |
-| `jsx`     | react-jsx       | _(unset)_                                   |
-| `paths`   | `@/* → src/*`   | _(unset)_                                   |
-| `strict`  | _(unset)_       | `true`                                      |
-| `allowJs` | implied         | **not set** — `.js` files are not even seen |
-
-TypeScript prefers `tsconfig.json`, so editors read the strict config — which has no
-`allowJs`, no `jsx` and no `paths`. Consequences: the `@/*` alias is invisible to the editor
-and has no matching `resolve.alias` in Vite (using it would break the build); `tsconfig.json`
-type-checks nothing; and four packages are installed for nothing.
-
-**This is drift from a scaffold, not a decision.**
+What is left is three unused packages: `typescript`, `@types/react` and `@types/react-dom`.
 
 ## Resolve it — pick one
 
 ### Option A — commit to JavaScript (lower effort)
 
-1. Delete `client/tsconfig.json`.
-2. Remove `typescript`, `@types/react`, `@types/react-dom`.
-3. Either remove the unused `@/*` alias, or make it real:
-   ```js
-   resolve: { alias: { '@': path.resolve(__dirname, 'src') } }
-   ```
-4. Recover type safety with JSDoc plus `checkJs` in `jsconfig.json`.
-5. Use `zod` for API response validation, or remove it along with `react-hook-form` and
-   `@hookform/resolvers`, which are equally unused.
+1. Remove `typescript`, `@types/react`, `@types/react-dom`.
+2. Recover type safety with JSDoc plus `checkJs` in `jsconfig.json`.
+3. Add a runtime validator at the API boundary if the response shapes keep drifting — `zod`
+   would have to be installed first.
 
 ### Option B — commit to TypeScript (higher effort, better payoff)
 
@@ -231,9 +220,9 @@ Given ~12,000 lines and the concentration of errors it would catch — the incon
 response envelope, the defensive `req.user` chains — this is the more valuable path if the
 project keeps growing. Migrate incrementally, never big-bang:
 
-- **Phase 0** — tests first ([GAP-11](../product/roadmap.md#gap-11)); delete `jsconfig.json`;
-  add `allowJs`, `jsx`, `paths`; add `"type-check": "tsc --noEmit"` to CI; install
-  `typescript-eslint`.
+- **Phase 0** — tests first ([GAP-11](../product/roadmap.md#gap-11)); replace
+  `jsconfig.json` with a `tsconfig.json` carrying `allowJs`, `jsx` and `paths`; add
+  `"type-check": "tsc --noEmit"` to CI; install `typescript-eslint`.
 - **Phase 1** — shared types (`Post`, `User`, `Comment`, `ApiResponse<T>`); convert
   `config/api.js` first.
 - **Phase 2** — leaves upward: `services/` → `components/ui/` → `context/` and `guards/` →
@@ -244,7 +233,7 @@ project keeps growing. Migrate incrementally, never big-bang:
 ## Interim safety, whichever option
 
 Runtime validation is arguably more valuable here than static typing, because the server's
-response shape genuinely varies by endpoint:
+response shape genuinely varies by endpoint. This would need `zod` installed first:
 
 ```js
 const PostSchema = z.object({
@@ -257,15 +246,13 @@ export const getPost = async (id) =>
   PostSchema.parse((await api.get(`/posts/${id}`)).data.data);
 ```
 
-`zod` is already installed.
-
 ## Decision record
 
 | Item                                 | Status                                                  |
 | ------------------------------------ | ------------------------------------------------------- |
 | Adopt TypeScript                     | **Undecided** — this section exists to force the choice |
 | Remove the drift                     | **Recommended now**, regardless of that choice          |
-| `zod` validation at the API boundary | **Recommended now** — dependency already installed      |
+| `zod` validation at the API boundary | **Worth considering** — the dependency would need adding |
 | Backend TypeScript                   | Deferred                                                |
 
 ---
@@ -287,9 +274,9 @@ fails the build on a high or critical advisory. Moderate and below are reported 
 not block a merge; a pipeline that goes red overnight for a transitive advisory in a build tool
 is one people learn to ignore.
 
-Several client packages are installed and unused: `react-hook-form`, `@hookform/resolvers`,
-`zod`, and the `typescript` / `@types/*` set in an all-JavaScript project. Removing them shrinks
-the audit surface for free.
+`react-hook-form`, `@hookform/resolvers` and `zod` were installed and unused; they have been
+removed. What remains unused is the `typescript` / `@types/*` set in an all-JavaScript
+project — removing those shrinks the audit surface for free.
 
 ---
 
