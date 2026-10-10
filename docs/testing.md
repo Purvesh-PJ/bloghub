@@ -1,587 +1,248 @@
-# Testing
+# 🧪 Testing Strategy & Execution Reference
 
-> **Scope:** the whole testing story — current state, strategy, tooling, and conventions for
-> each level. Merged from four separate documents that each described a different imagined
-> suite; what is written here as installed is installed, and what is written as proposed is
-> proposed.
-> **Excludes:** CI wiring
-> ([operations/deployment.md](../operations/deployment.md#part-2--cicd)), lint and format
-> ([code-quality.md](code-quality.md)).
+> **Scope:** Comprehensive automated testing architecture across BlogHub — integration testing with in-memory MongoDB, client testing with Vitest/RTL, test runner configuration, execution lifecycle, and testing conventions.
 
 ---
 
-## Current state
+## 📌 Document Maintenance Guide (Where to Update)
 
-The backend has a working suite: **125 tests across ten files**, run by Jest against a real
-MongoDB that `mongodb-memory-server` starts in-process. They are integration tests — Supertest
-drives the actual Express app over HTTP and the assertions read the real database — which is
-deliberate, and the reason is in [Pyramid](#pyramid) below.
+Use this reference table when modifying or adding automated tests:
 
-The client has **73 tests** under Vitest in jsdom.
+| If you are doing this in code: | Update this section in this doc: |
+| :--- | :--- |
+| Adding backend test files or changing Jest configs | **Section 2 (Backend Integration Testing Suite)** |
+| Adding client unit/component tests in Vitest | **Section 3 (Frontend Testing Suite)** |
+| Updating test lifecycle fixtures or in-memory DB setup | **Section 4 (Test Lifecycle & Isolation Architecture)** |
+| Modifying test commands or coverage flags | **Section 5 (Test Tooling & Execution Commands)** |
+| Introducing E2E tests (Playwright) or network mocks (MSW) | **Section 7 (Testing Gaps & Future Roadmap)** |
 
-| Workspace  | Runner                                   | Tests | Command    |
-| ---------- | ---------------------------------------- | ----- | ---------- |
-| `backend/` | Jest + Supertest + mongodb-memory-server | 125   | `npm test` |
-| `client/`  | Vitest + Testing Library (jsdom)         | 73    | `npm test` |
+---
 
-| File                 | Tests | Covers                                                                                                      |
-| -------------------- | ----- | ----------------------------------------------------------------------------------------------------------- |
-| `auth.test.js`       | 9     | Registration, sign-in, refresh, revocation via `tokenVersion`, suspended accounts                           |
-| `post.test.js`       | 11    | CRUD, draft visibility, ownership, validation, the slug's unique index                                      |
-| `comment.test.js`    | 6     | Posting, ownership on delete, the post's visibility rule, pagination                                        |
-| `workspace.test.js`  | 14    | The author's own lists — stories, responses, stats — and their scoping                                      |
-| `trending.test.js`   | 10    | The scoring formula, the window, the minimum-views floor, the `latest` fallback                             |
-| `admin.test.js`      | 10    | Role checks, suspension, promotion, deletion, the last-admin guard                                          |
-| `social.test.js`     | 14    | Likes and their unique index under concurrency, replies and their nesting, following                        |
-| `profile.test.js`    | 17    | The public profile endpoint, its privacy rules, and the author-filtered feed                                |
-| `discovery.test.js`  | 25    | Search across title, body, tags and authors; view/read de-duplication; the analytics and activity endpoints |
-| `moderation.test.js` | 9     | The administrator's listing — visibility filter, title search, paging, visibility counts, bulk actions      |
+## 📑 Table of Contents
+1. [Overview & Testing Pyramid](#1-overview--testing-pyramid)
+   - 1.1 [Current Test Coverage Summary](#11-current-test-coverage-summary)
+   - 1.2 [Inverted Testing Pyramid Rationale](#12-inverted-testing-pyramid-rationale)
+2. [Backend Integration Testing Suite](#2-backend-integration-testing-suite)
+   - 2.1 [Runner & Environment Setup](#21-runner--environment-setup)
+   - 2.2 [Backend Test Suite Breakdown](#22-backend-test-suite-breakdown)
+   - 2.3 [Isolated Execution with `--runInBand`](#23-isolated-execution-with---runinband)
+3. [Frontend Testing Suite](#3-frontend-testing-suite)
+   - 3.1 [Vitest & React Testing Library Setup](#31-vitest--react-testing-library-setup)
+   - 3.2 [Client Test Suite Breakdown](#32-client-test-suite-breakdown)
+   - 3.3 [JSDOM Constraints & Radix UI Stubs](#33-jsdom-constraints--radix-ui-stubs)
+4. [Test Lifecycle & Isolation Architecture](#4-test-lifecycle--isolation-architecture)
+   - 4.1 [In-Memory MongoDB Lifecycle Diagram](#41-in-memory-mongodb-lifecycle-diagram)
+   - 4.2 [Collection Cleanup & Isolation](#42-collection-cleanup--isolation)
+5. [Test Tooling & Execution Commands](#5-test-tooling--execution-commands)
+   - 5.1 [Test Commands Reference](#51-test-commands-reference)
+   - 5.2 [Test Suite File Layout](#52-test-suite-file-layout)
+6. [Core Testing Principles & Conventions](#6-core-testing-principles--conventions)
+   - 6.1 [General Testing Rules](#61-general-testing-rules)
+   - 6.2 [Writing Regression Tests](#62-writing-regression-tests)
+7. [Testing Gaps & Future Roadmap](#7-testing-gaps--future-roadmap)
+   - 7.1 [Client Coverage Gaps](#71-client-coverage-gaps)
+   - 7.2 [E2E Testing with Playwright](#72-e2e-testing-with-playwright)
+   - 7.3 [Mock Service Worker (MSW) Integration](#73-mock-service-worker-msw-integration)
 
-`--runInBand` matters and is in the script: parallel workers sharing one in-memory MongoDB
-interfere with each other. `tests/setup.js` starts and stops the server and truncates
-collections between tests; `tests/env.js` supplies the secrets, so no `.env` is needed.
+---
 
-<a id="client"></a>
+## 1. Overview & Testing Pyramid
 
-### Client
+### 1.1 Current Test Coverage Summary
+BlogHub maintains **198 automated tests** passing across the codebase:
+- **Backend:** 125 integration tests (Jest + Supertest + in-memory MongoDB).
+- **Frontend:** 73 unit and component tests (Vitest + React Testing Library in jsdom).
 
-| File                   | Tests | Covers                                                                                                                              |
-| ---------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `services.test.js`     | 18    | Every service's URL and parameters, with `api` mocked — the layer where a dropped argument silently changes which record is fetched |
-| `api.test.js`          | 10    | The axios interceptors: token attachment, the single refresh-and-replay, and each of the five ways a refresh can fail               |
-| `text.test.js`         | 14    | Markdown stripping, excerpts, and both reading-time estimates                                                                       |
-| `UserProfile.test.jsx` | 9     | That the profile page asks for the person in the URL rather than the signed-in account, and pages their stories from the server     |
-| `admin.test.jsx`       | 22    | Every admin screen — posts moderation, tag management, user promotion/suspension, bulk actions                                      |
+| Workspace | Test Runner | Test Count | CLI Command |
+| :--- | :--- | :--- | :--- |
+| `backend/` | Jest + Supertest + `mongodb-memory-server` | 125 Passing | `npm test` |
+| `client/` | Vitest + React Testing Library (jsdom) | 73 Passing | `npm test` |
 
-Two jsdom limits are worth knowing before adding to the admin file. Radix drives its menus
-and dialogs from pointer capture, which jsdom does not implement — `src/test/setup.js` stubs
-it, and without those stubs a click on a dropdown trigger hangs rather than failing. And
-opening a dialog _from_ a dropdown item recurses into a stack overflow, because the menu
-returns focus to its trigger while the dialog traps it; that path is deliberately not driven,
-and the test that would have covers what it can instead.
-
-`src/test/render.jsx` mounts a screen with the providers `main.jsx` supplies — query client,
-auth, theme and a memory router — with retries off and no cache carried between tests, so a
-component that fails a request shows its error state on the first attempt.
-
-One kind of verification has no file and is worth doing by hand before a release: boot the
-real server and walk the changed flows over HTTP. The Jest suite drives Express through
-Supertest, which never opens a socket — a live run is what caught
-[BUG-24](../product/roadmap.md#bug-24), where the test agreed with the wrong definition of an
-edit.
-
-Every one of these runs on each push and pull request — see
-[Part 2 · CI/CD](../operations/deployment.md#part-2--cicd).
-
-### What is not covered
-
-Being honest about the gaps matters more than the count:
-
-- **Parts of the client.** The service layer, the axios interceptors, the text helpers, the
-  profile page and every admin screen are covered. The **editor and the creator workspace are
-  not** ([GAP-11](../product/roadmap.md#gap-11)) — a render-time crash there still passes CI.
-- **No end-to-end tests.** The flows have been driven by hand against a running app, including
-  a headless-browser sweep of every page; that verification is not repeatable in CI. Playwright
-  is a recommendation below, not something installed.
-- **No MSW.** The client suite mocks the `api` module directly. MSW is proposed below so the
-  interceptors run for real against an intercepted network.
-- **Coverage is not enforced.** `npm run test:coverage` reports, but no threshold gates a
-  merge.
-
-## Pyramid
+### 1.2 Inverted Testing Pyramid Rationale
+Traditional web apps place unit tests at the base. BlogHub deliberately inverts this pyramid to emphasize **Integration Tests**:
 
 ```mermaid
 graph TB
     subgraph TestingPyramid["BlogHub Testing Pyramid"]
-        E2E["<b>End-to-End Tests (10%)</b><br/>Playwright · Critical user journeys & smoke runs"]
-        Integration["<b>Integration Tests (60% - Primary Investment)</b><br/>Jest + Supertest + mongodb-memory-server<br/>125 Real API + Database tests"]
-        Unit["<b>Unit Tests (30%)</b><br/>Vitest + React Testing Library (73 client tests)<br/>Pure text helpers, queryKeys, regex & validators"]
+        E2E["<b>1. End-to-End Tests (10%)</b><br/>Playwright (Planned) · Critical smoke flows"]
+        Integration["<b>2. Integration Tests (60% - Primary Focus)</b><br/>Jest + Supertest + In-Memory MongoDB<br/>125 Real HTTP + Database verification tests"]
+        Unit["<b>3. Unit Tests (30%)</b><br/>Vitest + RTL (73 Client tests)<br/>Text helpers, queryKeys, regex & validators"]
     end
 
     E2E --> Integration
     Integration --> Unit
 ```
 
+**Why Integration Tests Matter Most Here:**
+Nearly all web application defects occur at the database and API seam:
+- Mongoose strict-mode dropping undeclared fields.
+- Incorrect HTTP status codes and malformed error envelopes.
+- Compound unique index collisions and unhandled race conditions.
+
+Unit tests with mocked Mongoose models fail to catch these real-world bugs because the mock assumes the code is already correct. Integration tests against a real MongoDB engine catch them immediately.
+
+---
+
+## 2. Backend Integration Testing Suite
+
+### 2.1 Runner & Environment Setup
+- Runs via **Jest**.
+- Express `backend/index.js` exports `app` directly without port binding when `process.env.NODE_ENV === 'test'`.
+- Supertest drives the Express application directly in-process via HTTP.
+- Mongoose connects to an isolated, temporary in-memory MongoDB instance (`mongodb-memory-server`).
+
+### 2.2 Backend Test Suite Breakdown
+
+| Suite File | Tests | Coverage Scope |
+| :--- | :--- | :--- |
+| `tests/auth.test.js` | 9 | User registration, sign-in, token refresh, `tokenVersion` revocation, suspended accounts. |
+| `tests/post.test.js` | 11 | Article CRUD, draft visibility scoping, ownership guards, slug uniqueness checks. |
+| `tests/comment.test.js` | 6 | Comment submissions, ownership on deletion, visibility inheritance, pagination. |
+| `tests/workspace.test.js` | 14 | Creator workspace: private story listings, responses, metrics scoping. |
+| `tests/trending.test.js` | 10 | 14-day trending algorithm, score calculation, minimum-views threshold, fallback. |
+| `tests/admin.test.js` | 10 | Role guards, account suspension, role promotion, cascading deletion, last-admin guard. |
+| `tests/social.test.js` | 14 | Likes compound unique index, race condition tests, nested comment replies, follower graph. |
+| `tests/profile.test.js` | 17 | Public author profile, privacy toggles, author-scoped story feeds. |
+| `tests/discovery.test.js` | 25 | Full-text regex search across titles, bodies, tags, authors; visitor deduplication. |
+| `tests/moderation.test.js`| 9 | Administrative moderation table: visibility filters, bulk actions, search, status counts. |
+
+### 2.3 Isolated Execution with `--runInBand`
+The backend test script enforces `--runInBand`:
+```json
+"test": "jest --runInBand"
+```
+Because tests run against an in-memory MongoDB instance, running tests sequentially in a single worker process prevents cross-test race conditions and database collection interference.
+
+---
+
+## 3. Frontend Testing Suite
+
+### 3.1 Vitest & React Testing Library Setup
+- Runs via **Vitest** in **jsdom** environment.
+- Reuses the existing Vite configuration (`client/vite.config.js`).
+- Uses custom render helper (`client/src/test/render.jsx`) that wraps components with full provider hierarchy: TanStack `QueryClientProvider`, `AuthProvider`, `ThemeProvider`, and React Router's `MemoryRouter`.
+
+### 3.2 Client Test Suite Breakdown
+
+| Suite File | Tests | Coverage Scope |
+| :--- | :--- | :--- |
+| `client/src/services/services.test.js` | 18 | Validates endpoint URLs and query parameters across all Axios API service modules. |
+| `client/src/config/api.test.js` | 10 | Axios interceptors: Bearer token injection, silent 401 token refresh, refresh failure redirections. |
+| `client/src/utils/text.test.js` | 14 | Markdown syntax stripping, excerpt generation, estimated reading time algorithms. |
+| `client/src/pages/UserProfile.test.jsx` | 9 | Author profile rendering, route param extraction, paginated author story feeds. |
+| `client/src/pages/admin/admin.test.jsx` | 22 | Admin moderation screens: story moderation, tag manager, user promotion, suspension toggles. |
+
+### 3.3 JSDOM Constraints & Radix UI Stubs
+- Radix UI primitives use pointer capture APIs which jsdom does not implement natively.
+- `client/src/test/setup.js` provides global shims for `hasPointerCapture` and `setPointerCapture` to prevent dropdown and dialog tests from crashing.
+- Custom `renderWithProviders` helper initializes a fresh `QueryClient` with `{ retry: false }` per test to ensure instant assertions on error states.
+
+---
+
+## 4. Test Lifecycle & Isolation Architecture
+
+### 4.1 In-Memory MongoDB Lifecycle Diagram
+
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Runner as 🤖 Jest Test Runner
-    participant Setup as ⚙️ tests/setup.js
-    participant MongoMemory as 🍃 mongodb-memory-server
-    participant Supertest as 🧪 Supertest Client
-    participant App as 📦 Express App
-    participant Mongoose as 🔌 Mongoose ODM
+    actor Runner as Jest Test Runner
+    participant Setup as tests/setup.js
+    participant MemoryDB as mongodb-memory-server
+    participant Supertest as Supertest HTTP Client
+    participant App as Express App (backend/index.js)
+    participant Mongoose as Mongoose ODM
 
-    Runner->>Setup: Global beforeAll()
-    Setup->>MongoMemory: MongoMemoryServer.create()
-    MongoMemory-->>Setup: In-Memory URI (mongodb://127.0.0.1:port)
+    Runner->>Setup: Global beforeAll() hook
+    Setup->>MemoryDB: MongoMemoryServer.create()
+    MemoryDB-->>Setup: Local in-memory URI (mongodb://127.0.0.1:port)
     Setup->>Mongoose: mongoose.connect(inMemoryUri)
 
-    loop Per Test Suite
-        Setup->>MongoMemory: Truncate / Clear Collections
+    loop Per Test Case in Suite
+        Setup->>MemoryDB: Truncate & Clear Collections (beforeEach)
         Runner->>Supertest: request(app).post('/api/auth/signin')
         Supertest->>App: Direct HTTP invocation
         App->>Mongoose: User.findOne(...)
-        Mongoose->>MongoMemory: Execute query
-        MongoMemory-->>Mongoose: Document result
-        Mongoose-->>App: Query response
-        App-->>Supertest: 200 OK + JWT
-        Supertest-->>Runner: Assert status & body properties
+        Mongoose->>MemoryDB: Execute database query
+        MemoryDB-->>Mongoose: Query result
+        Mongoose-->>App: Mongoose document
+        App-->>Supertest: 200 OK + JWT tokens
+        Supertest-->>Runner: Assert status & response envelope
     end
 
-    Runner->>Setup: Global afterAll()
+    Runner->>Setup: Global afterAll() hook
     Setup->>Mongoose: mongoose.disconnect()
-    Setup->>MongoMemory: MongoMemoryServer.stop()
+    Setup->>MemoryDB: MongoMemoryServer.stop()
 ```
 
-| Level       | Share | Count target | Runtime budget |
-| ----------- | ----- | ------------ | -------------- |
-| Integration | ~60%  | 120–180      | < 60s          |
-| Unit        | ~30%  | 50–80        | < 10s          |
-| End-to-end  | ~10%  | 8–15         | < 5min         |
-
-The usual pyramid puts unit tests at the base. This one is deliberately inverted, for the
-reason stated immediately below.
-
-**Integration deserves the heaviest early investment.** Nearly every defect in this codebase
-lived at the controller-to-database seam — an undeclared schema field, a dropped property, a
-wrong status code. Unit tests with mocked models would have proved nothing, because the units
-are thin and the mistakes are in how the layers connect.
+### 4.2 Collection Cleanup & Isolation
+Between individual tests, `tests/setup.js` iterates over all registered Mongoose models and clears collections (`deleteMany({})`). This guarantees zero state leakage between test assertions.
 
 ---
 
-## Tooling
+## 5. Test Tooling & Execution Commands
 
-| Level                      | Tool                                    | Rationale                                                                                                                     |
-| -------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Backend unit + integration | **Jest** + **Supertest** — _installed_  | The app exports without listening, so Supertest drives it directly                                                            |
-| Backend test database      | **mongodb-memory-server** — _installed_ | Real Mongoose semantics in process — essential, since strict-mode field dropping is only observable against a real connection |
-| Frontend unit + component  | **Vitest** + **React Testing Library** — _installed_ | Vitest reuses the existing Vite config; the suite runs in jsdom                                                   |
-| API mocking in the client  | **MSW** — _not installed_               | Would intercept at the network layer, so `services/` and the Axios interceptors run for real. Today the suite mocks the `api` module |
-| End-to-end                 | **Playwright** — _not installed_        | Cross-browser, auto-waiting, good tracing                                                                                     |
+### 5.1 Test Commands Reference
 
-Both suites are in place. What remains is MSW and an end-to-end runner:
-
+#### Backend Commands
 ```bash
-cd client
-npm install --save-dev msw
-
-npm install --save-dev --save-exact @playwright/test
-npx playwright install --with-deps
+npm test --prefix backend             # Run entire backend integration suite sequentially
+npm run test:watch --prefix backend   # Run tests in watch mode during development
+npm run test:coverage --prefix backend # Generate coverage report (HTML + terminal summary)
 ```
 
-```jsonc
-// backend/package.json — present
-"test": "jest --runInBand",
-"test:watch": "jest --watch --runInBand",
-"test:coverage": "jest --coverage --runInBand"
-
-// client/package.json — present
-"test": "vitest run",
-"test:watch": "vitest",
-"test:coverage": "vitest run --coverage"
-
-// client/package.json — proposed
-"test:e2e": "playwright test"
+#### Frontend Commands
+```bash
+npm test --prefix client              # Run client Vitest suite
+npm run test:watch --prefix client    # Run client tests in watch mode
+npm run test:coverage --prefix client # Generate frontend coverage report
 ```
 
-`index.js` skips `connectDB()` under `NODE_ENV=test`, so the harness owns the connection and
-points Mongoose at the in-memory server instead.
-
----
-
-## Principles
-
-1. **Test behaviour, not implementation.** A test that breaks on a rename without a behaviour
-   change is a liability.
-2. **One reason to fail per test.**
-3. **Arrange, act, assert** — in that order, visibly separated.
-4. **Independent.** No ordering dependency, no shared mutable state.
-5. **Deterministic.** Fix the clock, seed randomness, never touch the network. A flaky test
-   trains people to ignore failures.
-6. **Fast at the bottom.** If the unit suite is slow, nobody runs it.
-7. **A bug fix ships with a regression test** named for its tracking ID.
-
-```js
-describe('POST /posts', () => {
-  it('creates a post with the requested visibility', …);   // behaviour
-  it('returns 401 without an access token', …);            // failure path
-  it('persists visibility on update (BUG-01)', …);         // regression
-});
-```
-
----
-
-## Layout
-
-As it exists today:
-
+### 5.2 Test Suite File Layout
 ```
 backend/tests/
-├── env.js            secrets, loaded before the app asserts its config
-├── setup.js          in-memory MongoDB, syncIndexes, per-test cleanup
-└── <area>.test.js    ten suites, flat — auth, post, comment, social, profile,
-                      discovery, moderation, workspace, trending, admin
+├── env.js               --> Test secrets (JWT_SECRET, etc.) loaded before app boots
+├── setup.js             --> Starts/stops in-memory Mongo, indexes synchronization, cleanup
+└── *.test.js            --> 10 flat integration test suites
 
 client/src/
-├── test/setup.js     jsdom shims, including the pointer-capture stubs Radix needs
-├── test/render.jsx   renderWithProviders — the provider tree from main.jsx
-├── config/api.test.js
-├── services/services.test.js
-├── utils/text.test.js
-├── pages/UserProfile.test.jsx
-└── pages/admin/admin.test.jsx
+├── test/setup.js        --> jsdom pointer capture stubs for Radix UI
+├── test/render.jsx      --> renderWithProviders wrapper (QueryClient, Auth, Theme, Router)
+└── **/*.test.{js,jsx}   --> 5 colocated frontend test suites
 ```
-
-Backend suites are flat and named by the area they cover rather than mirroring the source
-tree, because an integration test usually crosses several modules. Client tests sit beside
-the code they cover.
-
-There is no `factories.js` and no `unit/` or `integration/` split — each backend suite builds
-the fixtures it needs. Extracting shared factories is worthwhile once a third suite wants the
-same one.
 
 ---
 
-## Unit tests
+## 6. Core Testing Principles & Conventions
 
-Exercise one module with collaborators replaced. No network, filesystem or database.
+### 6.1 General Testing Rules
+1. **Test Observable Behavior:** Test HTTP contracts and database states rather than internal implementation details.
+2. **Arrange-Act-Assert (AAA):** Structure tests into three distinct blocks:
+   - *Arrange:* Seed documents, prepare tokens.
+   - *Act:* Execute Supertest HTTP request.
+   - *Assert:* Verify status code, response envelope, and database side effects.
+3. **Deterministic & Isolated:** Never rely on network calls or execution order.
+4. **Fast Feedback:** Integration tests use in-memory SQLite/MongoDB to maintain execution speed under 60 seconds.
 
-| In scope                                             | Out of scope                           |
-| ---------------------------------------------------- | -------------------------------------- |
-| `backend/services/` with models mocked               | Anything hitting MongoDB → integration |
-| `backend/middlewares/` with faked `req`/`res`        | Full route chains → integration        |
-| Pure helpers — slug generation, analytics arithmetic | Controllers → integration              |
-| `client/src/services/` with Axios mocked             | Pages that fetch → integration         |
-| `client/src/components/ui/` primitives               | Multi-component flows → E2E            |
-
-Rule of thumb: if replacing the collaborator makes the test meaningless, it is not a unit
-test.
-
-### Middleware — the easiest high-value target
-
+### 6.2 Writing Regression Tests
+When fixing a bug, write a regression test verifying the fix:
 ```js
-const mockRes = () => {
-  const res = {};
-  res.status = jest.fn().mockReturnValue(res);
-  res.json = jest.fn().mockReturnValue(res);
-  return res;
-};
-
-describe("authenticateUser", () => {
-  beforeEach(() => {
-    process.env.JWT_SECRET = "test-secret";
-  });
-
-  it("populates req.user from a valid access token", () => {
-    const token = jwt.sign(
-      { user: "abc123", roles: ["user"], type: "access" },
-      "test-secret",
-    );
-    const req = { headers: { authorization: `Bearer ${token}` } };
-    const next = jest.fn();
-
-    authenticateUser(req, mockRes(), next);
-
-    expect(next).toHaveBeenCalled();
-    expect(req.user).toEqual({ id: "abc123", _id: "abc123", roles: ["user"] });
-  });
-
-  it("rejects a refresh token (SEC-06)", () => {
-    const token = jwt.sign({ user: "abc123", type: "refresh" }, "test-secret");
-    const res = mockRes();
-    authenticateUser(
-      { headers: { authorization: `Bearer ${token}` } },
-      res,
-      jest.fn(),
-    );
-    expect(res.status).toHaveBeenCalledWith(401);
-  });
-
-  it.each([
-    ["no header", {}],
-    ["wrong scheme", { authorization: "Basic abc" }],
-    ["malformed token", { authorization: "Bearer not-a-jwt" }],
-  ])("rejects with 401 when there is %s", (_label, headers) => {
-    const res = mockRes();
-    authenticateUser({ headers }, res, jest.fn());
-    expect(res.status).toHaveBeenCalledWith(401);
-  });
+describe('POST /posts', () => {
+  it('creates a post with the requested visibility', async () => { ... });
+  it('returns 401 without an access token', async () => { ... });
+  it('persists visibility accurately on update', async () => { ... });
 });
 ```
-
-### Client components
-
-Test what a user perceives — visible text, roles, disabled state — never internal state or
-class names.
-
-```jsx
-const renderWithTheme = (ui) => render(<ThemeProvider>{ui}</ThemeProvider>);
-
-it("is disabled and shows a loading label while loading", () => {
-  renderWithTheme(<Button isLoading>Publish</Button>);
-  const button = screen.getByRole("button");
-  expect(button).toBeDisabled();
-  expect(button).toHaveTextContent("Loading...");
-});
-```
-
-Every component reading `theme.*` must be wrapped in `ThemeProvider` — a bare render throws
-on the first token lookup.
-
-Query priority: `getByRole` → `getByLabelText` → `getByText` → `getByTestId` last. Never
-query by class name; styled-components generates them.
 
 ---
 
-## Integration tests
+## 7. Testing Gaps & Future Roadmap
 
-The level that matters most here.
+### 7.1 Client Coverage Gaps
+The Markdown authoring studio (`/write`) and Creator analytics dashboard currently lack automated component tests. Adding tests for editor unsaved draft prompts (`useBlocker`) is queued.
 
-| Real                                                 | Replaced                                 |
-| ---------------------------------------------------- | ---------------------------------------- |
-| The Express app including every middleware           | MongoDB server → `mongodb-memory-server` |
-| Routing, validation, controllers, services           |                                          |
-| Mongoose schemas, casting, **strict-mode behaviour** |                                          |
-| JWT signing and verification                         |                                          |
+### 7.2 E2E Testing with Playwright
+Plan to introduce end-to-end user journey tests via Playwright to validate complete browser flows (login ➡️ write markdown article ➡️ publish ➡️ verify public feed).
 
-### Harness
-
-```js
-// backend/tests/setup.js
-let mongo;
-
-beforeAll(async () => {
-  process.env.NODE_ENV = "test";
-  process.env.JWT_SECRET = "test-secret";
-  process.env.JWT_REFRESH_SECRET = "test-refresh-secret";
-
-  mongo = await MongoMemoryServer.create();
-  await mongoose.connect(mongo.getUri());
-});
-
-afterEach(async () => {
-  const { collections } = mongoose.connection;
-  await Promise.all(Object.values(collections).map((c) => c.deleteMany({})));
-});
-
-afterAll(async () => {
-  await mongoose.connection.dropDatabase();
-  await mongoose.connection.close();
-  await mongo.stop();
-});
-```
-
-Clear collections **after** each test, not before — failures leave inspectable state.
-
-### Factories
-
-```js
-exports.makeUser = async (overrides = {}) => {
-  const password = overrides.password ?? "password123";
-  const user = await User.create({
-    username: overrides.username ?? `user-${unique()}`,
-    email: overrides.email ?? `user-${unique()}@example.com`,
-    password: await bcrypt.hash(password, 10),
-    roles: overrides.roles ?? ["user"],
-  });
-  await UserProfile.create({ user: user._id });
-  return { user, password };
-};
-
-exports.tokenFor = (user) =>
-  jwt.sign(
-    { user: user.id, roles: user.roles, type: "access" },
-    process.env.JWT_SECRET,
-    { expiresIn: "15m" },
-  );
-```
-
-Never reuse `backend/scripts/seed.js` — it targets the configured database and wipes every
-collection.
-
-### Authorisation — the highest-value suite
-
-```js
-it("returns 403 when another member tries to update a post", async () => {
-  const { user: author } = await makeUser();
-  const { user: stranger } = await makeUser();
-  const post = await makePost(author);
-
-  const res = await request(app)
-    .put(`/posts/${post._id}`)
-    .set("Authorization", `Bearer ${tokenFor(stranger)}`)
-    .send({ title: "Hijacked", slug: post.slug, content: "x" });
-
-  expect(res.status).toBe(403);
-});
-
-it("lets an administrator update any post", async () => {
-  /* … expects 200 */
-});
-it("returns 401 without a token", async () => {
-  /* … expects 401 */
-});
-```
-
-### Regression suite
-
-One test per closed defect. These lock in the Phase 1 work:
-
-```js
-it("persists visibility on create (BUG-01)", async () => {
-  const created = await request(app)
-    .post("/posts")
-    .set("Authorization", `Bearer ${tokenFor(user)}`)
-    .send({ title: "x", slug: "x", content: "x", visibility: "public" });
-
-  const fetched = await request(app).get(`/posts/${created.body.postId}`);
-  expect(fetched.body.data.visibility).toBe("public");
-});
-
-it("hides drafts from anonymous callers (SEC-01)", async () => {
-  await makePost(user, { visibility: "draft", title: "Secret draft" });
-  const res = await request(app).get("/posts");
-  expect(res.body.data.map((p) => p.title)).not.toContain("Secret draft");
-});
-
-it("rejects a refresh token as an access token (SEC-06)", async () => {
-  /* … 401 */
-});
-it("requires an admin to create a tag (SEC-02)", async () => {
-  /* … 401 without a token, 403 as a member */
-});
-it("persists user settings (BUG-05)", async () => {
-  /* … reads back dark */
-});
-```
-
-### Client integration
-
-Component or page plus its real service layer, with MSW intercepting the network — this
-exercises the Axios instance and both interceptors, including the refresh path that no unit
-test can reach.
-
-```jsx
-export function renderWithProviders(ui, { route = "/" } = {}) {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[route]}>
-        <AuthProvider>
-          <ThemeProvider>{ui}</ThemeProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    </QueryClientProvider>,
-  );
-}
-```
-
-Mirror the nesting from `main.jsx`, and disable retries so a failure assertion does not wait.
-Set `onUnhandledRequest: 'error'` on the MSW server so a forgotten mock fails loudly.
-
-### Conventions
-
-| Rule                                                            | Reason                                             |
-| --------------------------------------------------------------- | -------------------------------------------------- |
-| Assert the status code **and** the body shape                   | A 200 with the wrong body is still a defect        |
-| Assert what is **absent** — no `password`, no draft, no `email` | Exposure bugs are invisible to positive assertions |
-| Test the failure path for every endpoint                        | 401, 403, 404, 409 are the contract too            |
-| Never reach a real database or the network                      | Guard on `NODE_ENV === 'test'`                     |
-
----
-
-## End-to-end tests
-
-Build these **last**. Slowest, most brittle, most expensive to maintain — reserve them for
-journeys where full-stack confidence justifies the cost.
-
-### Coverage — ten journeys, no more
-
-| #   | Journey                                                          | Priority |
-| --- | ---------------------------------------------------------------- | -------- |
-| 1   | Register → sign in → land on the feed                            | Critical |
-| 2   | Sign in → write → publish → the post is readable and on the feed | Critical |
-| 3   | Read a post → comment → the comment appears                      | Critical |
-| 4   | Edit an existing post → the change is visible                    | High     |
-| 5   | Delete a post → it disappears from My Posts                      | High     |
-| 6   | Like a post → reload → the like persists                         | High     |
-| 7   | Search → open a result                                           | Medium   |
-| 8   | Admin signs in → deletes a post from the console                 | High     |
-| 9   | A member is redirected away from `/admin`                        | Critical |
-| 10  | Toggle the theme → reload → it persists                          | Low      |
-
-Journeys 2 and 6 are the user-visible face of [BUG-01](../product/roadmap.md#bug-01) and
-[BUG-03](../product/roadmap.md#bug-03) — both now fixed, and exactly the regressions worth
-locking down.
-
-### Environment
-
-E2E needs a **dedicated database** it may destroy, plus a guard:
-
-```js
-if (!process.env.MONGO_DB_URI?.includes("_e2e")) {
-  throw new Error("Refusing to run: MONGO_DB_URI is not an e2e database");
-}
-```
-
-The guard is not optional — the seeder clears every collection it can reach.
-
-### Rules
-
-| Rule                                              | Reason                                                      |
-| ------------------------------------------------- | ----------------------------------------------------------- |
-| Query by role, label or text — never by CSS class | styled-components regenerates class names every build       |
-| Never `waitForTimeout`                            | Playwright auto-waits; a fixed sleep is too short or wasted |
-| Each test creates its own data, timestamped       | Parallel-safe                                               |
-| No conditional logic in a test                    | An `if` means two tests                                     |
-| Journeys only                                     | Edge cases belong in integration tests, 100× faster         |
-| Never run against production                      | The suite writes and deletes real records                   |
-
-Use page objects so a UI change breaks one file, not twelve. Reuse a signed-in
-`storageState` per role rather than signing in through the UI in every test — the session
-lives in `localStorage["auth-storage"]`, which Playwright persists. Add `.auth/` to
-`.gitignore`; those files contain real tokens.
-
----
-
-## Coverage
-
-A signal, not a goal. `npm run test:coverage` reports it; nothing gates on it yet. Ratchet
-upward rather than starting at a number nobody can meet.
-
-| Area                        | Target                                 |
-| --------------------------- | -------------------------------------- |
-| `backend/middlewares/`      | 95% — small, critical, easy            |
-| `backend/services/`         | 90%                                    |
-| `backend/controllers/`      | 80%                                    |
-| `client/src/services/`      | 80%                                    |
-| `client/src/components/ui/` | 70%                                    |
-| `client/src/pages/`         | 50% — cover logic, leave layout to E2E |
-| Overall                     | 70%                                    |
-
----
-
-## What to build first
-
-Do not chase the targets in one pass. This order maximises defects caught per hour.
-
-Steps 1 to 3 are **done** — the harness, the auth and authorisation surface, and a regression
-test for each closed `BUG-xx` and `SEC-xx` that a request can reach. The remaining order,
-which still maximises defects caught per hour:
-
-1. **Client** — MSW handlers, `services/`, `ui/` primitives, auth context and guards. This is
-   the largest untested surface, and CI currently proves only that it compiles.
-2. **End-to-end** — three journeys to start: publish, engage, admin delete.
-3. **A coverage threshold**, ratcheted from wherever `npm run test:coverage` reports today.
-
----
-
-## What not to test
-
-- Framework behaviour — Express routing, Mongoose casting, React rendering
-- Third-party libraries
-- styled-components output — assert behaviour, not CSS
-- Exact copy strings — assert role and presence, not wording
+### 7.3 Mock Service Worker (MSW) Integration
+Replace direct module mocking of `api.js` in client tests with Mock Service Worker (MSW) to intercept HTTP traffic at the network level, enabling realistic testing of Axios interceptors.
