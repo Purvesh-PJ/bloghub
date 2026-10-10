@@ -1,42 +1,64 @@
-# Database
+# 🗄️ Database Architecture & Schemas
 
-> **Scope:** the MongoDB data model — collections, fields, relationships, indexes, query
-> patterns and remaining integrity issues.
-> **Excludes:** how the API reads and writes it ([backend.md](../architecture/backend.md)), endpoint payloads
-> ([reference/api.md](api.md)), connection configuration
-> ([reference/configuration.md](configuration.md)).
+> **Scope:** Complete MongoDB data models, Mongoose schemas, entity relationships, query patterns, and performance indexes.
 
 ---
 
-## Engine
+## 📌 Document Maintenance Guide (Where to Update)
 
-MongoDB via **Mongoose 8**. Connection handling is in `backend/config/db.js`; the URI is
-read from `MONGODB_URI`, `MONGO_DB_URI` or `DB_URI`, in that order.
+Use this reference table when making codebase changes:
 
-Every schema uses `{ timestamps: true }`, so documents carry `createdAt` and `updatedAt`
-automatically.
-
----
-
-## Collections
-
-Nine active Mongoose models and collections.
-
-| Model         | Collection     | Purpose                             | Status                 |
-| ------------- | -------------- | ----------------------------------- | ---------------------- |
-| `User`        | `users`        | Account and credentials             | Active                 |
-| `UserProfile` | `userprofiles` | Bio, avatar, social graph, counters | Active                 |
-| `UserSetting` | `usersettings` | Preferences                         | Active                 |
-| `Post`        | `posts`        | Article content                     | Active                 |
-| `Comment`     | `comments`     | Comments and nested replies         | Active                 |
-| `Tag`         | `tags`         | Topic and keyword taxonomy          | Active                 |
-| `Like`        | `likes`        | One like event                      | Active                 |
-| `View`        | `views`        | One page-view event                 | Active                 |
-| `Read`        | `reads`        | One read-completion event           | Active, rarely written |
+| If you are doing this in code: | Update this section in this doc: |
+| :--- | :--- |
+| Adding a new Mongoose model | **Section 2 (Collections)** & **Section 3 (Entity Relationships)** |
+| Adding/modifying schema fields or constraints | **Section 4 (Model Schemas)** |
+| Adding a new index (`schema.index(...)`) | **Section 5 (Performance Indexes)** |
+| Optimizing aggregations or population queries | **Section 6 (Query Patterns)** |
+| Changing seeding logic or demo credentials | **Section 8 (Seed Data)** |
 
 ---
 
-## Entity relationships
+## 📑 Table of Contents
+1. [Database Engine & Connection](#1-database-engine--connection)
+2. [Active Collections Catalog](#2-active-collections-catalog)
+3. [Entity Relationship Diagram (ERD)](#3-entity-relationship-diagram-erd)
+4. [Model Schemas & Field Constraints](#4-model-schemas--field-constraints)
+5. [Performance Indexes](#5-performance-indexes)
+6. [High-Traffic Query Patterns](#6-high-traffic-query-patterns)
+7. [Data Integrity & Cascades](#7-data-integrity--cascades)
+8. [Seed Data & Demo Accounts](#8-seed-data--demo-accounts)
+9. [Schema Design Conventions](#9-schema-design-conventions)
+
+---
+
+## 1. Database Engine & Connection
+
+- **Engine:** MongoDB via **Mongoose 8**.
+- **Connection Module:** `backend/config/db.js`.
+- **URI Resolution Order:** Reads `MONGODB_URI`, `MONGO_DB_URI`, or `DB_URI` from root `.env`.
+- **Automatic Timestamps:** Every schema declares `{ timestamps: true }`, ensuring `createdAt` and `updatedAt` are managed automatically by Mongoose.
+
+---
+
+## 2. Active Collections Catalog
+
+Nine active Mongoose models and collections operate within BlogHub:
+
+| Model | Collection | Purpose | State |
+| :--- | :--- | :--- | :--- |
+| `User` | `users` | Core credentials, authentication state, and authorization roles. | Active |
+| `UserProfile` | `userprofiles` | Author bio, avatar buffer, social handles, and engagement counters. | Active |
+| `UserSetting` | `usersettings` | UI preferences, theme selection, and notification flags. | Active |
+| `Post` | `posts` | Published articles, drafts, and Markdown body content. | Active |
+| `Comment` | `comments` | Top-level discussions and threaded nested replies. | Active |
+| `Tag` | `tags` | Topic and keyword taxonomy. | Active |
+| `Like` | `likes` | Individual article like events (enforces one like per user/post). | Active |
+| `View` | `views` | Page view impression events (tracks visitor keys). | Active |
+| `Read` | `reads` | Completed read events for analytics and trending ranking. | Active |
+
+---
+
+## 3. Entity Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
@@ -58,18 +80,18 @@ erDiagram
 
     User {
         ObjectId _id PK
-        string username "UK"
-        string email "UK"
-        string password
-        string_array roles
-        number tokenVersion
+        string username "Unique"
+        string email "Unique"
+        string password "Bcrypt Hash"
+        string_array roles "['user', 'admin']"
+        number tokenVersion "Session Revocation"
         boolean suspended
         datetime suspendedAt
     }
 
     UserProfile {
         ObjectId _id PK
-        ObjectId user FK "UK"
+        ObjectId user FK "Unique 1:1"
         string fullName
         string bio
         string location
@@ -81,7 +103,7 @@ erDiagram
 
     UserSetting {
         ObjectId _id PK
-        ObjectId user FK "UK"
+        ObjectId user FK "Unique 1:1"
         string theme "light | dark | system"
         boolean emailNotifications
         object privacySettings
@@ -90,10 +112,10 @@ erDiagram
 
     Post {
         ObjectId _id PK
-        ObjectId user FK
+        ObjectId user FK "Author"
         string title
-        string slug "UK"
-        string content
+        string slug "Unique"
+        string content "Raw Markdown"
         string imageURL
         string visibility "draft | private | public"
         datetime editedAt
@@ -101,25 +123,24 @@ erDiagram
 
     Comment {
         ObjectId _id PK
-        ObjectId user FK
+        ObjectId user FK "Author"
         ObjectId post FK
-        ObjectId parent FK "null = top level"
+        ObjectId parent FK "null = Top Level"
         string message
         ObjectId_array replies
         number replyCount
     }
 
-
     Tag {
         ObjectId _id PK
-        string name "UK"
+        string name "Unique"
         ObjectId_array posts
     }
 
     Like {
         ObjectId _id PK
-        ObjectId user FK "UK Compound"
-        ObjectId post FK "UK Compound"
+        ObjectId user FK "Compound Unique"
+        ObjectId post FK "Compound Unique"
     }
 
     View {
@@ -137,281 +158,153 @@ erDiagram
     }
 ```
 
-Several relationships are stored on **both** sides — see
-[denormalisation](#denormalisation-and-drift).
-
 ---
 
-## Schemas
+## 4. Model Schemas & Field Constraints
 
 ### `User`
-
-| Field          | Type                     | Constraints                                                   |
-| -------------- | ------------------------ | ------------------------------------------------------------- |
-| `username`     | String                   | required, trim, **unique index**                              |
-| `email`        | String                   | required, trim, lowercase, **unique index**                   |
-| `password`     | String                   | required, bcrypt hash (cost 12)                               |
-| `roles`        | [String]                 | enum `user \| admin`, default `['user']`                      |
-| `tokenVersion` | Number                   | default 0 — see below                                         |
-| `suspended`    | Boolean                  | default false; blocks sign-in and every authenticated request |
-| `suspendedAt`  | Date                     | set when suspended, cleared when restored                     |
-| `profile`      | ObjectId → `UserProfile` | 1:1                                                           |
-| `settings`     | ObjectId → `UserSetting` | 1:1                                                           |
-| `posts`        | [ObjectId → `Post`]      | denormalised authorship list                                  |
-
-Email normalisation is a **schema** concern (`lowercase`, `trim`), not a controller concern,
-so every write path is consistent.
-
-**`tokenVersion` is what makes sessions revocable.** Both tokens carry the value they were
-minted with and authentication compares it against the stored one, so incrementing the field
-invalidates everything already issued to that account. Sign-out, a password change, a
-suspension and a demotion all increment it. Without it the tokens were stateless in the
-unhelpful sense: nothing could be taken back before it expired.
+| Field | Type | Constraints & Notes |
+| :--- | :--- | :--- |
+| `username` | String | Required, trim, unique index. |
+| `email` | String | Required, trim, lowercase, unique index. Normalization is handled at the schema level. |
+| `password` | String | Required, bcrypt hash (cost 12). |
+| `roles` | [String] | Enum: `['user', 'admin']`, default `['user']`. |
+| `tokenVersion` | Number | Default `0`. Stamped in JWTs to allow instant stateless global revocation. |
+| `suspended` | Boolean | Default `false`. When true, blocks sign-in and authenticated requests. |
+| `suspendedAt` | Date | Stamped upon account suspension, cleared when restored. |
+| `profile` | ObjectId → `UserProfile` | 1:1 relation to user profile document. |
+| `settings` | ObjectId → `UserSetting` | 1:1 relation to user settings document. |
+| `posts` | [ObjectId → `Post`] | Denormalized authorship list. |
 
 ### `UserProfile`
-
-| Field                                            | Type                            | Notes                                                                 |
-| ------------------------------------------------ | ------------------------------- | --------------------------------------------------------------------- |
-| `user`                                           | ObjectId → `User`               | required, **unique index**                                            |
-| `image.data` / `image.contentType`               | Buffer / String                 | The avatar bytes; served by `GET /users/:id/avatar` ([BUG-07](../product/roadmap.md#bug-07)) |
-| `bio`, `fullName`, `location`, `website`         | String                          | trimmed                                                               |
-| `socialLinks`                                    | `{ twitter, github, linkedin }` |                                                                       |
-| `followers` / `followings`                       | [ObjectId → `User`]             |                                                                       |
-| `postCount`, `followersCount`, `followingsCount` | Number                          | default 0                                                             |
-
-The extended profile fields were added during remediation — the settings controller had been
-writing them to a schema that did not declare them, so Mongoose discarded every one
-([BUG-05](../product/roadmap.md#bug-05)).
+| Field | Type | Constraints & Notes |
+| :--- | :--- | :--- |
+| `user` | ObjectId → `User` | Required, unique index. |
+| `image.data` / `image.contentType` | Buffer / String | Stores avatar binary data; served via `GET /users/:id/avatar`. |
+| `bio`, `fullName`, `location`, `website` | String | Trimmed strings. |
+| `socialLinks` | Object | `{ twitter, github, linkedin }`. |
+| `followers` / `followings` | [ObjectId → `User`] | Array of user references. |
+| `postCount`, `followersCount`, `followingsCount` | Number | Default `0`. |
 
 ### `UserSetting`
-
-| Field                          | Type                      | Default          |
-| ------------------------------ | ------------------------- | ---------------- |
-| `user`                         | ObjectId → `User`         | required, unique |
-| `theme`                        | `light \| dark \| system` | `system`         |
-| `emailNotifications`           | Boolean                   | `true`           |
-| `privacySettings.showEmail`    | Boolean                   | `false`          |
-| `privacySettings.showActivity` | Boolean                   | `true`           |
-| `appearance.fontSize`          | `sm \| md \| lg`          | `md`             |
-| `appearance.colorScheme`       | String                    | `default`        |
-
-Previously `new mongoose.Schema({})` — an empty schema that silently discarded every write.
+| Field | Type | Default | Notes |
+| :--- | :--- | :--- | :--- |
+| `user` | ObjectId → `User` | Required | Unique 1:1 relation to user. |
+| `theme` | String | `'system'` | Enum: `'light' \| 'dark' \| 'system'`. |
+| `emailNotifications` | Boolean | `true` | Toggle for platform notifications. |
+| `privacySettings` | Object | Defaults | `{ showEmail: false, showActivity: true }`. |
+| `appearance` | Object | Defaults | `{ fontSize: 'md', colorScheme: 'default' }`. |
 
 ### `Post`
-
-| Field        | Type                         | Notes                                   |
-| ------------ | ---------------------------- | --------------------------------------- |
-| `user`       | ObjectId → `User`            | author                                  |
-| `title`      | String                       | required                                |
-| `slug`       | String                       | required, **unique index**              |
-| `content`    | String                       | required, Markdown, max 100,000 chars   |
-| `imageURL`   | String                       | optional cover image                    |
-| `visibility` | `draft \| private \| public` | default `draft`, **written by the API** |
-| `tags`       | [ObjectId → `Tag`]           | up to 5, set in the editor              |
-| `views`      | [ObjectId → `View`]          | seeder only                             |
-| `likes`      | [ObjectId → `Like`]          | maintained at runtime                   |
-| `comments`   | [ObjectId → `Comment`]       | maintained at runtime                   |
-| `editedAt`   | Date                         | stamped only by `postService.updatePost`, so "edited" means edited rather than engaged with ([BUG-24](../product/roadmap.md#bug-24)) |
+| Field | Type | Constraints & Notes |
+| :--- | :--- | :--- |
+| `user` | ObjectId → `User` | Required author reference. |
+| `title` | String | Required. |
+| `slug` | String | Required, unique index. Generated from title or custom specified. |
+| `content` | String | Required raw Markdown, capped at 100,000 characters. |
+| `imageURL` | String | Optional cover image link. |
+| `visibility` | String | Default: `'draft'`. Enum: `'draft' \| 'private' \| 'public'`. |
+| `tags` | [ObjectId → `Tag`] | Max 5 tags per story. |
+| `views` | [ObjectId → `View`] | Historical impression references. |
+| `likes` | [ObjectId → `Like`] | Runtime likes array. |
+| `comments` | [ObjectId → `Comment`] | Runtime comments array. |
+| `editedAt` | Date | Stamped by `postService.updatePost` when content actually changes. |
 
 ### `Comment`
-
-| Field                | Type                   | Notes                               |
-| -------------------- | ---------------------- | ----------------------------------- |
-| `user`               | ObjectId → `User`      | author                              |
-| `post`               | ObjectId → `Post`      | set on replies too                  |
-| `message`            | String                 | max 5,000 characters                |
-| `parent`             | ObjectId → `Comment`   | the comment this replies to, `null` for a top-level comment. Listing filters on it, which is what stopped replies coming back twice ([BUG-20](../product/roadmap.md#bug-20)) |
-| `replies`            | [ObjectId → `Comment`] | self-reference, one level in the UI |
-| `replyCount`         | Number                 | default 0                           |
-| `likes` / `dislikes` | [ObjectId → `User`]    | no endpoint writes these            |
-| `date`               | Date                   | redundant with `createdAt`          |
+| Field | Type | Constraints & Notes |
+| :--- | :--- | :--- |
+| `user` | ObjectId → `User` | Required comment author. |
+| `post` | ObjectId → `Post` | Required target post reference. |
+| `parent` | ObjectId → `Comment` | Parent comment ID (`null` for top-level comments). |
+| `message` | String | Text body, capped at 5,000 characters. |
+| `replies` | [ObjectId → `Comment`] | Nested replies array. |
+| `replyCount` | Number | Default `0`. |
 
 ### `Tag`
-
-`name` (String, required, lowercased, max 30, **unique index**) and `posts` (array of
-references), plus timestamps.
-
-There is no `Category` model. Categories were folded into tags;
-`backend/scripts/migrate.js` drops the legacy collection and unsets `Post.categories`.
+- `name`: String, required, lowercase, unique index, max 30 chars.
+- `posts`: Array of referencing `Post` ObjectIds.
 
 ### `Like`, `View`, `Read`
-
-Event documents: `user` → `User`, `post` → `Post`, plus timestamps. `Like` carries a
-**unique compound index on `(post, user)`**, so one like per user per post is enforced by the
-database rather than by a racy `findOne`.
-
-`View` and `Read` additionally carry **`visitorKey`** (String, indexed with `post` and
-`createdAt`). Tracking is open to anonymous readers by design, so without something to group
-requests by, one client could inflate any post's numbers by holding down refresh. The key is
-the account id when signed in (`u:<id>`) and otherwise a salted HMAC of the address and user
-agent (`a:<hash>`) — hashed rather than stored, since the analytics only need to know that two
-requests came from the same place. One row per key per post per 6-hour window.
-
-`View` and `Read` are also what the trending ranking counts; see
-[api.md](api.md#how-trending-is-ranked).
-
-### The removed `Analytics` collection
-
-There was an `Analytics` model holding pre-aggregated totals. Nothing in the running
-application ever wrote one — only the seeder did — so on any real database
-`GET /analytics/post/:id` answered 404 for every post. It has been deleted; the figures are
-now counted from `View`, `Read`, `Like` and `Comment`, which are the rows that actually
-accumulate ([BUG-06](../product/roadmap.md#bug-06)).
+- **`Like`:** Contains `user` and `post`. Enforced with a **compound unique index on `(post, user)`** to prevent duplicate likes without race conditions.
+- **`View` & `Read`:** Carries `user` (nullable), `post`, and **`visitorKey`** (String).
+  - *Visitor Key Algorithm:* Logged-in user uses `u:<userId>`; anonymous visitors use salted HMAC hash `a:<hash>` from IP + User-Agent.
+  - Used for deduplication windows to prevent rapid-refresh spam.
 
 ---
 
-## Indexes
+## 5. Performance Indexes
 
-**Twenty** declared indexes across nine collections (29 counting the automatic `_id` on each),
-all declared in the schema files so they travel with the model.
+20 declared indexes across 9 collections (29 including standard `_id` PKs):
 
-| Collection     | Index                                       | Purpose                                              |
-| -------------- | ------------------------------------------- | ---------------------------------------------------- |
-| `users`        | `{ email: 1 }` unique                       | Sign-in lookup; prevents duplicate accounts          |
-| `users`        | `{ username: 1 }` unique                    | Same                                                 |
-| `posts`        | `{ visibility: 1, createdAt: -1 }`          | The public feed                                      |
-| `posts`        | `{ user: 1, createdAt: -1 }`                | Author feeds and My Posts                            |
-| `posts`        | `{ editedAt: -1 }`                          | The moderation log                                   |
-| `posts`        | `{ slug: 1 }` **unique**                    | Slug lookups; a repeatable slug cannot identify a post |
-| `comments`     | `{ post: 1, parent: 1, createdAt: -1 }`     | The top-level listing, which filters on `parent`     |
-| `comments`     | `{ post: 1, createdAt: -1 }`                | Comment threads                                      |
-| `comments`     | `{ user: 1, createdAt: -1 }`                | Activity and timeline                                |
-| `likes`        | `{ post: 1, user: 1 }` unique               | Prevents duplicate likes                             |
-| `likes`        | `{ user: 1, createdAt: -1 }`                | Activity feed                                        |
-| `views`        | `{ post: 1, createdAt: -1 }`                | Analytics counts                                     |
-| `views`        | `{ post: 1, visitorKey: 1, createdAt: -1 }` | The per-visitor de-duplication check                 |
-| `views`        | `{ user: 1, createdAt: -1 }`                | Activity feed                                        |
-| `reads`        | `{ post: 1, createdAt: -1 }`                | Read-rate calculation                                |
-| `reads`        | `{ post: 1, visitorKey: 1, createdAt: -1 }` | The per-visitor de-duplication check                 |
-| `reads`        | `{ user: 1, createdAt: -1 }`                | Reading history                                      |
-| `userprofiles` | `{ user: 1 }` unique                        | Looked up on nearly every authenticated request      |
-| `usersettings` | `{ user: 1 }` unique                        | One settings document per account                    |
-| `tags`         | `{ name: 1 }` unique                        | Lookups are by name                                  |
+| Collection | Index Fields | Purpose / Query Supported |
+| :--- | :--- | :--- |
+| `users` | `{ email: 1 }` **unique** | Sign-in lookup; prevents duplicate account creation. |
+| `users` | `{ username: 1 }` **unique** | Profile lookup and handle uniqueness. |
+| `posts` | `{ visibility: 1, createdAt: -1 }` | Fast public feed chronological listing. |
+| `posts` | `{ user: 1, createdAt: -1 }` | Author workspace, drafts, and profile story listings. |
+| `posts` | `{ editedAt: -1 }` | Administrative moderation log. |
+| `posts` | `{ slug: 1 }` **unique** | Rapid story lookup by SEO slug (`/post/:slug`). |
+| `comments` | `{ post: 1, parent: 1, createdAt: -1 }` | Top-level comment retrieval (filters `parent: null`). |
+| `comments` | `{ post: 1, createdAt: -1 }` | Comment thread listing. |
+| `comments` | `{ user: 1, createdAt: -1 }` | Author activity timeline. |
+| `likes` | `{ post: 1, user: 1 }` **unique** | Guarantees one like per user per story at the database level. |
+| `likes` | `{ user: 1, createdAt: -1 }` | User liked-stories feed. |
+| `views` | `{ post: 1, createdAt: -1 }` | View aggregation. |
+| `views` | `{ post: 1, visitorKey: 1, createdAt: -1 }` | Deduplication check before counting page impressions. |
+| `views` | `{ user: 1, createdAt: -1 }` | User browsing history. |
+| `reads` | `{ post: 1, createdAt: -1 }` | Read-through rate aggregation. |
+| `reads` | `{ post: 1, visitorKey: 1, createdAt: -1 }` | Deduplication check before recording finished reads. |
+| `reads` | `{ user: 1, createdAt: -1 }` | Reading history tracking. |
+| `userprofiles` | `{ user: 1 }` **unique** | Rapid profile population on authenticated requests. |
+| `usersettings` | `{ user: 1 }` **unique** | User preferences lookup. |
+| `tags` | `{ name: 1 }` **unique** | Tag filtering by URL name. |
 
-**Not indexed:** the search regex. `GET /search/:query` still performs a collection scan over
-titles and bodies — adding a text index would change matching from substring to whole-word,
-which is a UX decision, not a mechanical one ([GAP-05](../product/roadmap.md#gap-05)).
+---
 
-### Migration note
+## 6. High-Traffic Query Patterns
 
-Adding unique indexes to a database with existing duplicates fails. Resolve duplicates first:
+### Population Strategy
+- `GET /posts/:id`: Performs deep population (author, likes, top comments, comment authors, replies, tags). Excludes sensitive fields (`.select('-password')`).
+- `GET /posts`: Lightweight population (only `user` and `tags`) with pagination to avoid high memory overhead.
 
-```js
-db.users.aggregate([
-  { $group: { _id: "$email", count: { $sum: 1 }, ids: { $push: "$_id" } } },
-  { $match: { count: { $gt: 1 } } },
-]);
+### Aggregations
+- **14-Day Trending Ranking:** Uses four `$lookup` sub-pipelines over `views`, `reads`, `likes`, and `comments` within a 14-day sliding window, followed by a weighted score calculation:
+  $$\text{Score} = (2 \times \text{reads}) + \text{likes} + (0.5 \times \text{comments}) + (0.1 \times \text{views})$$
+- **Creator Dashboard Analytics:** `getUserAnalytics` aggregates view and read counts using single grouped queries (`countByPost`) rather than looping `countDocuments` per post.
+
+---
+
+## 7. Data Integrity & Cascades
+
+| Action | Cascade Behavior |
+| :--- | :--- |
+| **Delete Post** | Removes post ID from associated `tags`, deletes attached comments, removes from `User.posts`, and decrements `postCount`. |
+| **Delete User** | Handled via `accountService.purgeAccount` (`DELETE /users/me`). Removes profiles, settings, and author references. |
+| **Delete Tag** | `DELETE /tags/:id` rejects with `409 Conflict` if any active story is still associated with the tag. |
+| **Delete Comment** | Recursively deletes the comment and all its nested children. |
+
+---
+
+## 8. Seed Data & Demo Accounts
+
+The database seed script is located at `backend/scripts/seed.js`:
+
+```bash
+npm run seed --prefix backend
 ```
 
-The `likes` unique index in particular rejected pre-existing `{ post: null }` documents
-produced by a seeder bug ([BUG-16](../product/roadmap.md#bug-16)) — a constraint earning its
-keep on the day it was added.
+- Clears existing collections and seeds 15 users, 99 stories (84 public, 10 drafts, 5 private), 10 tags, and randomized engagement (views, reads, comments, likes).
+- **Default Test Accounts:**
+  - **Member:** `john@example.com` / `password123`
+  - **Admin:** `admin@bloghub.com` / `admin123`
+- *Safety Guard:* Refuses to run against non-local databases unless `SEED_ALLOW_REMOTE=yes` is explicitly set in environment variables.
 
 ---
 
-## Query patterns
+## 9. Schema Design Conventions
 
-### Population
-
-`GET /posts/:id` performs the deepest population — author, likes, comments, each comment's
-author, each comment's replies and their authors, plus tags. Always pass a projection
-(`'username'`) so password hashes and email addresses never leave the database.
-
-`GET /posts` populates only `user` and `tags`, and is paginated. It previously populated all
-comments for every post in the collection — the most expensive query in the application.
-
-### Aggregation
-
-- **Trending** — four `$lookup` sub-pipelines counting views, reads, likes and comments inside
-  a 14-day window, a `$match` floor on views, then the weighted `$addFields` score and `$sort`.
-- **Tag counts** — `$lookup` from `posts` filtered to `visibility: 'public'`, then `$size`.
-- **Admin analytics** — `$lookup` from `views` into `posts` and from `posts` into `users`,
-  then `$addFields`, `$sort`, `$limit`, `$project`.
-- **Visibility counts** — `$group` on `visibility`, so the moderation and workspace tab counts
-  reflect the whole collection rather than the page being shown.
-
-Search is a `Post.find()` rather than an aggregation: a `$or` over the title and body regexes
-plus tag and author ids resolved in two prior queries.
-
-### Counting
-
-`getUserAnalytics` counts views and reads with one grouped aggregation per collection
-(`countByPost`). It used to issue `countDocuments` per post, so an author with 50 posts
-triggered 100 queries on every dashboard load.
-
----
-
-## Denormalisation and drift
-
-Several relationships are stored twice, maintained by separate writes with no transaction.
-
-| Pair                                           | Maintained by                  | Risk                                                                                     |
-| ---------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
-| `Post.comments` ↔ `Comment.post`              | `createComment`, reply handler | Both sides now written, including replies                                                |
-| `Post.likes` ↔ `likes` collection             | `createLike`, `deleteLike`     | Both sides now written                                                                   |
-| `Post.views` ↔ `views` collection             | **Nothing at runtime**         | Array stays empty outside seed data                                                      |
-| `User.posts` ↔ `Post.user`                    | `createPost`, `deletePost`     | Two sources of truth for authorship; the story list reads one, analytics reads the other |
-| `Tag.posts` ↔ `Post.tags`                     | `postService`, `deletePost`    | Both sides written; deleting a post pulls its id from every tag                          |
-| `UserProfile.followers/followings` ↔ counters | `followUser`, `unfollowUser`   | Array and counter can disagree if one write fails                                        |
-| `UserProfile.postCount` ↔ actual count        | `postBlogs`, `deletePost`      | Now targets the post's author, not the requester                                         |
-
-**Recommended direction:** keep the child-to-parent reference (`Comment.post`, `Post.user`,
-`Like.post`) as the single source of truth, drop the parent-side arrays, and derive counts
-with indexed `countDocuments` or a `$group`. Where a counter is genuinely needed, maintain it
-with an atomic `$inc` in the same operation that writes the child, plus a reconciliation
-script. Tracked in [Phase 3](../product/roadmap.md#phase-3--data-model-consolidation).
-
----
-
-## Integrity
-
-No referential integrity at the database level; the only cascade is manual.
-
-| Operation        | Cascade behaviour                                                                                                                                                                       |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Delete a post    | Pulls the id from referencing tags, deletes attached comments, pulls from the author's `User.posts`, decrements the author's `postCount`. **Leaves orphaned** likes, views and reads    |
-| Delete a user    | Implemented — `accountService.purgeAccount`, shared by `DELETE /users/me` and the administrator's `DELETE /users/:id` ([GAP-09](../product/roadmap.md#gap-09))                          |
-| Delete a tag     | `DELETE /tags/:id` **refuses with 409** while any story still carries the tag, rather than leaving dangling ids in `Post.tags`                                                          |
-| Delete a comment | Removed with its replies by `DELETE /comments/:id`, and in bulk as part of post deletion                                                                                                |
-
-No multi-document transactions are used, although MongoDB Atlas replica sets support them.
-`createPost` and `createComment` approximate one with a compensating delete.
-
----
-
-## Seed data
-
-`backend/scripts/seed.js` (`npm run seed`) **clears every collection** and rebuilds a demo
-dataset: 15 users (14 creators and 1 administrator) and 99 stories — 84 public, 10 drafts and
-5 private — spread over 10 topic groups whose names become tags. Each public story then gets
-2–6 comments, 2–9 likes and 15–54 views, with a share of those views marked as completed
-reads. The counts vary per run because they are randomised.
-
-| Role          | Email               | Password      |
-| ------------- | ------------------- | ------------- |
-| Member        | `john@example.com`  | `password123` |
-| Administrator | `admin@bloghub.com` | `admin123`    |
-
-Two things to know:
-
-1. It is **destructive**. Never point it at a database you care about.
-2. It resolves the root `.env` explicitly — a bare `dotenv.config()` looked in `backend/` and
-   found nothing ([BUG-18](../product/roadmap.md#bug-18)).
-3. It refuses a non-local target unless `SEED_ALLOW_REMOTE=yes` is set. The guard tests the
-   URI for `localhost` or `127.0.0.1`, not the database name.
-
----
-
-## Schema conventions
-
-- One model per file, `<resource>.model.js`.
-- Singular PascalCase model name; Mongoose derives the lowercase plural collection.
-- Always `{ timestamps: true }` — never hand-roll `createdAt`.
-- References use `mongoose.Schema.Types.ObjectId` with a `ref` naming a model that **exists**.
-- **Declare every field the application writes.** Strict mode discards undeclared fields
-  silently, which is the single most expensive mistake made in this codebase
-  ([BUG-05](../product/roadmap.md#bug-05)).
-- Declare every index the model's queries need, in the schema file.
-- Put `required`, `enum`, `unique`, `trim` and `lowercase` at the schema level rather than
-  relying on controller checks.
-- Never return a hash in a default projection — `.select('-password')` or `select: false`.
+1. **File Convention:** One model per file named `<resource>.model.js` in `backend/models/`.
+2. **Model Naming:** Singular PascalCase (e.g., `User`, `Post`), collection is auto-pluralized by Mongoose.
+3. **Mandatory Timestamps:** Always include `{ timestamps: true }`.
+4. **Strict Schema Definitions:** Declare every field that controllers write to avoid Mongoose strict-mode silent discards.
+5. **Index Declaration:** Declare all query indexes directly within the schema file alongside the fields.
