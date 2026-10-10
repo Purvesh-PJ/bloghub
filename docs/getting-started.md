@@ -1,10 +1,6 @@
-# Setup
+# 🚀 Developer Setup & Quickstart Guide
 
-> **Scope:** getting a working local environment — prerequisites, install, run, seed, verify.
-> **Excludes:** the environment variable reference
-> ([reference/configuration.md](../reference/configuration.md)), deployment
-> ([operations/deployment.md](../operations/deployment.md)), code conventions
-> ([development.md](development.md)).
+> **Scope:** Getting a fully working local development environment — prerequisites, environment configuration, workspace dependencies, database seeding, and running development servers.
 
 ---
 
