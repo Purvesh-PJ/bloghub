@@ -10,23 +10,39 @@ Use this reference table when modifying backend codebase:
 
 | If you are doing this in code: | Update this section in this doc: |
 | :--- | :--- |
-| Adding new global middleware or startup logic | **Section 1 (Composition Root & Startup)** |
-| Adding/modifying middleware logic (`auth`, `upload`) | **Section 3 (Middlewares & Guards)** |
-| Adding a new controller or route | **Section 4 (Route & Controller Layering)** |
-| Modifying error formats or custom `AppError` | **Section 5 (Error Handling & HTTP Contracts)** |
-| Updating Rate Limiting, CORS, or Multer uploads | **Section 6 (Cross-Cutting Concerns)** |
-| Introducing caching (e.g., Redis) or architectural changes | **Section 7 (Architectural Decisions & Future Work)** |
+| Adding/upgrading backend npm packages | **Section 1.0 (Tech Stack & Dependencies)** |
+| Adding new global middleware or startup logic | **Section 2.0 (Composition Root & Startup)** |
+| Adding/modifying middleware logic (`auth`, `upload`) | **Section 4.0 (Middlewares & Guards)** |
+| Adding a new controller or route | **Section 5.0 (Route, Controller & Service Layering)** |
+| Modifying error formats or custom `AppError` | **Section 6.0 (Error Handling & HTTP Contracts)** |
+| Updating Rate Limiting, CORS, or Multer uploads | **Section 7.0 (Cross-Cutting Concerns)** |
+| Introducing caching (e.g., Redis) or architectural changes | **Section 8.0 (Architectural Decisions & Future Work)** |
 
 ---
 
 ## 📑 Table of Contents
 1. [Tech Stack & Dependencies](#1-tech-stack--dependencies)
 2. [Composition Root & Startup](#2-composition-root--startup)
+   - 2.1 [Middleware Mounting Order](#21-middleware-mounting-order)
+   - 2.2 [Serverless & Test Lifecycle](#22-serverless--test-lifecycle)
+   - 2.3 [Health & Operational Probes](#23-health--operational-probes)
 3. [HTTP Request Lifecycle Diagram](#3-http-request-lifecycle-diagram)
 4. [Middlewares & Guards](#4-middlewares--guards)
+   - 4.1 [Authentication & Authorization Guards](#41-authentication--authorization-guards)
+   - 4.2 [Validation & Error Wrappers](#42-validation--error-wrappers)
 5. [Route, Controller & Service Layering](#5-route-controller--service-layering)
+   - 5.1 [Routing Table (`routes/`)](#51-routing-table-routes)
+   - 5.2 [Controller Responsibilities (`controllers/`)](#52-controller-responsibilities-controllers)
+   - 5.3 [Service Layer & Business Workflows (`services/`)](#53-service-layer--business-workflows-services)
 6. [Error Handling & HTTP Contracts](#6-error-handling--http-contracts)
-7. [Cross-Cutting Concerns (Security, Uploads, Rate Limiting)](#7-cross-cutting-concerns)
+   - 6.1 [Global AppError Contract](#61-global-apperror-contract)
+   - 6.2 [Standard Response Envelopes](#62-standard-response-envelopes)
+   - 6.3 [Standard Status Codes](#63-standard-status-codes)
+7. [Cross-Cutting Concerns](#7-cross-cutting-concerns)
+   - 7.1 [Stateless Authentication with `tokenVersion`](#71-stateless-authentication-with-tokenversion)
+   - 7.2 [Input Validation & ReDoS Prevention](#72-input-validation--redos-prevention)
+   - 7.3 [Rate Limiting & Proxy Trust](#73-rate-limiting--proxy-trust)
+   - 7.4 [Avatar Uploads & Memory Buffer](#74-avatar-uploads--memory-buffer)
 8. [Architectural Decisions & Future Work](#8-architectural-decisions--future-work)
 9. [Step-by-Step Guide: Adding a New Backend Resource](#9-step-by-step-guide-adding-a-new-backend-resource)
 
@@ -54,8 +70,10 @@ Use this reference table when modifying backend codebase:
 
 ## 2. Composition Root & Startup
 
-The backend entry point is `backend/index.js`. The order in which middlewares and listeners mount is strict:
+The backend entry point is `backend/index.js`.
 
+### 2.1 Middleware Mounting Order
+The order in which middlewares and listeners mount is strict:
 ```js
 1  dotenv.config({ path: '../.env' })       // Load environment configuration
 2  assertEnv()                              // Fail-fast on misconfigured environment variables
@@ -75,7 +93,7 @@ The backend entry point is `backend/index.js`. The order in which middlewares an
 16 module.exports = app                      // Exported for testing and serverless handlers
 ```
 
-### Serverless & Test Lifecycle
+### 2.2 Serverless & Test Lifecycle
 ```js
 const shouldListen = process.env.NODE_ENV !== "test" && !process.env.VERCEL;
 if (shouldListen) app.listen(PORT);
@@ -85,7 +103,7 @@ module.exports = app;
 - **Serverless (Vercel):** Invoked directly as an exported request handler.
 - **Automated Tests (Jest):** Supertest drives `app` directly without port-binding leaks.
 
-### Health Probes
+### 2.3 Health & Operational Probes
 - `GET /health`: Liveness probe (uptime and process status).
 - `GET /ready`: Readiness probe (pings MongoDB and answers `503` if connection is down). Mounted directly on `app` before rate limiters.
 
@@ -132,34 +150,35 @@ flowchart TD
 
 Middlewares reside in `backend/middlewares/`:
 
-| Middleware | Purpose & Responsibility |
-| :--- | :--- |
-| `authenticateUser` | Validates Bearer token, enforces `type: 'access'`, verifies matching `tokenVersion` against the database. Sets `req.user = { id, _id, roles }`. |
-| `attachUserIfPresent` | Populates `req.user` if a valid token exists, but does not block unauthenticated users (for public routes with personalized states). |
-| `authorizeAdmin` | Checks for `'admin'` role in `req.user.roles`, returns `403 Forbidden` if absent. |
-| `authorizeSelfOrAdmin(param)` | Verifies `req.params[param]` matches the authenticated user ID unless admin. |
-| `validate` | Intercepts `express-validator` failures and returns a consolidated `400 Bad Request` with field errors. |
-| `validateObjectId(name, source)`| Rejects malformed 24-character hexadecimal IDs before executing database queries. |
-| `asyncHandler(fn)` | Wraps asynchronous handlers to forward unhandled promise rejections directly to `errorHandler`. |
-| `uploadAvatar` | Multer memory storage (capped at 2 MB with strict image MIME allowlist). |
-| `errorHandler` | Terminal error middleware translating errors into normalized JSON responses. |
-| `logger` | Morgan HTTP logging (`dev` format in development, `combined` in production). |
+### 4.1 Authentication & Authorization Guards
+- **`authenticateUser`:** Validates Bearer token, enforces `type: 'access'`, verifies matching `tokenVersion` against database. Sets `req.user = { id, _id, roles }`.
+- **`attachUserIfPresent`:** Populates `req.user` if valid token exists; passes anonymously otherwise without throwing 401.
+- **`authorizeAdmin`:** Enforces `'admin'` role presence in `req.user.roles`.
+- **`authorizeSelfOrAdmin(param)`:** Verifies `req.params[param]` matches caller unless admin.
+
+### 4.2 Validation & Error Wrappers
+- **`validate`:** Consolidates `express-validator` failures into `400 Bad Request` with field-level errors.
+- **`validateObjectId(name, source)`:** Rejects non-24-character hex strings before passing to Mongoose.
+- **`asyncHandler(fn)`:** Forwards unhandled async promise rejections to terminal error handler.
+- **`uploadAvatar`:** Multer memory storage (2 MB limit, image MIME check).
+- **`errorHandler`:** Formats exceptions into uniform JSON error envelopes.
+- **`logger`:** Morgan HTTP request logger.
 
 ---
 
 ## 5. Route, Controller & Service Layering
 
-### `routes/` (Routing Table)
+### 5.1 Routing Table (`routes/`)
 Routers declare URL endpoints and bind middleware chains without embedding business logic:
 ```js
 router.get("/", AuthUser.attachUserIfPresent, PostControllers.getBlogs);
 router.post("/", AuthUser.authenticateUser, PostControllers.postBlogs);
 ```
 
-### `controllers/` (HTTP Interface)
-Controllers inspect `req.params`, `req.query`, and `req.body`, invoke services or queries, choose status codes, and return JSON responses.
+### 5.2 Controller Responsibilities (`controllers/`)
+Controllers inspect inputs (`req.params`, `req.query`, `req.body`), invoke services or database models, choose status codes, and return JSON responses.
 
-### `services/` (Business & Multi-Step Logic)
+### 5.3 Service Layer & Business Workflows (`services/`)
 Services handle complex workflows spanning multiple collections:
 
 | Service | Function | Steps / Business Rules |
@@ -174,14 +193,14 @@ Services handle complex workflows spanning multiple collections:
 
 ## 6. Error Handling & HTTP Contracts
 
-### Global AppError Contract
+### 6.1 Global AppError Contract
 Controllers throw typed errors using `utils/AppError.js`:
 ```js
 const post = await Post.findById(req.params.id);
 if (!post) throw notFound("Post not found");
 ```
 
-### Standard Response Envelopes
+### 6.2 Standard Response Envelopes
 **Successful Response:**
 ```json
 {
@@ -204,7 +223,7 @@ if (!post) throw notFound("Post not found");
 }
 ```
 
-### Standard Status Codes
+### 6.3 Standard Status Codes
 - `200 / 201`: Success / Resource Created.
 - `400`: Validation error or malformed MongoDB ObjectId.
 - `401`: Missing, expired, or invalid token claim.
@@ -218,22 +237,22 @@ if (!post) throw notFound("Post not found");
 
 ## 7. Cross-Cutting Concerns
 
-### Stateless Authentication with `tokenVersion`
+### 7.1 Stateless Authentication with `tokenVersion`
 - **Access Tokens:** 15-minute expiration, signed with `JWT_SECRET`.
 - **Refresh Tokens:** 7-day expiration, signed with `JWT_REFRESH_SECRET`.
-- **Instant Revocation:** Incrementing `user.tokenVersion` in the database immediately invalidates all active tokens across devices.
+- **Instant Revocation:** Incrementing `user.tokenVersion` in database immediately invalidates all active tokens across devices.
 
-### Input Validation & ReDoS Prevention
+### 7.2 Input Validation & ReDoS Prevention
 - Validation rules are declared in `backend/validators/` using `express-validator`.
 - Rule sets distinguish between creation and partial updates using factories (`postRules(partial)`).
 - Search query parameters escape regex metacharacters to prevent Regular Expression Denial of Service (ReDoS).
 
-### Rate Limiting & Proxy Trust
+### 7.3 Rate Limiting & Proxy Trust
 - `generalLimiter`: 300 requests per 15 minutes per IP.
 - `authLimiter`: 10 failed login attempts per 15 minutes (`skipSuccessfulRequests: true`).
 - `app.set('trust proxy', 1)` ensures real client IPs are evaluated behind reverse proxies and CDNs (Vercel).
 
-### Avatar Uploads
+### 7.4 Avatar Uploads & Memory Buffer
 - Stored as image buffer in `UserProfile.image.data` (2 MB cap).
 - Served with client caching via `GET /users/:id/avatar` returning `ETag` headers.
 

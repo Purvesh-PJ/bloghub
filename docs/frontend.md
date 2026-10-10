@@ -10,23 +10,36 @@ Use this reference table when modifying frontend codebase:
 
 | If you are doing this in code: | Update this section in this doc: |
 | :--- | :--- |
-| Adding top-level context providers or error boundaries | **Section 1 (Provider Tree Hierarchy)** |
-| Adding new routes, route guards, or lazy code-splitting | **Section 2 (Routing & Access Guards)** |
-| Modifying Auth state or synchronous Axios interceptors | **Section 3 (State Ownership & Auth Synchronization)** |
-| Adding new API queries, mutations, or query key factories | **Section 4 (Data Flow & TanStack Query Keys)** |
-| Adding new UI primitives, design tokens, or layouts | **Section 5 (Component Hierarchy & Boundaries)** |
-| Tuning Vite build chunks, bundle sizes, or asset caching | **Section 6 (Performance & Bundle Architecture)** |
+| Adding/upgrading client npm dependencies | **Section 1.0 (Tech Stack & Dependencies)** |
+| Adding top-level context providers or error boundaries | **Section 2.0 (Provider Tree Hierarchy)** |
+| Adding new routes, route guards, or lazy code-splitting | **Section 3.0 (Routing & Access Guards)** |
+| Modifying Auth state or synchronous Axios interceptors | **Section 4.0 (State Ownership & Auth Synchronization)** |
+| Adding new API queries, mutations, or query key factories | **Section 5.0 (Data Flow & TanStack Query Keys)** |
+| Adding new UI primitives, design tokens, or layouts | **Section 6.0 (Component Hierarchy & Boundaries)** |
+| Tuning Vite build chunks, bundle sizes, or asset caching | **Section 7.0 (Performance & Bundle Architecture)** |
 
 ---
 
 ## 📑 Table of Contents
 1. [Tech Stack & Dependencies](#1-tech-stack--dependencies)
 2. [Provider Tree Hierarchy](#2-provider-tree-hierarchy)
+   - 2.1 [Root Provider Flowchart](#21-root-provider-flowchart)
+   - 2.2 [Key Provider Decisions](#22-key-provider-decisions)
 3. [Routing & Access Guards](#3-routing--access-guards)
+   - 3.1 [Lazy Loading Pattern](#31-lazy-loading-pattern)
+   - 3.2 [UX Access Guards](#32-ux-access-guards)
 4. [State Ownership & Auth Synchronization](#4-state-ownership--auth-synchronization)
+   - 4.1 [State Categories Matrix](#41-state-categories-matrix)
+   - 4.2 [Auth Synchronisation Architecture](#42-auth-synchronisation-architecture)
 5. [Data Flow & TanStack Query Keys](#5-data-flow--tanstack-query-keys)
+   - 5.1 [Request/Response Sequence Flow](#51-requestresponse-sequence-flow)
+   - 5.2 [Query Key Factory Catalog](#52-query-key-factory-catalog)
 6. [Component Hierarchy & Boundaries](#6-component-hierarchy--boundaries)
+   - 6.1 [Component Directory Layout](#61-component-directory-layout)
+   - 6.2 [Architectural Layering Rules](#62-architectural-layering-rules)
 7. [Performance & Bundle Architecture](#7-performance--bundle-architecture)
+   - 7.1 [Bundle Splitting & Vendor Chunks](#71-bundle-splitting--vendor-chunks)
+   - 7.2 [Markdown & Syntax Highlighting Optimizations](#72-markdown--syntax-highlighting-optimizations)
 8. [Step-by-Step Guide: Adding a New Page or API Consumer](#8-step-by-step-guide-adding-a-new-page-or-api-consumer)
 
 ---
@@ -56,6 +69,7 @@ Use this reference table when modifying frontend codebase:
 
 Root providers are configured in `client/src/main.jsx` and `App.jsx` in strict top-to-bottom order:
 
+### 2.1 Root Provider Flowchart
 ```mermaid
 graph TD
     Strict["<React.StrictMode>"] --> EB["<ErrorBoundary>\nCatches unhandled render crashes"]
@@ -67,7 +81,7 @@ graph TD
     Theme --> Toast["<Toaster position='top-right' />\nGlobal toast notifications"]
 ```
 
-### Key Provider Decisions
+### 2.2 Key Provider Decisions
 - **`ErrorBoundary` at the Top:** Catches render errors anywhere below it, ensuring a graceful fallback UI is rendered instead of a blank white screen.
 - **Data Router (`createBrowserRouter`):** Required for `useBlocker`, which prompts authors to confirm navigation before discarding unsaved Markdown drafts in the writing studio.
 - **Query Client Defaults:**
@@ -82,7 +96,7 @@ graph TD
 
 `client/src/App.jsx` defines the routing topology:
 
-### Lazy Loading Pattern
+### 3.1 Lazy Loading Pattern
 Pages use named exports wrapped in an asynchronous chunk loader:
 ```js
 const lazyPage = (importFn, name) =>
@@ -90,7 +104,7 @@ const lazyPage = (importFn, name) =>
 ```
 All routes are enclosed within a global `Suspense` boundary displaying a central loading spinner.
 
-### UX Access Guards
+### 3.2 UX Access Guards
 - **`ProtectedRoute`:** Checks `isAuthenticated`. Redirects unauthenticated users to `/login` with `state: { from: location }` and `replace: true`.
 - **`AdminRoute`:** Requires `isAdmin()`. Redirects unauthorized accounts to `/`.
 
@@ -100,6 +114,7 @@ All routes are enclosed within a global `Suspense` boundary displaying a central
 
 ## 4. State Ownership & Auth Synchronization
 
+### 4.1 State Categories Matrix
 Four distinct state categories exist across the frontend:
 
 | State Kind | Owning Mechanism | Scope & Examples |
@@ -109,7 +124,7 @@ Four distinct state categories exist across the frontend:
 | **Theme State** | `ThemeProvider` (styled-components) | Light mode vs Dark mode theme tokens. |
 | **Local UI State** | React `useState` / `useReducer` | Editor split-pane cursor, open modals, input fields. |
 
-### Auth Synchronisation Architecture
+### 4.2 Auth Synchronisation Architecture
 The Axios network interceptor cannot consume React hooks (`useAuth`). Therefore, auth state is decoupled into a module-level singleton:
 
 ```mermaid
@@ -136,6 +151,7 @@ flowchart LR
 
 ## 5. Data Flow & TanStack Query Keys
 
+### 5.1 Request/Response Sequence Flow
 ```mermaid
 sequenceDiagram
     autonumber
@@ -160,8 +176,8 @@ sequenceDiagram
     end
 ```
 
-### Query Key Factory (`client/src/services/queryKeys.js`)
-Centralized query key declarations prevent cache drift across components:
+### 5.2 Query Key Factory Catalog
+Declared in `client/src/services/queryKeys.js`:
 
 | Factory Function | Generated Key | Consuming Views |
 | :--- | :--- | :--- |
@@ -183,6 +199,7 @@ Centralized query key declarations prevent cache drift across components:
 
 ## 6. Component Hierarchy & Boundaries
 
+### 6.1 Component Directory Layout
 ```
 client/src/components/
 ├── layout/     --> Header, Footer, Layout, AdminLayout, WorkspaceLayout, PageShell, ErrorBoundary
@@ -192,7 +209,7 @@ client/src/components/
 └── ui/         --> 21 headless-backed design primitives (Button, Modal, Input, Tabs, etc.)
 ```
 
-### Architectural Layering Rules
+### 6.2 Architectural Layering Rules
 1. **`ui/` Primitives:** May only import styled-components and headless primitives. Must have **zero domain knowledge** (never import posts, users, or API services).
 2. **Domain Components (`posts/`, `stats/`):** May import UI primitives and formatting utilities. Must receive data via props; never issue direct API fetches.
 3. **Pages (`pages/`):** Own data fetching via TanStack Query and state synchronization.
@@ -201,7 +218,7 @@ client/src/components/
 
 ## 7. Performance & Bundle Architecture
 
-### Bundle Splitting & Vendor Chunks
+### 7.1 Bundle Splitting & Vendor Chunks
 Configured in `client/vite.config.js`:
 
 | Chunk Target | Raw Size | Gzip Size | Trigger Conditions |
@@ -212,6 +229,10 @@ Configured in `client/vite.config.js`:
 | `markdown-preview` | 408 kB | 126 kB | Loaded only on reading view (`/post/:id`) and editor. |
 | `syntax-highlight` | 626 kB | 225 kB | Loaded on-demand only if an article contains fenced code blocks. |
 | `editor` | 75 kB | 25 kB | Loaded on-demand only on author studio routes (`/write`, `/edit/:id`). |
+
+### 7.2 Markdown & Syntax Highlighting Optimizations
+- **Deferred Prism Highlight:** Prism bundle (225 kB gzip) loads dynamically only when a post contains code fences (` ``` `).
+- **Split Read vs Write Bundles:** Reading view never loads the editor bundle (saving ~250 kB on initial read loads).
 
 ---
 
