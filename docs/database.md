@@ -10,11 +10,14 @@ Use this reference table when making codebase changes:
 
 | If you are doing this in code: | Update this section in this doc: |
 | :--- | :--- |
-| Adding a new Mongoose model | **Section 2 (Collections)** & **Section 3 (Entity Relationships)** |
-| Adding/modifying schema fields or constraints | **Section 4 (Model Schemas)** |
-| Adding a new index (`schema.index(...)`) | **Section 5 (Performance Indexes)** |
-| Optimizing aggregations or population queries | **Section 6 (Query Patterns)** |
-| Changing seeding logic or demo credentials | **Section 8 (Seed Data)** |
+| Adding/upgrading Mongoose version or connection logic | **Section 1.0 (Database Engine & Connection)** |
+| Adding a new Mongoose collection | **Section 2.0 (Active Collections Catalog)** |
+| Updating entity relationships | **Section 3.0 (Entity Relationship Diagram)** |
+| Adding/modifying schema fields or constraints | **Section 4.0 (Model Schemas & Field Constraints)** |
+| Adding a new index (`schema.index(...)`) | **Section 5.0 (Performance Indexes)** |
+| Optimizing aggregations or population queries | **Section 6.0 (High-Traffic Query Patterns)** |
+| Changing cascading delete logic | **Section 7.0 (Data Integrity & Cascades)** |
+| Changing seeding logic or demo credentials | **Section 8.0 (Seed Data & Demo Accounts)** |
 
 ---
 
@@ -23,8 +26,17 @@ Use this reference table when making codebase changes:
 2. [Active Collections Catalog](#2-active-collections-catalog)
 3. [Entity Relationship Diagram (ERD)](#3-entity-relationship-diagram-erd)
 4. [Model Schemas & Field Constraints](#4-model-schemas--field-constraints)
+   - 4.1 [`User` Model Schema](#41-user-model-schema)
+   - 4.2 [`UserProfile` Model Schema](#42-userprofile-model-schema)
+   - 4.3 [`UserSetting` Model Schema](#43-usersetting-model-schema)
+   - 4.4 [`Post` Model Schema](#44-post-model-schema)
+   - 4.5 [`Comment` Model Schema](#45-comment-model-schema)
+   - 4.6 [`Tag` Model Schema](#46-tag-model-schema)
+   - 4.7 [`Like`, `View`, and `Read` Event Schemas](#47-like-view-and-read-event-schemas)
 5. [Performance Indexes](#5-performance-indexes)
 6. [High-Traffic Query Patterns](#6-high-traffic-query-patterns)
+   - 6.1 [Population Strategy](#61-population-strategy)
+   - 6.2 [Aggregation Pipelines](#62-aggregation-pipelines)
 7. [Data Integrity & Cascades](#7-data-integrity--cascades)
 8. [Seed Data & Demo Accounts](#8-seed-data--demo-accounts)
 9. [Schema Design Conventions](#9-schema-design-conventions)
@@ -162,7 +174,7 @@ erDiagram
 
 ## 4. Model Schemas & Field Constraints
 
-### `User`
+### 4.1 `User` Model Schema
 | Field | Type | Constraints & Notes |
 | :--- | :--- | :--- |
 | `username` | String | Required, trim, unique index. |
@@ -176,7 +188,7 @@ erDiagram
 | `settings` | ObjectId → `UserSetting` | 1:1 relation to user settings document. |
 | `posts` | [ObjectId → `Post`] | Denormalized authorship list. |
 
-### `UserProfile`
+### 4.2 `UserProfile` Model Schema
 | Field | Type | Constraints & Notes |
 | :--- | :--- | :--- |
 | `user` | ObjectId → `User` | Required, unique index. |
@@ -186,7 +198,7 @@ erDiagram
 | `followers` / `followings` | [ObjectId → `User`] | Array of user references. |
 | `postCount`, `followersCount`, `followingsCount` | Number | Default `0`. |
 
-### `UserSetting`
+### 4.3 `UserSetting` Model Schema
 | Field | Type | Default | Notes |
 | :--- | :--- | :--- | :--- |
 | `user` | ObjectId → `User` | Required | Unique 1:1 relation to user. |
@@ -195,7 +207,7 @@ erDiagram
 | `privacySettings` | Object | Defaults | `{ showEmail: false, showActivity: true }`. |
 | `appearance` | Object | Defaults | `{ fontSize: 'md', colorScheme: 'default' }`. |
 
-### `Post`
+### 4.4 `Post` Model Schema
 | Field | Type | Constraints & Notes |
 | :--- | :--- | :--- |
 | `user` | ObjectId → `User` | Required author reference. |
@@ -210,7 +222,7 @@ erDiagram
 | `comments` | [ObjectId → `Comment`] | Runtime comments array. |
 | `editedAt` | Date | Stamped by `postService.updatePost` when content actually changes. |
 
-### `Comment`
+### 4.5 `Comment` Model Schema
 | Field | Type | Constraints & Notes |
 | :--- | :--- | :--- |
 | `user` | ObjectId → `User` | Required comment author. |
@@ -220,11 +232,11 @@ erDiagram
 | `replies` | [ObjectId → `Comment`] | Nested replies array. |
 | `replyCount` | Number | Default `0`. |
 
-### `Tag`
+### 4.6 `Tag` Model Schema
 - `name`: String, required, lowercase, unique index, max 30 chars.
 - `posts`: Array of referencing `Post` ObjectIds.
 
-### `Like`, `View`, `Read`
+### 4.7 `Like`, `View`, and `Read` Event Schemas
 - **`Like`:** Contains `user` and `post`. Enforced with a **compound unique index on `(post, user)`** to prevent duplicate likes without race conditions.
 - **`View` & `Read`:** Carries `user` (nullable), `post`, and **`visitorKey`** (String).
   - *Visitor Key Algorithm:* Logged-in user uses `u:<userId>`; anonymous visitors use salted HMAC hash `a:<hash>` from IP + User-Agent.
@@ -263,11 +275,11 @@ erDiagram
 
 ## 6. High-Traffic Query Patterns
 
-### Population Strategy
+### 6.1 Population Strategy
 - `GET /posts/:id`: Performs deep population (author, likes, top comments, comment authors, replies, tags). Excludes sensitive fields (`.select('-password')`).
 - `GET /posts`: Lightweight population (only `user` and `tags`) with pagination to avoid high memory overhead.
 
-### Aggregations
+### 6.2 Aggregation Pipelines
 - **14-Day Trending Ranking:** Uses four `$lookup` sub-pipelines over `views`, `reads`, `likes`, and `comments` within a 14-day sliding window, followed by a weighted score calculation:
   $$\text{Score} = (2 \times \text{reads}) + \text{likes} + (0.5 \times \text{comments}) + (0.1 \times \text{views})$$
 - **Creator Dashboard Analytics:** `getUserAnalytics` aggregates view and read counts using single grouped queries (`countByPost`) rather than looping `countDocuments` per post.
