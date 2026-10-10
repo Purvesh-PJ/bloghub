@@ -20,18 +20,39 @@ Use this reference table when modifying backend codebase:
 ---
 
 ## 📑 Table of Contents
-1. [Composition Root & Startup](#1-composition-root--startup)
-2. [HTTP Request Lifecycle Diagram](#2-http-request-lifecycle-diagram)
-3. [Middlewares & Guards](#3-middlewares--guards)
-4. [Route, Controller & Service Layering](#4-route-controller--service-layering)
-5. [Error Handling & HTTP Contracts](#5-error-handling--http-contracts)
-6. [Cross-Cutting Concerns (Security, Uploads, Rate Limiting)](#6-cross-cutting-concerns)
-7. [Architectural Decisions & Future Work](#7-architectural-decisions--future-work)
-8. [Step-by-Step Guide: Adding a New Backend Resource](#8-step-by-step-guide-adding-a-new-backend-resource)
+1. [Tech Stack & Dependencies](#1-tech-stack--dependencies)
+2. [Composition Root & Startup](#2-composition-root--startup)
+3. [HTTP Request Lifecycle Diagram](#3-http-request-lifecycle-diagram)
+4. [Middlewares & Guards](#4-middlewares--guards)
+5. [Route, Controller & Service Layering](#5-route-controller--service-layering)
+6. [Error Handling & HTTP Contracts](#6-error-handling--http-contracts)
+7. [Cross-Cutting Concerns (Security, Uploads, Rate Limiting)](#7-cross-cutting-concerns)
+8. [Architectural Decisions & Future Work](#8-architectural-decisions--future-work)
+9. [Step-by-Step Guide: Adding a New Backend Resource](#9-step-by-step-guide-adding-a-new-backend-resource)
 
 ---
 
-## 1. Composition Root & Startup
+## 1. Tech Stack & Dependencies
+
+| Concern | Package / Technology | Version | Purpose in BlogHub |
+| :--- | :--- | :--- | :--- |
+| **Runtime** | Node.js | v18+ | JavaScript runtime environment |
+| **Framework** | `express` | 4.18 | REST API HTTP server and routing |
+| **Database ODM** | `mongoose` | 8.24 | Schema modelling, validation, and MongoDB queries |
+| **Authentication** | `jsonwebtoken` | 9.0 | Stateless dual-token JWT signing and verification |
+| **Password Hashing** | `bcryptjs` | 2.4 | Salted credential hashing (cost factor 12) |
+| **Validation** | `express-validator` | 7.0 | Declarative input sanitization and schema checks |
+| **Security Headers** | `helmet` | 8.3 | Sets HTTP security response headers |
+| **Rate Limiting** | `express-rate-limit` | 8.6 | IP-based request throttling (general + auth limiter) |
+| **File Uploads** | `multer` | 1.4 LTS | Memory buffer handling for user avatar uploads |
+| **Request Logging** | `morgan` | 1.10 | HTTP request logger (`dev` and `combined` formats) |
+| **CORS** | `cors` | 2.8 | Cross-origin resource sharing policy |
+| **Configuration** | `dotenv` | 16.4 | Environment variable loader from root `.env` |
+| **Module System** | CommonJS (`require`) | — | Native Node.js module format used across backend |
+
+---
+
+## 2. Composition Root & Startup
 
 The backend entry point is `backend/index.js`. The order in which middlewares and listeners mount is strict:
 
@@ -70,7 +91,7 @@ module.exports = app;
 
 ---
 
-## 2. HTTP Request Lifecycle Diagram
+## 3. HTTP Request Lifecycle Diagram
 
 ```mermaid
 flowchart TD
@@ -107,7 +128,7 @@ flowchart TD
 
 ---
 
-## 3. Middlewares & Guards
+## 4. Middlewares & Guards
 
 Middlewares reside in `backend/middlewares/`:
 
@@ -126,7 +147,7 @@ Middlewares reside in `backend/middlewares/`:
 
 ---
 
-## 4. Route, Controller & Service Layering
+## 5. Route, Controller & Service Layering
 
 ### `routes/` (Routing Table)
 Routers declare URL endpoints and bind middleware chains without embedding business logic:
@@ -151,7 +172,7 @@ Services handle complex workflows spanning multiple collections:
 
 ---
 
-## 5. Error Handling & HTTP Contracts
+## 6. Error Handling & HTTP Contracts
 
 ### Global AppError Contract
 Controllers throw typed errors using `utils/AppError.js`:
@@ -195,7 +216,7 @@ if (!post) throw notFound("Post not found");
 
 ---
 
-## 6. Cross-Cutting Concerns
+## 7. Cross-Cutting Concerns
 
 ### Stateless Authentication with `tokenVersion`
 - **Access Tokens:** 15-minute expiration, signed with `JWT_SECRET`.
@@ -218,7 +239,7 @@ if (!post) throw notFound("Post not found");
 
 ---
 
-## 7. Architectural Decisions & Future Work
+## 8. Architectural Decisions & Future Work
 
 | Decision | Rationale | Trade-off |
 | :--- | :--- | :--- |
@@ -228,7 +249,7 @@ if (!post) throw notFound("Post not found");
 
 ---
 
-## 8. Step-by-Step Guide: Adding a New Backend Resource
+## 9. Step-by-Step Guide: Adding a New Backend Resource
 
 When adding a new feature or endpoint, follow this sequence:
 1. **Model:** Declare schema and indexes in `backend/models/<resource>.model.js`.

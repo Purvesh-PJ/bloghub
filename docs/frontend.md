@@ -20,17 +20,39 @@ Use this reference table when modifying frontend codebase:
 ---
 
 ## 📑 Table of Contents
-1. [Provider Tree Hierarchy](#1-provider-tree-hierarchy)
-2. [Routing & Access Guards](#2-routing--access-guards)
-3. [State Ownership & Auth Synchronization](#3-state-ownership--auth-synchronization)
-4. [Data Flow & TanStack Query Keys](#4-data-flow--tanstack-query-keys)
-5. [Component Hierarchy & Boundaries](#5-component-hierarchy--boundaries)
-6. [Performance & Bundle Architecture](#6-performance--bundle-architecture)
-7. [Step-by-Step Guide: Adding a New Page or API Consumer](#7-step-by-step-guide-adding-a-new-page-or-api-consumer)
+1. [Tech Stack & Dependencies](#1-tech-stack--dependencies)
+2. [Provider Tree Hierarchy](#2-provider-tree-hierarchy)
+3. [Routing & Access Guards](#3-routing--access-guards)
+4. [State Ownership & Auth Synchronization](#4-state-ownership--auth-synchronization)
+5. [Data Flow & TanStack Query Keys](#5-data-flow--tanstack-query-keys)
+6. [Component Hierarchy & Boundaries](#6-component-hierarchy--boundaries)
+7. [Performance & Bundle Architecture](#7-performance--bundle-architecture)
+8. [Step-by-Step Guide: Adding a New Page or API Consumer](#8-step-by-step-guide-adding-a-new-page-or-api-consumer)
 
 ---
 
-## 1. Provider Tree Hierarchy
+## 1. Tech Stack & Dependencies
+
+| Concern | Package / Technology | Version | Purpose in BlogHub Client |
+| :--- | :--- | :--- | :--- |
+| **UI Library** | `react` / `react-dom` | 19.2 | Core declarative UI rendering |
+| **Build Tool** | `vite` | 7.2 | Fast ESM development server and Rollup production bundler |
+| **Routing** | `react-router-dom` | 7.11 | Client-side routing with `createBrowserRouter` (data router) |
+| **Server State** | `@tanstack/react-query` | 5.90 | Caching, background synchronization, and server-state management |
+| **HTTP Client** | `axios` | 1.13 | REST client with request/response interceptors for silent auth refresh |
+| **Styling Engine** | `styled-components` | 6.2 | CSS-in-JS component-scoped design tokens and theming |
+| **Headless UI** | `@radix-ui/react-*` | 1.x / 2.x | Accessible primitives: dialog, dropdown-menu, select, tabs, avatar |
+| **Markdown Editor** | `@uiw/react-md-editor` | 4.0 | Synchronized split-pane Markdown writing studio |
+| **Markdown Sanitizer** | `rehype-sanitize` | 6.0 | Strict HTML sanitization ensuring XSS-free Markdown rendering |
+| **Syntax Highlighting**| `rehype-prism-plus` | 2.0 | Lazy Prism syntax highlighting for code blocks |
+| **Iconography** | `lucide-react` | 0.562 | Modern icon set |
+| **Toast Notifications**| `react-hot-toast` | 2.6 | Global lightweight notification toasts |
+| **Date Utilities** | `date-fns` | 4.1 | Date formatting and relative time calculations |
+| **Typography** | `@fontsource-variable/inter` | 5.3 | Self-hosted Inter variable font family |
+
+---
+
+## 2. Provider Tree Hierarchy
 
 Root providers are configured in `client/src/main.jsx` and `App.jsx` in strict top-to-bottom order:
 
@@ -56,7 +78,7 @@ graph TD
 
 ---
 
-## 2. Routing & Access Guards
+## 3. Routing & Access Guards
 
 `client/src/App.jsx` defines the routing topology:
 
@@ -76,7 +98,7 @@ All routes are enclosed within a global `Suspense` boundary displaying a central
 
 ---
 
-## 3. State Ownership & Auth Synchronization
+## 4. State Ownership & Auth Synchronization
 
 Four distinct state categories exist across the frontend:
 
@@ -112,7 +134,7 @@ flowchart LR
 
 ---
 
-## 4. Data Flow & TanStack Query Keys
+## 5. Data Flow & TanStack Query Keys
 
 ```mermaid
 sequenceDiagram
@@ -159,7 +181,7 @@ Centralized query key declarations prevent cache drift across components:
 
 ---
 
-## 5. Component Hierarchy & Boundaries
+## 6. Component Hierarchy & Boundaries
 
 ```
 client/src/components/
@@ -177,7 +199,7 @@ client/src/components/
 
 ---
 
-## 6. Performance & Bundle Architecture
+## 7. Performance & Bundle Architecture
 
 ### Bundle Splitting & Vendor Chunks
 Configured in `client/vite.config.js`:
@@ -193,7 +215,7 @@ Configured in `client/vite.config.js`:
 
 ---
 
-## 7. Step-by-Step Guide: Adding a New Page or API Consumer
+## 8. Step-by-Step Guide: Adding a New Page or API Consumer
 
 When creating a new frontend feature:
 1. **API Service:** Add async function in `client/src/services/<resource>Service.js` returning `(await api.get(...)).data`.
