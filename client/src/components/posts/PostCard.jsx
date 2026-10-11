@@ -26,13 +26,13 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
 
   const variantClasses = {
     elevated:
-      'bg-[hsl(var(--card))] border border-[hsl(var(--line-subtle))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:bg-[hsl(var(--card))] hover:border-[hsl(var(--line-default))] hover:shadow-[0_14px_28px_-6px_rgba(15,23,42,0.08),0_0_16px_-2px_rgba(14,165,233,0.10)]',
+      'bg-[hsl(var(--card))] border border-black/8 dark:border-white/8 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:bg-[hsl(var(--card))] hover:border-black/15 dark:hover:border-white/15 hover:shadow-[0_14px_28px_-6px_rgba(15,23,42,0.08),0_0_16px_-2px_rgba(14,165,233,0.10)]',
     featured:
-      'bg-[hsl(var(--card))] border border-[hsl(var(--line-subtle))] shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)] hover:bg-[hsl(var(--card))] hover:border-[hsl(var(--line-default))] hover:shadow-[0_16px_32px_-6px_rgba(15,23,42,0.1),0_0_16px_-2px_rgba(14,165,233,0.15)]',
+      'bg-[hsl(var(--card))] border border-black/8 dark:border-white/8 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)] hover:bg-[hsl(var(--card))] hover:border-black/15 dark:hover:border-white/15 hover:shadow-[0_16px_32px_-6px_rgba(15,23,42,0.1),0_0_16px_-2px_rgba(14,165,233,0.15)]',
     ghost:
       'bg-transparent border border-transparent hover:bg-[hsl(var(--muted))/0.5]',
     inset:
-      'bg-[hsl(var(--muted))/0.4] border border-[hsl(var(--line-subtle))] shadow-inner hover:bg-[hsl(var(--muted))/0.6]',
+      'bg-[hsl(var(--muted))/0.4] border border-black/8 dark:border-white/8 shadow-inner hover:bg-[hsl(var(--muted))/0.6]',
   };
 
   return (
