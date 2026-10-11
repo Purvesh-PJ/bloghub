@@ -181,7 +181,7 @@ export function Home() {
 
         {/* Bento Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] shadow-sm hover:border-[hsl(var(--border))] transition-colors">
+          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-md transition-shadow">
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]">
               <Feather className="h-5 w-5" />
             </div>
@@ -192,7 +192,7 @@ export function Home() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] shadow-sm hover:border-[hsl(var(--border))] transition-colors">
+          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-md transition-shadow">
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]">
               <BarChart2 className="h-5 w-5" />
             </div>
@@ -203,7 +203,7 @@ export function Home() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] shadow-sm hover:border-[hsl(var(--border))] transition-colors">
+          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-md transition-shadow">
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]">
               <MessageCircle className="h-5 w-5" />
             </div>
@@ -214,7 +214,7 @@ export function Home() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] shadow-sm hover:border-[hsl(var(--border))] transition-colors sm:col-span-2">
+          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-md transition-shadow sm:col-span-2">
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]">
               <ShieldCheck className="h-5 w-5" />
             </div>
@@ -225,7 +225,7 @@ export function Home() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] shadow-sm hover:border-[hsl(var(--border))] transition-colors">
+          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-md transition-shadow">
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]">
               <Sparkles className="h-5 w-5" />
             </div>

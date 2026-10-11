@@ -18,15 +18,15 @@ export function HeroIllustration() {
       <div className="absolute top-[10%] left-[15%] w-[360px] h-[360px] rounded-full bg-[radial-gradient(circle,rgba(14,165,233,0.22)_0%,rgba(14,165,233,0.08)_40%,transparent_70%)] blur-[52px] pointer-events-none z-0 animate-pulse duration-1000" />
 
       {/* Floating Top Badge */}
-      <div className="absolute -top-4 -right-2.5 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] shadow-lg text-xs font-semibold text-[hsl(var(--foreground))] motion-safe:animate-bounce [animation-duration:6s]">
+      <div className="absolute -top-4 -right-2.5 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-[hsl(var(--card))] shadow-lg text-xs font-semibold text-[hsl(var(--foreground))] motion-safe:animate-bounce [animation-duration:6s]">
         <Sparkles className="w-4 h-4 text-amber-500" />
         <span>#Ideas & Perspectives</span>
       </div>
 
       {/* Main Editorial Canvas Card */}
-      <div className="relative z-10 bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] rounded-[28px] sm:rounded-[36px] p-6 shadow-xl backdrop-blur-md transition-all hover:shadow-2xl hover:border-[hsl(var(--primary))/0.3]">
+      <div className="relative z-10 bg-[hsl(var(--card))] rounded-[28px] sm:rounded-[36px] p-6 shadow-xl backdrop-blur-md transition-all hover:shadow-2xl">
         {/* Window Header */}
-        <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[hsl(var(--border))/0.4]">
+        <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-black/8 dark:border-white/8">
           <div className="flex gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 opacity-80" />
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 opacity-80" />
@@ -79,7 +79,7 @@ export function HeroIllustration() {
       </div>
 
       {/* Floating Bottom Card: Reading rate */}
-      <div className="absolute -bottom-5 -left-3.5 z-20 flex items-center gap-3 p-3 px-4.5 rounded-[24px] bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] shadow-xl">
+      <div className="absolute -bottom-5 -left-3.5 z-20 flex items-center gap-3 p-3 px-4.5 rounded-[24px] bg-[hsl(var(--card))] shadow-xl">
         <div className="w-9 h-9 rounded-full bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))] flex items-center justify-center">
           <BookOpen className="w-4 h-4" />
         </div>
@@ -92,7 +92,7 @@ export function HeroIllustration() {
       </div>
 
       {/* Floating Interaction Pills */}
-      <div className="absolute bottom-5 -right-3.5 z-20 flex items-center gap-3 py-2 px-3.5 rounded-full bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] shadow-lg text-xs font-semibold text-[hsl(var(--muted-foreground))]">
+      <div className="absolute bottom-5 -right-3.5 z-20 flex items-center gap-3 py-2 px-3.5 rounded-full bg-[hsl(var(--card))] shadow-lg text-xs font-semibold text-[hsl(var(--muted-foreground))]">
         <span className="inline-flex items-center gap-1">
           <Heart className="w-3.5 h-3.5 text-red-500 fill-current" /> 248
         </span>
