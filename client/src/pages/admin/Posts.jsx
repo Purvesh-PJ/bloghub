@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import styled from 'styled-components';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Search as SearchIcon,
@@ -32,99 +31,7 @@ import {
   Skeleton,
   Pagination,
 } from '../../components/ui';
-import { text, clamp } from '../../styles/theme/mixins';
 import { queryKeys } from '../../services/queryKeys';
-
-/**
- * Post moderation.
- *
- * Filtering, searching and paging happen on the server. This screen used to ask for a flat
- * fifty posts and do all three in the browser, which meant a site with more than fifty
- * stories offered no way to reach the rest of them — and the counts on the filter chips
- * described the fifty that happened to load rather than the site.
- *
- * The bulk bar is the other half. `POST /posts/bulk` has always accepted an administrator's
- * ids and applied one action to all of them, and the console had no way to select anything:
- * unpublishing ten posts meant ten trips through a dropdown menu.
- */
-
-const Toolbar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  flex-wrap: wrap;
-  padding: ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-`;
-
-/* Pushed to the end of the toolbar so the filters stay left-aligned with the table. */
-const SearchField = styled.div`
-  flex: 1;
-  min-width: 200px;
-  max-width: 320px;
-  margin-left: auto;
-`;
-
-const CellTitle = styled(Link)`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  ${clamp(1)}
-  max-width: 320px;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-const MenuTrigger = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  color: ${({ theme }) => theme.colors.textMuted};
-  transition: background ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const Checkbox = styled.input`
-  width: 16px;
-  height: 16px;
-  accent-color: ${({ theme }) => theme.colors.accentSolid};
-  cursor: pointer;
-`;
-
-/* Appears only when something is selected, so it never occupies space it is not using. */
-const BulkBar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  flex-wrap: wrap;
-  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  border: 1px solid ${({ theme }) => theme.colors.accentLine};
-`;
-
-const BulkCount = styled.span`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.accentText};
-  margin-right: auto;
-`;
 
 const TONE = { public: 'success', draft: 'warning', private: 'neutral' };
 const LABEL = { public: 'Published', draft: 'Draft', private: 'Private' };
@@ -159,11 +66,6 @@ export function AdminPosts() {
     [page, filter, debouncedQuery]
   );
 
-  /*
-    Changing a filter or the search term has to return to the first page: staying on page 4
-    of the previous result set shows an empty table for a filter that plainly has matches.
-    Adjusted during render so no request is ever issued with the stale page.
-  */
   const filterKey = `${filter}|${debouncedQuery.trim()}`;
   const [syncedFilter, setSyncedFilter] = useState(filterKey);
   if (syncedFilter !== filterKey) {
@@ -172,7 +74,6 @@ export function AdminPosts() {
     setSelectedIds([]);
   }
 
-  // Moderation view — includes drafts and private posts, unlike the public ['posts'] key.
   const { data: postsResponse, isLoading } = useQuery({
     queryKey: queryKeys.posts.moderation(listParams),
     queryFn: () => postService.getAllPosts(listParams),
@@ -194,10 +95,6 @@ export function AdminPosts() {
     onError: (error) => toast.error(error.response?.data?.message || 'Could not delete the post'),
   });
 
-  /*
-    One action applied to every selected story in a single request. The endpoint has always
-    accepted this from an administrator; there was simply no way to select anything here.
-  */
   const bulkMutation = useMutation({
     mutationFn: ({ ids, action }) => postService.bulkUpdate(ids, action),
     onSuccess: (response) => {
@@ -212,11 +109,8 @@ export function AdminPosts() {
 
   const visible = useMemo(() => postsResponse?.data || [], [postsResponse]);
   const pagination = postsResponse?.pagination ?? { page: 1, pages: 1, total: 0 };
-  // Counted over the whole collection by the server, not over the page on screen.
   const counts = postsResponse?.counts ?? { all: 0, public: 0, draft: 0, private: 0 };
 
-  // Selection is per page: leaving it drops the selection rather than acting on rows the
-  // administrator can no longer see.
   const visibleIds = visible.map((post) => post._id);
   const allVisibleSelected =
     visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
@@ -229,23 +123,17 @@ export function AdminPosts() {
   if (isLoading) {
     return (
       <div aria-hidden="true">
-        <Card tone="low" radius="xl" style={{ padding: 20 }}>
+        <Card tone="low" radius="xl" padding="lg">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 0',
-                borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-              }}
+              className="flex items-center justify-between py-3 border-b border-[hsl(var(--border))/0.4] last:border-b-0"
             >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-                <Skeleton $width="55%" $height={16} $radius="xs" />
-                <Skeleton $width="25%" $height={12} $radius="xs" />
+              <div className="flex flex-col gap-1.5 flex-1">
+                <Skeleton width="55%" height={16} className="rounded" />
+                <Skeleton width="25%" height={12} className="rounded" />
               </div>
-              <Skeleton $width={60} $height={22} $radius="pill" />
+              <Skeleton width={60} height={22} className="rounded-full" />
             </div>
           ))}
         </Card>
@@ -257,15 +145,17 @@ export function AdminPosts() {
     <>
       <Section>
         {selectedIds.length > 0 && (
-          <BulkBar>
-            <BulkCount>{selectedIds.length} selected on this page</BulkCount>
+          <div className="flex items-center gap-2 flex-wrap p-3 px-5 mb-4 rounded-2xl bg-[hsl(var(--primary))/0.12] border border-[hsl(var(--primary))/0.2]">
+            <span className="text-sm font-semibold text-[hsl(var(--primary))] mr-auto">
+              {selectedIds.length} selected on this page
+            </span>
             <Button
               size="sm"
               variant="secondary"
               onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'public' })}
               disabled={bulkMutation.isPending}
             >
-              <Globe /> Publish
+              <Globe className="w-3.5 h-3.5 mr-1" /> Publish
             </Button>
             <Button
               size="sm"
@@ -273,7 +163,7 @@ export function AdminPosts() {
               onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'draft' })}
               disabled={bulkMutation.isPending}
             >
-              <FileEdit /> Unpublish
+              <FileEdit className="w-3.5 h-3.5 mr-1" /> Unpublish
             </Button>
             <Button
               size="sm"
@@ -281,7 +171,7 @@ export function AdminPosts() {
               onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'private' })}
               disabled={bulkMutation.isPending}
             >
-              <Lock /> Make private
+              <Lock className="w-3.5 h-3.5 mr-1" /> Make private
             </Button>
             <Button
               size="sm"
@@ -289,15 +179,16 @@ export function AdminPosts() {
               onClick={() => setPendingBulkDelete(selectedIds)}
               disabled={bulkMutation.isPending}
             >
-              <Trash2 /> Delete
+              <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
               Clear
             </Button>
-          </BulkBar>
+          </div>
         )}
 
-        <Toolbar>
+        {/* Toolbar with filter chips and search */}
+        <div className="flex items-center gap-2.5 flex-wrap p-3 rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] mb-4">
           {FILTERS.map((option) => (
             <Chip
               key={option.id}
@@ -309,7 +200,7 @@ export function AdminPosts() {
             </Chip>
           ))}
 
-          <SearchField>
+          <div className="flex-1 min-w-[200px] max-w-[320px] ml-auto max-sm:ml-0 max-sm:max-w-full">
             <Input
               icon={<SearchIcon />}
               placeholder="Search by title"
@@ -317,8 +208,8 @@ export function AdminPosts() {
               onChange={(event) => setQuery(event.target.value)}
               aria-label="Search posts by title"
             />
-          </SearchField>
-        </Toolbar>
+          </div>
+        </div>
 
         {visible.length === 0 ? (
           <EmptyState icon={FileText} title="Nothing here">
@@ -327,12 +218,12 @@ export function AdminPosts() {
               : 'Nobody has written anything yet.'}
           </EmptyState>
         ) : (
-          <Card tone="low" radius="xl" padding="sm">
+          <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
             <Table>
               <Table.Head>
                 <tr>
-                  <th style={{ width: 40 }}>
-                    <Checkbox
+                  <th className="w-10 pl-6">
+                    <input
                       type="checkbox"
                       checked={allVisibleSelected}
                       onChange={() =>
@@ -345,6 +236,7 @@ export function AdminPosts() {
                       aria-label={
                         allVisibleSelected ? 'Clear this page' : 'Select every story on this page'
                       }
+                      className="w-4 h-4 rounded accent-[hsl(var(--primary))] cursor-pointer"
                     />
                   </th>
                   <th>Title</th>
@@ -352,22 +244,28 @@ export function AdminPosts() {
                   <th>Status</th>
                   <th>Engagement</th>
                   <th>Created</th>
-                  <th aria-label="Actions" />
+                  <th aria-label="Actions" className="pr-6" />
                 </tr>
               </Table.Head>
               <Table.Body>
                 {visible.map((post) => (
                   <tr key={post._id}>
-                    <td>
-                      <Checkbox
+                    <td className="pl-6">
+                      <input
                         type="checkbox"
                         checked={selectedIds.includes(post._id)}
                         onChange={() => toggleSelected(post._id)}
                         aria-label={`Select ${post.title}`}
+                        className="w-4 h-4 rounded accent-[hsl(var(--primary))] cursor-pointer"
                       />
                     </td>
                     <td>
-                      <CellTitle to={`/post/${post._id}`}>{post.title}</CellTitle>
+                      <Link
+                        to={`/post/${post._id}`}
+                        className="text-sm font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 max-w-[320px] no-underline block"
+                      >
+                        {post.title}
+                      </Link>
                     </td>
                     <td>{post.user?.username || 'Unknown'}</td>
                     <td>
@@ -379,23 +277,27 @@ export function AdminPosts() {
                       {post.likes?.length || 0} likes · {post.comments?.length || 0} replies
                     </td>
                     <td>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td className="text-right pr-6">
                       <DropdownMenu
                         trigger={
-                          <MenuTrigger aria-label={`Actions for ${post.title}`}>
-                            <MoreHorizontal />
-                          </MenuTrigger>
+                          <button
+                            type="button"
+                            aria-label={`Actions for ${post.title}`}
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors cursor-pointer"
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
                         }
                       >
                         <DropdownMenu.Item onSelect={() => navigate(`/post/${post._id}`)}>
-                          <Eye /> View
+                          <Eye className="w-3.5 h-3.5 mr-2" /> View
                         </DropdownMenu.Item>
                         <DropdownMenu.Item onSelect={() => navigate(`/edit/${post._id}`)}>
-                          <Pencil /> Edit
+                          <Pencil className="w-3.5 h-3.5 mr-2" /> Edit
                         </DropdownMenu.Item>
                         <DropdownMenu.Separator />
-                        <DropdownMenu.Item $tone="danger" onSelect={() => setPendingDelete(post)}>
-                          <Trash2 /> Delete
+                        <DropdownMenu.Item tone="danger" onSelect={() => setPendingDelete(post)}>
+                          <Trash2 className="w-3.5 h-3.5 mr-2 text-red-500" /> Delete
                         </DropdownMenu.Item>
                       </DropdownMenu>
                     </td>
@@ -411,7 +313,6 @@ export function AdminPosts() {
               noun="stories"
               onChange={(next) => {
                 setPage(next);
-                // Selection is per page; carrying it across would act on rows out of view.
                 setSelectedIds([]);
               }}
             />
@@ -442,7 +343,7 @@ export function AdminPosts() {
       </Modal>
 
       <Modal
-        open={!!pendingDelete}
+        open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title="Delete this post?"
         description={
