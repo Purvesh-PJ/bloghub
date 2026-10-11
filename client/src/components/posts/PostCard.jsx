@@ -1,201 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import styled, { css } from 'styled-components';
-
-import { display, text, clamp, media, interactive } from '../../styles/theme/mixins';
 import { excerpt, readingTime } from '../../utils/text';
 import { AuthorByline } from './AuthorByline';
+import { cn } from '../../lib/utils';
 
 /**
  * PostCard — elevated editorial story card.
- *
  * Supports `row` for main feed / search and `stacked` for grids / profile views.
+ * Preserves BlogHub signature 28px card radius, ambient glow on hover, and smooth micro-lifts.
  */
-
-const cardVariants = {
-  /** Standard elevated surface (Default) */
-  elevated: css`
-    background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-    box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
-
-    &:hover {
-      background: ${({ theme }) => theme.colors.surfaceHover};
-      border-color: ${({ theme }) => theme.colors.lineDefault};
-      box-shadow:
-        0 14px 28px -6px rgba(15, 23, 42, 0.08),
-        0 0 16px -2px rgba(14, 165, 233, 0.08);
-      transform: translateY(-2px);
-    }
-  `,
-
-  /** Featured spotlight card with soft elevation */
-  featured: css`
-    background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
-
-    &:hover {
-      background: ${({ theme }) => theme.colors.surfaceHover};
-      border-color: ${({ theme }) => theme.colors.lineDefault};
-      box-shadow:
-        0 16px 32px -6px rgba(15, 23, 42, 0.1),
-        0 0 16px -2px rgba(14, 165, 233, 0.12);
-      transform: translateY(-2px);
-    }
-  `,
-
-  /** Ghost / Minimal seamless editorial card */
-  ghost: css`
-    background: transparent;
-    border: 1px solid transparent;
-    box-shadow: none;
-    border-radius: ${({ theme }) => theme.radii.lg};
-
-    &:hover {
-      background: ${({ theme }) => theme.colors.surfaceContainerLow};
-      box-shadow: none;
-      transform: translateY(-2px);
-    }
-  `,
-
-  /** Inset sunken well */
-  inset: css`
-    background: ${({ theme }) => theme.colors.surfaceContainerLow};
-    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
-
-    &:hover {
-      background: ${({ theme }) => theme.colors.surfaceContainer};
-      transform: translateY(-2px);
-    }
-  `,
-};
-
-const Card = styled(Link)`
-  position: relative;
-  display: grid;
-  gap: ${({ theme }) => theme.spacing.lg};
-  padding: ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  text-decoration: none;
-  overflow: hidden;
-  transition: all ${({ theme }) => theme.transitions.fast};
-  ${interactive}
-
-  ${({ $variant }) => cardVariants[$variant] ?? cardVariants.elevated}
-
-  ${({ $layout, $hasThumb }) =>
-    $layout === 'stacked' || !$hasThumb
-      ? css`
-          grid-template-columns: 1fr;
-          align-items: start;
-        `
-      : css`
-          grid-template-columns: 230px 1fr;
-          align-items: stretch;
-
-          ${media.down('md')`
-            grid-template-columns: 180px 1fr;
-          `}
-
-          ${media.down('sm')`
-            grid-template-columns: 1fr;
-            gap: ${({ theme }) => theme.spacing.md};
-          `}
-        `}
-`;
-
-const Body = styled.div`
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.sm};
-  height: 100%;
-`;
-
-const ContentWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const Title = styled.h3`
-  ${({ $variant }) => ($variant === 'featured' ? display('sm') : display('xs'))}
-  font-weight: 700;
-  line-height: 1.35;
-  letter-spacing: -0.015em;
-  color: ${({ theme }) => theme.colors.textPrimary};
-  ${clamp(2)}
-  transition: color ${({ theme }) => theme.transitions.fast};
-
-  ${Card}:hover & {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-const Excerpt = styled.p`
-  ${text('sm')}
-  line-height: 1.6;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  ${({ $hasThumb }) => ($hasThumb ? clamp(2) : clamp(3))}
-`;
-
-const Thumb = styled.div`
-  position: relative;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  overflow: hidden;
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  width: 100%;
-  height: 100%;
-  min-height: 155px;
-  aspect-ratio: 16 / 10;
-  flex-shrink: 0;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform ${({ theme }) => theme.transitions.normal};
-  }
-
-  ${Card}:hover & img {
-    transform: scale(1.05);
-  }
-
-  ${({ $layout }) =>
-    $layout === 'stacked' &&
-    css`
-      aspect-ratio: 16 / 9;
-      height: auto;
-      min-height: unset;
-    `}
-`;
-
-const HashtagsWrap = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 4px;
-`;
-
-const TagHash = styled.span`
-  ${text('xs', 'semibold')}
-  color: ${({ theme }) => theme.colors.accentText};
-  letter-spacing: 0.01em;
-  transition: all ${({ theme }) => theme.transitions.fast};
-  cursor: pointer;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentSolidHover};
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-`;
-
 export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
   const navigate = useNavigate();
   const [imageFailed, setImageFailed] = useState(false);
@@ -211,36 +24,85 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
   const isValidDate = created && !Number.isNaN(created.getTime());
   const showThumb = Boolean(post.imageURL) && !imageFailed;
 
+  const variantClasses = {
+    elevated:
+      'bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:bg-[hsl(var(--card))] hover:border-[hsl(var(--border))] hover:shadow-[0_14px_28px_-6px_rgba(15,23,42,0.08),0_0_16px_-2px_rgba(14,165,233,0.10)]',
+    featured:
+      'bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.5] shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)] hover:bg-[hsl(var(--card))] hover:border-[hsl(var(--border))] hover:shadow-[0_16px_32px_-6px_rgba(15,23,42,0.1),0_0_16px_-2px_rgba(14,165,233,0.15)]',
+    ghost:
+      'bg-transparent border border-transparent hover:bg-[hsl(var(--muted))/0.5]',
+    inset:
+      'bg-[hsl(var(--muted))/0.4] border border-[hsl(var(--border))/0.4] shadow-inner hover:bg-[hsl(var(--muted))/0.6]',
+  };
+
   return (
-    <Card to={`/post/${post._id}`} $layout={layout} $hasThumb={showThumb} $variant={variant}>
+    <Link
+      to={`/post/${post._id}`}
+      className={cn(
+        'group relative grid gap-4 sm:gap-6 p-5 sm:p-6 rounded-[24px] text-inherit no-underline overflow-hidden transition-all duration-200 hover:-translate-y-0.5',
+        variantClasses[variant] || variantClasses.elevated,
+        layout === 'stacked' || !showThumb
+          ? 'grid-cols-1 items-start'
+          : 'grid-cols-1 sm:grid-cols-[180px_1fr] md:grid-cols-[230px_1fr] items-stretch'
+      )}
+    >
+      {/* Thumbnail */}
       {showThumb && (
-        <Thumb $layout={layout}>
-          <img src={post.imageURL} alt="" loading="lazy" onError={() => setImageFailed(true)} />
-        </Thumb>
+        <div
+          className={cn(
+            'relative rounded-[16px] overflow-hidden bg-[hsl(var(--muted))] w-full shrink-0',
+            layout === 'stacked'
+              ? 'aspect-video h-auto'
+              : 'h-full min-h-[155px] aspect-[16/10]'
+          )}
+        >
+          <img
+            src={post.imageURL}
+            alt=""
+            loading="lazy"
+            onError={() => setImageFailed(true)}
+            className="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
       )}
 
-      <Body>
-        <ContentWrap>
-          {/* 1. Title First */}
-          <Title $variant={variant}>{post.title}</Title>
+      {/* Body Content */}
+      <div className="min-w-0 flex flex-col justify-between gap-2.5 h-full">
+        <div className="flex flex-col gap-2">
+          {/* 1. Title */}
+          <h3
+            className={cn(
+              'font-bold leading-snug tracking-tight text-[hsl(var(--foreground))] line-clamp-2 transition-colors duration-150 group-hover:text-[hsl(var(--primary))]',
+              variant === 'featured' ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl'
+            )}
+          >
+            {post.title}
+          </h3>
 
-          {/* 2. User Profile & Details */}
+          {/* 2. Author Profile Byline */}
           <AuthorByline
             name={author}
             at={isValidDate ? created : undefined}
             readingMinutes={readingTime(post.content)}
           />
 
-          {/* 3. Short description / Excerpt */}
-          <Excerpt $hasThumb={showThumb}>{excerpt(post.content)}</Excerpt>
+          {/* 3. Description / Excerpt */}
+          <p
+            className={cn(
+              'text-sm leading-relaxed text-[hsl(var(--muted-foreground))]',
+              showThumb ? 'line-clamp-2' : 'line-clamp-3'
+            )}
+          >
+            {excerpt(post.content)}
+          </p>
 
-          {/* 4. Hashtags directly below description */}
+          {/* 4. Hashtags */}
           {rawTags.length > 0 && (
-            <HashtagsWrap>
+            <div className="flex items-center gap-2.5 flex-wrap mt-1">
               {rawTags.slice(0, 3).map((tag) => {
                 const clean = tag.toLowerCase().replace(/^[#_-]+/, '');
                 return (
-                  <TagHash
+                  <span
                     key={clean}
                     onClick={(e) => {
                       e.preventDefault();
@@ -248,76 +110,44 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
                       navigate(`/search?topic=${encodeURIComponent(clean)}`);
                     }}
                     title={`Explore stories in #${clean}`}
+                    className="text-xs font-semibold text-[hsl(var(--primary))] tracking-wide cursor-pointer hover:underline hover:underline-offset-4 transition-colors"
                   >
                     #{clean}
-                  </TagHash>
+                  </span>
                 );
               })}
-            </HashtagsWrap>
+            </div>
           )}
-        </ContentWrap>
-      </Body>
-    </Card>
+        </div>
+      </div>
+    </Link>
   );
 }
 
-/* ── Compact variant, for sidebars ──────────────────────────────────────────── */
-
-const CompactCard = styled(Link)`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
-  align-items: baseline;
-  padding: ${({ theme }) => theme.spacing.md};
-  margin: 0 calc(-1 * ${({ theme }) => theme.spacing.md});
-  border-radius: ${({ theme }) => theme.radii.md};
-  text-decoration: none;
-  transition: all ${({ theme }) => theme.transitions.fast};
-  ${interactive}
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-    transform: translateX(2px);
-  }
-`;
-
-const Rank = styled.span`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.accentText};
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentContainer};
-`;
-
-const CompactTitle = styled.p`
-  ${text('sm', 'medium')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  ${clamp(2)}
-`;
-
-const CompactMeta = styled.p`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: 2px;
-`;
-
+/**
+ * Compact post card for sidebars and trending lists.
+ */
 export function PostCardCompact({ post, rank }) {
   if (!post) return null;
 
   return (
-    <CompactCard to={`/post/${post._id}`}>
-      {rank != null && <Rank>{String(rank).padStart(2, '0')}</Rank>}
-      <div>
-        <CompactTitle>{post.title}</CompactTitle>
-        <CompactMeta>
+    <Link
+      to={`/post/${post._id}`}
+      className="flex gap-3 items-baseline p-3 -mx-3 rounded-xl no-underline transition-all duration-150 hover:bg-[hsl(var(--muted))] hover:translate-x-1"
+    >
+      {rank != null && (
+        <span className="text-xs font-bold text-[hsl(var(--primary))] tabular-nums shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-[hsl(var(--primary))/0.10] select-none">
+          {String(rank).padStart(2, '0')}
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-[hsl(var(--foreground))] line-clamp-2 leading-snug">
+          {post.title}
+        </p>
+        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 truncate">
           {post.user?.username ?? 'Anonymous'} · {post.likes?.length ?? 0} likes
-        </CompactMeta>
+        </p>
       </div>
-    </CompactCard>
+    </Link>
   );
 }
