@@ -1,192 +1,60 @@
-import styled from 'styled-components';
 import { PenLine, BarChart3, MessagesSquare } from 'lucide-react';
-import { display, text, label as labelStyle, media } from '../../styles/theme/mixins';
 import { topicIcon } from '../../utils/topicIcons';
+import { cn } from '../../lib/utils';
 
 /**
- * Shared shell for the auth pages.
- *
- * A split screen rather than a card floating on an empty page. The form sits directly on
- * the surface, and the other half does the job a landing page would: it says what the
- * platform is and what it covers.
+ * Shared shell for the auth pages (Login / Register).
+ * High-end split screen:
+ * - Left: Form side directly on surface
+ * - Right: Showcase editorial showcase with soft cyan bloom and feature list
  */
 
-const Page = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: calc(100vh - ${({ theme }) => theme.layout.headerHeight});
-
-  ${media.down('lg')`grid-template-columns: 1fr;`}
-`;
-
-/* ── Form side ───────────────────────────────────────────────────────────────── */
-
-const FormSide = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing['2xl']};
-`;
-
-const FormInner = styled.div`
-  width: 100%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-`;
-
-export const AuthHeading = styled.h1`
-  ${display('lg')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-
-  ${media.down('md')`font-size: ${({ theme }) => theme.display.md[0]};`}
-`;
-
-export const AuthSubheading = styled.p`
-  ${text('lg')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-top: calc(-1 * ${({ theme }) => theme.spacing.md});
-`;
-
-export const AuthForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-export const AuthFooter = styled.p`
-  ${text('md')}
-  color: ${({ theme }) => theme.colors.textMuted};
-
-  a {
-    color: ${({ theme }) => theme.colors.accentText};
-    font-weight: ${({ theme }) => theme.weights.medium};
-
-    &:hover {
-      text-decoration: underline;
-      text-underline-offset: 0.2em;
-    }
-  }
-`;
-
-/* ── Showcase side ───────────────────────────────────────────────────────────── */
-
-const Showcase = styled.aside`
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing['2xl']};
-  padding: ${({ theme }) => theme.spacing['4xl']};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-
-  ${media.down('lg')`display: none;`}
-`;
-
-const Bloom = styled.div`
-  position: absolute;
-  top: -25%;
-  right: -20%;
-  width: 80%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(14, 165, 233, 0.22) 0%,
-    rgba(56, 189, 248, 0.08) 45%,
-    transparent 70%
+export function AuthHeading({ className, children, ...props }) {
+  return (
+    <h1
+      className={cn(
+        'text-3xl sm:text-4xl font-bold tracking-tight text-[hsl(var(--foreground))] leading-tight',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </h1>
   );
-  pointer-events: none;
-`;
+}
 
-const Inner = styled.div`
-  position: relative;
-  max-width: 460px;
-  margin: 0 auto;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing['2xl']};
-`;
+export function AuthSubheading({ className, children, ...props }) {
+  return (
+    <p
+      className={cn('text-base sm:text-lg text-[hsl(var(--muted-foreground))] -mt-3', className)}
+      {...props}
+    >
+      {children}
+    </p>
+  );
+}
 
-const Kicker = styled.p`
-  ${labelStyle('md')}
-  color: ${({ theme }) => theme.colors.accentText};
-`;
+export function AuthForm({ className, children, ...props }) {
+  return (
+    <form className={cn('flex flex-col gap-4', className)} {...props}>
+      {children}
+    </form>
+  );
+}
 
-const Pitch = styled.p`
-  ${display('md')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const Points = styled.ul`
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const Point = styled.li`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.lg};
-  align-items: flex-start;
-`;
-
-const PointIcon = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.gradients.brand};
-  color: ${({ theme }) => theme.colors.textOnInk};
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-`;
-
-const PointTitle = styled.p`
-  ${text('md', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const PointText = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-top: 2px;
-`;
-
-const TopicRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.sm};
-  padding-top: ${({ theme }) => theme.spacing.xl};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-`;
-
-const TopicPill = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  ${text('xs', 'medium')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  svg {
-    width: 13px;
-    height: 13px;
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
+export function AuthFooter({ className, children, ...props }) {
+  return (
+    <p
+      className={cn(
+        'text-sm text-[hsl(var(--muted-foreground))] [&_a]:text-[hsl(var(--primary))] [&_a]:font-medium hover:[&_a]:underline hover:[&_a]:underline-offset-4',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </p>
+  );
+}
 
 const POINTS = [
   {
@@ -210,46 +78,62 @@ const TOPICS = ['Technology', 'Design', 'Science', 'Travel', 'Programming', 'Hea
 
 export function AuthShell({ children }) {
   return (
-    <Page>
-      <FormSide>
-        <FormInner>{children}</FormInner>
-      </FormSide>
+    <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100vh-56px)] bg-[hsl(var(--background))]">
+      {/* Form side */}
+      <div className="flex items-center justify-center p-6 sm:p-12 lg:p-16">
+        <div className="w-full max-w-[400px] flex flex-col gap-6">
+          {children}
+        </div>
+      </div>
 
-      <Showcase>
-        <Bloom aria-hidden="true" />
-        <Inner>
+      {/* Showcase side */}
+      <aside className="relative overflow-hidden hidden lg:flex flex-col justify-center gap-8 p-12 lg:p-16 bg-[hsl(var(--card))] border-l border-[hsl(var(--border))/0.4]">
+        {/* Soft Ambient Bloom */}
+        <div
+          aria-hidden="true"
+          className="absolute -top-1/4 -right-1/4 w-[80%] aspect-square rounded-full bg-[radial-gradient(circle,rgba(14,165,233,0.20)_0%,rgba(56,189,248,0.06)_45%,transparent_70%)] pointer-events-none"
+        />
+
+        <div className="relative max-w-[460px] mx-auto w-full flex flex-col gap-8">
           <div>
-            <Kicker>BlogHub</Kicker>
-            <Pitch>A quieter place to publish what you write.</Pitch>
+            <p className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))] mb-1">
+              BlogHub
+            </p>
+            <p className="text-2xl lg:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+              A quieter place to publish what you write.
+            </p>
           </div>
 
-          <Points>
+          <ul className="flex flex-col gap-5">
             {POINTS.map(({ icon: Icon, title, text: body }) => (
-              <Point key={title}>
-                <PointIcon>
-                  <Icon />
-                </PointIcon>
+              <li key={title} className="flex gap-4 items-start">
+                <span className="inline-flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-gradient-to-tr from-[hsl(var(--primary))] to-sky-400 text-white shadow-[0_2px_8px_rgba(14,165,233,0.35)]">
+                  <Icon className="h-4.5 w-4.5" />
+                </span>
                 <div>
-                  <PointTitle>{title}</PointTitle>
-                  <PointText>{body}</PointText>
+                  <p className="text-sm font-semibold text-[hsl(var(--foreground))]">{title}</p>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 leading-relaxed">{body}</p>
                 </div>
-              </Point>
+              </li>
             ))}
-          </Points>
+          </ul>
 
-          <TopicRow>
+          <div className="flex flex-wrap gap-2 pt-6 border-t border-[hsl(var(--border))/0.4]">
             {TOPICS.map((name) => {
               const Icon = topicIcon(name);
               return (
-                <TopicPill key={name}>
-                  <Icon />
+                <span
+                  key={name}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[hsl(var(--muted))] text-xs font-medium text-[hsl(var(--muted-foreground))] select-none"
+                >
+                  <Icon className="h-3 w-3 text-[hsl(var(--primary))]" />
                   {name}
-                </TopicPill>
+                </span>
               );
             })}
-          </TopicRow>
-        </Inner>
-      </Showcase>
-    </Page>
+          </div>
+        </div>
+      </aside>
+    </div>
   );
 }
