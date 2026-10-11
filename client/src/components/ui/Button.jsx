@@ -1,178 +1,107 @@
-import styled, { css } from 'styled-components';
+import * as React from 'react';
+import { Slot } from '@radix-ui/react-slot';
+import { cva } from 'class-variance-authority';
+import { cn } from '../../lib/utils';
 import { Spinner } from './Spinner';
-import { text, interactive } from '../../styles/theme/mixins';
 
 /**
- * Button — pill-shaped by default.
- *
- * Variants are tonal rather than outlined: `secondary` and `tonal` sit on a container tone
- * with no border at all, which is what keeps the interface soft. Borders appear only on
- * `outline`, for the rare case where a control must read as a boundary.
+ * BlogHub Button — built on shadcn/ui pattern with class-variance-authority (CVA).
+ * Features signature pill-shaped geometry, soft ambient glow, and micro-press scale animations.
+ * Supports both shadcn's `asChild` and backward-compatible `as` (e.g. as={Link}).
  */
-
-const variants = {
-  /** Primary action — Crisp Sky Blue with soft ambient glow */
-  primary: css`
-    background: ${({ theme }) => theme.colors.accentSolid};
-    color: ${({ theme }) => theme.colors.textOnAccent};
-    box-shadow: 0 2px 8px -2px rgba(14, 165, 233, 0.35);
-
-    &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.accentSolidHover};
-      box-shadow: 0 4px 14px 0 rgba(14, 165, 233, 0.45);
-    }
-  `,
-  /** Clean neutral container with subtle hairline border */
-  secondary: css`
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-    color: ${({ theme }) => theme.colors.textPrimary};
-    box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.lineDefault};
-
-    &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.surfaceHover};
-      box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.lineStrong};
-    }
-  `,
-  /** Accent-tinted sky container */
-  tonal: css`
-    background: ${({ theme }) => theme.colors.accentContainer};
-    color: ${({ theme }) => theme.colors.accentText};
-
-    &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.accentContainerHover};
-    }
-  `,
-  outline: css`
-    background: transparent;
-    color: ${({ theme }) => theme.colors.textPrimary};
-    box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.lineDefault};
-
-    &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.surfaceHover};
-      box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.accentLine};
-      color: ${({ theme }) => theme.colors.accentText};
-    }
-  `,
-  ghost: css`
-    background: transparent;
-    color: ${({ theme }) => theme.colors.textSecondary};
-
-    &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.surfaceHover};
-      color: ${({ theme }) => theme.colors.textPrimary};
-    }
-  `,
-  danger: css`
-    background: ${({ theme }) => theme.colors.dangerSolid};
-    color: ${({ theme }) => theme.colors.textOnAccent};
-
-    &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.dangerSolidHover};
-    }
-  `,
-  /** Destructive, but quiet until hovered. */
-  dangerTonal: css`
-    background: transparent;
-    color: ${({ theme }) => theme.colors.dangerText};
-
-    &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.dangerContainer};
-    }
-  `,
-};
-
-const sizes = {
-  sm: css`
-    height: 34px;
-    padding: 0 ${({ theme }) => theme.spacing.lg};
-    ${text('sm', 'medium')}
-  `,
-  md: css`
-    height: 42px;
-    padding: 0 ${({ theme }) => theme.spacing.xl};
-    ${text('md', 'medium')}
-  `,
-  lg: css`
-    height: 52px;
-    padding: 0 ${({ theme }) => theme.spacing['2xl']};
-    ${text('lg', 'medium')}
-  `,
-};
-
-const StyledButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  flex-shrink: 0;
-
-  line-height: 1;
-  white-space: nowrap;
-  user-select: none;
-  text-decoration: none;
-
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.full};
-  cursor: pointer;
-  width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
-
-  ${interactive}
-  ${({ $variant }) => variants[$variant] ?? variants.primary}
-  ${({ $size }) => sizes[$size] ?? sizes.md}
-
-  /* A very small lift on press reads as physical without being cartoonish. */
-  &:active:not(:disabled) {
-    transform: scale(0.97);
+export const buttonVariants = cva(
+  'inline-flex items-center justify-center gap-2 shrink-0 select-none whitespace-nowrap text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45 active:scale-[0.98] rounded-full cursor-pointer',
+  {
+    variants: {
+      variant: {
+        primary:
+          'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm hover:brightness-105 active:brightness-95 shadow-[0_2px_10px_-2px_rgba(14,165,233,0.35)] hover:shadow-[0_4px_16px_0_rgba(14,165,233,0.45)]',
+        secondary:
+          'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] hover:border-[hsl(var(--ring))]',
+        tonal:
+          'bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-95 dark:hover:brightness-110',
+        outline:
+          'border border-[hsl(var(--border))] bg-transparent text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]',
+        ghost:
+          'bg-transparent text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]',
+        danger:
+          'bg-[hsl(var(--destructive))] text-[hsl(var(--destructive-foreground))] hover:brightness-90 shadow-sm',
+        subtle:
+          'bg-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]',
+      },
+      size: {
+        sm: 'h-8 px-3.5 text-xs',
+        md: 'h-10 px-5 text-sm',
+        lg: 'h-12 px-6 text-base',
+        icon: 'h-9 w-9 p-0',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
   }
+);
 
-  &:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
+export const Button = React.forwardRef(
+  (
+    {
+      className,
+      variant,
+      size,
+      loading = false,
+      isLoading = false,
+      disabled = false,
+      fullWidth = false,
+      leftIcon,
+      rightIcon,
+      children,
+      asChild = false,
+      as,
+      ...props
+    },
+    ref
+  ) => {
+    const isBusy = loading || isLoading;
+    const Comp = asChild ? Slot : (as || 'button');
+    const isDisabled = disabled || isBusy;
+
+    return (
+      <Comp
+        ref={ref}
+        disabled={Comp === 'button' ? isDisabled : undefined}
+        aria-disabled={isDisabled || undefined}
+        className={cn(
+          buttonVariants({ variant, size }),
+          fullWidth && 'w-full',
+          className
+        )}
+        {...props}
+      >
+        {loading && <Spinner size="sm" />}
+        {!loading && leftIcon && <span className="inline-flex shrink-0">{leftIcon}</span>}
+        {children}
+        {!loading && rightIcon && <span className="inline-flex shrink-0">{rightIcon}</span>}
+      </Comp>
+    );
   }
+);
 
-  svg {
-    width: 1.15em;
-    height: 1.15em;
-    flex-shrink: 0;
+Button.displayName = 'Button';
+
+export const IconButton = React.forwardRef(
+  ({ className, variant = 'ghost', size = 'icon', ...props }, ref) => {
+    return (
+      <Button
+        ref={ref}
+        variant={variant}
+        size={size}
+        className={cn('h-9 w-9 rounded-full p-0', className)}
+        {...props}
+      />
+    );
   }
-`;
+);
 
-export function Button({
-  children,
-  variant = 'primary',
-  size = 'md',
-  fullWidth = false,
-  isLoading = false,
-  disabled,
-  ...props
-}) {
-  return (
-    <StyledButton
-      $variant={variant}
-      $size={size}
-      $fullWidth={fullWidth}
-      disabled={disabled || isLoading}
-      aria-busy={isLoading || undefined}
-      {...props}
-    >
-      {isLoading && <Spinner size="1em" />}
-      {children}
-    </StyledButton>
-  );
-}
+IconButton.displayName = 'IconButton';
 
-/** Square-ish icon-only button. Same variants, circular. */
-const StyledIconButton = styled(StyledButton)`
-  padding: 0;
-  aspect-ratio: 1;
-  width: ${({ $size }) => ({ sm: '34px', md: '42px', lg: '52px' })[$size] ?? '42px'};
-  border-radius: ${({ theme }) => theme.radii.full};
-`;
-
-export function IconButton({ children, variant = 'ghost', size = 'md', label, ...props }) {
-  return (
-    <StyledIconButton $variant={variant} $size={size} aria-label={label} title={label} {...props}>
-      {children}
-    </StyledIconButton>
-  );
-}

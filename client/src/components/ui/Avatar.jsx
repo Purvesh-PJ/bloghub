@@ -1,64 +1,35 @@
+import * as React from 'react';
 import * as RadixAvatar from '@radix-ui/react-avatar';
-import styled from 'styled-components';
+import { cva } from 'class-variance-authority';
+import { cn } from '../../lib/utils';
 
 /**
- * Avatar — Radix Avatar underneath.
- *
- * Radix owns the image-loading state machine, so the initials fallback appears only after the
- * image has genuinely failed rather than flashing on every render.
- *
- * This replaced five hand-rolled versions — `Portrait` in PostDetail and UserProfile,
- * `AuthorDot` in PostCard, `AuthorAvatar` in Home, `UserAvatar` in WorkspaceLayout — which
- * were the same circle at five sizes, each with `color: #ffffff` written into it. Two things
- * were wrong with that beyond the repetition: none of them could render an uploaded image at
- * all, so the avatar upload never showed anywhere outside settings; and the hardcoded white
- * repeated the contrast mistake the theme had just stopped making.
+ * Avatar — Radix Avatar with Tailwind & shadcn patterns.
+ * Smooth image loading with graceful initial fallback and BlogHub gradient background.
  */
-
-const SIZES = {
-  xs: { box: '24px', font: '11px' },
-  sm: { box: '32px', font: '12px' },
-  md: { box: '40px', font: '14px' },
-  lg: { box: '48px', font: '17px' },
-  xl: { box: '64px', font: '22px' },
-  '2xl': { box: '96px', font: '32px' },
-};
-
-const Root = styled(RadixAvatar.Root)`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  vertical-align: middle;
-  overflow: hidden;
-  user-select: none;
-
-  width: ${({ $size }) => SIZES[$size].box};
-  height: ${({ $size }) => SIZES[$size].box};
-  border-radius: ${({ theme, $shape }) =>
-    $shape === 'square' ? theme.radii.md : theme.radii.full};
-  background: ${({ theme }) => theme.gradients.brand};
-`;
-
-const Image = styled(RadixAvatar.Image)`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const Fallback = styled(RadixAvatar.Fallback)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  font-family: ${({ theme }) => theme.fonts.ui};
-  font-size: ${({ $size }) => SIZES[$size].font};
-  font-weight: ${({ theme }) => theme.weights.bold};
-  /* Derived by the theme rather than written as white, which the brand's light end cannot carry. */
-  color: ${({ theme }) => theme.colors.textOnAccent};
-  line-height: 1;
-`;
+const avatarVariants = cva(
+  'inline-flex shrink-0 items-center justify-center select-none overflow-hidden align-middle bg-gradient-to-tr from-[hsl(var(--primary))] to-[hsl(var(--primary-hover))] shadow-sm',
+  {
+    variants: {
+      size: {
+        xs: 'h-6 w-6 text-[11px]',
+        sm: 'h-8 w-8 text-xs',
+        md: 'h-10 w-10 text-sm',
+        lg: 'h-12 w-12 text-base',
+        xl: 'h-16 w-16 text-xl',
+        '2xl': 'h-24 w-24 text-3xl',
+      },
+      shape: {
+        circle: 'rounded-full',
+        square: 'rounded-xl',
+      },
+    },
+    defaultVariants: {
+      size: 'md',
+      shape: 'circle',
+    },
+  }
+);
 
 const initialsFrom = (name) =>
   (name || '')
@@ -69,21 +40,46 @@ const initialsFrom = (name) =>
     .join('')
     .toUpperCase() || '?';
 
-/**
- * @param {object} props
- * @param {string} [props.src] image URL, or a data URI as getUser returns
- * @param {string} [props.name] used for the initials and the alt text
- * @param {'xs'|'sm'|'md'|'lg'|'xl'|'2xl'} [props.size]
- * @param {'circle'|'square'} [props.shape]
- */
-export function Avatar({ src, name, size = 'md', shape = 'circle', delayMs = 300, ...rest }) {
-  return (
-    <Root $size={size} $shape={shape} {...rest}>
-      {src && <Image src={src} alt={name ? `${name}'s avatar` : 'Avatar'} />}
-      {/* delayMs avoids the initials flashing while a fast image loads. */}
-      <Fallback $size={size} delayMs={src ? delayMs : 0}>
-        {initialsFrom(name)}
-      </Fallback>
-    </Root>
-  );
-}
+export const Avatar = React.forwardRef(
+  (
+    {
+      className,
+      src,
+      name,
+      size = 'md',
+      shape = 'circle',
+      delayMs = 300,
+      $size,
+      $shape,
+      ...props
+    },
+    ref
+  ) => {
+    const finalSize = size || $size || 'md';
+    const finalShape = shape || $shape || 'circle';
+
+    return (
+      <RadixAvatar.Root
+        ref={ref}
+        className={cn(avatarVariants({ size: finalSize, shape: finalShape }), className)}
+        {...props}
+      >
+        {src && (
+          <RadixAvatar.Image
+            src={src}
+            alt={name ? `${name}'s avatar` : 'Avatar'}
+            className="h-full w-full object-cover"
+          />
+        )}
+        <RadixAvatar.Fallback
+          delayMs={src ? delayMs : 0}
+          className="flex h-full w-full items-center justify-center font-bold text-white select-none leading-none tracking-wide"
+        >
+          {initialsFrom(name)}
+        </RadixAvatar.Fallback>
+      </RadixAvatar.Root>
+    );
+  }
+);
+
+Avatar.displayName = 'Avatar';

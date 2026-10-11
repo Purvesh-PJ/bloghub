@@ -1,56 +1,27 @@
-import styled, { css } from 'styled-components';
+import * as React from 'react';
+import { cva } from 'class-variance-authority';
 import { AlertCircle, CheckCircle2, Info, AlertTriangle } from 'lucide-react';
-import { text } from '../../styles/theme/mixins';
+import { cn } from '../../lib/utils';
 
 /**
- * Alert — an inline message.
- *
- * Was four hard-coded rgba/hex triples, so in dark mode it kept painting a pale wash with
- * dark text on it. Tonal container/text pairs from the theme now, matching Badge.
+ * Alert — accessible feedback callout with Tailwind & shadcn styling.
  */
-
-const variants = {
-  info: css`
-    background: ${({ theme }) => theme.colors.infoContainer};
-    color: ${({ theme }) => theme.colors.infoText};
-  `,
-  success: css`
-    background: ${({ theme }) => theme.colors.successContainer};
-    color: ${({ theme }) => theme.colors.successText};
-  `,
-  warning: css`
-    background: ${({ theme }) => theme.colors.warningContainer};
-    color: ${({ theme }) => theme.colors.warningText};
-  `,
-  danger: css`
-    background: ${({ theme }) => theme.colors.dangerContainer};
-    color: ${({ theme }) => theme.colors.dangerText};
-  `,
-};
-
-const StyledAlert = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
-  ${text('sm')}
-
-  ${({ $variant }) => variants[$variant] || variants.info}
-
-  svg {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    margin-top: 1px;
+const alertVariants = cva(
+  'relative flex items-start gap-3 w-full rounded-xl p-4 text-sm font-normal border transition-colors',
+  {
+    variants: {
+      variant: {
+        info: 'bg-[hsl(var(--primary))/0.08] text-[hsl(var(--foreground))] border-[hsl(var(--primary))/0.25] [&>svg]:text-[hsl(var(--primary))]',
+        success: 'bg-emerald-500/10 text-[hsl(var(--foreground))] border-emerald-500/25 [&>svg]:text-emerald-500',
+        warning: 'bg-amber-500/10 text-[hsl(var(--foreground))] border-amber-500/25 [&>svg]:text-amber-500',
+        danger: 'bg-[hsl(var(--destructive))/0.10] text-[hsl(var(--destructive))] border-[hsl(var(--destructive))/0.25] [&>svg]:text-[hsl(var(--destructive))]',
+      },
+    },
+    defaultVariants: {
+      variant: 'info',
+    },
   }
-`;
-
-const Title = styled.strong`
-  display: block;
-  ${text('sm', 'semibold')}
-  margin-bottom: 2px;
-`;
+);
 
 const icons = {
   info: Info,
@@ -59,18 +30,21 @@ const icons = {
   danger: AlertCircle,
 };
 
-export function Alert({ children, variant = 'info', title, ...props }) {
-  // `error` was the old name for this variant; keep it working.
+export function Alert({ children, variant = 'info', title, className, ...props }) {
   const key = variant === 'error' ? 'danger' : variant;
   const Icon = icons[key] || Info;
 
   return (
-    <StyledAlert $variant={key} role={key === 'danger' ? 'alert' : undefined} {...props}>
-      <Icon />
-      <div>
-        {title && <Title>{title}</Title>}
-        {children}
+    <div
+      role={key === 'danger' ? 'alert' : 'status'}
+      className={cn(alertVariants({ variant: key }), className)}
+      {...props}
+    >
+      <Icon className="h-5 w-5 shrink-0 mt-0.5" />
+      <div className="flex-1">
+        {title && <h5 className="font-semibold leading-tight mb-1 text-[hsl(var(--foreground))]">{title}</h5>}
+        <div className="text-sm opacity-90">{children}</div>
       </div>
-    </StyledAlert>
+    </div>
   );
 }

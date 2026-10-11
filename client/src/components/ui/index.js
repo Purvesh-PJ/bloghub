@@ -8,6 +8,16 @@ export { Badge } from './Badge';
 export { Chip } from './Chip';
 export { Container, Box, Flex } from './Container';
 export { Modal } from './Modal';
+export {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from './Dialog';
 export { Select } from './Select';
 export { Avatar } from './Avatar';
 export { BrandMark } from './BrandMark';
@@ -22,3 +32,6 @@ export { ErrorState } from './ErrorState';
 export { Table } from './Table';
 export { StatTile } from './StatTile';
 export { Pagination } from './Pagination';
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from './Popover';
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './Tooltip';
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './Accordion';
