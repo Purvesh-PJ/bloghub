@@ -66,7 +66,7 @@ export function AdminLayout() {
       {/* Admin Sidebar */}
       <aside
         className={cn(
-          'w-[260px] md:w-[260px] shrink-0 flex flex-col p-5 bg-[hsl(var(--card))] border-r border-[hsl(var(--border))/0.5] sticky top-0 h-screen z-50 transition-transform duration-200 ease-out',
+          'w-[260px] md:w-[260px] shrink-0 flex flex-col p-5 bg-[hsl(var(--card))] sticky top-0 h-screen z-50 transition-transform duration-200 ease-out',
           'max-md:fixed max-md:left-0 max-md:top-0 max-md:bottom-0 max-md:w-[280px] max-md:shadow-2xl',
           mobileMenuOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'
         )}
@@ -178,7 +178,7 @@ export function AdminLayout() {
 
       {/* Frame & Topbar */}
       <div className="flex flex-1 min-w-0 flex-col">
-        <header className="flex items-center justify-between h-14 px-4 sm:px-6 border-b border-[hsl(var(--border))/0.4] bg-[hsl(var(--background))/0.85] backdrop-blur-xl sticky top-0 z-30">
+        <header className="flex items-center justify-between h-14 px-4 sm:px-6 bg-[hsl(var(--background))/0.85] backdrop-blur-xl sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileMenuOpen(true)}

@@ -39,11 +39,12 @@ export function Input({
           aria-invalid={Boolean(error) || undefined}
           aria-describedby={messageId}
           className={cn(
-            'flex h-10 w-full rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-4 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] transition-all duration-150',
-            'hover:border-[hsl(var(--ring))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
+            'flex h-11 w-full rounded-full bg-[hsl(var(--secondary))] px-4 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] transition-all duration-150',
+            'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] light:shadow-[inset_0_0_0_1px_rgba(15,23,42,0.08)]',
+            'hover:bg-[hsl(var(--muted))] focus-visible:outline-none focus-visible:bg-[hsl(var(--card))] focus-visible:shadow-[inset_0_0_0_1.5px_#0ea5e9,0_0_0_3px_rgba(14,165,233,0.2)]',
             'disabled:cursor-not-allowed disabled:opacity-50',
             icon && 'pl-10',
-            error && 'border-red-500 focus-visible:ring-red-500',
+            error && 'shadow-[inset_0_0_0_1.5px_#ef4444] focus-visible:shadow-[inset_0_0_0_1.5px_#ef4444,0_0_0_3px_rgba(239,68,68,0.2)]',
             className
           )}
           {...props}
@@ -94,10 +95,11 @@ export function TextArea({
         aria-invalid={Boolean(error) || undefined}
         aria-describedby={messageId}
         className={cn(
-          'flex min-h-[90px] w-full rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-4 py-3 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] transition-all duration-150 resize-y',
-          'hover:border-[hsl(var(--ring))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
+          'flex min-h-[100px] w-full rounded-2xl bg-[hsl(var(--secondary))] px-4 py-3 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] transition-all duration-150 resize-y',
+          'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] light:shadow-[inset_0_0_0_1px_rgba(15,23,42,0.08)]',
+          'hover:bg-[hsl(var(--muted))] focus-visible:outline-none focus-visible:bg-[hsl(var(--card))] focus-visible:shadow-[inset_0_0_0_1.5px_#0ea5e9,0_0_0_3px_rgba(14,165,233,0.2)]',
           'disabled:cursor-not-allowed disabled:opacity-50',
-          error && 'border-red-500 focus-visible:ring-red-500',
+          error && 'shadow-[inset_0_0_0_1.5px_#ef4444] focus-visible:shadow-[inset_0_0_0_1.5px_#ef4444,0_0_0_3px_rgba(239,68,68,0.2)]',
           className
         )}
         {...props}

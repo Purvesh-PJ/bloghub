@@ -34,7 +34,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[hsl(var(--background))/0.85] backdrop-blur-xl backdrop-saturate-180 border-b border-[hsl(var(--border))/0.4]">
+    <header className="sticky top-0 z-40 w-full bg-[hsl(var(--background))/0.85] backdrop-blur-xl backdrop-saturate-180">
       <div className="max-w-[1200px] mx-auto h-16 px-4 sm:px-6 flex items-center justify-between gap-4">
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-6 min-w-0">

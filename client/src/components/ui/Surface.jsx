@@ -76,7 +76,7 @@ export const Surface = React.forwardRef(
           finalVariant ? variantClasses[finalVariant] : toneClasses[finalTone],
           radiusClasses[finalRadius],
           paddingClasses[finalPadding],
-          isBordered && 'border border-[hsl(var(--border))/0.6]',
+          isBordered && 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] light:shadow-[inset_0_0_0_1px_rgba(15,23,42,0.08)]',
           isInteractive &&
             'cursor-pointer transition-all duration-150 hover:bg-[hsl(var(--muted))] hover:-translate-y-0.5 hover:shadow-md',
           className

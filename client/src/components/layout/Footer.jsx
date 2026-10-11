@@ -15,7 +15,7 @@ export function Footer() {
   const topics = tags.slice(0, TOPIC_COUNT);
 
   return (
-    <footer className="relative overflow-hidden mt-20 pt-16 pb-8 border-t border-[hsl(var(--border))/0.4] bg-[hsl(var(--muted))/0.25]">
+    <footer className="relative overflow-hidden mt-20 pt-16 pb-8 bg-[hsl(var(--muted))/0.25]">
       {/* Background Ambient Watermark */}
       <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[clamp(70px,14vw,160px)] font-black tracking-tighter text-[hsl(var(--foreground))/0.02] dark:text-[hsl(var(--foreground))/0.03] select-none pointer-events-none whitespace-nowrap z-0">
         bloghub
