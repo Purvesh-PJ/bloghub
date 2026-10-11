@@ -1,24 +1,31 @@
-import styled from 'styled-components';
+import * as React from 'react';
+import { cn } from '../../lib/utils';
 
-export const Container = styled.div`
-  width: 100%;
-  max-width: ${({ $maxWidth }) => $maxWidth || '1200px'};
-  margin: 0 auto;
-  padding: 0 ${({ theme }) => theme.spacing?.md || '16px'};
-`;
+export function Container({ className, style, maxWidth, $maxWidth, children, ...props }) {
+  const maxW = maxWidth || $maxWidth || '1200px';
+  return (
+    <div
+      className={cn('w-full mx-auto px-4', className)}
+      style={{ maxWidth: maxW, ...style }}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
 
-export const Box = styled.div`
-  display: ${({ $display }) => $display || 'block'};
-  padding: ${({ $p }) => $p || '0'};
-  margin: ${({ $m }) => $m || '0'};
-  width: ${({ $w }) => $w || 'auto'};
-`;
+export function Box({ className, children, ...props }) {
+  return (
+    <div className={className} {...props}>
+      {children}
+    </div>
+  );
+}
 
-export const Flex = styled.div`
-  display: flex;
-  flex-direction: ${({ $direction }) => $direction || 'row'};
-  align-items: ${({ $align }) => $align || 'stretch'};
-  justify-content: ${({ $justify }) => $justify || 'flex-start'};
-  gap: ${({ $gap }) => $gap || '0'};
-  flex-wrap: ${({ $wrap }) => ($wrap ? 'wrap' : 'nowrap')};
-`;
+export function Flex({ className, children, ...props }) {
+  return (
+    <div className={cn('flex', className)} {...props}>
+      {children}
+    </div>
+  );
+}
