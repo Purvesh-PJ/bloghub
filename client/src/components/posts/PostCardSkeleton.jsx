@@ -1,138 +1,70 @@
-import styled, { css } from 'styled-components';
-import { media } from '../../styles/theme/mixins';
 import { Skeleton, SkeletonText } from '../ui/Skeleton';
-
-const cardVariants = {
-  elevated: css`
-    background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-    box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
-  `,
-  featured: css`
-    background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
-  `,
-  ghost: css`
-    background: transparent;
-    border: 1px solid transparent;
-    box-shadow: none;
-    border-radius: ${({ theme }) => theme.radii.lg};
-  `,
-  inset: css`
-    background: ${({ theme }) => theme.colors.surfaceContainerLow};
-    border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  `,
-};
-
-const Card = styled.div`
-  display: grid;
-  gap: ${({ theme }) => theme.spacing.lg};
-  padding: ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-
-  ${({ $variant }) => cardVariants[$variant] ?? cardVariants.elevated}
-
-  ${({ $layout, $hasThumb = true }) =>
-    $layout === 'stacked' || !$hasThumb
-      ? css`
-          grid-template-columns: 1fr;
-          align-items: start;
-        `
-      : css`
-          grid-template-columns: 230px 1fr;
-          align-items: stretch;
-
-          ${media.down('md')`
-            grid-template-columns: 180px 1fr;
-          `}
-
-          ${media.down('sm')`
-            grid-template-columns: 1fr;
-            gap: ${({ theme }) => theme.spacing.md};
-          `}
-        `}
-`;
-
-const Body = styled.div`
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 8px;
-  height: 100%;
-`;
-
-const Meta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
-
-const HashtagsSkeleton = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-`;
-
-const Thumb = styled(Skeleton)`
-  width: 100%;
-  height: 100%;
-  min-height: 155px;
-  aspect-ratio: 16 / 10;
-  border-radius: ${({ theme }) => theme.radii.lg};
-
-  ${({ $layout }) =>
-    $layout === 'stacked' &&
-    css`
-      aspect-ratio: 16 / 9;
-      height: auto;
-      min-height: unset;
-    `}
-`;
+import { cn } from '../../lib/utils';
 
 export function PostCardSkeleton({ layout = 'row', hasThumb = true, variant = 'elevated' }) {
-  return (
-    <Card $layout={layout} $hasThumb={hasThumb} $variant={variant} aria-hidden="true">
-      {hasThumb && <Thumb $layout={layout} $radius="lg" />}
+  const variantClasses = {
+    elevated:
+      'bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)]',
+    featured:
+      'bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.5] shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)]',
+    ghost: 'bg-transparent border border-transparent',
+    inset: 'bg-[hsl(var(--muted))/0.4] border border-[hsl(var(--border))/0.4]',
+  };
 
-      <Body>
-        {/* 1. Title Skeleton First */}
-        <SkeletonText lines={2} lineHeight="22px" lastLineWidth="75%" gap="xs" />
+  return (
+    <div
+      className={cn(
+        'grid gap-4 sm:gap-6 p-5 sm:p-6 rounded-[24px]',
+        variantClasses[variant] || variantClasses.elevated,
+        layout === 'stacked' || !hasThumb
+          ? 'grid-cols-1 items-start'
+          : 'grid-cols-1 sm:grid-cols-[180px_1fr] md:grid-cols-[230px_1fr] items-stretch'
+      )}
+      aria-hidden="true"
+    >
+      {hasThumb && (
+        <Skeleton
+          className={cn(
+            'w-full rounded-[16px]',
+            layout === 'stacked'
+              ? 'aspect-video h-auto'
+              : 'h-full min-h-[155px] aspect-[16/10]'
+          )}
+        />
+      )}
+
+      <div className="min-w-0 flex flex-col justify-between gap-3 h-full">
+        {/* 1. Title Skeleton */}
+        <SkeletonText lines={2} lineHeight="22px" lastLineWidth="75%" gap="sm" />
 
         {/* 2. Author Profile Meta */}
-        <Meta>
-          <Skeleton $variant="circle" $width={24} $height={24} />
-          <Skeleton $width={90} $height={14} $radius="xs" />
-          <Skeleton $width={60} $height={14} $radius="xs" />
-          <Skeleton $width={70} $height={14} $radius="xs" />
-        </Meta>
+        <div className="flex items-center gap-2">
+          <Skeleton variant="circle" width={24} height={24} />
+          <Skeleton width={90} height={14} className="rounded" />
+          <Skeleton width={60} height={14} className="rounded" />
+          <Skeleton width={70} height={14} className="rounded" />
+        </div>
 
         {/* 3. Excerpt */}
-        <SkeletonText lines={2} lineHeight="14px" lastLineWidth="90%" gap="xs" />
+        <SkeletonText lines={2} lineHeight="14px" lastLineWidth="90%" gap="sm" />
 
-        {/* 4. Hashtags directly below description */}
-        <HashtagsSkeleton>
-          <Skeleton $width={50} $height={14} $radius="xs" />
-          <Skeleton $width={60} $height={14} $radius="xs" />
-        </HashtagsSkeleton>
-      </Body>
-    </Card>
+        {/* 4. Hashtags */}
+        <div className="flex items-center gap-2 mt-1">
+          <Skeleton width={50} height={14} className="rounded-full" />
+          <Skeleton width={60} height={14} className="rounded-full" />
+        </div>
+      </div>
+    </div>
   );
 }
 
 export function PostCardCompactSkeleton() {
   return (
-    <div
-      style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 0' }}
-      aria-hidden="true"
-    >
-      <Skeleton $width={24} $height={16} $radius="xs" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <Skeleton $width="85%" $height={14} $radius="xs" />
-        <Skeleton $width="45%" $height={12} $radius="xs" />
+    <div className="flex gap-3 items-center py-2" aria-hidden="true">
+      <Skeleton width={24} height={16} className="rounded" />
+      <div className="flex-1 flex flex-col gap-1.5">
+        <Skeleton width="85%" height={14} className="rounded" />
+        <Skeleton width="45%" height={12} className="rounded" />
       </div>
     </div>
   );

@@ -1,57 +1,29 @@
-import styled from 'styled-components';
 import { PageShell } from '../layout/PageShell';
 import { Skeleton, SkeletonText } from '../ui/Skeleton';
 
-const CoverSkeleton = styled(Skeleton)`
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  max-height: 420px;
-  border-radius: ${({ theme }) => theme.radii.xl};
-  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
-`;
-
-const HeaderGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
-`;
-
-const AuthorMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const ContentBlock = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-`;
-
 export function PostDetailSkeleton() {
   return (
-    <PageShell $width="reading" aria-hidden="true">
-      <CoverSkeleton $radius="xl" />
+    <PageShell width="reading" aria-hidden="true">
+      <Skeleton className="w-full aspect-video max-h-[420px] rounded-[28px] mb-8" />
 
-      <HeaderGroup>
-        <Skeleton $variant="pill" $width={90} $height={28} />
+      <div className="flex flex-col gap-4 mb-8">
+        <Skeleton variant="pill" width={90} height={28} />
         <SkeletonText lines={2} lineHeight="34px" lastLineWidth="70%" gap="sm" />
 
-        <AuthorMeta>
-          <Skeleton $variant="circle" $width={48} $height={48} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <Skeleton $width={140} $height={16} $radius="xs" />
-            <Skeleton $width={180} $height={13} $radius="xs" />
+        <div className="flex items-center gap-3">
+          <Skeleton variant="circle" width={48} height={48} />
+          <div className="flex flex-col gap-1.5">
+            <Skeleton width={140} height={16} className="rounded" />
+            <Skeleton width={180} height={13} className="rounded" />
           </div>
-        </AuthorMeta>
-      </HeaderGroup>
+        </div>
+      </div>
 
-      <ContentBlock>
+      <div className="flex flex-col gap-6">
         <SkeletonText lines={4} lineHeight="18px" lastLineWidth="80%" gap="md" />
         <SkeletonText lines={5} lineHeight="18px" lastLineWidth="65%" gap="md" />
         <SkeletonText lines={3} lineHeight="18px" lastLineWidth="90%" gap="md" />
-      </ContentBlock>
+      </div>
     </PageShell>
   );
 }
