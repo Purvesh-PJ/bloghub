@@ -1,132 +1,10 @@
+import * as React from 'react';
 import * as RadixSelect from '@radix-ui/react-select';
-import styled from 'styled-components';
 import { Check, ChevronDown } from 'lucide-react';
-import { text } from '../../styles/theme/mixins';
-import { iconPx } from '../../styles/theme';
+import { cn } from '../../lib/utils';
 
 /**
- * Select — Radix Select underneath.
- *
- * Radix owns typeahead, arrow-key navigation, collision-aware positioning, the listbox
- * ARIA relationships and touch behaviour. A native <select> cannot be styled to match the
- * rest of the interface; hand-rolling one correctly is a lot of accessibility work.
- */
-
-const Field = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-  width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
-`;
-
-/*
-  Matches Input's label exactly, via the same mixin.
-
-  This read `theme.ui.base[0]`, and `theme.ui` is the `text` scale — which has xs/sm/md/lg/xl
-  and no `base`. So the subscript ran against undefined and threw during style generation,
-  taking down any page that rendered a Select with a label. Nothing had, until now.
-*/
-const Label = styled.label`
-  ${text('sm', 'medium')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  padding-left: ${({ theme }) => theme.spacing.xs};
-`;
-
-const Trigger = styled(RadixSelect.Trigger)`
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.sm};
-  width: 100%;
-  height: ${({ theme, $density }) => theme.density[$density].controlHeight};
-  padding: 0 ${({ theme }) => theme.spacing.md};
-
-  background: ${({ theme }) => theme.colors.surfaceRaised};
-  border: 1px solid
-    ${({ theme, $error }) => ($error ? theme.colors.dangerLine : theme.colors.lineDefault)};
-  border-radius: ${({ theme }) => theme.radii.md};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  text-align: left;
-
-  transition: border-color ${({ theme }) => theme.transitions.fast};
-
-  &:hover:not(:disabled) {
-    border-color: ${({ theme }) => theme.colors.lineStrong};
-  }
-
-  &[data-placeholder] {
-    color: ${({ theme }) => theme.colors.textMuted};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const Icon = styled(RadixSelect.Icon)`
-  display: inline-flex;
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const Content = styled(RadixSelect.Content)`
-  overflow: hidden;
-  min-width: var(--radix-select-trigger-width);
-  max-height: var(--radix-select-content-available-height);
-  background: ${({ theme }) => theme.colors.surfaceRaised};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.popover};
-  z-index: ${({ theme }) => theme.zIndices.dropdown};
-`;
-
-const Viewport = styled(RadixSelect.Viewport)`
-  padding: ${({ theme }) => theme.spacing.xs};
-`;
-
-const Item = styled(RadixSelect.Item)`
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  height: 32px;
-  padding: 0 ${({ theme }) => theme.spacing.sm};
-  padding-right: ${({ theme }) => theme.spacing.xl};
-
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  cursor: pointer;
-  user-select: none;
-  outline: none;
-
-  /* Radix sets data-highlighted for both pointer and keyboard, so one rule covers both. */
-  &[data-highlighted] {
-    background: ${({ theme }) => theme.colors.accentSubtle};
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-
-  &[data-disabled] {
-    color: ${({ theme }) => theme.colors.textDisabled};
-    pointer-events: none;
-  }
-`;
-
-const ItemIndicator = styled(RadixSelect.ItemIndicator)`
-  position: absolute;
-  right: ${({ theme }) => theme.spacing.sm};
-  display: inline-flex;
-  color: ${({ theme }) => theme.colors.accentText};
-`;
-
-const ErrorText = styled.span`
-  font-size: ${({ theme }) => theme.ui.sm[0]};
-  color: ${({ theme }) => theme.colors.dangerText};
-`;
-
-/**
- * @param {Array<{value: string, label: string, disabled?: boolean}>} options
+ * Select — Radix Select underneath with Tailwind & shadcn/ui styling.
  */
 export function Select({
   options = [],
@@ -139,36 +17,68 @@ export function Select({
   fullWidth = true,
   density = 'comfortable',
   name,
+  className,
 }) {
   return (
-    <Field $fullWidth={fullWidth}>
-      {label && <Label>{label}</Label>}
+    <div className={cn('flex flex-col gap-1.5', fullWidth ? 'w-full' : 'w-auto')}>
+      {label && (
+        <label className="text-sm font-medium text-[hsl(var(--muted-foreground))] pl-0.5 select-none">
+          {label}
+        </label>
+      )}
 
       <RadixSelect.Root value={value} onValueChange={onValueChange} disabled={disabled} name={name}>
-        <Trigger $density={density} $error={Boolean(error)} aria-label={label}>
+        <RadixSelect.Trigger
+          aria-label={label}
+          className={cn(
+            'inline-flex items-center justify-between gap-2 w-full rounded-xl border px-3.5 text-sm transition-colors duration-150',
+            'bg-[hsl(var(--card))] text-[hsl(var(--foreground))]',
+            'hover:border-[hsl(var(--ring))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            'data-[placeholder]:text-[hsl(var(--muted-foreground))]',
+            density === 'compact' ? 'h-9' : 'h-10',
+            error
+              ? 'border-[hsl(var(--destructive))] focus-visible:ring-[hsl(var(--destructive))]'
+              : 'border-[hsl(var(--border))]',
+            className
+          )}
+        >
           <RadixSelect.Value placeholder={placeholder} />
-          <Icon>
-            <ChevronDown size={iconPx.md} />
-          </Icon>
-        </Trigger>
+          <RadixSelect.Icon className="inline-flex shrink-0 text-[hsl(var(--muted-foreground))]">
+            <ChevronDown className="h-4 w-4" />
+          </RadixSelect.Icon>
+        </RadixSelect.Trigger>
 
         <RadixSelect.Portal>
-          <Content position="popper" sideOffset={4}>
-            <Viewport>
+          <RadixSelect.Content
+            position="popper"
+            sideOffset={4}
+            className="z-50 min-w-[var(--radix-select-trigger-width)] max-h-[var(--radix-select-content-available-height)] overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] shadow-xl animate-in fade-in-0 zoom-in-95"
+          >
+            <RadixSelect.Viewport className="p-1">
               {options.map((option) => (
-                <Item key={option.value} value={option.value} disabled={option.disabled}>
+                <RadixSelect.Item
+                  key={option.value}
+                  value={option.value}
+                  disabled={option.disabled}
+                  className={cn(
+                    'relative flex h-8.5 items-center gap-2 rounded-lg px-2.5 pr-8 text-sm cursor-pointer select-none outline-none transition-colors duration-100',
+                    'focus:bg-[hsl(var(--primary))/0.10] focus:text-[hsl(var(--primary))]',
+                    'data-[disabled]:pointer-events-none data-[disabled]:opacity-50'
+                  )}
+                >
                   <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
-                  <ItemIndicator>
-                    <Check size={iconPx.sm} />
-                  </ItemIndicator>
-                </Item>
+                  <RadixSelect.ItemIndicator className="absolute right-2.5 inline-flex items-center text-[hsl(var(--primary))]">
+                    <Check className="h-4 w-4" />
+                  </RadixSelect.ItemIndicator>
+                </RadixSelect.Item>
               ))}
-            </Viewport>
-          </Content>
+            </RadixSelect.Viewport>
+          </RadixSelect.Content>
         </RadixSelect.Portal>
       </RadixSelect.Root>
 
-      {error && <ErrorText>{error}</ErrorText>}
-    </Field>
+      {error && <span className="text-xs text-[hsl(var(--destructive))] pl-0.5">{error}</span>}
+    </div>
   );
 }

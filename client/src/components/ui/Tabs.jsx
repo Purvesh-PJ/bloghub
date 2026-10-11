@@ -1,86 +1,65 @@
+import * as React from 'react';
 import * as RadixTabs from '@radix-ui/react-tabs';
-import styled from 'styled-components';
+import { cn } from '../../lib/utils';
 
 /**
- * Tabs — Radix Tabs underneath.
- *
- * Radix owns the roving tabindex, arrow-key navigation, Home/End, and the
- * tab ↔ tabpanel ARIA wiring.
+ * Tabs — Radix Tabs with Tailwind styling and clean accessibility.
  */
+const Root = React.forwardRef(({ className, ...props }, ref) => (
+  <RadixTabs.Root
+    ref={ref}
+    className={cn('flex flex-col gap-6', className)}
+    {...props}
+  />
+));
+Root.displayName = 'TabsRoot';
 
-const Root = styled(RadixTabs.Root)`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-`;
+const List = React.forwardRef(({ className, ...props }, ref) => (
+  <RadixTabs.List
+    ref={ref}
+    className={cn(
+      'flex items-center gap-1 border-b border-[hsl(var(--border))] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+      className
+    )}
+    {...props}
+  />
+));
+List.displayName = 'TabsList';
 
-const List = styled(RadixTabs.List)`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.xs};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  overflow-x: auto;
-  scrollbar-width: none;
+const Trigger = React.forwardRef(({ className, ...props }, ref) => (
+  <RadixTabs.Trigger
+    ref={ref}
+    className={cn(
+      'relative shrink-0 px-4 py-3 text-sm font-medium text-[hsl(var(--muted-foreground))] whitespace-nowrap cursor-pointer select-none transition-colors duration-150',
+      'hover:text-[hsl(var(--foreground))]',
+      'data-[state=active]:text-[hsl(var(--foreground))] data-[state=active]:font-semibold',
+      'after:content-[""] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent after:transition-colors',
+      'data-[state=active]:after:bg-[hsl(var(--primary))]',
+      'disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      className
+    )}
+    {...props}
+  />
+));
+Trigger.displayName = 'TabsTrigger';
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
+const Content = React.forwardRef(({ className, ...props }, ref) => (
+  <RadixTabs.Content
+    ref={ref}
+    className={cn('focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', className)}
+    {...props}
+  />
+));
+Content.displayName = 'TabsContent';
 
-const Trigger = styled(RadixTabs.Trigger)`
-  position: relative;
-  flex-shrink: 0;
-  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.md};
-
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  font-weight: ${({ theme }) => theme.weights.medium};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  white-space: nowrap;
-
-  transition: color ${({ theme }) => theme.transitions.fast};
-
-  /* The indicator is a pseudo-element so switching tabs never shifts layout. */
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 2px;
-    background: transparent;
-    transition: background ${({ theme }) => theme.transitions.fast};
-  }
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-
-  &[data-state='active'] {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-weight: ${({ theme }) => theme.weights.semibold};
-  }
-
-  &[data-state='active']::after {
-    background: ${({ theme }) => theme.colors.accentSolid};
-  }
-
-  &[data-disabled] {
-    color: ${({ theme }) => theme.colors.textDisabled};
-    pointer-events: none;
-  }
-`;
-
-const Content = styled(RadixTabs.Content)`
-  &:focus {
-    outline: none;
-  }
-`;
-
-/**
- * @param {Array<{value: string, label: string, content: React.ReactNode, disabled?: boolean}>} tabs
- */
-export function Tabs({ tabs = [], value, defaultValue, onValueChange, ariaLabel = 'Tabs' }) {
+export function Tabs({ tabs = [], value, defaultValue, onValueChange, ariaLabel = 'Tabs', className }) {
   return (
-    <Root value={value} defaultValue={defaultValue ?? tabs[0]?.value} onValueChange={onValueChange}>
+    <Root
+      value={value}
+      defaultValue={defaultValue ?? tabs[0]?.value}
+      onValueChange={onValueChange}
+      className={className}
+    >
       <List aria-label={ariaLabel}>
         {tabs.map((tab) => (
           <Trigger key={tab.value} value={tab.value} disabled={tab.disabled}>
