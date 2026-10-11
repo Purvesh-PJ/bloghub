@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import styled from 'styled-components';
 import { formatDistanceToNow } from 'date-fns';
 import { MessageSquare, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -11,7 +10,6 @@ import { commentService } from '../services/commentService';
 import { PageShell } from '../components/layout/PageShell';
 import {
   Button,
-  Surface,
   Card,
   Select,
   Avatar,
@@ -21,130 +19,19 @@ import {
   Skeleton,
   SkeletonText,
 } from '../components/ui';
-import { text, media } from '../styles/theme/mixins';
 import { queryKeys } from '../services/queryKeys';
-import { iconPx } from '../styles/theme';
-
-/**
- * Responses — what readers have said, and the only place an author can moderate it.
- *
- * The API could already list a post's comments and delete one, and the workspace had no
- * screen for either: an author could be commented on and never see it, and had no way to
- * remove anything from their own thread.
- */
-
-const Toolbar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  flex-wrap: wrap;
-  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const PostPicker = styled.div`
-  min-width: 260px;
-  flex: 1;
-  max-width: 440px;
-
-  ${media.down('sm')`max-width: 100%;`}
-`;
-
-const Thread = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Entry = styled.div`
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: ${({ theme }) => theme.spacing.md};
-  align-items: start;
-  padding: ${({ theme }) => theme.spacing.lg};
-  transition: background ${({ theme }) => theme.transitions.fast};
-
-  & + & {
-    box-shadow: inset 0 1px 0 ${({ theme }) => theme.colors.lineSubtle};
-  }
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-  }
-`;
-
-const Body = styled.div`
-  min-width: 0;
-`;
-
-const Who = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: ${({ theme }) => theme.spacing.sm};
-  flex-wrap: wrap;
-  margin-bottom: 2px;
-`;
-
-const Name = styled.span`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const When = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const Message = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.6;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-`;
-
-const Replies = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.md};
-  padding-left: ${({ theme }) => theme.spacing.lg};
-  border-left: 2px solid ${({ theme }) => theme.colors.lineSubtle};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const PostTitleRow = styled.span`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.accentText};
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  /* Two words that must not wrap or clip; clamping them rendered "Open sto…". */
-  white-space: nowrap;
-  flex-shrink: 0;
-`;
-
-const Count = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-variant-numeric: tabular-nums;
-`;
 
 export function Responses() {
   const queryClient = useQueryClient();
   const [postId, setPostId] = useState('');
   const [pendingDelete, setPendingDelete] = useState(null);
 
-  // Every story the author has, so the picker can offer them. Drafts included — a private
-  // post can still carry the author's own notes.
   const { data: postsData, isLoading: postsLoading } = useQuery({
     queryKey: queryKeys.posts.mine({ limit: 50, sort: 'newest' }),
     queryFn: () => postService.getMyPosts({ limit: 50, sort: 'newest' }),
   });
 
   const posts = postsData?.data ?? [];
-  // Falls back to the newest story rather than showing an empty picker on arrival.
   const selectedId = postId || posts[0]?._id || '';
   const selectedPost = posts.find((post) => post._id === selectedId);
 
@@ -176,27 +63,22 @@ export function Responses() {
   if (postsLoading) {
     return (
       <PageShell>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} aria-hidden="true">
-          <Skeleton $width="300px" $height={40} $radius="md" />
-          <Surface $tone="low" $radius="xl" $padding="md">
+        <div className="flex flex-col gap-4" aria-hidden="true">
+          <Skeleton width="300px" height={40} className="rounded-xl" />
+          <Card tone="low" radius="xl" padding="md">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                style={{
-                  display: 'flex',
-                  gap: 16,
-                  padding: '16px 0',
-                  borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                }}
+                className="flex gap-4 py-4 border-b border-[hsl(var(--border))/0.4] last:border-b-0"
               >
-                <Skeleton $variant="circle" $width={36} $height={36} />
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Skeleton $width="140px" $height={14} $radius="xs" />
+                <Skeleton variant="circle" width={36} height={36} />
+                <div className="flex-1 flex flex-col gap-2">
+                  <Skeleton width="140px" height={14} className="rounded" />
                   <SkeletonText lines={2} lineHeight="14px" lastLineWidth="80%" gap="xs" />
                 </div>
               </div>
             ))}
-          </Surface>
+          </Card>
         </div>
       </PageShell>
     );
@@ -219,8 +101,9 @@ export function Responses() {
         </EmptyState>
       ) : (
         <>
-          <Toolbar>
-            <PostPicker>
+          {/* Post picker toolbar */}
+          <div className="flex items-center gap-4 flex-wrap p-4 px-6 rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] mb-6">
+            <div className="min-w-[260px] flex-1 max-w-[440px] max-sm:max-w-full">
               <Select
                 label="Story"
                 value={selectedId}
@@ -230,41 +113,38 @@ export function Responses() {
                   label: post.title || 'Untitled',
                 }))}
               />
-            </PostPicker>
+            </div>
 
             {selectedPost && (
-              <PostTitleRow>
+              <span className="text-sm font-semibold text-[hsl(var(--primary))] inline-flex items-center gap-1.5 whitespace-nowrap shrink-0">
                 <span>Viewing:</span>
-                <Link to={`/post/${selectedPost._id}`}>{selectedPost.title || 'Untitled'}</Link>
-              </PostTitleRow>
+                <Link to={`/post/${selectedPost._id}`} className="hover:underline">
+                  {selectedPost.title || 'Untitled'}
+                </Link>
+              </span>
             )}
 
-            <Count style={{ marginLeft: 'auto' }}>
+            <span className="text-xs text-[hsl(var(--muted-foreground))] tabular-nums ml-auto">
               {commentsData?.pagination?.total ?? comments.length} response
               {(commentsData?.pagination?.total ?? comments.length) === 1 ? '' : 's'}
-            </Count>
-          </Toolbar>
+            </span>
+          </div>
 
           {commentsLoading ? (
-            <Surface $tone="low" $radius="xl" $padding="md" aria-hidden="true">
+            <Card tone="low" radius="xl" padding="md" aria-hidden="true">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div
                   key={i}
-                  style={{
-                    display: 'flex',
-                    gap: 16,
-                    padding: '16px 0',
-                    borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                  }}
+                  className="flex gap-4 py-4 border-b border-[hsl(var(--border))/0.4] last:border-b-0"
                 >
-                  <Skeleton $variant="circle" $width={36} $height={36} />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <Skeleton $width="140px" $height={14} $radius="xs" />
+                  <Skeleton variant="circle" width={36} height={36} />
+                  <div className="flex-1 flex flex-col gap-2">
+                    <Skeleton width="140px" height={14} className="rounded" />
                     <SkeletonText lines={2} lineHeight="14px" lastLineWidth="80%" gap="xs" />
                   </div>
                 </div>
               ))}
-            </Surface>
+            </Card>
           ) : commentsFailed ? (
             <ErrorState
               title="Responses did not load"
@@ -276,42 +156,53 @@ export function Responses() {
               When somebody replies, it appears here.
             </EmptyState>
           ) : (
-            <Surface $tone="low" $radius="xl" $padding="sm">
-              <Thread>
+            <Card tone="low" radius="xl" padding="sm">
+              <div className="flex flex-col divide-y divide-[hsl(var(--border))/0.4]">
                 {comments.map((comment) => (
-                  <Entry key={comment._id}>
+                  <div
+                    key={comment._id}
+                    className="grid grid-cols-[auto_1fr_auto] gap-4 items-start p-4 hover:bg-[hsl(var(--muted))/0.5] transition-colors rounded-xl"
+                  >
                     <Avatar name={comment.user?.username} size="sm" />
-                    <Body>
-                      <Who>
-                        <Name>{comment.user?.username || 'Someone'}</Name>
-                        <When>
+                    <div className="min-w-0">
+                      <div className="flex items-baseline gap-2 flex-wrap mb-0.5">
+                        <span className="text-sm font-semibold text-[hsl(var(--foreground))]">
+                          {comment.user?.username || 'Someone'}
+                        </span>
+                        <span className="text-xs text-[hsl(var(--muted-foreground))]">
                           {comment.createdAt
                             ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })
                             : 'recently'}
-                        </When>
-                      </Who>
-                      <Message>{comment.message}</Message>
+                        </span>
+                      </div>
+                      <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed whitespace-pre-wrap break-words">
+                        {comment.message}
+                      </p>
 
                       {comment.replies?.length > 0 && (
-                        <Replies>
+                        <div className="mt-3 pl-4 border-l-2 border-[hsl(var(--border))/0.6] flex flex-col gap-3">
                           {comment.replies.map((reply) => (
                             <div key={reply._id}>
-                              <Who>
-                                <Name>{reply.user?.username || 'Someone'}</Name>
-                                <When>
+                              <div className="flex items-baseline gap-2 flex-wrap mb-0.5">
+                                <span className="text-sm font-semibold text-[hsl(var(--foreground))]">
+                                  {reply.user?.username || 'Someone'}
+                                </span>
+                                <span className="text-xs text-[hsl(var(--muted-foreground))]">
                                   {reply.createdAt
                                     ? formatDistanceToNow(new Date(reply.createdAt), {
                                         addSuffix: true,
                                       })
                                     : 'recently'}
-                                </When>
-                              </Who>
-                              <Message>{reply.message}</Message>
+                                </span>
+                              </div>
+                              <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed whitespace-pre-wrap break-words">
+                                {reply.message}
+                              </p>
                             </div>
                           ))}
-                        </Replies>
+                        </div>
                       )}
-                    </Body>
+                    </div>
 
                     <Button
                       variant="ghost"
@@ -319,18 +210,19 @@ export function Responses() {
                       aria-label={`Remove response from ${comment.user?.username || 'this reader'}`}
                       onClick={() => setPendingDelete(comment)}
                     >
-                      <Trash2 size={iconPx.sm} />
+                      <Trash2 className="w-4 h-4 text-red-500" />
                     </Button>
-                  </Entry>
+                  </div>
                 ))}
-              </Thread>
-            </Surface>
+              </div>
+            </Card>
           )}
         </>
       )}
 
+      {/* Delete Confirmation Modal */}
       <Modal
-        open={!!pendingDelete}
+        open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title="Remove this response?"
         description={
@@ -339,8 +231,10 @@ export function Responses() {
             : 'It will be removed from your story. This cannot be undone.'
         }
       >
-        <Card tone="low" radius="md" padding="md" style={{ marginTop: 8 }}>
-          <Message>{pendingDelete?.message}</Message>
+        <Card tone="low" radius="md" padding="md" className="mt-2">
+          <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed m-0">
+            {pendingDelete?.message}
+          </p>
         </Card>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setPendingDelete(null)}>
