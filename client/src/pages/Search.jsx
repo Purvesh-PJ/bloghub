@@ -23,7 +23,6 @@ import { topicIcon } from '../utils/topicIcons';
 import { Button, Chip, EmptyState } from '../components/ui';
 import { excerpt, readingTimeFromLength } from '../utils/text';
 import { queryKeys } from '../services/queryKeys';
-import { cn } from '../lib/utils';
 
 const formatTopicTitle = (text) => {
   if (!text) return '';

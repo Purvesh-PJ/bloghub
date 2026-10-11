@@ -110,6 +110,7 @@ export function Card({
       radius={radius}
       padding={padding}
       bordered={bordered}
+      elevation={elevation}
       interactive={interactive}
       className={className}
       {...props}
