@@ -1,148 +1,91 @@
-import styled from 'styled-components';
-import { display, text, label as labelStyle } from '../../styles/theme/mixins';
-
-/**
- * Read-through rate — the one number this platform exists to show.
- *
- * A view is somebody opening a post. A read is somebody reaching the end. The gap between
- * the two is the only figure here that a like count cannot stand in for, so it is drawn
- * rather than printed: the track is everyone who opened it, the fill is everyone who stayed.
- *
- * Deliberately not colour-coded by value. A low rate on a long technical piece is not a
- * failure, and tinting it red would have the interface pass a judgement it has no basis for.
- */
-
-const Root = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme, $size }) => ($size === 'sm' ? theme.spacing.xs : theme.spacing.sm)};
-  min-width: 0;
-`;
-
-const Track = styled.div`
-  position: relative;
-  height: ${({ $size }) => ($size === 'sm' ? '6px' : '10px')};
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-  overflow: hidden;
-`;
-
-const Fill = styled.div`
-  height: 100%;
-  width: ${({ $percent }) => $percent}%;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentSolid};
-  transition: width ${({ theme }) => theme.transitions.slow};
-
-  /* A post with a handful of finishers should still show a mark rather than nothing. */
-  min-width: ${({ $percent }) => ($percent > 0 ? '4px' : '0')};
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
-`;
-
-const Legend = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: ${({ theme }) => theme.spacing.sm};
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  white-space: nowrap;
-`;
-
-const Percent = styled.span`
-  ${text('xs', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-variant-numeric: tabular-nums;
-`;
-
-/* ── Headline variant ────────────────────────────────────────────────────────
-   The same figure at the top of the dashboard, where it is the page's thesis
-   rather than a row detail. */
-
-const HeadlineRoot = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const Numbers = styled.div`
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xl};
-`;
-
-const Figure = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
-
-const Value = styled.span`
-  ${display('sm')}
-  color: ${({ theme, $accent }) => ($accent ? theme.colors.accentText : theme.colors.textPrimary)};
-  font-variant-numeric: tabular-nums;
-`;
-
-const Caption = styled.span`
-  ${labelStyle('sm')}
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
+import { cn } from '../../lib/utils';
 
 const format = (n) => new Intl.NumberFormat().format(n ?? 0);
 
-/** Compact bar for table rows and cards. */
+/**
+ * Compact bar for table rows and cards.
+ * Visualizes read-through attention rate with animated progress fill.
+ */
 export function ReadRateBar({ views = 0, reads = 0, rate, size = 'sm', showLegend = true }) {
   const percent = rate ?? (views > 0 ? (reads / views) * 100 : 0);
   const clamped = Math.max(0, Math.min(100, percent));
 
   return (
-    <Root
-      $size={size}
+    <div
       role="img"
       aria-label={`${format(reads)} of ${format(views)} readers finished, ${clamped.toFixed(0)} percent`}
+      className={cn('flex flex-col min-w-0', size === 'sm' ? 'gap-1' : 'gap-2')}
     >
-      <Track $size={size}>
-        <Fill $percent={clamped} />
-      </Track>
+      <div
+        className={cn(
+          'relative w-full rounded-full bg-[hsl(var(--muted))] overflow-hidden',
+          size === 'sm' ? 'h-1.5' : 'h-2.5'
+        )}
+      >
+        <div
+          style={{ width: `${clamped}%` }}
+          className="h-full rounded-full bg-[hsl(var(--primary))] transition-[width] duration-500 ease-out min-w-[4px]"
+        />
+      </div>
+
       {showLegend && (
-        <Legend>
-          <Percent>{clamped.toFixed(0)}%</Percent>
+        <div className="flex items-baseline gap-2 text-xs text-[hsl(var(--muted-foreground))] whitespace-nowrap select-none">
+          <span className="font-semibold text-[hsl(var(--foreground))] tabular-nums">
+            {clamped.toFixed(0)}%
+          </span>
           <span>
             {format(reads)} of {format(views)} finished
           </span>
-        </Legend>
+        </div>
       )}
-    </Root>
+    </div>
   );
 }
 
-/** The same figure as a page-level statement. */
+/**
+ * ReadRateHeadline — The same figure as a page-level statement on top of Creator Studio.
+ */
 export function ReadRateHeadline({ views = 0, reads = 0, rate }) {
   const percent = rate ?? (views > 0 ? (reads / views) * 100 : 0);
   const clamped = Math.max(0, Math.min(100, percent));
 
   return (
-    <HeadlineRoot>
-      <Numbers>
-        <Figure>
-          <Value>{format(views)}</Value>
-          <Caption>opened</Caption>
-        </Figure>
-        <Figure>
-          <Value $accent>{format(reads)}</Value>
-          <Caption>finished</Caption>
-        </Figure>
-        <Figure>
-          <Value>{clamped.toFixed(0)}%</Value>
-          <Caption>read through</Caption>
-        </Figure>
-      </Numbers>
-      <Track $size="lg">
-        <Fill $percent={clamped} />
-      </Track>
-    </HeadlineRoot>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-baseline flex-wrap gap-6 sm:gap-8">
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))] tabular-nums">
+            {format(views)}
+          </span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            opened
+          </span>
+        </div>
+
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--primary))] tabular-nums">
+            {format(reads)}
+          </span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            finished
+          </span>
+        </div>
+
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))] tabular-nums">
+            {clamped.toFixed(0)}%
+          </span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            read through
+          </span>
+        </div>
+      </div>
+
+      <div className="relative w-full rounded-full bg-[hsl(var(--muted))] overflow-hidden h-2.5">
+        <div
+          style={{ width: `${clamped}%` }}
+          className="h-full rounded-full bg-[hsl(var(--primary))] transition-[width] duration-500 ease-out min-w-[4px]"
+        />
+      </div>
+    </div>
   );
 }
