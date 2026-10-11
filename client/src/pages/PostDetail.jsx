@@ -1,16 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import styled from 'styled-components';
-/*
-  The preview package, not the editor.
-
-  `@uiw/react-md-editor` re-exports this component as `MDEditor.Markdown`, so importing the
-  editor to render a post pulled its toolbar, its command set, its textarea and the syntax
-  highlighting they need into the same chunk — 1.1 MB that every reader downloaded to look at
-  an article they cannot edit. Reading and writing now load separately; the editor stays on
-  the pages that actually edit.
-*/
 import Markdown from '@uiw/react-markdown-preview/nohighlight';
 import { formatDistanceToNow } from 'date-fns';
 import { Heart, MessageCircle, Share2, Eye, Pencil, Trash2, FileQuestion } from 'lucide-react';
@@ -29,314 +19,9 @@ import { PageShell } from '../components/layout/PageShell';
 import { ReadRateBar } from '../components/stats/ReadRateBar';
 import { Button, Card, TextArea, Modal, EmptyState, Avatar } from '../components/ui';
 import { PostDetailSkeleton } from '../components/posts/PostDetailSkeleton';
-import { display, text, media, interactive } from '../styles/theme/mixins';
 import { readingTime } from '../utils/text';
 import { queryKeys } from '../services/queryKeys';
-
-/**
- * The article page.
- *
- * Two things were wrong beyond the styling. The markdown body was rendered with
- * `data-color-mode="light"` hard-coded, so in dark mode the article kept a white background
- * while the page around it went dark. And the reader's progress was never reported: the
- * service had trackPostRead and nothing anywhere called it, so no Read document was ever
- * created by the running application and read-through rate would have stayed at 0% in
- * production regardless of how many people finished a piece.
- */
-
-/* ── Progress ────────────────────────────────────────────────────────────────
-   A reading platform that measures how far people get should show the reader the
-   same thing. Sits under the header, which is 64px tall and sticky. */
-
-const Progress = styled.div`
-  position: fixed;
-  top: ${({ theme }) => theme.layout.headerHeight};
-  left: 0;
-  right: 0;
-  height: 2px;
-  z-index: ${({ theme }) => theme.zIndices.sticky};
-  background: transparent;
-  pointer-events: none;
-`;
-
-const ProgressFill = styled.div`
-  height: 100%;
-  width: ${({ $percent }) => $percent}%;
-  background: ${({ theme }) => theme.colors.accentSolid};
-  transition: width 80ms linear;
-`;
-
-/* ── Header ──────────────────────────────────────────────────────────────── */
-
-const Cover = styled.div`
-  width: 100%;
-  aspect-ratio: 21 / 9;
-  border-radius: ${({ theme }) => theme.radii['2xl']};
-  overflow: hidden;
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  ${media.down('sm')`aspect-ratio: 16 / 9;`}
-`;
-
-const Title = styled.h1`
-  ${display('md')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-
-  ${media.down('sm')`font-size: ${({ theme }) => theme.display.sm[0]};`}
-`;
-
-const Byline = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.lg};
-  flex-wrap: wrap;
-  padding-bottom: ${({ theme }) => theme.spacing.xl};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-`;
-
-const Author = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const OwnerActions = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
-
-/* ── Body ────────────────────────────────────────────────────────────────── */
-
-const Article = styled.article`
-  /* Clean Tailwind prose styling */
-  .wmde-markdown {
-    background: transparent;
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-family: ${({ theme }) => theme.fonts.reading};
-    font-size: 1.125rem;
-    line-height: 1.8;
-  }
-
-  .wmde-markdown > * + * {
-    margin-top: 1.5em;
-  }
-
-  .wmde-markdown h1,
-  .wmde-markdown h2,
-  .wmde-markdown h3,
-  .wmde-markdown h4 {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    border-bottom: none;
-    margin-top: ${({ theme }) => theme.spacing['2xl']};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
-    letter-spacing: ${({ theme }) => theme.tracking.tight};
-    font-weight: 700;
-  }
-
-  .wmde-markdown p,
-  .wmde-markdown li {
-    color: ${({ theme }) => theme.colors.textSecondary};
-  }
-
-  .wmde-markdown a {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-
-  .wmde-markdown blockquote {
-    border-left: 3px solid ${({ theme }) => theme.colors.accentLine};
-    background: ${({ theme }) => theme.colors.surfaceContainerLow};
-    border-radius: ${({ theme }) => theme.radii.sm};
-    padding: ${({ theme }) => theme.spacing.lg};
-    color: ${({ theme }) => theme.colors.textSecondary};
-  }
-
-  .wmde-markdown pre,
-  .wmde-markdown code {
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-    border-radius: ${({ theme }) => theme.radii.sm};
-  }
-
-  .wmde-markdown img {
-    border-radius: ${({ theme }) => theme.radii.lg};
-    max-width: 100%;
-  }
-
-  .wmde-markdown table {
-    display: block;
-    overflow-x: auto;
-  }
-`;
-
-/* ── Engagement ──────────────────────────────────────────────────────────── */
-
-const TagList = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  flex-wrap: wrap;
-  padding: ${({ theme }) => theme.spacing.lg} 0 ${({ theme }) => theme.spacing.md};
-`;
-
-const TagLink = styled(Link)`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.accentText};
-  text-decoration: none;
-  transition: all ${({ theme }) => theme.transitions.fast};
-  ${interactive}
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentSolidHover};
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
-`;
-
-const Bar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  flex-wrap: wrap;
-  padding: ${({ theme }) => theme.spacing.xl} 0;
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-`;
-
-const Action = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  height: 40px;
-  padding: 0 ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.full};
-  ${text('sm', 'medium')}
-  ${interactive}
-
-  background: ${({ theme, $active }) =>
-    $active ? theme.colors.dangerContainer : theme.colors.surfaceContainer};
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.dangerText : theme.colors.textSecondary};
-
-  &:hover {
-    background: ${({ theme, $active }) =>
-      $active ? theme.colors.dangerContainerHover : theme.colors.surfaceContainerHigh};
-    color: ${({ theme, $active }) =>
-      $active ? theme.colors.dangerText : theme.colors.textPrimary};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-    fill: ${({ $active }) => ($active ? 'currentColor' : 'none')};
-  }
-`;
-
-/* ── Comments ────────────────────────────────────────────────────────────── */
-
-const Comments = styled.section`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-`;
-
-const CommentsTitle = styled.h2`
-  ${display('xs')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const Thread = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-`;
-
-const CommentRow = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const CommentBody = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const CommentHead = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: ${({ theme }) => theme.spacing.sm};
-  flex-wrap: wrap;
-`;
-
-const CommentAuthor = styled.span`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const CommentWhen = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const CommentText = styled.p`
-  ${text('md')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-top: ${({ theme }) => theme.spacing.xs};
-  white-space: pre-wrap;
-`;
-
-const ReplyToggle = styled.button`
-  ${text('xs', 'medium')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: ${({ theme }) => theme.spacing.sm};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-/* Nesting drawn with a rule rather than indentation alone, so a deep thread stays readable. */
-/* Reply and Delete sit on one line beneath a response rather than stacking two controls. */
-const CommentActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const DeleteResponse = styled(ReplyToggle)`
-  &:hover {
-    color: ${({ theme }) => theme.colors.dangerText ?? theme.colors.accentText};
-  }
-`;
-
-const Replies = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  padding-left: ${({ theme }) => theme.spacing.lg};
-  border-left: 2px solid ${({ theme }) => theme.colors.lineSubtle};
-`;
-
-const Composer = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-  align-items: flex-end;
-
-  > * {
-    width: 100%;
-  }
-
-  button {
-    width: auto;
-  }
-`;
+import { cn } from '../lib/utils';
 
 export function PostDetail() {
   const { id } = useParams();
@@ -366,8 +51,7 @@ export function PostDetail() {
   const post = data?.data;
   useReadTracking(post?._id, post?.content, articleRef);
 
-  // A view is one per page load. Guarded so React's development double-invoke does not
-  // record two.
+  // A view is one per page load. Guarded so React's development double-invoke does not record two.
   const viewed = useRef(null);
   useEffect(() => {
     if (!id || viewed.current === id) return;
@@ -375,22 +59,9 @@ export function PostDetail() {
     analyticsService.trackPageView(id).catch(() => {});
   }, [id]);
 
-  /*
-    Whether this reader has already liked the story.
-
-    Derived from the post rather than copied into state by an effect. The effect this replaces
-    only assigned when both `post.likes` and a signed-in user were present, so the flag kept
-    its previous value when either went away — signing out left the heart filled, and it
-    survived navigating to a different story until the new post's likes arrived.
-
-    `likedOverride` carries the optimistic flip so the heart responds to the click rather than
-    to the refetch that follows it, and is dropped as soon as the server's answer changes.
-  */
   const likedByServer = Boolean(
     user?.user_id &&
-    // Likes are populated with their user reference; fall back to a bare id in case the
-    // payload is not populated.
-    post?.likes?.some((like) => String(like?.user ?? like) === String(user.user_id))
+      post?.likes?.some((like) => String(like?.user ?? like) === String(user.user_id))
   );
 
   if (syncedLike !== likedByServer) {
@@ -399,20 +70,10 @@ export function PostDetail() {
   }
 
   const liked = likedOverride ?? likedByServer;
-
   const isAuthor = user?.user_id === post?.user?._id;
 
-  /* The author sees how their own piece is doing, in the same shape the dashboard uses. */
   const { data: analytics } = useQuery({
     queryKey: queryKeys.analytics.forPost(id),
-    /*
-      One post's figures.
-
-      This used to call getUserAnalytics and search the result for this post — every story the
-      author has ever written, fetched and discarded, to display one row of it. The per-post
-      endpoint answers the actual question, and is restricted to the author and administrators
-      for the same reason this query is only enabled for the author.
-    */
     queryFn: () => analyticsService.getPostAnalytics(id),
     enabled: Boolean(isAuthor && id),
     retry: false,
@@ -420,14 +81,6 @@ export function PostDetail() {
 
   const postStats = analytics?.data;
 
-  /*
-    The public view count.
-
-    `GET /page-views/post/:id/count` is the one figure here that is not the author's private
-    business, and nothing displayed it — the action bar showed likes and responses beside a
-    story whose reach was invisible to everybody, the author included until they opened the
-    dashboard.
-  */
   const { data: viewCount } = useQuery({
     queryKey: queryKeys.analytics.viewsForPost(id),
     queryFn: () => analyticsService.getPageViewCount(id),
@@ -435,14 +88,6 @@ export function PostDetail() {
     retry: false,
   });
 
-  /*
-    Syntax highlighting, fetched only when the post has code in it.
-
-    See config/markdown.js: the highlighted renderer is 350 kB gzipped because it registers
-    every Prism language, and most posts have no code. The article renders immediately without
-    it; when there is a fenced block the plugin arrives a moment later and the code is
-    recoloured in place.
-  */
   const [highlightPlugin, setHighlightPlugin] = useState(null);
   const needsHighlighting = hasCodeBlock(post?.content);
 
@@ -451,7 +96,6 @@ export function PostDetail() {
 
     let cancelled = false;
     loadSyntaxHighlighting().then((plugin) => {
-      // Stored behind a function so React does not call the plugin as a state updater.
       if (!cancelled && plugin) setHighlightPlugin(() => plugin);
     });
 
@@ -460,7 +104,6 @@ export function PostDetail() {
     };
   }, [needsHighlighting, highlightPlugin]);
 
-  // Sanitisation runs last, so nothing the highlighter adds can widen what reaches the DOM.
   const rehypePlugins = useMemo(
     () => (highlightPlugin ? [highlightPlugin, ...markdownRehypePlugins] : markdownRehypePlugins),
     [highlightPlugin]
@@ -495,13 +138,6 @@ export function PostDetail() {
     onError: () => toast.error('Could not post that reply'),
   });
 
-  /*
-    Removing a response.
-
-    The API has always allowed the comment's author, the author of the post it sits on, and
-    administrators to delete one — and the reader had no control for it anywhere, so a writer
-    could be commented on and had no way to moderate their own thread from the story itself.
-  */
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId) => commentService.deleteComment(commentId),
     onSuccess: () => {
@@ -521,7 +157,6 @@ export function PostDetail() {
 
   const likeMutation = useMutation({
     mutationFn: () => (liked ? likeService.unlikePost(id) : likeService.likePost(id)),
-    // Flip immediately, then let the refetched post confirm it.
     onMutate: () => setLikedOverride(!liked),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) }),
     onError: (error) => {
@@ -534,7 +169,7 @@ export function PostDetail() {
 
   if (error || !data?.success || !post) {
     return (
-      <PageShell $width="reading">
+      <PageShell width="reading">
         <EmptyState
           icon={FileQuestion}
           title="This post is not here"
@@ -554,31 +189,42 @@ export function PostDetail() {
 
   return (
     <>
-      <Progress aria-hidden="true">
-        <ProgressFill $percent={progress} />
-      </Progress>
+      {/* Reading Progress Indicator under header */}
+      <div
+        className="fixed top-14 left-0 right-0 h-[2px] z-[200] bg-transparent pointer-events-none"
+        aria-hidden="true"
+      >
+        <div
+          className="h-full bg-[hsl(var(--primary))] transition-[width] duration-75 ease-linear"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
 
-      <PageShell $width="reading">
+      <PageShell width="reading">
+        {/* Cover Image */}
         {post.imageURL && (
-          <Cover>
-            {/*
-              The cover is the page's largest contentful paint. `lazy` here would be actively
-              wrong — it is above the fold — so it is marked high priority instead, and decoded
-              off the main thread so a large image cannot block the article rendering.
-            */}
+          <div className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-[28px] sm:rounded-[36px] overflow-hidden bg-[hsl(var(--muted))] border border-[hsl(var(--border))/0.4]">
             <img
               src={post.imageURL}
               alt={`Cover image for ${post.title}`}
               fetchPriority="high"
               decoding="async"
+              className="w-full h-full object-cover"
             />
-          </Cover>
+          </div>
         )}
 
-        <Title>{post.title}</Title>
+        {/* Article Title */}
+        <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-[hsl(var(--foreground))] leading-tight sm:leading-snug">
+          {post.title}
+        </h1>
 
-        <Byline>
-          <Author to={post.user?._id ? `/user/${post.user._id}` : '#'}>
+        {/* Byline & Author Actions */}
+        <div className="flex items-center justify-between gap-4 flex-wrap pb-6 border-b border-[hsl(var(--border))/0.6]">
+          <Link
+            to={post.user?._id ? `/user/${post.user._id}` : '#'}
+            className="hover:opacity-90 transition-opacity"
+          >
             <AuthorByline
               layout="stacked"
               name={post.author?.name || post.user?.username}
@@ -586,20 +232,21 @@ export function PostDetail() {
               dateStyle="absolute"
               readingMinutes={readingTime(post.content)}
             />
-          </Author>
+          </Link>
 
           {isAuthor && (
-            <OwnerActions>
+            <div className="flex items-center gap-2">
               <Button as={Link} to={`/edit/${post._id}`} variant="secondary" size="sm">
-                <Pencil /> Edit
+                <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
               </Button>
               <Button variant="dangerTonal" size="sm" onClick={() => setConfirmDelete(true)}>
-                <Trash2 /> Delete
+                <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
               </Button>
-            </OwnerActions>
+            </div>
           )}
-        </Byline>
+        </div>
 
+        {/* Author Stats Bar */}
         {isAuthor && postStats && postStats.views > 0 && (
           <Card tone="low" radius="lg" padding="lg">
             <ReadRateBar
@@ -611,20 +258,19 @@ export function PostDetail() {
           </Card>
         )}
 
-        <Article ref={articleRef}>
+        {/* Article Body */}
+        <article
+          ref={articleRef}
+          className="text-[17px] sm:text-lg leading-[1.8] text-[hsl(var(--foreground))] [&_.wmde-markdown]:bg-transparent [&_.wmde-markdown]:text-inherit [&_.wmde-markdown]:font-sans [&_.wmde-markdown_h1]:text-3xl [&_.wmde-markdown_h1]:font-bold [&_.wmde-markdown_h1]:mt-8 [&_.wmde-markdown_h1]:mb-3 [&_.wmde-markdown_h2]:text-2xl [&_.wmde-markdown_h2]:font-bold [&_.wmde-markdown_h2]:mt-7 [&_.wmde-markdown_h2]:mb-3 [&_.wmde-markdown_h3]:text-xl [&_.wmde-markdown_h3]:font-semibold [&_.wmde-markdown_h3]:mt-6 [&_.wmde-markdown_h3]:mb-2 [&_.wmde-markdown_p]:text-[hsl(var(--muted-foreground))] [&_.wmde-markdown_p]:mb-4 [&_.wmde-markdown_li]:text-[hsl(var(--muted-foreground))] [&_.wmde-markdown_a]:text-[hsl(var(--primary))] [&_.wmde-markdown_a]:underline [&_.wmde-markdown_blockquote]:border-l-4 [&_.wmde-markdown_blockquote]:border-[hsl(var(--primary))] [&_.wmde-markdown_blockquote]:bg-[hsl(var(--muted))/0.5] [&_.wmde-markdown_blockquote]:rounded-r-xl [&_.wmde-markdown_blockquote]:p-4 [&_.wmde-markdown_blockquote]:my-4 [&_.wmde-markdown_pre]:rounded-xl [&_.wmde-markdown_pre]:bg-[hsl(var(--card))] [&_.wmde-markdown_img]:rounded-2xl"
+        >
           <div data-color-mode={mode}>
-            {/*
-              One rendering path, always sanitised. Content that begins with a tag used to
-              bypass Markdown entirely via dangerouslySetInnerHTML; the renderer handles
-              inline HTML on its own, so the special case bought nothing and cost us an
-              unsanitised sink.
-            */}
             <Markdown source={post.content} rehypePlugins={rehypePlugins} />
           </div>
-        </Article>
+        </article>
 
+        {/* Tags */}
         {post.tags && post.tags.length > 0 && (
-          <TagList>
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap py-2">
             {post.tags.map((tag) => {
               const rawName = typeof tag === 'string' ? tag : tag?.name;
               if (!rawName) return null;
@@ -633,72 +279,96 @@ export function PostDetail() {
                 .toLowerCase()
                 .replace(/^[#_-]+/, '');
               return (
-                <TagLink key={name} to={`/search?topic=${encodeURIComponent(name)}`}>
+                <Link
+                  key={name}
+                  to={`/search?topic=${encodeURIComponent(name)}`}
+                  className="px-3 py-1 rounded-full text-xs font-semibold bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))/0.1] transition-colors"
+                >
                   #{name}
-                </TagLink>
+                </Link>
               );
             })}
-          </TagList>
+          </div>
         )}
 
-        {/*
-          Each control pairs an icon with a bare number, which a screen reader would otherwise
-          announce as "button, 12". The visible count stays as it is; the label supplies the
-          noun, and aria-pressed reports the like state rather than leaving it to the colour.
-        */}
-        <Bar>
-          <Action
-            $active={liked}
-            aria-pressed={liked}
-            aria-label={liked ? 'Unlike this post' : 'Like this post'}
+        {/* Actions Bar (Likes, Comments Count, Views, Share) */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap py-4 border-y border-[hsl(var(--border))/0.6]">
+          <button
             onClick={() => {
               isAuthenticated ? likeMutation.mutate() : toast.error('Sign in to like this');
             }}
+            aria-pressed={liked}
+            aria-label={liked ? 'Unlike this post' : 'Like this post'}
+            className={cn(
+              'inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium transition-colors select-none cursor-pointer',
+              liked
+                ? 'bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20'
+                : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))/0.8]'
+            )}
           >
-            <Heart aria-hidden="true" /> {post.likes?.length || 0}
-          </Action>
-          <Action as="a" href="#comments" aria-label={`Jump to ${comments.length} responses`}>
-            <MessageCircle aria-hidden="true" /> {comments.length}
-          </Action>
+            <Heart
+              className={cn('h-4 w-4 shrink-0', liked && 'fill-current text-red-500')}
+              aria-hidden="true"
+            />
+            <span>{post.likes?.length || 0}</span>
+          </button>
+
+          <a
+            href="#comments"
+            aria-label={`Jump to ${comments.length} responses`}
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))/0.8] transition-colors select-none"
+          >
+            <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{comments.length}</span>
+          </a>
+
           {typeof viewCount?.count === 'number' && viewCount.count > 0 && (
-            <Action
-              as="span"
+            <span
               aria-label={`${viewCount.count} ${viewCount.count === 1 ? 'reader has' : 'readers have'} opened this`}
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] select-none"
             >
-              <Eye aria-hidden="true" /> {viewCount.count}
-            </Action>
+              <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{viewCount.count}</span>
+            </span>
           )}
-          <Action
+
+          <button
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
               toast.success('Link copied to clipboard!');
             }}
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))/0.8] transition-colors select-none cursor-pointer"
           >
-            <Share2 aria-hidden="true" /> Share
-          </Action>
-        </Bar>
+            <Share2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>Share</span>
+          </button>
+        </div>
 
-        <Comments id="comments">
-          <CommentsTitle>
+        {/* Responses / Comments Section */}
+        <section id="comments" className="flex flex-col gap-6 pt-2">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[hsl(var(--foreground))]">
             {comments.length} {comments.length === 1 ? 'response' : 'responses'}
-          </CommentsTitle>
+          </h2>
 
           {isAuthenticated ? (
-            <Composer
+            <form
               onSubmit={(event) => {
                 event.preventDefault();
                 if (comment.trim()) {
                   commentMutation.mutate({ userId: user.user_id, postId: id, message: comment });
                 }
               }}
+              className="flex flex-col gap-3 items-end w-full"
             >
-              <TextArea
-                placeholder="What did you make of it?"
-                value={comment}
-                onChange={(event) => setComment(event.target.value)}
-                rows={3}
-                aria-label="Write a response"
-              />
+              <div className="w-full">
+                <TextArea
+                  placeholder="What did you make of it?"
+                  value={comment}
+                  onChange={(event) => setComment(event.target.value)}
+                  rows={3}
+                  aria-label="Write a response"
+                />
+              </div>
               <Button
                 type="submit"
                 isLoading={commentMutation.isPending}
@@ -706,12 +376,15 @@ export function PostDetail() {
               >
                 Respond
               </Button>
-            </Composer>
+            </form>
           ) : (
             <Card tone="low" radius="lg" padding="lg">
-              <CommentText style={{ margin: 0 }}>
-                <Link to="/login">Sign in</Link> to join the conversation.
-              </CommentText>
+              <p className="text-sm text-[hsl(var(--muted-foreground))] m-0">
+                <Link to="/login" className="text-[hsl(var(--primary))] font-medium hover:underline">
+                  Sign in
+                </Link>{' '}
+                to join the conversation.
+              </p>
             </Card>
           )}
 
@@ -720,46 +393,54 @@ export function PostDetail() {
               Be the first to say something.
             </EmptyState>
           ) : (
-            <Thread>
+            <div className="flex flex-col gap-6">
               {comments.map((entry) => (
-                <CommentRow key={entry._id}>
+                <div key={entry._id} className="flex gap-3">
                   <Avatar name={entry.user?.username} size="sm" />
-                  <CommentBody>
-                    <CommentHead>
-                      <CommentAuthor>{entry.user?.username || 'Anonymous'}</CommentAuthor>
-                      <CommentWhen>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-[hsl(var(--foreground))]">
+                        {entry.user?.username || 'Anonymous'}
+                      </span>
+                      <span className="text-xs text-[hsl(var(--muted-foreground))]">
                         {(() => {
                           const d = entry.date ? new Date(entry.date) : null;
                           return d && !isNaN(d.getTime())
                             ? formatDistanceToNow(d, { addSuffix: true })
                             : 'recently';
                         })()}
-                      </CommentWhen>
-                    </CommentHead>
-                    <CommentText>{entry.message}</CommentText>
+                      </span>
+                    </div>
+                    <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] mt-1 whitespace-pre-wrap leading-relaxed">
+                      {entry.message}
+                    </p>
 
-                    <CommentActions>
+                    <div className="flex items-center gap-4 mt-2">
                       {isAuthenticated && (
-                        <ReplyToggle
+                        <button
+                          type="button"
                           onClick={() => setReplyTo(replyTo === entry._id ? null : entry._id)}
+                          className="text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors cursor-pointer"
                         >
                           {replyTo === entry._id ? 'Cancel' : 'Reply'}
-                        </ReplyToggle>
+                        </button>
                       )}
 
                       {canDeleteComment(entry) && (
-                        <DeleteResponse
+                        <button
+                          type="button"
                           onClick={() => setPendingCommentDelete(entry)}
                           aria-label={`Delete the response from ${entry.user?.username || 'this reader'}`}
+                          className="text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-red-500 transition-colors cursor-pointer"
                         >
                           Delete
-                        </DeleteResponse>
+                        </button>
                       )}
-                    </CommentActions>
+                    </div>
 
+                    {/* Reply Composer */}
                     {replyTo === entry._id && (
-                      <Composer
-                        style={{ marginTop: 12 }}
+                      <form
                         onSubmit={(event) => {
                           event.preventDefault();
                           if (replyText.trim()) {
@@ -770,15 +451,18 @@ export function PostDetail() {
                             });
                           }
                         }}
+                        className="flex flex-col gap-2 items-end mt-3 w-full"
                       >
-                        <TextArea
-                          placeholder={`Reply to ${entry.user?.username || 'this'}`}
-                          value={replyText}
-                          onChange={(event) => setReplyText(event.target.value)}
-                          rows={2}
-                          aria-label="Write a reply"
-                          autoFocus
-                        />
+                        <div className="w-full">
+                          <TextArea
+                            placeholder={`Reply to ${entry.user?.username || 'this'}`}
+                            value={replyText}
+                            onChange={(event) => setReplyText(event.target.value)}
+                            rows={2}
+                            aria-label="Write a reply"
+                            autoFocus
+                          />
+                        </div>
                         <Button
                           type="submit"
                           size="sm"
@@ -787,53 +471,59 @@ export function PostDetail() {
                         >
                           Reply
                         </Button>
-                      </Composer>
+                      </form>
                     )}
 
+                    {/* Nested Replies */}
                     {entry.replies?.length > 0 && (
-                      <Replies>
+                      <div className="flex flex-col gap-4 mt-4 pl-4 border-l-2 border-[hsl(var(--border))/0.6]">
                         {entry.replies.map((reply) => (
-                          <CommentRow key={reply._id}>
+                          <div key={reply._id} className="flex gap-3">
                             <Avatar name={reply.user?.username} size="sm" />
-                            <CommentBody>
-                              <CommentHead>
-                                <CommentAuthor>{reply.user?.username || 'Anonymous'}</CommentAuthor>
-                                <CommentWhen>
-                                  {/* Guarded like the parent above: an undefined or malformed
-                                      date rendered the literal string "Invalid Date". */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-baseline gap-2 flex-wrap">
+                                <span className="text-sm font-semibold text-[hsl(var(--foreground))]">
+                                  {reply.user?.username || 'Anonymous'}
+                                </span>
+                                <span className="text-xs text-[hsl(var(--muted-foreground))]">
                                   {(() => {
                                     const d = reply.date ? new Date(reply.date) : null;
                                     return d && !isNaN(d.getTime())
                                       ? formatDistanceToNow(d, { addSuffix: true })
                                       : 'recently';
                                   })()}
-                                </CommentWhen>
-                              </CommentHead>
-                              <CommentText>{reply.message}</CommentText>
+                                </span>
+                              </div>
+                              <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] mt-1 whitespace-pre-wrap leading-relaxed">
+                                {reply.message}
+                              </p>
 
                               {canDeleteComment(reply) && (
-                                <CommentActions>
-                                  <DeleteResponse
+                                <div className="flex items-center gap-4 mt-2">
+                                  <button
+                                    type="button"
                                     onClick={() => setPendingCommentDelete(reply)}
                                     aria-label={`Delete the reply from ${reply.user?.username || 'this reader'}`}
+                                    className="text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-red-500 transition-colors cursor-pointer"
                                   >
                                     Delete
-                                  </DeleteResponse>
-                                </CommentActions>
+                                  </button>
+                                </div>
                               )}
-                            </CommentBody>
-                          </CommentRow>
+                            </div>
+                          </div>
                         ))}
-                      </Replies>
+                      </div>
                     )}
-                  </CommentBody>
-                </CommentRow>
+                  </div>
+                </div>
               ))}
-            </Thread>
+            </div>
           )}
-        </Comments>
+        </section>
       </PageShell>
 
+      {/* Confirmation Modals */}
       <Modal
         open={Boolean(pendingCommentDelete)}
         onOpenChange={(open) => !open && setPendingCommentDelete(null)}
