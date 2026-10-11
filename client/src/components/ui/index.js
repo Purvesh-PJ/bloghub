@@ -32,3 +32,6 @@ export { ErrorState } from './ErrorState';
 export { Table } from './Table';
 export { StatTile } from './StatTile';
 export { Pagination } from './Pagination';
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from './Popover';
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './Tooltip';
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './Accordion';
