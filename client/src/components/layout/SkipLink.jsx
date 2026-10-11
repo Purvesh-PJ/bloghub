@@ -1,40 +1,14 @@
-import styled from 'styled-components';
-
 /**
  * Lets a keyboard user jump past the header straight to the page content.
- *
- * Hidden until focused, which is the point: it is the first thing in the tab order, so
- * without it every page begins with a walk through the whole navigation bar.
+ * Hidden off-screen until focused for a11y keyboard accessibility.
  */
-const Link = styled.a`
-  position: absolute;
-  left: ${({ theme }) => theme.spacing.md};
-  top: ${({ theme }) => theme.spacing.md};
-  z-index: 1000;
-
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
-  border-radius: ${({ theme }) => theme.radii.md};
-
-  background-color: ${({ theme }) => theme.colors.accentSolid};
-  color: ${({ theme }) => theme.colors.textOnAccent};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: 600;
-  text-decoration: none;
-
-  /*
-    Moved out of view rather than display:none — a hidden element cannot receive focus, so
-    display:none would make the link unreachable and defeat the purpose.
-  */
-  transform: translateY(calc(-100% - ${({ theme }) => theme.spacing.lg}));
-  transition: transform ${({ theme }) => theme.transitions.fast};
-
-  &:focus-visible {
-    transform: translateY(0);
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
-  }
-`;
-
 export function SkipLink({ targetId = 'main-content' }) {
-  return <Link href={`#${targetId}`}>Skip to content</Link>;
+  return (
+    <a
+      href={`#${targetId}`}
+      className="absolute left-4 top-4 z-50 -translate-y-24 focus:translate-y-0 px-4 py-2 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm font-semibold shadow-lg transition-transform duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      Skip to content
+    </a>
+  );
 }

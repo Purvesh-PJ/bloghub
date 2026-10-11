@@ -1,172 +1,102 @@
-import styled from 'styled-components';
-import { display, text, label as labelStyle, media } from '../../styles/theme/mixins';
+import * as React from 'react';
+import { cn } from '../../lib/utils';
 
 /**
  * The frame every signed-in page sits in.
- *
- * Each page used to declare its own wrapper and its own header block, which is why the
- * measures, the top padding and the title sizes all disagreed with each other. Width and
- * rhythm are decided once, here.
+ * Standardizes measures, rhythms, header hero blocks, and section gutters.
  */
-
-const widths = {
-  wide: 'maxWidth', // dashboards, listings
-  narrow: 'maxWidthNarrow', // settings, forms
-  reading: 'contentWidth', // article bodies
-  full: '100%',
+const widthClasses = {
+  wide: 'max-w-[1200px]', // dashboards, listings
+  narrow: 'max-w-[768px]', // settings, forms
+  reading: 'max-w-[720px]', // article bodies
+  full: 'max-w-full',
 };
 
-export const PageShell = styled.div`
-  max-width: ${({ theme, $width = 'wide' }) =>
-    $width === 'full' ? '100%' : theme.layout[widths[$width]] || theme.layout.maxWidth};
-  width: 100%;
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.xl}
-    ${({ theme }) => theme.spacing['5xl']};
+export function PageShell({
+  children,
+  width = 'wide',
+  $width,
+  className,
+  ...props
+}) {
+  const finalWidth = width !== 'wide' ? width : ($width || 'wide');
+  const maxWidthClass = widthClasses[finalWidth] || 'max-w-[1200px]';
 
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-
-  ${media.down('md')`
-    padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.md}
-      ${({ theme }) => theme.spacing['4xl']};
-    gap: ${({ theme }) => theme.spacing.lg};
-  `}
-`;
-
-const HeaderContainer = styled.header`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding-bottom: ${({ theme, $divider }) => ($divider ? theme.spacing.xl : '0')};
-  border-bottom: ${({ theme, $divider }) =>
-    $divider ? `1px solid ${theme.colors.lineSubtle}` : 'none'};
-
-  ${media.down('md')`
-    padding-bottom: ${({ theme, $divider }) => ($divider ? theme.spacing.lg : '0')};
-  `}
-`;
-
-const HeaderRow = styled.div`
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.xl};
-  flex-wrap: wrap;
-`;
-
-const Titles = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-  min-width: 0;
-  flex: 1;
-`;
-
-const HeaderBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  width: fit-content;
-  padding: 2px 8px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentText};
-  ${labelStyle('xs')}
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-`;
-
-const Title = styled.h1`
-  ${display('sm')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-`;
-
-const Subtitle = styled.p`
-  ${text('md')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 65ch;
-  line-height: 1.5;
-`;
-
-const Actions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  flex-shrink: 0;
-  flex-wrap: wrap;
-`;
-
-/**
- * PageHeader
- *
- * Distinct hero/header component that creates a clear visual boundary
- * between page intent and the data/components below it.
- */
-export function PageHeader({ badge, title, subtitle, actions, divider = true }) {
   return (
-    <HeaderContainer $divider={divider}>
-      <HeaderRow>
-        <Titles>
-          {badge && <HeaderBadge>{badge}</HeaderBadge>}
-          <Title>{title}</Title>
-          {subtitle && <Subtitle>{subtitle}</Subtitle>}
-        </Titles>
-        {actions && <Actions>{actions}</Actions>}
-      </HeaderRow>
-    </HeaderContainer>
+    <div
+      className={cn(
+        'w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-16 sm:pb-24 flex flex-col gap-6 sm:gap-8',
+        maxWidthClass,
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
   );
 }
 
-/* ── Section ─────────────────────────────────────────────────────────────────
-   A titled block within a page. Gives every section the same heading weight and
-   the same gap to its body, which is what makes a long page scan cleanly. */
-
-const SectionRoot = styled.section`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-  min-width: 0;
-`;
-
-const SectionHead = styled.div`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.lg};
-  flex-wrap: wrap;
-`;
-
-const SectionTitle = styled.h2`
-  ${display('xs')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  letter-spacing: -0.01em;
-`;
-
-const SectionNote = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-top: 2px;
-`;
-
-export function Section({ title, note, aside, children, ...props }) {
+/**
+ * PageHeader
+ * Distinct hero/header component that creates a clear visual boundary
+ * between page intent and the data/components below it.
+ */
+export function PageHeader({ badge, title, subtitle, actions, divider = true, className }) {
   return (
-    <SectionRoot {...props}>
+    <header
+      className={cn(
+        'flex flex-col gap-4',
+        divider && 'pb-6 border-b border-[hsl(var(--border))/0.4]',
+        className
+      )}
+    >
+      <div className="flex flex-wrap items-end justify-between gap-6">
+        <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+          {badge && (
+            <span className="inline-flex items-center gap-1 w-fit px-2 py-0.5 rounded-full bg-[hsl(var(--primary))/0.10] text-[hsl(var(--primary))] text-[11px] font-bold tracking-wider uppercase mb-0.5 select-none">
+              {badge}
+            </span>
+          )}
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))] leading-tight">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] max-w-[65ch] leading-relaxed">
+              {subtitle}
+            </p>
+          )}
+        </div>
+        {actions && (
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            {actions}
+          </div>
+        )}
+      </div>
+    </header>
+  );
+}
+
+/**
+ * Section
+ * A titled block within a page. Gives every section the same heading weight and rhythm.
+ */
+export function Section({ title, note, aside, children, className, ...props }) {
+  return (
+    <section className={cn('flex flex-col gap-4 min-w-0', className)} {...props}>
       {(title || aside) && (
-        <SectionHead>
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
           <div>
-            {title && <SectionTitle>{title}</SectionTitle>}
-            {note && <SectionNote>{note}</SectionNote>}
+            {title && (
+              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+                {title}
+              </h2>
+            )}
+            {note && <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">{note}</p>}
           </div>
           {aside}
-        </SectionHead>
+        </div>
       )}
       {children}
-    </SectionRoot>
+    </section>
   );
 }
