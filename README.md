@@ -13,7 +13,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-6.0+-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Vite](https://img.shields.io/badge/Vite-7.2-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![TanStack Query](https://img.shields.io/badge/TanStack_Query-5.0-FF4154?style=flat-square&logo=reactquery&logoColor=white)](https://tanstack.com/query)
-[![styled-components](https://img.shields.io/badge/styled--components-6.2-DB7093?style=flat-square&logo=styled-components&logoColor=white)](https://styled-components.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Tests](https://img.shields.io/badge/Tests-198_Passing-success?style=flat-square&logo=jest&logoColor=white)](https://jestjs.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
@@ -150,7 +150,7 @@ flowchart TB
         direction LR
         subgraph ClientTier["🌐 CLIENT TIER (React 19 SPA)"]
             direction TB
-            UI["🎨 UI Components\n• 18 Code-Split Routes\n• 21 styled-components\n• Radix Slate/Sky Themes"]
+            UI["🎨 UI Components\n• 18 Code-Split Routes\n• Tailwind CSS v4 & Radix UI\n• Slate/Sky Theme Tokens"]
             Editor["✍️ Markdown Studio\n• Synchronized Split-View\n• rehype-sanitize Schema"]
             ClientState["⚡ State & Networking\n• TanStack Query v5\n• Axios 401 Interceptors"]
             UI & Editor --> ClientState
@@ -213,7 +213,7 @@ flowchart TB
 
 | Layer           | Primary Tech                   | Key Packages & Tooling                                                                                                   |
 | :-------------- | :----------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
-| **Frontend**    | **React 19.2** (Vite 7)        | **TanStack Query 5**, **styled-components 6**, **React Router 7**, **Axios**, **@uiw/react-md-editor**, **lucide-react** |
+| **Frontend**    | **React 19.2** (Vite 7)        | **Tailwind CSS 4**, **Radix UI**, **TanStack Query 5**, **React Router 7**, **Axios**, **@uiw/react-md-editor** |
 | **Backend**     | **Node.js 18+** (Express 4)    | **Mongoose 8**, **jsonwebtoken**, **bcryptjs**, **express-validator**, **helmet**, **express-rate-limit**, **multer**    |
 | **Database**    | **MongoDB 6.0+** (Local/Atlas) | 9 Collections, 20 Declared Unique & Compound Indexes, Atomic Updates                                                     |
 | **Testing**     | **Jest & Vitest**              | **mongodb-memory-server** (In-process DB), **Supertest**, **React Testing Library**                                      |
