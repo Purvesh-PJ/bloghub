@@ -175,7 +175,7 @@ working — see [reference/api.md](../reference/api.md#base-url).
 
 ## Editor setup
 
-Extensions: **ESLint**, **Prettier**, **vscode-styled-components**.
+Extensions: **ESLint**, **Prettier**, **Tailwind CSS IntelliSense**.
 
 ```jsonc
 // .vscode/settings.json

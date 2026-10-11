@@ -11,46 +11,20 @@ Entry types: `Added` · `Changed` · `Deprecated` · `Removed` · `Fixed` · `Se
 
 ## [Unreleased]
 
-### Structure and conventions
+### 🚀 Added
+- **cache**: Centralised React Query cache keys in `services/queryKeys.js`.
+- **hooks**: Shared `useTags` hook for consistent tag caching across views.
+- **docs**: Added architecture walkthrough guide in `docs/architecture/walkthrough.md`.
 
-An organisation audit across both workspaces: naming drift, duplicated definitions, files in
-the wrong layer, and configuration nobody was using.
+### 🔄 Changed
+- **ui**: Migrated frontend styling engine from `styled-components` to Tailwind CSS v4 and Radix UI.
+- **theme**: Replaced CSS-in-JS runtime tokens with CSS custom properties and `data-theme` dark mode.
+- **backend**: Standardised controller error handling with `asyncHandler` across all routes.
+- **refactor**: Renamed route files to match corresponding controllers consistently.
 
-#### Added
-
-- **`services/queryKeys.js`** — every React Query cache key in one registry. Keys were string
-  literals repeated at each call site, and a key only works if two places spell it identically:
-  `useCurrentUser` caches under one and Settings invalidates it after a save, so a typo would
-  not throw, it would quietly leave the header showing a stale name and avatar.
-- **`hooks/useTags.js`** — the same tag query was written out in five files, each with its own
-  idea of how long the answer stays fresh. They shared a cache key by coincidence.
-- **[docs/architecture/walkthrough.md](docs/architecture/walkthrough.md)** — the five-minute
-  version of the architecture: the three tiers, one request traced through every layer, what
-  each layer may and may not do, the naming rules, and the decisions worth being asked about.
-
-#### Changed
-
-- Settings declared its own `useQuery` on the `currentUser` key while already importing
-  `useCurrentUser` — two definitions of one fetch, agreeing by luck.
-- `settings.controllers.js` was the last module catching in every handler and answering a
-  hand-written 500, which reported a caller's invalid enum value as a server fault. All twelve
-  controllers use `asyncHandler` now; a local `catch` remains only where an error is being
-  _translated_ — verifying a token, or turning a duplicate key into a 409.
-- `topicIcon` moved from `components/marketing/Topics.jsx` to `utils/topicIcons.js`. It is a
-  lookup table, and the admin taxonomy screen, the search rail, the sign-in panel and the
-  footer were all importing a marketing component to reach it.
-- `likes.routes.js` → `like.routes.js` and `page-views.routes.js` → `page-view.routes.js`, so
-  every route file matches the controller beside it. `commentServices.js` → `commentService.js`.
-- `seed.js` moved from the backend root to `scripts/`, beside `migrate.js`.
-
-#### Removed
-
-- **`client/tsconfig.json`** — a Vite template leftover in a project with zero TypeScript
-  files, and worse than inert: when both exist, editor tooling reads `tsconfig.json` and
-  ignores `jsconfig.json`.
-- The `@/*` path alias declared in `jsconfig.json`. Nothing imported through it and Vite was
-  never configured to resolve it, so it advertised an import style that would have failed at
-  build time.
+### 🗑️ Removed
+- **deps**: Removed `styled-components` dependency and CSS-in-JS runtime overhead.
+- **config**: Removed unused `client/tsconfig.json` and stale path aliases.
 
 ---
 

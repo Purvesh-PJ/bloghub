@@ -53,7 +53,7 @@ Use this reference table when modifying frontend codebase:
 | **Routing** | `react-router-dom` | 7.11 | Client-side routing with `createBrowserRouter` (data router) |
 | **Server State** | `@tanstack/react-query` | 5.90 | Caching, background synchronization, and server-state management |
 | **HTTP Client** | `axios` | 1.13 | REST client with request/response interceptors for silent auth refresh |
-| **Styling Engine** | `styled-components` | 6.2 | CSS-in-JS component-scoped design tokens and theming |
+| **Styling Engine** | `tailwindcss` | 4.3 | Utility-first CSS engine via `@tailwindcss/vite` |
 | **Headless UI** | `@radix-ui/react-*` | 1.x / 2.x | Accessible primitives: dialog, dropdown-menu, select, tabs, avatar |
 | **Markdown Editor** | `@uiw/react-md-editor` | 4.0 | Synchronized split-pane Markdown writing studio |
 | **Markdown Sanitizer** | `rehype-sanitize` | 6.0 | Strict HTML sanitization ensuring XSS-free Markdown rendering |
@@ -76,7 +76,7 @@ graph TD
     EB --> QC["<QueryClientProvider client={queryClient}>\nTanStack server-state cache"]
     QC --> RP["<RouterProvider router={router}>\nData router (supports useBlocker)"]
     RP --> Auth["<AuthProvider>\nUser session & reactive state"]
-    Auth --> Theme["<ThemeProvider>\nStyled-components design tokens & dark mode"]
+    Auth --> Theme["<ThemeProvider>\nThemeContext & dark variant via data-theme"]
     Theme --> App["<App />\nRoute table & lazy page views"]
     Theme --> Toast["<Toaster position='top-right' />\nGlobal toast notifications"]
 ```
@@ -121,7 +121,7 @@ Four distinct state categories exist across the frontend:
 | :--- | :--- | :--- |
 | **Server State** | TanStack Query v5 | Posts, tags, comments, metrics, author profiles. |
 | **Session State** | `authState` singleton + `AuthContext` | Access/Refresh tokens, authenticated user object. |
-| **Theme State** | `ThemeProvider` (styled-components) | Light mode vs Dark mode theme tokens. |
+| **Theme State** | `ThemeContext` | Light mode vs Dark mode (`data-theme` attribute and CSS custom properties). |
 | **Local UI State** | React `useState` / `useReducer` | Editor split-pane cursor, open modals, input fields. |
 
 ### 4.2 Auth Synchronisation Architecture
@@ -210,7 +210,7 @@ client/src/components/
 ```
 
 ### 6.2 Architectural Layering Rules
-1. **`ui/` Primitives:** May only import styled-components and headless primitives. Must have **zero domain knowledge** (never import posts, users, or API services).
+1. **`ui/` Primitives:** Built with Tailwind CSS and Radix UI primitives. Must have **zero domain knowledge** (never import posts, users, or API services).
 2. **Domain Components (`posts/`, `stats/`):** May import UI primitives and formatting utilities. Must receive data via props; never issue direct API fetches.
 3. **Pages (`pages/`):** Own data fetching via TanStack Query and state synchronization.
 
