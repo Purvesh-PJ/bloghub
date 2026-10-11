@@ -1,5 +1,6 @@
 // Self-hosted variable Inter font for clean, modern Tailwind typography
 import '@fontsource-variable/inter/opsz.css';
+import './index.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
