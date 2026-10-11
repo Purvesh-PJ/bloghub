@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import styled from 'styled-components';
 import { Plus, Hash, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -18,31 +17,7 @@ import {
   EmptyState,
   IconButton,
 } from '../../components/ui';
-import { text } from '../../styles/theme/mixins';
 import { queryKeys } from '../../services/queryKeys';
-import { iconPx } from '../../styles/theme';
-
-const Toolbar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-`;
-
-const NameCell = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-
-  svg {
-    width: 16px;
-    height: 16px;
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
 
 export function AdminTags() {
   const queryClient = useQueryClient();
@@ -63,13 +38,6 @@ export function AdminTags() {
     onError: (error) => toast.error(error.response?.data?.message || 'Could not create that tag'),
   });
 
-  /*
-    Removing a tag.
-
-    The console could create tags and never remove one, so a typo entered here stayed on the
-    discovery rail permanently. The server refuses with a 409 while stories still carry the
-    tag and says how many, which is the message surfaced below.
-  */
   const deleteMutation = useMutation({
     mutationFn: (id) => tagService.deleteTag(id),
     onSuccess: (result) => {
@@ -104,7 +72,7 @@ export function AdminTags() {
             title="No tags yet"
             actions={
               <Button onClick={() => setOpen(true)}>
-                <Plus /> Create the first one
+                <Plus className="w-4 h-4 mr-1.5" /> Create the first one
               </Button>
             }
           >
@@ -112,19 +80,19 @@ export function AdminTags() {
           </EmptyState>
         ) : (
           <>
-            <Toolbar>
+            <div className="flex items-center justify-end gap-2 mb-4">
               <Button size="sm" onClick={() => setOpen(true)}>
-                <Plus size={iconPx.sm} /> New tag
+                <Plus className="w-3.5 h-3.5 mr-1" /> New tag
               </Button>
-            </Toolbar>
+            </div>
 
-            <Card tone="low" radius="xl" padding="sm">
+            <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
               <Table>
                 <Table.Head>
                   <tr>
-                    <th>Topic / Tag</th>
+                    <th className="pl-6">Topic / Tag</th>
                     <th>Published Stories</th>
-                    <th aria-label="Actions" />
+                    <th aria-label="Actions" className="pr-6" />
                   </tr>
                 </Table.Head>
                 <Table.Body>
@@ -132,18 +100,18 @@ export function AdminTags() {
                     const Icon = topicIcon(tag.name);
                     return (
                       <tr key={tag._id || tag.name}>
-                        <td>
-                          <NameCell>
-                            <Icon />#{tag.name}
-                          </NameCell>
+                        <td className="pl-6">
+                          <span className="inline-flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground))]">
+                            <Icon className="w-4 h-4 text-[hsl(var(--primary))]" />#{tag.name}
+                          </span>
                         </td>
                         <td>{tag.postCount ?? tag.posts?.length ?? 0}</td>
-                        <td style={{ textAlign: 'right' }}>
+                        <td className="text-right pr-6">
                           <IconButton
                             aria-label={`Remove the tag ${tag.name}`}
                             onClick={() => setPendingDelete(tag)}
                           >
-                            <Trash2 />
+                            <Trash2 className="w-4 h-4 text-red-500" />
                           </IconButton>
                         </td>
                       </tr>
@@ -186,7 +154,7 @@ export function AdminTags() {
             hint="Lowercase tag without hash; e.g. 'react', 'cloud', 'architecture'."
             autoFocus
           />
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 24 }}>
+          <div className="flex gap-2 justify-end mt-6">
             <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
               Cancel
             </Button>
