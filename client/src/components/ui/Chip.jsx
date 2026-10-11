@@ -1,82 +1,70 @@
-import styled, { css } from 'styled-components';
-import { text, interactive } from '../../styles/theme/mixins';
+import * as React from 'react';
+import { cva } from 'class-variance-authority';
+import { cn } from '../../lib/utils';
 
 /**
- * Chip — pill-shaped tag, filter or category label.
- *
- * Used for the feed filters, topic lists and post categories, which were three separate
- * near-identical implementations before.
+ * Chip — pill-shaped filter or interactive category token.
  */
+const chipVariants = cva(
+  'inline-flex items-center gap-1.5 rounded-full font-medium whitespace-nowrap shrink-0 transition-all select-none',
+  {
+    variants: {
+      size: {
+        sm: 'h-7 px-3 text-xs',
+        md: 'h-9 px-4 text-sm',
+      },
+      selected: {
+        true: 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm font-semibold',
+        false:
+          'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
+      },
+    },
+    defaultVariants: {
+      size: 'md',
+      selected: false,
+    },
+  }
+);
 
-const StyledChip = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  height: ${({ $size }) => ($size === 'sm' ? '28px' : '36px')};
-  padding: 0 ${({ theme, $size }) => ($size === 'sm' ? theme.spacing.md : theme.spacing.lg)};
+export const Chip = React.forwardRef(
+  (
+    {
+      className,
+      children,
+      selected = false,
+      size = 'md',
+      as,
+      onClick,
+      interactive = true,
+      $selected,
+      $size,
+      $interactive,
+      ...props
+    },
+    ref
+  ) => {
+    const Comp = as || 'button';
+    const isSelected = selected || $selected || false;
+    const finalSize = size || $size || 'md';
+    const isClickable = interactive && (Boolean(onClick) || Boolean(as));
 
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.full};
-  white-space: nowrap;
-  flex-shrink: 0;
-  ${({ $size }) => ($size === 'sm' ? text('xs', 'medium') : text('sm', 'medium'))}
-  transition: all ${({ theme }) => theme.transitions.fast};
-  ${interactive}
+    return (
+      <Comp
+        ref={ref}
+        onClick={onClick}
+        aria-pressed={onClick ? isSelected : undefined}
+        className={cn(
+          chipVariants({ size: finalSize, selected: isSelected }),
+          !isClickable && 'cursor-default pointer-events-none hover:bg-[hsl(var(--muted))]',
+          isClickable && 'cursor-pointer active:scale-95',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </Comp>
+    );
+  }
+);
 
-  ${({ $selected, $interactive: clickable, theme }) =>
-    $selected
-      ? css`
-          background: ${theme.colors.accentContainer};
-          color: ${theme.colors.accentText};
-          font-weight: 600;
-        `
-      : css`
-          background: ${theme.colors.surfaceContainer};
-          color: ${theme.colors.textSecondary};
-
-          ${clickable &&
-          css`
-            &:hover {
-              background: ${theme.colors.surfaceContainerHigh};
-              color: ${theme.colors.textPrimary};
-            }
-          `}
-
-          ${!clickable &&
-          css`
-            background: ${theme.colors.surfaceContainerLow};
-            color: ${theme.colors.textSecondary};
-          `}
-        `}
-
-  ${({ $interactive: clickable }) =>
-    !clickable &&
-    css`
-      cursor: default;
-      pointer-events: none;
-    `}
-`;
-
-export function Chip({
-  children,
-  selected = false,
-  size = 'md',
-  as,
-  onClick,
-  interactive = true,
-  ...props
-}) {
-  return (
-    <StyledChip
-      as={as}
-      $selected={selected}
-      $size={size}
-      $interactive={interactive && (Boolean(onClick) || Boolean(as))}
-      onClick={onClick}
-      aria-pressed={onClick ? selected : undefined}
-      {...props}
-    >
-      {children}
-    </StyledChip>
-  );
-}
+Chip.displayName = 'Chip';

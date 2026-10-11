@@ -1,101 +1,78 @@
+import * as React from 'react';
 import * as RadixDropdown from '@radix-ui/react-dropdown-menu';
-import styled, { keyframes, css } from 'styled-components';
+import { cn } from '../../lib/utils';
 
 /**
- * DropdownMenu — Radix DropdownMenu underneath.
- *
- * Replaces the hand-rolled menus in Header and MyPosts, which listened for `mousedown` to
- * close and handled nothing else — no Escape, no arrow-key navigation, no focus return to
- * the trigger, no `aria-expanded`, no collision detection near a viewport edge.
- *
- * Usage:
- *   <DropdownMenu trigger={<button>Menu</button>}>
- *     <DropdownMenu.Item onSelect={…}>Profile</DropdownMenu.Item>
- *     <DropdownMenu.Separator />
- *     <DropdownMenu.Item $tone="danger" onSelect={…}>Sign out</DropdownMenu.Item>
- *   </DropdownMenu>
+ * DropdownMenu — Radix DropdownMenu with shadcn/ui Tailwind styling.
  */
+const DropdownMenuContent = React.forwardRef(
+  ({ className, align = 'end', side = 'bottom', sideOffset = 6, children, ...props }, ref) => (
+    <RadixDropdown.Portal>
+      <RadixDropdown.Content
+        ref={ref}
+        align={align}
+        side={side}
+        sideOffset={sideOffset}
+        collisionPadding={8}
+        className={cn(
+          'z-50 min-w-[200px] overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1 text-[hsl(var(--card-foreground))] shadow-lg backdrop-blur-md',
+          'animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </RadixDropdown.Content>
+    </RadixDropdown.Portal>
+  )
+);
+DropdownMenuContent.displayName = 'DropdownMenuContent';
 
-const slideIn = keyframes`
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
+const DropdownMenuItem = React.forwardRef(
+  ({ className, tone, $tone, ...props }, ref) => {
+    const finalTone = tone || $tone;
+    const isDanger = finalTone === 'danger';
 
-const Content = styled(RadixDropdown.Content)`
-  min-width: 200px;
-  padding: ${({ theme }) => theme.spacing.xs};
-
-  background: ${({ theme }) => theme.colors.surfaceRaised};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.popover};
-  z-index: ${({ theme }) => theme.zIndices.dropdown};
-
-  animation: ${slideIn} ${({ theme }) => theme.motion.fast} ${({ theme }) => theme.motion.easingOut};
-`;
-
-const itemBase = css`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  height: 34px;
-  padding: 0 ${({ theme }) => theme.spacing.sm};
-
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  cursor: pointer;
-  user-select: none;
-  outline: none;
-
-  &[data-highlighted] {
-    background: ${({ theme }) => theme.colors.surfaceHover};
+    return (
+      <RadixDropdown.Item
+        ref={ref}
+        className={cn(
+          'relative flex h-[34px] cursor-pointer select-none items-center gap-2 rounded-lg px-2.5 text-sm outline-none transition-colors duration-100',
+          'focus:bg-[hsl(var(--muted))] focus:text-[hsl(var(--foreground))]',
+          'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+          '[&_svg]:shrink-0 [&_svg]:text-[hsl(var(--muted-foreground))]',
+          isDanger
+            ? 'text-[hsl(var(--destructive))] focus:bg-[hsl(var(--destructive))]/10 focus:text-[hsl(var(--destructive))] [&_svg]:text-[hsl(var(--destructive))]'
+            : 'text-[hsl(var(--foreground))]',
+          className
+        )}
+        {...props}
+      />
+    );
   }
+);
+DropdownMenuItem.displayName = 'DropdownMenuItem';
 
-  &[data-disabled] {
-    color: ${({ theme }) => theme.colors.textDisabled};
-    pointer-events: none;
-  }
+const DropdownMenuLabel = React.forwardRef(({ className, ...props }, ref) => (
+  <RadixDropdown.Label
+    ref={ref}
+    className={cn(
+      'px-2.5 pt-2 pb-1 text-[11px] font-semibold tracking-wider uppercase text-[hsl(var(--muted-foreground))] select-none',
+      className
+    )}
+    {...props}
+  />
+));
+DropdownMenuLabel.displayName = 'DropdownMenuLabel';
 
-  svg {
-    flex-shrink: 0;
-    color: ${({ theme }) => theme.colors.textMuted};
-  }
-`;
-
-const Item = styled(RadixDropdown.Item)`
-  ${itemBase}
-
-  ${({ $tone, theme }) =>
-    $tone === 'danger' &&
-    css`
-      color: ${theme.colors.dangerText};
-
-      svg {
-        color: ${theme.colors.dangerText};
-      }
-
-      &[data-highlighted] {
-        background: ${theme.colors.dangerBgSubtle};
-      }
-    `}
-`;
-
-const Label = styled(RadixDropdown.Label)`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.sm}
-    ${({ theme }) => theme.spacing.xs};
-  font-size: ${({ theme }) => theme.ui.xs[0]};
-  font-weight: ${({ theme }) => theme.weights.semibold};
-  letter-spacing: ${({ theme }) => theme.tracking.caps};
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const Separator = styled(RadixDropdown.Separator)`
-  height: 1px;
-  margin: ${({ theme }) => theme.spacing.xs} calc(-1 * ${({ theme }) => theme.spacing.xs});
-  background: ${({ theme }) => theme.colors.lineSubtle};
-`;
+const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) => (
+  <RadixDropdown.Separator
+    ref={ref}
+    className={cn('-mx-1 my-1 h-px bg-[hsl(var(--border))]', className)}
+    {...props}
+  />
+));
+DropdownMenuSeparator.displayName = 'DropdownMenuSeparator';
 
 export function DropdownMenu({
   trigger,
@@ -106,17 +83,18 @@ export function DropdownMenu({
 }) {
   return (
     <RadixDropdown.Root>
-      {/* asChild keeps the caller's element as the trigger instead of nesting a button. */}
       <RadixDropdown.Trigger asChild>{trigger}</RadixDropdown.Trigger>
-      <RadixDropdown.Portal>
-        <Content align={align} side={side} sideOffset={sideOffset} collisionPadding={8}>
-          {children}
-        </Content>
-      </RadixDropdown.Portal>
+      <DropdownMenuContent align={align} side={side} sideOffset={sideOffset}>
+        {children}
+      </DropdownMenuContent>
     </RadixDropdown.Root>
   );
 }
 
-DropdownMenu.Item = Item;
-DropdownMenu.Label = Label;
-DropdownMenu.Separator = Separator;
+DropdownMenu.Content = DropdownMenuContent;
+DropdownMenu.Item = DropdownMenuItem;
+DropdownMenu.Label = DropdownMenuLabel;
+DropdownMenu.Separator = DropdownMenuSeparator;
+DropdownMenu.Root = RadixDropdown.Root;
+DropdownMenu.Trigger = RadixDropdown.Trigger;
+DropdownMenu.Portal = RadixDropdown.Portal;

@@ -1,155 +1,85 @@
+import * as React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import styled, { keyframes } from 'styled-components';
 import { X } from 'lucide-react';
-import { iconPx } from '../../styles/theme';
+import { cn } from '../../lib/utils';
 
 /**
- * Modal — Radix Dialog underneath.
- *
- * Radix owns the behaviour: focus trap, focus restore on close, Escape to dismiss, scroll
- * lock, `aria-modal`, and the labelling relationship between title and content. We own only
- * how it looks.
+ * Modal — Radix Dialog with Tailwind & shadcn styling.
+ * Focus trap, aria-modal, smooth overlay backdrop blur, and accessible close button.
  */
-
-const fadeIn = keyframes`
-  from { opacity: 0; }
-  to   { opacity: 1; }
-`;
-
-const scaleIn = keyframes`
-  from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
-  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-`;
-
-const Overlay = styled(Dialog.Overlay)`
-  position: fixed;
-  inset: 0;
-  background: ${({ theme }) => theme.colors.surfaceOverlay};
-  z-index: ${({ theme }) => theme.zIndices.overlay};
-  animation: ${fadeIn} ${({ theme }) => theme.motion.base} ${({ theme }) => theme.motion.easing};
-`;
-
-const Content = styled(Dialog.Content)`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90vw;
-  max-width: ${({ $width }) => $width};
-  max-height: 85vh;
-  overflow-y: auto;
-  z-index: ${({ theme }) => theme.zIndices.modal};
-
-  background: ${({ theme }) => theme.colors.surfaceRaised};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.overlay};
-  padding: ${({ theme }) => theme.spacing.xl};
-
-  animation: ${scaleIn} ${({ theme }) => theme.motion.base} ${({ theme }) => theme.motion.easing};
-
-  &:focus {
-    outline: none;
-  }
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const Title = styled(Dialog.Title)`
-  font-size: ${({ theme }) => theme.display.md[0]};
-  line-height: ${({ theme }) => theme.display.md[1]};
-  font-weight: ${({ theme }) => theme.weights.semibold};
-  letter-spacing: ${({ theme }) => theme.tracking.tight};
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const Description = styled(Dialog.Description)`
-  margin-top: ${({ theme }) => theme.spacing.xs};
-  font-size: ${({ theme }) => theme.ui.md[0]};
-  line-height: ${({ theme }) => theme.ui.md[1]};
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const CloseButton = styled(Dialog.Close)`
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  margin: -4px -4px 0 0;
-  border-radius: ${({ theme }) => theme.radii.md};
-  color: ${({ theme }) => theme.colors.textMuted};
-  transition:
-    background ${({ theme }) => theme.transitions.fast},
-    color ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.surfaceHover};
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-`;
-
 export function Modal({
   open,
   onOpenChange,
   title,
   description,
   children,
-  width = '440px',
+  width = 'max-w-md',
   showClose = true,
 }) {
+  // Support numeric or pixel widths passed from styled legacy callers
+  const widthClass = typeof width === 'string' && width.startsWith('max-w-') 
+    ? width 
+    : undefined;
+  const widthStyle = !widthClass && width ? { maxWidth: width } : undefined;
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Overlay />
-        <Content $width={width} aria-describedby={description ? undefined : 'undefined'}>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in-0 duration-200" />
+        <Dialog.Content
+          style={widthStyle}
+          className={cn(
+            'fixed left-1/2 top-1/2 z-50 w-[90vw] -translate-x-1/2 -translate-y-1/2 max-h-[85vh] overflow-y-auto',
+            'rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 text-[hsl(var(--card-foreground))] shadow-2xl',
+            'duration-200 animate-in fade-in-0 zoom-in-95',
+            'focus:outline-none',
+            widthClass || 'max-w-md'
+          )}
+          aria-describedby={description ? undefined : 'undefined'}
+        >
           {title && (
-            <Header>
+            <div className="flex items-start justify-between gap-4 mb-4">
               <div>
-                <Title>{title}</Title>
-                {description && <Description>{description}</Description>}
+                <Dialog.Title className="text-xl font-semibold tracking-tight text-[hsl(var(--foreground))]">
+                  {title}
+                </Dialog.Title>
+                {description && (
+                  <Dialog.Description className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+                    {description}
+                  </Dialog.Description>
+                )}
               </div>
               {showClose && (
-                <CloseButton aria-label="Close">
-                  <X size={iconPx.lg} />
-                </CloseButton>
+                <Dialog.Close
+                  aria-label="Close"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <X className="h-4 w-4" />
+                </Dialog.Close>
               )}
-            </Header>
+            </div>
           )}
           {children}
-        </Content>
+        </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
   );
 }
 
-// Escape hatches for callers that need to drive the dialog directly.
-/**
- * The row of actions at the bottom of a dialog.
- *
- * Every dialog in the application ended with the same inline style — `display: flex`,
- * `gap: 8`, `justifyContent: 'flex-end'`, sometimes `marginTop: 16` and sometimes not. Twelve
- * copies of one decision, each free to drift, and the two spellings already disagreed about
- * the gap above them.
- *
- * Cancel goes first, the confirming action last, matching the reading order the buttons are
- * placed in.
- */
-const Footer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin-top: ${({ theme }) => theme.spacing.xl};
-`;
+function ModalFooter({ className, children, ...props }) {
+  return (
+    <div
+      className={cn('flex items-center justify-end gap-2.5 mt-6', className)}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
 
-Modal.Footer = Footer;
+Modal.Footer = ModalFooter;
 Modal.Trigger = Dialog.Trigger;
 Modal.Close = Dialog.Close;
+Modal.Content = Dialog.Content;
+Modal.Title = Dialog.Title;
+Modal.Description = Dialog.Description;
