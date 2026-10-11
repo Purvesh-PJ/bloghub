@@ -87,8 +87,8 @@ export function Footer() {
                     to={`/search?topic=${encodeURIComponent(topic.name)}`}
                     className={cn(
                       'text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-150 select-none',
-                      'bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]',
-                      'hover:bg-[hsl(var(--primary))/0.10] hover:text-[hsl(var(--primary))] hover:border-[hsl(var(--primary))/0.3] hover:-translate-y-0.5'
+                      'bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] border-none shadow-none',
+                      'hover:bg-[hsl(var(--primary))/0.10] hover:text-[hsl(var(--primary))] hover:-translate-y-0.5'
                     )}
                   >
                     #{topic.name}
@@ -100,7 +100,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mt-12 pt-6 border-t border-[hsl(var(--border))/0.4] text-xs text-[hsl(var(--muted-foreground))]">
+        <div className="flex flex-wrap items-center justify-between gap-4 mt-12 pt-6 border-t border-[var(--line-subtle)] text-xs text-[hsl(var(--muted-foreground))]">
           <span>© {new Date().getFullYear()} BlogHub · All stories belong to their authors</span>
           <span className="inline-flex items-center gap-1.5">
             Crafted with{' '}

@@ -10,8 +10,8 @@ export const ThemeToggle = ({ className }) => {
       onClick={toggleTheme}
       className={cn(
         'inline-flex items-center justify-center w-9 h-9 rounded-full cursor-pointer select-none transition-all duration-150',
-        'border border-black/10 dark:border-white/10 bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))]',
-        'hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))/0.4]',
+        'border-none bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] shadow-none',
+        'hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]',
         'active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         className
       )}

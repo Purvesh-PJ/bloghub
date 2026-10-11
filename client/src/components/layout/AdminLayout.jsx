@@ -154,7 +154,7 @@ export function AdminLayout() {
         </nav>
 
         {/* Admin Footer Profile */}
-        <div className="flex items-center justify-between p-2.5 rounded-xl bg-[hsl(var(--muted))/0.5] border border-[hsl(var(--border))/0.5] gap-2 mt-auto">
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-[hsl(var(--muted))/0.5] border border-[var(--line-subtle)] gap-2 mt-auto">
           <div className="flex items-center gap-2.5 min-w-0 flex-1 p-0.5">
             <Avatar name={user?.username} size="sm" />
             <div className="flex flex-col min-w-0">
@@ -183,7 +183,7 @@ export function AdminLayout() {
             <button
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open navigation menu"
-              className="inline-flex md:hidden items-center justify-center h-9 w-9 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] cursor-pointer"
+              className="inline-flex md:hidden items-center justify-center h-9 w-9 rounded-lg border border-[var(--line-subtle)] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] cursor-pointer"
             >
               <Menu className="h-4 w-4" />
             </button>

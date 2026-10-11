@@ -258,7 +258,7 @@ export function Home() {
             </button>
             <button
               onClick={() => navigate('/search')}
-              className="inline-flex items-center gap-2 h-12 px-6 rounded-full text-base font-semibold bg-white/15 text-white border border-white/30 backdrop-blur-md hover:bg-white/20 transition-transform active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 h-12 px-6 rounded-full text-base font-semibold bg-white/15 text-white border-none backdrop-blur-md hover:bg-white/25 transition-transform active:scale-95 cursor-pointer"
             >
               <Compass className="h-4 w-4" /> Explore Stories
             </button>

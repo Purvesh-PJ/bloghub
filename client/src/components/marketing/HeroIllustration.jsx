@@ -26,7 +26,7 @@ export function HeroIllustration() {
       {/* Main Editorial Canvas Card */}
       <div className="relative z-10 bg-[hsl(var(--card))] rounded-[28px] sm:rounded-[36px] p-6 shadow-xl backdrop-blur-md transition-all hover:shadow-2xl">
         {/* Window Header */}
-        <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-black/8 dark:border-white/8">
+        <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[var(--line-subtle)]">
           <div className="flex gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 opacity-80" />
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 opacity-80" />

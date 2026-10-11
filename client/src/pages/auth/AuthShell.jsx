@@ -87,7 +87,7 @@ export function AuthShell({ children }) {
       </div>
 
       {/* Showcase side */}
-      <aside className="relative overflow-hidden hidden lg:flex flex-col justify-center gap-8 p-12 lg:p-16 bg-[hsl(var(--card))] border-l border-[hsl(var(--border))/0.4]">
+      <aside className="relative overflow-hidden hidden lg:flex flex-col justify-center gap-8 p-12 lg:p-16 bg-[hsl(var(--card))]">
         {/* Soft Ambient Bloom */}
         <div
           aria-hidden="true"
@@ -118,7 +118,7 @@ export function AuthShell({ children }) {
             ))}
           </ul>
 
-          <div className="flex flex-wrap gap-2 pt-6 border-t border-[hsl(var(--border))/0.4]">
+          <div className="flex flex-wrap gap-2 pt-6 border-t border-[var(--line-subtle)]">
             {TOPICS.map((name) => {
               const Icon = topicIcon(name);
               return (
