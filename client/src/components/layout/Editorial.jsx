@@ -1,160 +1,120 @@
-import styled, { css } from 'styled-components';
-import { display, text, label as labelStyle, media } from '../../styles/theme/mixins';
+import * as React from 'react';
+import { cn } from '../../lib/utils';
 
 /**
  * Editorial layout devices.
- *
- * Every page in the application had the same bones: a centred 1200px column, a title with a
- * subtitle under it, then a stack of cards. Changing the palette does not fix that — a page
- * built from identical blocks reads as monotonous whatever colour the blocks are.
- *
- * These are the pieces that break the column: a band that escapes it entirely, a block that
- * inverts against the page, and section numerals set large enough to be furniture rather
- * than labels. Used sparingly, they give a long page a rhythm to scroll through.
+ * Gives long articles, landing pages, and editorial content rhythm and hierarchy.
  */
 
-/**
- * Escapes the centred column and runs the full width of the viewport.
- *
- * The margin trick rather than `position: absolute` so the band still participates in flow
- * and pushes what follows. `overflow-x: clip` on the page prevents the 100vw from creating a
- * horizontal scrollbar where a scrollbar is already present.
- */
-export const FullBleed = styled.div`
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-`;
-
-/**
- * A block that inverts against the page: near-black in light mode, and the palest sand in
- * dark. Two or three of these down a long page do more for rhythm than any amount of
- * spacing, because the eye registers the change of ground before it reads a word.
- */
-export const Inverted = styled(FullBleed)`
-  background: ${({ theme }) =>
-    theme.mode === 'light' ? theme.gradients.brand : theme.gradients.inkDeep};
-  color: ${({ theme }) => theme.colors.textOnInk};
-  padding: ${({ theme }) => theme.spacing['6xl']} 0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-
-  h1,
-  h2,
-  h3 {
-    color: ${({ theme }) => theme.colors.textOnInk};
-  }
-
-  ${media.down('md')`
-    padding: ${({ theme }) => theme.spacing['4xl']} 0;
-  `}
-`;
-
-/** Re-establishes the reading column inside a full-bleed band. */
-export const Column = styled.div`
-  max-width: ${({ theme, $width }) => theme.layout[$width ?? 'maxWidth']};
-  margin: 0 auto;
-  padding: 0 ${({ theme }) => theme.spacing.xl};
-
-  ${media.down('md')`padding: 0 ${({ theme }) => theme.spacing.lg};`}
-`;
-
-/* ── Numbered section ────────────────────────────────────────────────────────
-   The numeral is set at display size and hangs in the left margin on wide
-   screens, so the section reads as an item in a sequence rather than as one more
-   heading. Below lg it comes inline, where there is no margin to hang in. */
-
-const NumberedRoot = styled.section`
-  position: relative;
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: ${({ theme }) => theme.spacing['2xl']};
-  align-items: start;
-
-  ${media.down('lg')`
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing.lg};
-  `}
-`;
-
-const Numeral = styled.span`
-  ${display('lg')}
-  color: ${({ theme }) => theme.colors.accentText};
-  line-height: 0.9;
-  font-variant-numeric: tabular-nums;
-
-  ${media.down('lg')`
-    ${display('sm')}
-    color: ${({ theme }) => theme.colors.accentText};
-  `}
-`;
-
-const NumberedBody = styled.div`
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const Rule = styled.hr`
-  border: none;
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-`;
-
-export function Numbered({ n, children, rule = true, ...props }) {
+/** Escapes the centred column and runs the full width of the viewport. */
+export function FullBleed({ className, children, ...props }) {
   return (
-    <div {...props}>
-      {rule && <Rule />}
-      <NumberedRoot>
-        <Numeral aria-hidden="true">{String(n).padStart(2, '0')}</Numeral>
-        <NumberedBody>{children}</NumberedBody>
-      </NumberedRoot>
+    <div
+      className={cn('w-screen ml-[calc(50%-50vw)] mr-[calc(50%-50vw)]', className)}
+      {...props}
+    >
+      {children}
     </div>
   );
 }
 
-/* ── Type helpers used across the marketing page ─────────────────────────── */
+/** A block that inverts against the page: deep background with high contrast text. */
+export function Inverted({ className, children, ...props }) {
+  return (
+    <FullBleed
+      className={cn(
+        'bg-gradient-to-tr from-[hsl(var(--primary))] to-sky-700 text-white py-16 sm:py-24 shadow-inner',
+        '[&_h1]:text-white [&_h2]:text-white [&_h3]:text-white',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </FullBleed>
+  );
+}
 
-export const Kicker = styled.p`
-  ${labelStyle('sm')}
-  color: ${({ theme }) => theme.colors.accentText};
-`;
+/** Re-establishes the reading column inside a full-bleed band. */
+export function Column({ className, children, width = 'maxWidth', $width, ...props }) {
+  const finalWidth = width !== 'maxWidth' ? width : ($width || 'maxWidth');
+  const widthClass = finalWidth === 'maxWidthNarrow' ? 'max-w-[768px]' : 'max-w-[1200px]';
 
-export const Headline = styled.h2`
-  ${display('md')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  max-width: 18ch;
-`;
-
-export const Body = styled.p`
-  ${text('lg')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 56ch;
-`;
+  return (
+    <div
+      className={cn('w-full mx-auto px-4 sm:px-6', widthClass, className)}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
 
 /**
- * An asymmetric two-column row that alternates which side the visual sits on.
- * Alternating is the cheapest way to stop a run of feature sections looking like a list.
+ * Numbered section
+ * Display-sized numeral hanging in the margin for numbered narratives.
  */
-export const Split = styled.div`
-  display: grid;
-  grid-template-columns: ${({ $flip }) => ($flip ? '1.1fr 0.9fr' : '0.9fr 1.1fr')};
-  gap: ${({ theme }) => theme.spacing['3xl']};
-  align-items: center;
+export function Numbered({ n, children, rule = true, className, ...props }) {
+  return (
+    <div className={className} {...props}>
+      {rule && <hr className="border-t border-[hsl(var(--border))/0.4] mb-8" />}
+      <section className="relative grid grid-cols-1 lg:grid-cols-[120px_1fr] gap-6 lg:gap-10 items-start">
+        <span
+          aria-hidden="true"
+          className="text-4xl lg:text-6xl font-black text-[hsl(var(--primary))] leading-none tabular-nums select-none"
+        >
+          {String(n).padStart(2, '0')}
+        </span>
+        <div className="min-w-0 flex flex-col gap-6">{children}</div>
+      </section>
+    </div>
+  );
+}
 
-  ${({ $flip }) =>
-    $flip &&
-    css`
-      direction: rtl;
+export function Kicker({ className, children, ...props }) {
+  return (
+    <p
+      className={cn('text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))]', className)}
+      {...props}
+    >
+      {children}
+    </p>
+  );
+}
 
-      > * {
-        direction: ltr;
-      }
-    `}
+export function Headline({ className, children, ...props }) {
+  return (
+    <h2
+      className={cn('text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))] max-w-[18ch]', className)}
+      {...props}
+    >
+      {children}
+    </h2>
+  );
+}
 
-  ${media.down('md')`
-    grid-template-columns: 1fr;
-    direction: ltr;
-    gap: ${({ theme }) => theme.spacing.xl};
-  `}
-`;
+export function Body({ className, children, ...props }) {
+  return (
+    <p
+      className={cn('text-base sm:text-lg text-[hsl(var(--muted-foreground))] max-w-[56ch] leading-relaxed', className)}
+      {...props}
+    >
+      {children}
+    </p>
+  );
+}
+
+export function Split({ flip = false, $flip, className, children, ...props }) {
+  const isFlipped = flip || $flip;
+  return (
+    <div
+      className={cn(
+        'grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-center',
+        isFlipped && '[&>*:first-child]:order-2 [&>*:last-child]:order-1',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}

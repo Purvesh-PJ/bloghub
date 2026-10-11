@@ -1,70 +1,48 @@
-import styled from 'styled-components';
-import { display, text } from '../../styles/theme/mixins';
 import { Surface } from './Surface';
+import { cn } from '../../lib/utils';
 
 /**
  * Empty state.
  *
- * The pages each had their own, and most said only "No posts yet" — which tells somebody
- * who has just signed up nothing about what to do next. An empty state is the first thing
- * a new account sees on most of these pages, so it gets a real explanation and a way out.
+ * Provides a clear graphic, title, explanation and call to action.
  */
-
-const Root = styled(Surface)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: ${({ theme }) => theme.spacing.lg};
-  padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing.xl};
-`;
-
-const Icon = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  svg {
-    width: 24px;
-    height: 24px;
-  }
-`;
-
-const Title = styled.p`
-  ${display('xs')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const Body = styled.p`
-  ${text('md')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 46ch;
-`;
-
-const Actions = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: ${({ theme }) => theme.spacing.xs};
-`;
-
-export function EmptyState({ icon: IconComponent, title, children, actions, tone = 'low' }) {
+export function EmptyState({
+  icon: IconComponent,
+  title,
+  children,
+  actions,
+  tone = 'low',
+  className,
+}) {
   return (
-    <Root $tone={tone} $radius="xl">
-      {IconComponent && (
-        <Icon>
-          <IconComponent />
-        </Icon>
+    <Surface
+      tone={tone}
+      radius="xl"
+      className={cn(
+        'flex flex-col items-center text-center gap-4 py-12 px-6 sm:py-16 sm:px-8',
+        className
       )}
-      {title && <Title>{title}</Title>}
-      {children && <Body>{children}</Body>}
-      {actions && <Actions>{actions}</Actions>}
-    </Root>
+    >
+      {IconComponent && (
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] mb-1">
+          <IconComponent className="w-6 h-6" />
+        </div>
+      )}
+      {title && (
+        <p className="text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+          {title}
+        </p>
+      )}
+      {children && (
+        <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] max-w-[46ch] leading-relaxed">
+          {children}
+        </p>
+      )}
+      {actions && (
+        <div className="flex gap-2 flex-wrap justify-center mt-2">
+          {actions}
+        </div>
+      )}
+    </Surface>
   );
 }

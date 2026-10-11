@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
 import {
   Search as SearchIcon,
   Compass,
@@ -22,251 +21,8 @@ import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { topicIcon } from '../utils/topicIcons';
 import { Button, Chip, EmptyState } from '../components/ui';
-import { display, text, clamp, media, interactive } from '../styles/theme/mixins';
 import { excerpt, readingTimeFromLength } from '../utils/text';
 import { queryKeys } from '../services/queryKeys';
-import { iconPx } from '../styles/theme';
-
-/* ── Styled Components (All using Design Tokens & Primitives) ────────────── */
-
-const TopBar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.xl};
-  border-bottom: none;
-  flex-wrap: wrap;
-`;
-
-const HeaderLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.lg};
-  min-width: 0;
-`;
-
-const HeaderIconWrap = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: ${({ theme }) => theme.radii.xl};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentSolid};
-  flex-shrink: 0;
-
-  svg {
-    width: 26px;
-    height: 26px;
-  }
-`;
-
-const HeaderTitles = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-`;
-
-const Title = styled.h1`
-  ${display('sm')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-weight: 800;
-  letter-spacing: -0.025em;
-`;
-
-const Subtitle = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 54ch;
-`;
-
-const SearchBox = styled.div`
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-
-  ${media.down('sm')`
-    max-width: 100%;
-  `}
-
-  input {
-    width: 100%;
-    height: 42px;
-    font-size: 14px;
-    padding-left: 40px;
-    padding-right: 36px;
-    border-radius: ${({ theme }) => theme.radii.full};
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-    color: ${({ theme }) => theme.colors.textPrimary};
-    border: none;
-    transition: all ${({ theme }) => theme.transitions.fast};
-
-    &::placeholder {
-      color: ${({ theme }) => theme.colors.textMuted};
-    }
-
-    &:focus {
-      outline: none;
-      background: ${({ theme }) => theme.colors.surfaceElevated};
-      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
-    }
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-    pointer-events: none;
-  }
-
-  .clear-btn {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: ${({ theme }) => theme.colors.textMuted};
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
-    border-radius: 50%;
-    transition: all ${({ theme }) => theme.transitions.fast};
-
-    &:hover {
-      background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-      color: ${({ theme }) => theme.colors.textPrimary};
-    }
-  }
-`;
-
-const CategoryNav = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  overflow-x: auto;
-  padding: ${({ theme }) => theme.spacing.xs} 2px ${({ theme }) => theme.spacing.sm} 2px;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const ActiveFilterBar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.lg};
-`;
-
-const ActiveFilterText = styled.span`
-  ${text('sm', 'medium')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  svg {
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-
-  span.count {
-    color: ${({ theme }) => theme.colors.textMuted};
-    font-weight: 400;
-  }
-`;
-
-/* ── Editorial Grid Containers ───────────────────────────────────────────── */
-
-const EditorialGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing.xl};
-
-  ${media.down('lg')`
-    grid-template-columns: repeat(2, 1fr);
-  `}
-
-  ${media.down('sm')`
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing.lg};
-  `}
-`;
-
-/* ── Search Results Card ─────────────────────────────────────────────────── */
-
-const SearchResultCard = styled(Link)`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.xl};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: none;
-  text-decoration: none;
-  transition:
-    background ${({ theme }) => theme.transitions.fast},
-    box-shadow ${({ theme }) => theme.transitions.fast};
-  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
-  ${interactive}
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.surfaceHover};
-    box-shadow:
-      0 12px 24px -6px rgba(15, 23, 42, 0.06),
-      0 0 12px -2px rgba(14, 165, 233, 0.1);
-  }
-`;
-
-const SearchResultTitle = styled.h3`
-  ${text('md', 'bold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  ${clamp(2)}
-  line-height: 1.35;
-  transition: color ${({ theme }) => theme.transitions.fast};
-
-  ${SearchResultCard}:hover & {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-const SearchResultExcerpt = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.6;
-  ${clamp(3)}
-`;
-
-const SearchResultFooter = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding-top: ${({ theme }) => theme.spacing.xs};
-  border-top: none;
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-
-  span {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-`;
 
 const formatTopicTitle = (text) => {
   if (!text) return '';
@@ -277,8 +33,6 @@ const formatTopicTitle = (text) => {
   if (clean.toLowerCase() === 'nodejs') return 'Node.js';
   return clean.charAt(0).toUpperCase() + clean.slice(1);
 };
-
-/* ── Main Component ──────────────────────────────────────────────────────── */
 
 export function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -355,22 +109,25 @@ export function Search() {
 
   return (
     <PageShell>
-      {/* ── 1. Clean Top Header: Left Icon, Right Title & Subtitle + Search ─── */}
-      <TopBar>
-        <HeaderLeft>
-          <HeaderIconWrap>
-            <Compass />
-          </HeaderIconWrap>
-          <HeaderTitles>
-            <Title>Explore Stories</Title>
-            <Subtitle>
+      {/* ── 1. Top Header: Icon, Title & Subtitle + Search Bar ─── */}
+      <div className="flex items-center justify-between gap-6 flex-wrap">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-[24px] bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))] shrink-0">
+            <Compass className="w-6 h-6" />
+          </div>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[hsl(var(--foreground))]">
+              Explore Stories
+            </h1>
+            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] max-w-[54ch]">
               Discover deep-dive breakdowns, engineering essays, and creative perspectives.
-            </Subtitle>
-          </HeaderTitles>
-        </HeaderLeft>
+            </p>
+          </div>
+        </div>
 
-        <SearchBox>
-          <SearchIcon className="search-icon" />
+        {/* Search input box */}
+        <div className="relative w-full sm:max-w-[360px]">
+          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--primary))] pointer-events-none" />
           <input
             type="text"
             placeholder="Search titles, stories, tags and authors…"
@@ -378,20 +135,26 @@ export function Search() {
             onChange={(e) => setDraft(e.target.value)}
             aria-label="Search stories"
             autoFocus={Boolean(query)}
+            className="w-full h-10 pl-10 pr-9 rounded-full bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] text-sm border-none focus:outline-none focus:bg-[hsl(var(--card))] focus:ring-2 focus:ring-[hsl(var(--primary))/0.3] transition-all"
           />
           {draft && (
-            <button className="clear-btn" onClick={clearSearch} title="Clear search">
-              <X size={iconPx.sm} />
+            <button
+              type="button"
+              onClick={clearSearch}
+              title="Clear search"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))/0.8] transition-colors cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
-        </SearchBox>
-      </TopBar>
+        </div>
+      </div>
 
       {/* ── 2. Dynamic Topic & Tags Navigation Bar ───────────────────────── */}
       {!query && (
-        <CategoryNav>
+        <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none [scrollbar-width:none]">
           <Chip size="md" selected={!topic} onClick={() => setTopic('')}>
-            <Flame size={iconPx.sm} /> All Stories
+            <Flame className="w-3.5 h-3.5 mr-1" /> All Stories
           </Chip>
           {activeTags.map((tag) => {
             const Icon = topicIcon(tag.name);
@@ -403,88 +166,91 @@ export function Search() {
                 selected={isSelected}
                 onClick={() => setTopic(tag.name)}
               >
-                <Icon size={iconPx.sm} />
+                <Icon className="w-3.5 h-3.5 mr-1" />
                 {formatTopicTitle(tag.name)}
               </Chip>
             );
           })}
-        </CategoryNav>
+        </div>
       )}
 
       {/* ── 3. Active Topic Filter Reset Indicator ───────────────────────── */}
       {!query && topic && (
-        <ActiveFilterBar>
-          <ActiveFilterText>
-            <Sparkles size={iconPx.md} /> Filtered by <strong>{formatTopicTitle(topic)}</strong>
-            <span className="count">
+        <div className="flex items-center justify-between gap-4 px-4 py-3 bg-[hsl(var(--muted))/0.5] rounded-2xl">
+          <span className="text-sm font-medium text-[hsl(var(--foreground))] flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[hsl(var(--primary))]" /> Filtered by{' '}
+            <strong>{formatTopicTitle(topic)}</strong>
+            <span className="text-[hsl(var(--muted-foreground))] font-normal">
               (
               {loadingPosts
                 ? '…'
                 : `${browsePosts.length} ${browsePosts.length === 1 ? 'story' : 'stories'}`}
               )
             </span>
-          </ActiveFilterText>
+          </span>
           <Button size="sm" variant="ghost" onClick={() => setTopic('')}>
-            <RotateCcw size={iconPx.sm} /> Clear filter
+            <RotateCcw className="w-3.5 h-3.5 mr-1" /> Clear filter
           </Button>
-        </ActiveFilterBar>
+        </div>
       )}
 
       {/* ── 4. Main Editorial Grid / Search Results ───────────────────────── */}
       {query ? (
         /* ── Search Results Grid ── */
         searching ? (
-          <EditorialGrid>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <PostCardSkeleton key={i} layout="stacked" />
             ))}
-          </EditorialGrid>
+          </div>
         ) : results.length === 0 ? (
           <EmptyState icon={SearchIcon} title="No matching stories found">
             We couldn't find any articles matching “{query}”. Try different keywords or browse our
             curated categories above.
-            <div style={{ marginTop: 12 }}>
+            <div className="mt-3">
               <Button size="sm" variant="secondary" onClick={clearSearch}>
                 Clear search
               </Button>
             </div>
           </EmptyState>
         ) : (
-          <EditorialGrid>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {results.map((result) => (
-              <SearchResultCard key={result._id} to={`/post/${result._id}`}>
+              <Link
+                key={result._id}
+                to={`/post/${result._id}`}
+                className="group flex flex-col justify-between gap-3 p-6 rounded-[28px] bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] shadow-sm hover:shadow-md hover:bg-[hsl(var(--muted))/0.4] transition-all"
+              >
                 <div>
-                  <SearchResultTitle>{result.title}</SearchResultTitle>
-                  <SearchResultExcerpt>
+                  <h3 className="text-base font-bold text-[hsl(var(--foreground))] line-clamp-2 leading-snug group-hover:text-[hsl(var(--primary))] transition-colors">
+                    {result.title}
+                  </h3>
+                  <p className="text-sm text-[hsl(var(--muted-foreground))] line-clamp-3 mt-2 leading-relaxed">
                     {result.truncatedContent
                       ? excerpt(result.truncatedContent, 180)
                       : excerpt(result.content, 180)}
-                  </SearchResultExcerpt>
+                  </p>
                 </div>
-                <SearchResultFooter>
-                  <span>
-                    {/* The result carries the length of the whole body, not the body itself —
-                        estimating from the 200-character excerpt gave every card the same
-                        "0 min read". */}
-                    <Clock size={iconPx.xs} /> {readingTimeFromLength(result.contentLength)} min
-                    read
+                <div className="flex items-center justify-between gap-3 pt-2 text-xs text-[hsl(var(--muted-foreground))]">
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> {readingTimeFromLength(result.contentLength)} min read
                   </span>
                   {result.user?.username && <span>by {result.user.username}</span>}
-                  <span style={{ color: '#0284c7', fontWeight: 600 }}>
-                    Read story <ArrowRight size={iconPx.xs} />
+                  <span className="text-[hsl(var(--primary))] font-semibold inline-flex items-center gap-1">
+                    Read story <ArrowRight className="w-3 h-3" />
                   </span>
-                </SearchResultFooter>
-              </SearchResultCard>
+                </div>
+              </Link>
             ))}
-          </EditorialGrid>
+          </div>
         )
       ) : /* ── Browse Mode (Uniform 3-Column Editorial Grid) ── */
       loadingPosts ? (
-        <EditorialGrid>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <PostCardSkeleton key={i} layout="stacked" />
           ))}
-        </EditorialGrid>
+        </div>
       ) : !hasPosts ? (
         <EmptyState
           icon={Compass}
@@ -493,18 +259,18 @@ export function Search() {
           {topic
             ? `Be the very first writer to share an article in ${topic}!`
             : 'Stories will show up here as creators in the community publish them.'}
-          <div style={{ marginTop: 12 }}>
+          <div className="mt-3">
             <Button size="sm" onClick={() => navigate('/write')}>
-              <PenLine size={iconPx.sm} /> Write a story
+              <PenLine className="w-3.5 h-3.5 mr-1" /> Write a story
             </Button>
           </div>
         </EmptyState>
       ) : (
-        <EditorialGrid>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {browsePosts.map((post) => (
             <PostCard key={post._id} post={post} layout="stacked" />
           ))}
-        </EditorialGrid>
+        </div>
       )}
     </PageShell>
   );

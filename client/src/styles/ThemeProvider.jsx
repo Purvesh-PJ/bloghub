@@ -1,13 +1,4 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { ThemeProvider as StyledThemeProvider } from 'styled-components';
-import {
-  tokens,
-  typography,
-  typographyAliases,
-  lightTheme,
-  darkTheme,
-  GlobalStyles,
-} from './theme';
 
 // Theme context
 const ThemeContext = createContext(null);
@@ -22,15 +13,9 @@ export const useTheme = () => {
 };
 
 /**
- * Two separate things, which the previous version conflated:
- *
+ * Two separate things:
  *   preference — what the reader chose: 'light', 'dark' or 'system'
  *   mode       — what is actually painted: 'light' or 'dark'
- *
- * They only differ under 'system'. Storing just the resolved mode is what broke the
- * system option: the persist effect wrote `theme` on first render, so the
- * "only auto-switch if the reader has not chosen" guard was never true again and
- * following the OS became unreachable. Settings offered a System card that did nothing.
  */
 
 const STORAGE_KEY = 'theme-preference';
@@ -44,7 +29,6 @@ const getInitialPreference = () => {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved && ['light', 'dark', 'system'].includes(saved)) return saved;
 
-  // Migrate the old key, which only ever held a resolved mode.
   const legacy = localStorage.getItem('theme');
   if (legacy && ['light', 'dark'].includes(legacy)) return legacy;
 
@@ -83,8 +67,7 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [mode]);
 
-  // Track the OS setting continuously. Under 'system' this repaints; otherwise it is
-  // simply kept current so switching to 'system' later lands on the right mode.
+  // Track the OS setting continuously
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (event) => setSystemMode(event.matches ? 'dark' : 'light');
@@ -92,19 +75,6 @@ export const ThemeProvider = ({ children }) => {
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
-
-  // Flatten colours, tokens and typography into the single object styled-components reads.
-  // typographyAliases is spread last so the flat fontSizes/lineHeights API the existing
-  // pages rely on stays available alongside the new ui/reading/display scales.
-  const theme = useMemo(() => {
-    const colorTheme = mode === 'light' ? lightTheme : darkTheme;
-    return {
-      ...colorTheme,
-      ...tokens,
-      ...typography,
-      ...typographyAliases,
-    };
-  }, [mode]);
 
   // Context value
   const contextValue = useMemo(
@@ -121,10 +91,8 @@ export const ThemeProvider = ({ children }) => {
 
   return (
     <ThemeContext.Provider value={contextValue}>
-      <StyledThemeProvider theme={theme}>
-        <GlobalStyles />
-        {children}
-      </StyledThemeProvider>
+      {children}
     </ThemeContext.Provider>
   );
 };
+

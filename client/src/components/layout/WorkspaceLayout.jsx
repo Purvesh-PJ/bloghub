@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import styled, { css } from 'styled-components';
 import {
   LayoutDashboard,
   PenLine,
@@ -19,328 +18,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { ThemeToggle } from './ThemeToggle';
 import { Button, Avatar, Modal, BrandMark } from '../ui';
-import { text, label as labelStyle, media, interactive } from '../../styles/theme/mixins';
-import { iconPx } from '../../styles/theme';
-
-const Shell = styled.div`
-  display: flex;
-  min-height: 100vh;
-  background: ${({ theme }) => theme.colors.surfacePage};
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const SidebarBackdrop = styled.div`
-  display: none;
-  ${media.down('md')`
-    display: ${({ $open }) => ($open ? 'block' : 'none')};
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    z-index: ${({ theme }) => theme.zIndices.overlay};
-  `}
-`;
-
-const Sidebar = styled.aside`
-  width: 260px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border-right: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  z-index: ${({ theme }) => theme.zIndices.sticky};
-  transition: transform ${({ theme }) => theme.transitions.fast};
-
-  ${media.down('md')`
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 280px;
-    z-index: ${({ theme }) => theme.zIndices.modal};
-    transform: ${({ $open }) => ($open ? 'translateX(0)' : 'translateX(-100%)')};
-    box-shadow: ${({ $open, theme }) => ($open ? theme.elevation.xl : 'none')};
-  `}
-`;
-
-const Frame = styled.div`
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  flex-direction: column;
-`;
-
-const BrandRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 ${({ theme }) => theme.spacing.xs};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-`;
-
-const Brand = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  ${text('md', 'bold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  text-decoration: none;
-
-  span {
-    letter-spacing: -0.01em;
-  }
-`;
-
-const StudioBadge = styled.span`
-  padding: 2px 7px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentText};
-  ${labelStyle('xs')}
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-`;
-
-const DrawerCloseBtn = styled.button`
-  display: none;
-  ${media.down('md')`
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: ${({ theme }) => theme.radii.md};
-    border: none;
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-    color: ${({ theme }) => theme.colors.textSecondary};
-    cursor: pointer;
-  `}
-`;
-
-const Nav = styled.nav`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-  flex: 1;
-  overflow-y: auto;
-  scrollbar-width: thin;
-`;
-
-const NavSectionLabel = styled.span`
-  ${labelStyle('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.md} 4px;
-`;
-
-const NavLink = styled(Link)`
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: ${({ theme }) => theme.radii.md};
-  ${text('sm', 'medium')}
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.accentText : theme.colors.textSecondary};
-  text-decoration: none;
-  ${interactive}
-
-  ${({ $active, theme }) =>
-    $active &&
-    css`
-      background: ${theme.colors.accentContainer};
-      color: ${theme.colors.accentText};
-      font-weight: 600;
-
-      &::before {
-        content: '';
-        position: absolute;
-        left: -8px;
-        top: 25%;
-        bottom: 25%;
-        width: 3px;
-        border-radius: 2px;
-        background: ${theme.colors.accentSolid};
-      }
-    `}
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    background: ${({ theme, $active }) =>
-      $active ? theme.colors.accentContainer : theme.colors.surfaceContainer};
-  }
-
-  svg {
-    width: 17px;
-    height: 17px;
-    color: ${({ theme, $active }) => ($active ? theme.colors.accentSolid : theme.colors.textMuted)};
-    flex-shrink: 0;
-  }
-`;
-
-const UserCard = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin-top: auto;
-`;
-
-const UserProfileLink = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  text-decoration: none;
-  flex: 1;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  padding: 2px;
-  ${interactive}
-
-  &:hover span:first-child {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-const UserMeta = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-`;
-
-const UserName = styled.span`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: color ${({ theme }) => theme.transitions.fast};
-`;
-
-const ProfileBadge = styled.span`
-  ${labelStyle('xs')}
-  color: ${({ theme }) => theme.colors.accentText};
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 11px;
-`;
-
-const LogoutButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: ${({ theme }) => theme.radii.md};
-  border: none;
-  background: transparent;
-  color: ${({ theme }) => theme.colors.textMuted};
-  cursor: pointer;
-  flex-shrink: 0;
-  ${interactive}
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.dangerSolid};
-    background: ${({ theme }) => theme.colors.dangerContainer};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const Topbar = styled.header`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 58px;
-  padding: 0 ${({ theme }) => theme.spacing.xl};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  background: ${({ theme }) =>
-    theme.mode === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(7, 11, 19, 0.85)'};
-  backdrop-filter: blur(16px);
-  position: sticky;
-  top: 0;
-  z-index: ${({ theme }) => theme.zIndices.sticky};
-
-  ${media.down('md')`
-    padding: 0 ${({ theme }) => theme.spacing.md};
-  `}
-`;
-
-const TopbarLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const MenuToggleBtn = styled.button`
-  display: none;
-  ${media.down('md')`
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: ${({ theme }) => theme.radii.md};
-    border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-    color: ${({ theme }) => theme.colors.textPrimary};
-    cursor: pointer;
-  `}
-`;
-
-const Breadcrumb = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  ${text('sm', 'medium')}
-  color: ${({ theme }) => theme.colors.textMuted};
-
-  .root {
-    color: ${({ theme }) => theme.colors.textSecondary};
-    font-weight: 500;
-  }
-
-  .current {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-weight: 600;
-  }
-
-  svg {
-    color: ${({ theme }) => theme.colors.textMuted};
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const TopbarRight = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const Content = styled.main`
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  background: ${({ theme }) => theme.colors.surfacePage};
-`;
+import { cn } from '../../lib/utils';
 
 export function WorkspaceLayout() {
   const { user, logout, isAdmin } = useAuth();
@@ -363,116 +41,180 @@ export function WorkspaceLayout() {
 
   const closeMobile = () => setMobileMenuOpen(false);
 
-  return (
-    <Shell>
-      <SidebarBackdrop $open={mobileMenuOpen} onClick={closeMobile} />
+  const navItemClass = (isActive) =>
+    cn(
+      'relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 select-none cursor-pointer',
+      isActive
+        ? 'bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))] font-semibold before:content-[""] before:absolute before:-left-2 before:top-1/4 before:bottom-1/4 before:w-1 before:rounded-full before:bg-[hsl(var(--primary))]'
+        : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]',
+      '[&>svg]:shrink-0 [&>svg]:h-4 [&>svg]:w-4',
+      isActive ? '[&>svg]:text-[hsl(var(--primary))]' : '[&>svg]:text-[hsl(var(--muted-foreground))]'
+    );
 
-      <Sidebar $open={mobileMenuOpen}>
-        <BrandRow>
-          <Brand to="/dashboard" onClick={closeMobile}>
+  return (
+    <div className="flex min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      {/* Mobile Backdrop */}
+      {mobileMenuOpen && (
+        <div
+          onClick={closeMobile}
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in-0 duration-200"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          'w-[260px] md:w-[260px] shrink-0 flex flex-col p-5 bg-[hsl(var(--card))] sticky top-0 h-screen z-50 transition-transform duration-200 ease-out',
+          'max-md:fixed max-md:left-0 max-md:top-0 max-md:bottom-0 max-md:w-[280px] max-md:shadow-2xl',
+          mobileMenuOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'
+        )}
+      >
+        {/* Brand Header */}
+        <div className="flex items-center justify-between px-1 mb-6">
+          <Link
+            to="/dashboard"
+            onClick={closeMobile}
+            className="inline-flex items-center gap-2 text-base font-bold text-[hsl(var(--foreground))] tracking-tight"
+          >
             <BrandMark letter="B" />
             <span>BlogHub</span>
-            <StudioBadge>Studio</StudioBadge>
-          </Brand>
-          <DrawerCloseBtn onClick={closeMobile} aria-label="Close menu">
-            <X size={iconPx.lg} />
-          </DrawerCloseBtn>
-        </BrandRow>
+            <span className="px-2 py-0.5 rounded-full bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))] text-[10px] font-extrabold uppercase tracking-wider select-none">
+              Studio
+            </span>
+          </Link>
+          <button
+            onClick={closeMobile}
+            aria-label="Close menu"
+            className="inline-flex md:hidden items-center justify-center h-8 w-8 rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-        <Nav>
-          <NavSectionLabel>Workspace</NavSectionLabel>
-          <NavLink
+        {/* Navigation list */}
+        <nav className="flex flex-col gap-1 flex-1 overflow-y-auto [scrollbar-width:thin]">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] px-3 pt-2 pb-1 select-none">
+            Workspace
+          </span>
+          <Link
             to="/dashboard"
-            $active={location.pathname === '/dashboard'}
+            className={navItemClass(location.pathname === '/dashboard')}
             onClick={closeMobile}
           >
             <LayoutDashboard /> Dashboard
-          </NavLink>
-          <NavLink
+          </Link>
+          <Link
             to="/stories"
-            $active={location.pathname === '/stories' || location.pathname.startsWith('/edit')}
+            className={navItemClass(location.pathname === '/stories' || location.pathname.startsWith('/edit'))}
             onClick={closeMobile}
           >
             <FileText /> Stories
-          </NavLink>
-          <NavLink
+          </Link>
+          <Link
             to="/write"
-            $active={location.pathname.startsWith('/write')}
+            className={navItemClass(location.pathname.startsWith('/write'))}
             onClick={closeMobile}
           >
             <PenLine /> Write
-          </NavLink>
-          <NavLink to="/comments" $active={location.pathname === '/comments'} onClick={closeMobile}>
+          </Link>
+          <Link
+            to="/comments"
+            className={navItemClass(location.pathname === '/comments')}
+            onClick={closeMobile}
+          >
             <MessageSquare /> Responses
-          </NavLink>
+          </Link>
 
-          <NavSectionLabel style={{ marginTop: 8 }}>Preferences</NavSectionLabel>
-          <NavLink to="/settings" $active={location.pathname === '/settings'} onClick={closeMobile}>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] px-3 pt-4 pb-1 select-none">
+            Preferences
+          </span>
+          <Link
+            to="/settings"
+            className={navItemClass(location.pathname === '/settings')}
+            onClick={closeMobile}
+          >
             <Settings /> Settings
-          </NavLink>
+          </Link>
 
           {isAdmin() && (
             <>
-              <NavSectionLabel style={{ marginTop: 8 }}>Management</NavSectionLabel>
-              <NavLink to="/admin" onClick={closeMobile}>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] px-3 pt-4 pb-1 select-none">
+                Management
+              </span>
+              <Link to="/admin" className={navItemClass(false)} onClick={closeMobile}>
                 <ShieldCheck /> Admin Console
-              </NavLink>
+              </Link>
             </>
           )}
 
-          <NavSectionLabel style={{ marginTop: 8 }}>Explore</NavSectionLabel>
-          <NavLink to="/" onClick={closeMobile}>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] px-3 pt-4 pb-1 select-none">
+            Explore
+          </span>
+          <Link to="/" className={navItemClass(false)} onClick={closeMobile}>
             <Globe /> Public Feed
-          </NavLink>
-        </Nav>
+          </Link>
+        </nav>
 
-        <UserCard>
-          <UserProfileLink
+        {/* User Card at Bottom */}
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-[hsl(var(--muted))/0.5] border border-[hsl(var(--border))/0.5] gap-2 mt-auto">
+          <Link
             to={userId ? `/user/${userId}` : '/settings'}
             title="View Public Profile"
             onClick={closeMobile}
+            className="flex items-center gap-2.5 min-w-0 flex-1 rounded-md p-0.5 group transition-colors"
           >
             <Avatar src={avatarUrl} name={user?.username} size="sm" />
-            <UserMeta>
-              <UserName>{user?.username || 'Creator'}</UserName>
-              <ProfileBadge>
-                Public Profile <ExternalLink size={iconPx.xs} />
-              </ProfileBadge>
-            </UserMeta>
-          </UserProfileLink>
-          <LogoutButton onClick={() => setConfirmSignOut(true)} aria-label="Sign out">
-            <LogOut />
-          </LogoutButton>
-        </UserCard>
-      </Sidebar>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-semibold text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] truncate transition-colors">
+                {user?.username || 'Creator'}
+              </span>
+              <span className="text-[11px] font-medium text-[hsl(var(--primary))] flex items-center gap-1">
+                Public Profile <ExternalLink className="h-2.5 w-2.5" />
+              </span>
+            </div>
+          </Link>
+          <button
+            onClick={() => setConfirmSignOut(true)}
+            aria-label="Sign out"
+            className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--destructive))] hover:bg-[hsl(var(--destructive))/0.10] transition-colors shrink-0 cursor-pointer"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </aside>
 
-      <Frame>
-        <Topbar>
-          <TopbarLeft>
-            <MenuToggleBtn
+      {/* Main Studio Frame */}
+      <div className="flex flex-1 min-w-0 flex-col">
+        {/* Studio Topbar */}
+        <header className="flex items-center justify-between h-14 px-4 sm:px-6 bg-[hsl(var(--background))/0.85] backdrop-blur-xl sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <button
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open navigation menu"
+              className="inline-flex md:hidden items-center justify-center h-9 w-9 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] cursor-pointer"
             >
-              <Menu size={iconPx.lg} />
-            </MenuToggleBtn>
+              <Menu className="h-4 w-4" />
+            </button>
 
-            <Breadcrumb>
-              <span className="root">Studio</span>
-              <ChevronRight size={iconPx.sm} />
-              <strong className="current">{getPageTitle()}</strong>
-            </Breadcrumb>
-          </TopbarLeft>
+            <div className="flex items-center gap-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] select-none">
+              <span className="text-[hsl(var(--muted-foreground))]">Studio</span>
+              <ChevronRight className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
+              <strong className="text-[hsl(var(--foreground))] font-semibold">{getPageTitle()}</strong>
+            </div>
+          </div>
 
-          <TopbarRight>
+          <div className="flex items-center gap-3">
             <ThemeToggle />
-          </TopbarRight>
-        </Topbar>
+          </div>
+        </header>
 
-        <Content>
+        {/* Content View */}
+        <main className="flex-1 min-w-0 flex flex-col bg-[hsl(var(--background))]">
           <Outlet />
-        </Content>
-      </Frame>
+        </main>
+      </div>
 
+      {/* Sign Out Confirmation Modal */}
       <Modal
         open={confirmSignOut}
         onOpenChange={setConfirmSignOut}
@@ -488,6 +230,6 @@ export function WorkspaceLayout() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </Shell>
+    </div>
   );
 }

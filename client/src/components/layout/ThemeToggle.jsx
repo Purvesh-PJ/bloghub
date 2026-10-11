@@ -1,42 +1,24 @@
-import styled from 'styled-components';
 import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../styles/ThemeProvider';
-
-const ToggleButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.bgPrimary};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.bgHover};
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-`;
+import { cn } from '../../lib/utils';
 
 export const ThemeToggle = ({ className }) => {
   const { isDark, toggleTheme } = useTheme();
 
   return (
-    <ToggleButton
+    <button
       onClick={toggleTheme}
-      className={className}
+      className={cn(
+        'inline-flex items-center justify-center w-9 h-9 rounded-full cursor-pointer select-none transition-all duration-150',
+        'border-none bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] shadow-none',
+        'hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]',
+        'active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        className
+      )}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
-      {isDark ? <Sun /> : <Moon />}
-    </ToggleButton>
+      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </button>
   );
 };

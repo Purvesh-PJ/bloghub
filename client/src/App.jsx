@@ -3,8 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './guards/ProtectedRoute';
 import { AdminRoute } from './guards/AdminRoute';
-
-import styled, { keyframes } from 'styled-components';
 import { Home } from './pages/Home';
 
 // Helper for lazy loading named exports
@@ -51,32 +49,13 @@ const AdminPersonActivity = lazyPage(
   'AdminPersonActivity'
 );
 
-const progressAnim = keyframes`
-  0% { transform: translateX(-100%); }
-  50% { transform: translateX(0%); }
-  100% { transform: translateX(100%); }
-`;
+// Top route suspense progress bar
+const TopProgressBar = () => (
+  <div className="fixed top-0 left-0 right-0 h-[3px] bg-sky-500/15 overflow-hidden z-[9999]">
+    <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-sky-400 to-sky-600 animate-top-progress" />
+  </div>
+);
 
-const TopProgressBar = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: rgba(14, 165, 233, 0.15);
-  overflow: hidden;
-  z-index: 9999;
-
-  &::after {
-    content: '';
-    display: block;
-    width: 50%;
-    height: 100%;
-    background: ${({ theme }) => theme.gradients.brandBar};
-    border-radius: 9999px;
-    animation: ${progressAnim} 1.2s ease-in-out infinite;
-  }
-`;
 
 function App() {
   return (

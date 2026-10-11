@@ -26,6 +26,8 @@ export const buttonVariants = cva(
           'bg-transparent text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]',
         danger:
           'bg-[hsl(var(--destructive))] text-[hsl(var(--destructive-foreground))] hover:brightness-90 shadow-sm',
+        dangerTonal:
+          'bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 active:bg-red-500/25',
         subtle:
           'bg-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]',
       },

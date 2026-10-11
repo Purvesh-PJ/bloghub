@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import styled from 'styled-components';
 import {
   Shield,
   ShieldOff,
@@ -31,43 +30,7 @@ import {
   Avatar,
   Pagination,
 } from '../../components/ui';
-import { text } from '../../styles/theme/mixins';
 import { queryKeys } from '../../services/queryKeys';
-import { iconPx } from '../../styles/theme';
-
-/**
- * The account directory, and the actions an administrator can take on one.
- *
- * It was read-only — a table headed "User Management" that managed nothing. The three things
- * it can do now are deliberately different in weight:
- *
- *   suspend  reversible, keeps everything, ends the person's sessions at once
- *   role     grants or revokes the console itself
- *   delete   permanent, takes their stories with it, and asks for your own password
- */
-
-const Person = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-const Roles = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.xs};
-  flex-wrap: wrap;
-`;
-
-const Quiet = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
 
 export function AdminUsers() {
   const queryClient = useQueryClient();
@@ -116,26 +79,20 @@ export function AdminUsers() {
   if (isLoading) {
     return (
       <div aria-hidden="true">
-        <Card tone="low" radius="xl" style={{ padding: 20 }}>
+        <Card tone="low" radius="xl" padding="lg">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 0',
-                borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-              }}
+              className="flex items-center justify-between py-3 border-b border-[hsl(var(--border))/0.4] last:border-b-0"
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
-                <Skeleton $variant="circle" $width={36} $height={36} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-                  <Skeleton $width="35%" $height={15} $radius="xs" />
-                  <Skeleton $width="20%" $height={12} $radius="xs" />
+              <div className="flex items-center gap-3 flex-1">
+                <Skeleton variant="circle" width={36} height={36} />
+                <div className="flex flex-col gap-1 flex-1">
+                  <Skeleton width="35%" height={15} className="rounded" />
+                  <Skeleton width="20%" height={12} className="rounded" />
                 </div>
               </div>
-              <Skeleton $width={60} $height={24} $radius="pill" />
+              <Skeleton width={60} height={24} className="rounded-full" />
             </div>
           ))}
         </Card>
@@ -161,42 +118,44 @@ export function AdminUsers() {
             Accounts appear here as people register.
           </EmptyState>
         ) : (
-          <Card tone="low" radius="xl" padding="sm">
+          <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
             <Table>
               <Table.Head>
                 <tr>
-                  <th>Person</th>
+                  <th className="pl-6">Person</th>
                   <th>Email</th>
                   <th>Roles</th>
                   <th>Joined</th>
-                  <th aria-label="Actions" />
+                  <th aria-label="Actions" className="pr-6" />
                 </tr>
               </Table.Head>
               <Table.Body>
                 {users.map((user) => {
                   const isUserAdmin = user.roles?.includes('admin');
-                  // Your own row is read-only here; settings is where you change your account.
                   const isSelf = String(user._id) === String(myId);
 
                   return (
                     <tr key={user._id}>
-                      <td>
-                        <Person to={`/user/${user._id}`}>
+                      <td className="pl-6">
+                        <Link
+                          to={`/user/${user._id}`}
+                          className="inline-flex items-center gap-3 text-sm font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors no-underline"
+                        >
                           <Avatar name={user.username} size="sm" />
-                          {user.username}
-                        </Person>
+                          <span>{user.username}</span>
+                        </Link>
                       </td>
                       <td>{user.email}</td>
                       <td>
-                        <Roles>
+                        <div className="flex gap-1.5 flex-wrap">
                           {user.roles?.map((role) => (
                             <Badge key={role} variant={role === 'admin' ? 'warning' : 'neutral'}>
-                              {role === 'admin' && <Shield />}
+                              {role === 'admin' && <Shield className="w-3 h-3 mr-1 inline" />}
                               {role}
                             </Badge>
                           ))}
                           {user.suspended && <Badge variant="danger">suspended</Badge>}
-                        </Roles>
+                        </div>
                       </td>
                       <td>
                         {new Date(user.createdAt).toLocaleDateString(undefined, {
@@ -205,9 +164,9 @@ export function AdminUsers() {
                           day: 'numeric',
                         })}
                       </td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td className="text-right pr-6">
                         {isSelf ? (
-                          <Quiet>You</Quiet>
+                          <span className="text-xs text-[hsl(var(--muted-foreground))]">You</span>
                         ) : (
                           <DropdownMenu
                             trigger={
@@ -216,14 +175,14 @@ export function AdminUsers() {
                                 size="sm"
                                 aria-label={`Actions for ${user.username}`}
                               >
-                                <MoreHorizontal size={iconPx.md} />
+                                <MoreHorizontal className="w-4 h-4" />
                               </Button>
                             }
                           >
                             <DropdownMenu.Item
                               onSelect={() => navigate(`/admin/users/${user._id}/activity`)}
                             >
-                              <Activity size={iconPx.sm} /> View activity
+                              <Activity className="w-3.5 h-3.5 mr-2" /> View activity
                             </DropdownMenu.Item>
 
                             <DropdownMenu.Separator />
@@ -234,7 +193,7 @@ export function AdminUsers() {
                                   suspendMutation.mutate({ id: user._id, suspended: false })
                                 }
                               >
-                                <CircleCheck size={iconPx.sm} /> Restore access
+                                <CircleCheck className="w-3.5 h-3.5 mr-2 text-emerald-500" /> Restore access
                               </DropdownMenu.Item>
                             ) : (
                               <DropdownMenu.Item
@@ -242,7 +201,7 @@ export function AdminUsers() {
                                   suspendMutation.mutate({ id: user._id, suspended: true })
                                 }
                               >
-                                <Ban size={iconPx.sm} /> Suspend account
+                                <Ban className="w-3.5 h-3.5 mr-2 text-amber-500" /> Suspend account
                               </DropdownMenu.Item>
                             )}
 
@@ -253,23 +212,23 @@ export function AdminUsers() {
                               <DropdownMenu.Item
                                 onSelect={() => roleMutation.mutate({ id: user._id, admin: false })}
                               >
-                                <ShieldOff size={iconPx.sm} /> Revoke administrator
+                                <ShieldOff className="w-3.5 h-3.5 mr-2" /> Revoke administrator
                               </DropdownMenu.Item>
                             ) : (
                               <DropdownMenu.Item
                                 onSelect={() => roleMutation.mutate({ id: user._id, admin: true })}
                               >
-                                <Shield size={iconPx.sm} /> Make administrator
+                                <Shield className="w-3.5 h-3.5 mr-2" /> Make administrator
                               </DropdownMenu.Item>
                             )}
 
                             <DropdownMenu.Separator />
 
                             <DropdownMenu.Item
-                              $tone="danger"
+                              tone="danger"
                               onSelect={() => setPendingDelete(user)}
                             >
-                              <Trash2 size={iconPx.sm} /> Delete account
+                              <Trash2 className="w-3.5 h-3.5 mr-2 text-red-500" /> Delete account
                             </DropdownMenu.Item>
                           </DropdownMenu>
                         )}
@@ -280,21 +239,19 @@ export function AdminUsers() {
               </Table.Body>
             </Table>
 
-            {
-              <Pagination
-                page={pagination.page}
-                pages={pagination.pages}
-                total={pagination.total}
-                noun="accounts"
-                onChange={setPage}
-              />
-            }
+            <Pagination
+              page={pagination.page}
+              pages={pagination.pages}
+              total={pagination.total}
+              noun="accounts"
+              onChange={setPage}
+            />
           </Card>
         )}
       </Section>
 
       <Modal
-        open={!!pendingDelete}
+        open={Boolean(pendingDelete)}
         onOpenChange={(open) => {
           if (!open) {
             setPendingDelete(null);
@@ -310,6 +267,7 @@ export function AdminUsers() {
             if (!password) return toast.error('Enter your password to confirm');
             deleteMutation.mutate({ id: pendingDelete._id, password });
           }}
+          className="flex flex-col gap-4"
         >
           <Input
             label="Confirm with your own password"

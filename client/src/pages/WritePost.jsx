@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import styled from 'styled-components';
 import MDEditor from '@uiw/react-md-editor';
 import { Eye, Pencil, Globe, Lock, FileText, X, RotateCcw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,276 +11,13 @@ import { useTags } from '../hooks/useTags';
 import { useTheme } from '../styles/ThemeProvider';
 import { PageShell } from '../components/layout/PageShell';
 import { Button, Card, Input, Chip, Loading } from '../components/ui';
-import { display, text, label as labelStyle, media, interactive } from '../styles/theme/mixins';
 import { readingTime } from '../utils/text';
 import { markdownRehypePlugins } from '../config/markdown';
 import { useDraftRecovery, useBeforeUnload, useNavigationGuard } from '../hooks/useDraftRecovery';
 import { queryKeys } from '../services/queryKeys';
-import { iconPx } from '../styles/theme';
+import { cn } from '../lib/utils';
 
-// Mirrors the server-side cap in validators/content.validators.js.
 const MAX_TAGS = 5;
-
-/**
- * The editor.
- *
- * Rebuilt on the shared primitives, and the markdown surface no longer has
- * `data-color-mode="light"` pinned on it — the editor and its preview stayed white while
- * the rest of the page went dark, which is also why a draft never looked like the article
- * it would become.
- *
- * Visibility is a three-way choice made in the open rather than a select buried in a
- * sidebar, because it is the decision on this page a writer is most likely to get wrong.
- */
-
-const Layout = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: ${({ theme }) => theme.spacing['2xl']};
-  align-items: start;
-
-  ${media.down('lg')`grid-template-columns: 1fr;`}
-`;
-
-const Main = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xl};
-  min-width: 0;
-`;
-
-const Aside = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-
-  ${media.up('lg')`
-    position: sticky;
-    top: calc(${({ theme }) => theme.layout.headerHeight} + ${({ theme }) => theme.spacing.xl});
-  `}
-`;
-
-/* A borderless title field, sized like the heading it becomes. */
-const TitleField = styled.textarea`
-  width: 100%;
-  resize: none;
-  border: none;
-  background: transparent;
-  ${display('md')}
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.textPrimary};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.textDisabled};
-  }
-
-  &:focus {
-    outline: none;
-  }
-`;
-
-const Editor = styled.div`
-  border-radius: ${({ theme }) => theme.radii.lg};
-  overflow: hidden;
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-
-  .w-md-editor {
-    background: ${({ theme }) => theme.colors.surfaceElevated};
-    box-shadow: none;
-  }
-
-  .w-md-editor-toolbar {
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-    border-bottom: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  }
-
-  .w-md-editor-text-input,
-  .w-md-editor-text-pre > code {
-    font-size: 15px !important;
-    line-height: 1.7 !important;
-  }
-
-  .wmde-markdown {
-    background: transparent;
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-`;
-
-const Preview = styled.div`
-  .wmde-markdown {
-    background: transparent;
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-size: ${({ theme }) => theme.text.lg[0]};
-    line-height: ${({ theme }) => theme.text.lg[1]};
-  }
-
-  .wmde-markdown h1,
-  .wmde-markdown h2,
-  .wmde-markdown h3 {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    border-bottom: none;
-  }
-
-  .wmde-markdown p,
-  .wmde-markdown li {
-    color: ${({ theme }) => theme.colors.textSecondary};
-  }
-
-  .wmde-markdown pre,
-  .wmde-markdown code {
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-    border-radius: ${({ theme }) => theme.radii.sm};
-  }
-
-  .wmde-markdown img {
-    border-radius: ${({ theme }) => theme.radii.lg};
-    max-width: 100%;
-  }
-`;
-
-const CoverPreview = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  overflow: hidden;
-  aspect-ratio: 21 / 9;
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
-
-const AsideLabel = styled.p`
-  ${labelStyle('sm')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-`;
-
-const Choices = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
-
-const Choice = styled.button`
-  display: flex;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.radii.md};
-  text-align: left;
-  ${interactive}
-
-  background: ${({ theme, $active }) => ($active ? theme.colors.accentContainer : 'transparent')};
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.accentText : theme.colors.textSecondary};
-
-  &:hover {
-    background: ${({ theme, $active }) =>
-      $active ? theme.colors.accentContainer : theme.colors.surfaceContainer};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-`;
-
-const ChoiceName = styled.span`
-  ${text('sm', 'semibold')}
-  display: block;
-`;
-
-const ChoiceNote = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  display: block;
-`;
-
-const TagRow = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.xs};
-  flex-wrap: wrap;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-
-  /* Collapses to nothing rather than leaving a gap above the input when there are no tags. */
-  &:empty {
-    display: none;
-  }
-`;
-
-const TagHint = styled.p`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: ${({ theme }) => theme.spacing.xs};
-`;
-
-const SuggestionsRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  flex-wrap: wrap;
-  margin-top: ${({ theme }) => theme.spacing.sm};
-
-  .hint {
-    ${text('xs', 'medium')}
-    color: ${({ theme }) => theme.colors.textMuted};
-  }
-`;
-
-/* Shown when a local snapshot survives a crash or an accidental navigation. */
-const RecoveryBanner = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  flex-wrap: wrap;
-  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.warningContainer};
-  border: 1px solid ${({ theme }) => theme.colors.warningLine};
-  color: ${({ theme }) => theme.colors.warningText};
-  ${text('sm')}
-
-  span {
-    margin-right: auto;
-  }
-
-  svg {
-    flex-shrink: 0;
-  }
-`;
-
-const Facts = styled.dl`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
-
-const Fact = styled.div`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.md};
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  dd {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-variant-numeric: tabular-nums;
-  }
-`;
-
-const Buttons = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
 
 const VISIBILITY = [
   { id: 'public', icon: Globe, name: 'Public', note: 'Anyone can find and read it.' },
@@ -310,8 +46,6 @@ export function WritePost() {
   const [tagDraft, setTagDraft] = useState('');
   const [imageURL, setImageURL] = useState('');
   const [preview, setPreview] = useState(false);
-  // Flipped by any edit, cleared once the work reaches the server. Drives both the recovery
-  // snapshot and the navigation guards.
   const [dirty, setDirty] = useState(false);
 
   const { tags: allTags } = useTags();
@@ -327,13 +61,6 @@ export function WritePost() {
     enabled: isEditing,
   });
 
-  /*
-    Load the stored story into the editor.
-
-    Done during render rather than in an effect, keyed on the fetched response itself, so the
-    editor never paints one frame empty before filling — which on a slow connection reads as
-    the story having been lost. It runs again only when a refetch produces a new object.
-  */
   const [loadedPost, setLoadedPost] = useState(null);
   if (existingPost?.data && loadedPost !== existingPost) {
     setLoadedPost(existingPost);
@@ -344,7 +71,6 @@ export function WritePost() {
     setVisibility(post.visibility || 'draft');
     setImageURL(post.imageURL || '');
     setTags(post.tags?.map((tag) => (typeof tag === 'string' ? tag : tag.name)) || []);
-    // Loading the server's own copy is not an edit.
     setDirty(false);
   }
 
@@ -361,14 +87,12 @@ export function WritePost() {
     id,
     values: editorValues,
     dirty,
-    // Nothing worth snapshotting until the post being edited has actually loaded.
     enabled: !isEditing || Boolean(existingPost?.data),
   });
 
   useBeforeUnload(dirty);
   useNavigationGuard(dirty);
 
-  /** Puts a recovered snapshot back into the editor. */
   const restoreDraft = () => {
     if (!recovered) return;
     setTitle(recovered.title ?? '');
@@ -384,17 +108,12 @@ export function WritePost() {
 
   const createMutation = useMutation({
     mutationFn: postService.createPost,
-    // `submitted` is the payload the mutation was called with, which is where the visibility
-    // actually chosen lives — component state may already have moved on.
     onSuccess: async (data, submitted) => {
       clearDraft();
       queryClient.invalidateQueries({ queryKey: queryKeys.posts.mine() });
       queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
       toast.success(submitted?.visibility === 'public' ? 'Story published 🎉' : 'Story saved');
-
-      // Publishing means you want to see it live. Saving a draft does not — there is nothing
-      // for a reader to look at — so that lands on the list where the draft can be managed.
       navigate(
         submitted?.visibility === 'public' && data.postId ? `/post/${data.postId}` : '/stories'
       );
@@ -411,7 +130,6 @@ export function WritePost() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
       toast.success('Story updated 🚀');
-      // Same rule as creating: an unpublished story has nothing to show a reader.
       navigate(submitted?.visibility === 'public' ? `/post/${id}` : '/stories');
     },
     onError: (error) => toast.error(error.response?.data?.message || 'Could not update the post'),
@@ -420,7 +138,6 @@ export function WritePost() {
   const handleTitle = (value) => {
     setTitle(value);
     setDirty(true);
-    // Keep the slug following the title until it has been set by hand or already published.
     if (!isEditing || !slug) setSlug(slugify(value));
   };
 
@@ -464,8 +181,6 @@ export function WritePost() {
     };
 
     setVisibility(payload.visibility);
-    // Cleared before the request so the navigation the mutation performs on success is not
-    // itself blocked by the unsaved-changes guard.
     setDirty(false);
     return isEditing ? updateMutation.mutate(payload) : createMutation.mutate(payload);
   };
@@ -478,9 +193,12 @@ export function WritePost() {
   return (
     <PageShell>
       {recovered && (
-        <RecoveryBanner role="status">
-          <RotateCcw size={iconPx.md} />
-          <span>
+        <div
+          role="status"
+          className="flex items-center gap-3 flex-wrap p-4 px-6 mb-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-sm"
+        >
+          <RotateCcw className="w-4 h-4 shrink-0" />
+          <span className="mr-auto">
             Unsaved work from{' '}
             {formatDistanceToNow(new Date(recovered.savedAt), { addSuffix: true })} was found on
             this device.
@@ -491,33 +209,36 @@ export function WritePost() {
           <Button size="sm" variant="ghost" onClick={discardDraft}>
             Discard
           </Button>
-        </RecoveryBanner>
+        </div>
       )}
 
-      <Layout>
-        <Main>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 items-start">
+        {/* Main Editor Section */}
+        <div className="flex flex-col gap-6 min-w-0">
           {preview ? (
             <Card tone="low" radius="xl" padding="2xl">
-              <h1 style={{ marginBottom: 16 }}>
-                <TitleField as="span" style={{ display: 'block' }}>
-                  {title || 'Untitled'}
-                </TitleField>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))] mb-4">
+                {title || 'Untitled'}
               </h1>
               {imageURL && (
-                <CoverPreview>
-                  <img src={imageURL} alt="" />
-                </CoverPreview>
+                <div className="mt-4 rounded-2xl overflow-hidden aspect-[21/9] bg-[hsl(var(--muted))]">
+                  <img src={imageURL} alt="" className="w-full h-full object-cover" />
+                </div>
               )}
-              <Preview data-color-mode={mode} style={{ marginTop: 24 }}>
+              <div
+                data-color-mode={mode}
+                className="mt-6 text-lg leading-relaxed text-[hsl(var(--foreground))] [&_.wmde-markdown]:bg-transparent [&_.wmde-markdown_h1]:text-3xl [&_.wmde-markdown_h1]:font-bold [&_.wmde-markdown_h2]:text-2xl [&_.wmde-markdown_h2]:font-bold [&_.wmde-markdown_p]:text-[hsl(var(--muted-foreground))] [&_.wmde-markdown_li]:text-[hsl(var(--muted-foreground))] [&_.wmde-markdown_a]:text-[hsl(var(--primary))] [&_.wmde-markdown_pre]:rounded-xl [&_.wmde-markdown_pre]:bg-[hsl(var(--card))]"
+              >
                 <MDEditor.Markdown
                   source={content || '_Nothing written yet._'}
                   rehypePlugins={markdownRehypePlugins}
                 />
-              </Preview>
+              </div>
             </Card>
           ) : (
             <>
-              <TitleField
+              {/* Borderless Title Textarea */}
+              <textarea
                 rows={1}
                 placeholder="Title"
                 value={title}
@@ -527,9 +248,14 @@ export function WritePost() {
                   event.target.style.height = `${event.target.scrollHeight}px`;
                 }}
                 aria-label="Post title"
+                className="w-full resize-none border-none bg-transparent text-2xl sm:text-4xl font-extrabold tracking-tight text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))/0.5] focus:outline-none"
               />
 
-              <Editor data-color-mode={mode}>
+              {/* MD Editor Container */}
+              <div
+                data-color-mode={mode}
+                className="rounded-2xl overflow-hidden border border-[hsl(var(--border))/0.6] shadow-sm [&_.w-md-editor]:bg-[hsl(var(--card))] [&_.w-md-editor]:shadow-none [&_.w-md-editor-toolbar]:bg-[hsl(var(--muted))/0.5] [&_.w-md-editor-toolbar]:border-b [&_.w-md-editor-toolbar]:border-[hsl(var(--border))/0.4] [&_.w-md-editor-text-input]:text-base [&_.wmde-markdown]:bg-transparent"
+              >
                 <MDEditor
                   value={content}
                   onChange={handleContent}
@@ -537,12 +263,13 @@ export function WritePost() {
                   preview="edit"
                   previewOptions={{ rehypePlugins: markdownRehypePlugins }}
                 />
-              </Editor>
+              </div>
             </>
           )}
-        </Main>
+        </div>
 
-        <Aside>
+        {/* Sidebar Controls */}
+        <aside className="flex flex-col gap-5 lg:sticky lg:top-20">
           <Card tone="low" radius="lg" padding="md">
             <Button
               variant={preview ? 'primary' : 'secondary'}
@@ -551,46 +278,66 @@ export function WritePost() {
             >
               {preview ? (
                 <>
-                  <Pencil size={iconPx.sm} /> Keep writing
+                  <Pencil className="w-3.5 h-3.5 mr-1" /> Keep writing
                 </>
               ) : (
                 <>
-                  <Eye size={iconPx.sm} /> Preview mode
+                  <Eye className="w-3.5 h-3.5 mr-1" /> Preview mode
                 </>
               )}
             </Button>
           </Card>
 
+          {/* Visibility choice */}
           <Card tone="low" radius="lg" padding="lg">
-            <AsideLabel>Who can see it</AsideLabel>
-            <Choices>
-              {VISIBILITY.map((option) => (
-                <Choice
-                  key={option.id}
-                  type="button"
-                  $active={visibility === option.id}
-                  onClick={() => setVisibility(option.id)}
-                  aria-pressed={visibility === option.id}
-                >
-                  <option.icon />
-                  <span>
-                    <ChoiceName>{option.name}</ChoiceName>
-                    <ChoiceNote>{option.note}</ChoiceNote>
-                  </span>
-                </Choice>
-              ))}
-            </Choices>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-3 select-none">
+              Who can see it
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {VISIBILITY.map((option) => {
+                const isActive = visibility === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setVisibility(option.id)}
+                    aria-pressed={isActive}
+                    className={cn(
+                      'flex items-start gap-3 p-3 rounded-xl text-left transition-colors cursor-pointer select-none',
+                      isActive
+                        ? 'bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]'
+                        : 'text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]'
+                    )}
+                  >
+                    <option.icon className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>
+                      <span className="text-sm font-semibold block text-[hsl(var(--foreground))]">
+                        {option.name}
+                      </span>
+                      <span className="text-xs text-[hsl(var(--muted-foreground))] block">
+                        {option.note}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </Card>
 
+          {/* Tags card */}
           <Card tone="low" radius="lg" padding="lg">
-            <AsideLabel>Tags & Topics</AsideLabel>
-            <TagRow>
-              {tags.map((tag) => (
-                <Chip key={tag} size="sm" selected onClick={() => removeTag(tag)}>
-                  #{tag} <X size={iconPx.xs} />
-                </Chip>
-              ))}
-            </TagRow>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-3 select-none">
+              Tags & Topics
+            </p>
+            {tags.length > 0 && (
+              <div className="flex gap-1.5 flex-wrap mb-2">
+                {tags.map((tag) => (
+                  <Chip key={tag} size="sm" selected onClick={() => removeTag(tag)}>
+                    #{tag} <X className="w-3 h-3 ml-1" />
+                  </Chip>
+                ))}
+              </div>
+            )}
             <Input
               placeholder={
                 tags.length >= MAX_TAGS ? 'Tag limit reached' : 'Add tag (e.g. ai, react)'
@@ -599,7 +346,6 @@ export function WritePost() {
               disabled={tags.length >= MAX_TAGS}
               onChange={(event) => setTagDraft(event.target.value)}
               onKeyDown={(event) => {
-                // Comma as well as Enter, since that is how people habitually separate tags.
                 if (event.key === 'Enter' || event.key === ',') {
                   event.preventDefault();
                   addTag(tagDraft);
@@ -609,29 +355,29 @@ export function WritePost() {
               }}
               onBlur={() => addTag(tagDraft)}
             />
-            <TagHint>
+            <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1.5">
               {tags.length}/{MAX_TAGS} · lowercase, letters, numbers and hyphens
-            </TagHint>
+            </p>
 
             {popularSuggestions.length > 0 && tags.length < MAX_TAGS && (
-              <SuggestionsRow>
-                <span className="hint">Popular:</span>
+              <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
+                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+                  Popular:
+                </span>
                 {popularSuggestions.map((s) => (
-                  <Chip
-                    key={s.name}
-                    size="sm"
-                    onClick={() => addTag(s.name)}
-                    style={{ cursor: 'pointer' }}
-                  >
+                  <Chip key={s.name} size="sm" onClick={() => addTag(s.name)}>
                     +{s.name}
                   </Chip>
                 ))}
-              </SuggestionsRow>
+              </div>
             )}
           </Card>
 
+          {/* Details card */}
           <Card tone="low" radius="lg" padding="lg">
-            <AsideLabel>Details</AsideLabel>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-3 select-none">
+              Details
+            </p>
             <Input
               label="Cover image"
               placeholder="https://…"
@@ -639,11 +385,16 @@ export function WritePost() {
               onChange={(event) => setImageURL(event.target.value)}
             />
             {imageURL && (
-              <CoverPreview>
-                <img src={imageURL} alt="" onError={(event) => (event.target.src = '')} />
-              </CoverPreview>
+              <div className="mt-3 rounded-xl overflow-hidden aspect-[21/9] bg-[hsl(var(--muted))]">
+                <img
+                  src={imageURL}
+                  alt=""
+                  onError={(event) => (event.target.src = '')}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             )}
-            <div style={{ marginTop: 16 }}>
+            <div className="mt-4">
               <Input
                 label="Link"
                 placeholder="post-title"
@@ -654,33 +405,45 @@ export function WritePost() {
             </div>
           </Card>
 
+          {/* Length facts */}
           <Card tone="low" radius="lg" padding="lg">
-            <AsideLabel>Length</AsideLabel>
-            <Facts>
-              <Fact>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-3 select-none">
+              Length
+            </p>
+            <dl className="flex flex-col gap-2">
+              <div className="flex items-baseline justify-between gap-4 text-sm text-[hsl(var(--muted-foreground))]">
                 <dt>Words</dt>
-                <dd>{words}</dd>
-              </Fact>
-              <Fact>
+                <dd className="font-semibold text-[hsl(var(--foreground))] tabular-nums">
+                  {words}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-4 text-sm text-[hsl(var(--muted-foreground))]">
                 <dt>Reading time</dt>
-                <dd>{readingTime(content)} min</dd>
-              </Fact>
+                <dd className="font-semibold text-[hsl(var(--foreground))] tabular-nums">
+                  {readingTime(content)} min
+                </dd>
+              </div>
               {isEditing && existingPost?.data && (
                 <>
-                  <Fact>
+                  <div className="flex items-baseline justify-between gap-4 text-sm text-[hsl(var(--muted-foreground))]">
                     <dt>Likes</dt>
-                    <dd>{existingPost.data.likes?.length || 0}</dd>
-                  </Fact>
-                  <Fact>
+                    <dd className="font-semibold text-[hsl(var(--foreground))] tabular-nums">
+                      {existingPost.data.likes?.length || 0}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4 text-sm text-[hsl(var(--muted-foreground))]">
                     <dt>Responses</dt>
-                    <dd>{existingPost.data.comments?.length || 0}</dd>
-                  </Fact>
+                    <dd className="font-semibold text-[hsl(var(--foreground))] tabular-nums">
+                      {existingPost.data.comments?.length || 0}
+                    </dd>
+                  </div>
                 </>
               )}
-            </Facts>
+            </dl>
           </Card>
 
-          <Buttons>
+          {/* Action buttons */}
+          <div className="flex flex-col gap-2">
             <Button fullWidth isLoading={pending} onClick={() => submit(visibility)}>
               {isEditing ? 'Save changes' : visibility === 'public' ? 'Publish' : 'Save'}
             </Button>
@@ -694,17 +457,12 @@ export function WritePost() {
                 Save as draft
               </Button>
             )}
-            {/*
-              An explicit destination, not navigate(-1). Opening /write directly — from a
-              bookmark, a new tab, or the topbar on first load — left "back" pointing outside
-              the application, so Cancel took the writer off the site entirely.
-            */}
             <Button variant="ghost" fullWidth as={Link} to="/stories">
               Cancel
             </Button>
-          </Buttons>
-        </Aside>
-      </Layout>
+          </div>
+        </aside>
+      </div>
     </PageShell>
   );
 }

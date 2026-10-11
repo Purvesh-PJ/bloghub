@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
 import {
   ArrowRight,
   PenLine,
@@ -25,375 +24,8 @@ import { PostCard } from '../components/posts/PostCard';
 import { PostCardSkeleton } from '../components/posts/PostCardSkeleton';
 import { HeroIllustration } from '../components/marketing/HeroIllustration';
 import { TopicMarquee } from '../components/marketing/Topics';
-import { display, text, media, interactive } from '../styles/theme/mixins';
 import { queryKeys } from '../services/queryKeys';
-import { iconPx } from '../styles/theme';
-
-/* ── Page Shell ──────────────────────────────────────────────────────────── */
-
-const Page = styled.div`
-  overflow-x: clip;
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing['3xl']};
-  padding-bottom: ${({ theme }) => theme.spacing['4xl']};
-`;
-
-const Container = styled.div`
-  max-width: ${({ theme }) => theme.layout.maxWidth};
-  margin: 0 auto;
-  padding: 0 ${({ theme }) => theme.spacing.xl};
-  width: 100%;
-
-  ${media.down('md')`
-    padding: 0 ${({ theme }) => theme.spacing.lg};
-  `}
-`;
-
-/* ── Hero Section (Left Aligned, Clean & Spacious Editorial Layout) ──────── */
-
-const HeroSection = styled.header`
-  padding: ${({ theme }) => theme.spacing['2xl']} 0 ${({ theme }) => theme.spacing.md};
-  display: grid;
-  grid-template-columns: 1.12fr 0.88fr;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing['3xl']};
-
-  ${media.down('lg')`
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing['2xl']};
-    padding: ${({ theme }) => theme.spacing.xl} 0 ${({ theme }) => theme.spacing.sm};
-  `}
-
-  ${media.down('sm')`
-    padding: ${({ theme }) => theme.spacing.lg} 0 0;
-  `}
-`;
-
-const HeroContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: ${({ theme }) => theme.spacing.xl};
-  width: 100%;
-`;
-
-const HeroBadge = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  padding: 6px 14px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentText};
-  ${text('xs', 'semibold')}
-  width: fit-content;
-  border: 1px solid ${({ theme }) => theme.colors.accentLine};
-
-  svg {
-    width: 14px;
-    height: 14px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-`;
-
-const HeroTitle = styled.h1`
-  ${display('xl')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-  font-weight: 800;
-  max-width: 800px;
-
-  .gradient-text {
-    background: ${({ theme }) => theme.gradients.brandText};
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
-  }
-
-  ${media.down('md')`font-size: ${({ theme }) => theme.display.lg[0]};`}
-  ${media.down('sm')`font-size: ${({ theme }) => theme.display.md[0]};`}
-`;
-
-const HeroSubtitle = styled.p`
-  ${text('md')}
-  line-height: 1.7;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 660px;
-`;
-
-const HeroActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  flex-wrap: wrap;
-`;
-
-const HeroFeaturePills = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xl};
-  flex-wrap: wrap;
-  padding-top: ${({ theme }) => theme.spacing.xs};
-  ${text('xs', 'medium')}
-  color: ${({ theme }) => theme.colors.textMuted};
-
-  span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-`;
-
-/* ── Live Topic Discovery Strip ──────────────────────────────────────────── */
-
-const TopicStripWrap = styled.section`
-  padding: ${({ theme }) => theme.spacing.xs} 0;
-  width: 100%;
-`;
-
-/* ── Feed Section ────────────────────────────────────────────────────────── */
-
-const SectionHead = styled.div`
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
-  flex-wrap: wrap;
-`;
-
-const SectionLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
-
-const SectionKicker = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  ${text('xs', 'semibold')}
-  color: ${({ theme }) => theme.colors.accentText};
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-
-  svg {
-    width: 13px;
-    height: 13px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-`;
-
-const SectionTitle = styled.h2`
-  ${display('sm')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  letter-spacing: -0.02em;
-  font-weight: 700;
-`;
-
-const SectionSubtitle = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const PostGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: ${({ theme }) => theme.spacing.xl};
-
-  ${media.down('lg')`
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing.lg};
-  `}
-`;
-
-const MoreLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: ${({ theme }) => theme.spacing['2xl']};
-  padding: 10px 20px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  color: ${({ theme }) => theme.colors.accentText};
-  ${text('sm', 'semibold')}
-  text-decoration: none;
-  transition: all ${({ theme }) => theme.transitions.fast};
-  ${interactive}
-
-  svg {
-    width: 15px;
-    height: 15px;
-    transition: transform ${({ theme }) => theme.transitions.fast};
-  }
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.accentContainer};
-    transform: translateY(-1px);
-
-    svg {
-      transform: translateX(4px);
-    }
-  }
-`;
-
-const EmptyFeed = styled.div`
-  padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing.xl};
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border-radius: ${({ theme }) => theme.radii.xl};
-
-  h3 {
-    ${display('xs')}
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-
-  p {
-    ${text('sm')}
-    color: ${({ theme }) => theme.colors.textSecondary};
-    max-width: 420px;
-  }
-`;
-
-/* ── "Why BlogHub?" Bento Grid ───────────────────────────────────────────── */
-
-const BentoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing.xl};
-
-  ${media.down('lg')`
-    grid-template-columns: repeat(2, 1fr);
-  `}
-
-  ${media.down('sm')`
-    grid-template-columns: 1fr;
-  `}
-`;
-
-const BentoCard = styled.div`
-  position: relative;
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border-radius: ${({ theme }) => theme.radii['2xl']};
-  padding: ${({ theme }) => theme.spacing['2xl']};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
-  transition: background ${({ theme }) => theme.transitions.fast};
-
-  grid-column: ${({ $span }) => ($span ? `span ${$span}` : 'span 1')};
-
-  ${media.down('lg')`
-    grid-column: span 1;
-  `}
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.surfaceHover};
-  }
-`;
-
-const BentoIcon = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: ${({ theme }) => theme.radii.xl};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentSolid};
-
-  svg {
-    width: 22px;
-    height: 22px;
-  }
-`;
-
-const BentoTitle = styled.h3`
-  ${text('md', 'bold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  letter-spacing: -0.01em;
-`;
-
-const BentoDescription = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.65;
-`;
-
-/* ── Closing CTA Section ─────────────────────────────────────────────────── */
-
-const CtaSection = styled.div`
-  position: relative;
-  background: ${({ theme }) => theme.gradients.brand};
-  border-radius: ${({ theme }) => theme.radii['3xl']};
-  padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing['2xl']};
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textOnInk};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xl};
-  overflow: hidden;
-  box-shadow: 0 20px 40px -15px rgba(14, 165, 233, 0.35);
-
-  ${media.down('sm')`
-    padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing.lg};
-  `}
-`;
-
-const CtaTitle = styled.h2`
-  ${display('md')}
-  color: ${({ theme }) => theme.colors.textOnInk};
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  max-width: 640px;
-`;
-
-const CtaSubtitle = styled.p`
-  ${text('md')}
-  color: rgba(255, 255, 255, 0.9);
-  max-width: 520px;
-  line-height: 1.65;
-`;
-
-const CtaHighlights = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xl};
-  flex-wrap: wrap;
-  justify-content: center;
-  padding-top: ${({ theme }) => theme.spacing.sm};
-  ${text('xs', 'medium')}
-  color: rgba(255, 255, 255, 0.85);
-
-  span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-/* ── Main Component ──────────────────────────────────────────────────────── */
+import { cn } from '../lib/utils';
 
 export function Home() {
   const { isAuthenticated } = useAuth();
@@ -414,226 +46,237 @@ export function Home() {
   const startLabel = isAuthenticated ? 'Open Creator Studio' : 'Start Writing for Free';
 
   return (
-    <Page>
-      {/* ── 1. Hero Section (Clean, Confident Left-Aligned Editorial Header) ── */}
-      <Container>
-        <HeroSection>
-          <HeroContent>
-            <HeroBadge>
-              <Sparkles /> A sanctuary for thoughtful writing
-            </HeroBadge>
+    <div className="overflow-x-clip flex flex-col gap-12 sm:gap-16 pb-16 sm:pb-24">
+      {/* ── 1. Hero Section ── */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
+        <header className="pt-8 sm:pt-12 pb-4 grid grid-cols-1 lg:grid-cols-[1.12fr_0.88fr] items-center gap-10 lg:gap-14">
+          <div className="flex flex-col items-start text-left gap-6 w-full">
+            {/* Pill Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[hsl(var(--primary))/0.10] border border-[hsl(var(--primary))/0.25] text-xs font-semibold text-[hsl(var(--primary))] select-none">
+              <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+              <span>A sanctuary for thoughtful writing</span>
+            </div>
 
-            <HeroTitle>
+            {/* Hero Title */}
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[hsl(var(--foreground))] leading-[1.15] max-w-[800px]">
               Where ideas find their voice & stories find{' '}
-              <span className="gradient-text">curious minds.</span>
-            </HeroTitle>
+              <span className="bg-gradient-to-r from-[hsl(var(--primary))] to-sky-600 bg-clip-text text-transparent inline-block">
+                curious minds.
+              </span>
+            </h1>
 
-            <HeroSubtitle>
+            {/* Subtitle */}
+            <p className="text-base sm:text-lg text-[hsl(var(--muted-foreground))] leading-relaxed max-w-[660px]">
               BlogHub is a modern, distraction-free publishing space for writers, thinkers, and
               storytellers. Write effortlessly in Markdown, track genuine reader attention, and
               discover perspectives that broaden your world.
-            </HeroSubtitle>
+            </p>
 
-            <HeroActions>
+            {/* Actions */}
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
               <Button size="lg" onClick={() => navigate(startHref)}>
-                <PenLine /> {startLabel}
+                <PenLine className="h-4 w-4" /> {startLabel}
               </Button>
               <Button size="lg" variant="secondary" onClick={() => navigate('/search')}>
-                <Compass /> Explore stories
+                <Compass className="h-4 w-4" /> Explore stories
               </Button>
-            </HeroActions>
+            </div>
 
-            <HeroFeaturePills>
-              <span>
-                <Check /> Pure Markdown Canvas
+            {/* Feature Pills */}
+            <div className="flex items-center gap-4 sm:gap-6 flex-wrap pt-2 text-xs font-medium text-[hsl(var(--muted-foreground))]">
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-[hsl(var(--primary))]" /> Pure Markdown Canvas
               </span>
-              <span>
-                <Check /> True Read Completion Metrics
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-[hsl(var(--primary))]" /> True Read Completion Metrics
               </span>
-              <span>
-                <Check /> 100% Free & Open
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-[hsl(var(--primary))]" /> 100% Free & Open
               </span>
-            </HeroFeaturePills>
-          </HeroContent>
+            </div>
+          </div>
 
-          {/* Right Side Relatable Editorial Illustration */}
+          {/* Right Side Illustration */}
           <HeroIllustration />
-        </HeroSection>
-      </Container>
+        </header>
+      </div>
 
-      {/* ── 2. Live Topic Discovery Strip ────────────────────────────────── */}
-      <TopicStripWrap>
+      {/* ── 2. Live Topic Discovery Strip ── */}
+      <section className="py-2 w-full">
         <TopicMarquee topics={tags} loading={tagsLoading} />
-      </TopicStripWrap>
+      </section>
 
-      {/* ── 3. Main Feed Section ───────────────────────────────────────────── */}
-      <Container>
-        <SectionHead>
-          <SectionLeft>
-            <SectionKicker>
-              <Flame /> {isRanked ? 'Community Favorites' : 'Fresh Discoveries'}
-            </SectionKicker>
-            <SectionTitle>{isRanked ? 'Trending stories' : 'Latest stories'}</SectionTitle>
-            <SectionSubtitle>
+      {/* ── 3. Main Feed Section ── */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+          <div className="flex flex-col gap-1.5">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))] select-none">
+              <Flame className="h-3.5 w-3.5" />
+              {isRanked ? 'Community Favorites' : 'Fresh Discoveries'}
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+              {isRanked ? 'Trending stories' : 'Latest stories'}
+            </h2>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">
               {isLoading
                 ? 'Fetching stories…'
                 : isRanked
                   ? `Ranked by genuine reader engagement over the last ${trendingWindow} days.`
                   : 'Freshly published stories from across the community.'}
-            </SectionSubtitle>
-          </SectionLeft>
-        </SectionHead>
+            </p>
+          </div>
+        </div>
 
-        <PostGrid>
+        {/* Post Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, index) => (
               <PostCardSkeleton key={index} layout="row" />
             ))
           ) : posts.length === 0 ? (
-            <EmptyFeed style={{ gridColumn: '1 / -1' }}>
-              <Feather size={iconPx.xl} style={{ opacity: 0.5 }} />
-              <h3>No stories published yet</h3>
-              <p>Be the very first writer to share an insightful article with the community!</p>
+            <div className="col-span-full py-16 px-6 text-center flex flex-col items-center gap-4 bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] rounded-[24px]">
+              <Feather className="h-10 w-10 text-[hsl(var(--muted-foreground))] opacity-50" />
+              <h3 className="text-xl font-bold text-[hsl(var(--foreground))]">No stories published yet</h3>
+              <p className="text-sm text-[hsl(var(--muted-foreground))] max-w-md leading-relaxed">
+                Be the very first writer to share an insightful article with the community!
+              </p>
               <Button size="md" onClick={() => navigate(startHref)}>
-                <PenLine /> Write a story
+                <PenLine className="h-4 w-4" /> Write a story
               </Button>
-            </EmptyFeed>
+            </div>
           ) : (
             posts.map((post) => <PostCard key={post._id} post={post} layout="row" />)
           )}
-        </PostGrid>
+        </div>
 
         {!isLoading && posts.length > 0 && (
-          <div style={{ textAlign: 'center' }}>
-            <MoreLink to="/search">
-              Explore all stories <ArrowRight />
-            </MoreLink>
+          <div className="text-center mt-10">
+            <Link
+              to="/search"
+              className={cn(
+                'inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold select-none transition-all duration-150',
+                'bg-[hsl(var(--card))] text-[hsl(var(--primary))] border border-[hsl(var(--border))] shadow-sm',
+                'hover:bg-[hsl(var(--primary))/0.10] hover:-translate-y-0.5 hover:shadow'
+              )}
+            >
+              Explore all stories <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
         )}
-      </Container>
+      </div>
 
-      {/* ── 4. "Why BlogHub?" Bento Section ──────────────────────────────── */}
-      <Container>
-        <SectionHead style={{ textAlign: 'center', justifyContent: 'center' }}>
-          <SectionLeft style={{ alignItems: 'center' }}>
-            <SectionKicker>
-              <Layers /> Built for depth & clarity
-            </SectionKicker>
-            <SectionTitle>Everything you need to write and connect</SectionTitle>
-            <SectionSubtitle style={{ textAlign: 'center' }}>
-              Thoughtfully built tools crafted to honor your words and your readers' time.
-            </SectionSubtitle>
-          </SectionLeft>
-        </SectionHead>
+      {/* ── 4. "Why BlogHub?" Bento Section ── */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
+        <div className="text-center flex flex-col items-center gap-1.5 mb-10">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))] select-none">
+            <Layers className="h-3.5 w-3.5" /> Built for depth & clarity
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+            Everything you need to write and connect
+          </h2>
+          <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] max-w-xl">
+            Thoughtfully built tools crafted to honor your words and your readers' time.
+          </p>
+        </div>
 
-        <BentoGrid>
-          <BentoCard>
-            <BentoIcon>
-              <Feather />
-            </BentoIcon>
-            <BentoTitle>Pure Markdown Canvas</BentoTitle>
-            <BentoDescription>
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-md transition-shadow">
+            <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]">
+              <Feather className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-[hsl(var(--foreground))] tracking-tight">Pure Markdown Canvas</h3>
+            <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
               Write in clean, effortless Markdown with live side-by-side preview, code syntax
               highlighting, cover image support, and distraction-free typography.
-            </BentoDescription>
-          </BentoCard>
-
-          <BentoCard>
-            <BentoIcon>
-              <BarChart2 />
-            </BentoIcon>
-            <BentoTitle>Meaningful Read Metrics</BentoTitle>
-            <BentoDescription>
-              Go far beyond superficial page clicks. Track how many readers actually finished your
-              entire article and understand where your ideas truly resonate.
-            </BentoDescription>
-          </BentoCard>
-
-          <BentoCard>
-            <BentoIcon>
-              <MessageCircle />
-            </BentoIcon>
-            <BentoTitle>Thoughtful Discussions</BentoTitle>
-            <BentoDescription>
-              Engage with curious readers through threaded responses, meaningful reactions, and
-              streamlined creator moderation tools.
-            </BentoDescription>
-          </BentoCard>
-
-          <BentoCard $span="2">
-            <BentoIcon>
-              <ShieldCheck />
-            </BentoIcon>
-            <BentoTitle>Complete Creative & Privacy Control</BentoTitle>
-            <BentoDescription>
-              Keep works in progress safe with Private Drafts, test ideas privately with direct
-              links, or publish publicly to the global feed with curated topics and custom tags.
-            </BentoDescription>
-          </BentoCard>
-
-          <BentoCard>
-            <BentoIcon>
-              <Sparkles />
-            </BentoIcon>
-            <BentoTitle>Serene Reading Sanctuary</BentoTitle>
-            <BentoDescription>
-              No intrusive popups, no noisy advertising, and no clickbait algorithms. Just clean,
-              fast-loading pages with effortless dark and light mode switching.
-            </BentoDescription>
-          </BentoCard>
-        </BentoGrid>
-      </Container>
-
-      {/* ── 5. Closing CTA Section ───────────────────────────────────────── */}
-      <Container>
-        <CtaSection>
-          <CtaTitle>Have an idea or story worth sharing?</CtaTitle>
-          <CtaSubtitle>
-            Join a growing community of writers, creators, and curious thinkers. Start drafting in
-            seconds with our distraction-free editor.
-          </CtaSubtitle>
-
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Button
-              size="lg"
-              style={{
-                background: '#ffffff',
-                color: '#0284c7',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-                fontWeight: 700,
-              }}
-              onClick={() => navigate(startHref)}
-            >
-              <PenLine /> {startLabel} <ArrowRight />
-            </Button>
-            <Button
-              size="lg"
-              variant="secondary"
-              style={{
-                background: 'rgba(255, 255, 255, 0.15)',
-                color: '#ffffff',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                backdropFilter: 'blur(8px)',
-              }}
-              onClick={() => navigate('/search')}
-            >
-              <Compass /> Explore Stories
-            </Button>
+            </p>
           </div>
 
-          <CtaHighlights>
-            <span>
-              <CheckCircle2 /> 100% Free to publish
+          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-md transition-shadow">
+            <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]">
+              <BarChart2 className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-[hsl(var(--foreground))] tracking-tight">Meaningful Read Metrics</h3>
+            <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
+              Go far beyond superficial page clicks. Track how many readers actually finished your
+              entire article and understand where your ideas truly resonate.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-md transition-shadow">
+            <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]">
+              <MessageCircle className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-[hsl(var(--foreground))] tracking-tight">Thoughtful Discussions</h3>
+            <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
+              Engage with curious readers through threaded responses, meaningful reactions, and
+              streamlined creator moderation tools.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-md transition-shadow sm:col-span-2">
+            <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-[hsl(var(--foreground))] tracking-tight">Complete Creative & Privacy Control</h3>
+            <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
+              Keep works in progress safe with Private Drafts, test ideas privately with direct
+              links, or publish publicly to the global feed with curated topics and custom tags.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 p-6 sm:p-8 rounded-[24px] bg-[hsl(var(--card))] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-md transition-shadow">
+            <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-[hsl(var(--foreground))] tracking-tight">Serene Reading Sanctuary</h3>
+            <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
+              No intrusive popups, no noisy advertising, and no clickbait algorithms. Just clean,
+              fast-loading pages with effortless dark and light mode switching.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 5. Closing CTA Section ── */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
+        <div className="relative rounded-[32px] sm:rounded-[36px] bg-gradient-to-tr from-[hsl(var(--primary))] to-sky-700 py-12 sm:py-16 px-6 sm:px-12 text-center text-white flex flex-col items-center gap-6 overflow-hidden shadow-[0_20px_40px_-15px_rgba(14,165,233,0.35)]">
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight max-w-xl text-white">
+            Have an idea or story worth sharing?
+          </h2>
+          <p className="text-sm sm:text-base text-white/90 max-w-lg leading-relaxed">
+            Join a growing community of writers, creators, and curious thinkers. Start drafting in
+            seconds with our distraction-free editor.
+          </p>
+
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
+            <button
+              onClick={() => navigate(startHref)}
+              className="inline-flex items-center gap-2 h-12 px-6 rounded-full text-base font-bold bg-white text-sky-700 hover:bg-slate-50 transition-transform active:scale-95 shadow-[0_4px_20px_rgba(0,0,0,0.15)] cursor-pointer"
+            >
+              <PenLine className="h-4 w-4" /> {startLabel} <ArrowRight className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => navigate('/search')}
+              className="inline-flex items-center gap-2 h-12 px-6 rounded-full text-base font-semibold bg-white/15 text-white border-none backdrop-blur-md hover:bg-white/25 transition-transform active:scale-95 cursor-pointer"
+            >
+              <Compass className="h-4 w-4" /> Explore Stories
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center pt-2 text-xs font-medium text-white/85">
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5" /> 100% Free to publish
             </span>
-            <span>
-              <CheckCircle2 /> Markdown & Code native
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Markdown & Code native
             </span>
-            <span>
-              <CheckCircle2 /> Zero intrusive paywalls
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Zero intrusive paywalls
             </span>
-          </CtaHighlights>
-        </CtaSection>
-      </Container>
-    </Page>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

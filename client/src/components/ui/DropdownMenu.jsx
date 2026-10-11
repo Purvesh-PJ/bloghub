@@ -15,7 +15,7 @@ const DropdownMenuContent = React.forwardRef(
         sideOffset={sideOffset}
         collisionPadding={8}
         className={cn(
-          'z-50 min-w-[200px] overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1 text-[hsl(var(--card-foreground))] shadow-lg backdrop-blur-md',
+          'z-50 min-w-[200px] overflow-hidden rounded-xl border border-[var(--line-subtle)] bg-[hsl(var(--card))] p-1 text-[hsl(var(--card-foreground))] shadow-lg backdrop-blur-md',
           'animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2',
           className
         )}
@@ -68,7 +68,7 @@ DropdownMenuLabel.displayName = 'DropdownMenuLabel';
 const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) => (
   <RadixDropdown.Separator
     ref={ref}
-    className={cn('-mx-1 my-1 h-px bg-[hsl(var(--border))]', className)}
+    className={cn('-mx-1 my-1 h-px bg-[var(--line-subtle)]', className)}
     {...props}
   />
 ));

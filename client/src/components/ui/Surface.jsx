@@ -1,119 +1,98 @@
-import styled, { css } from 'styled-components';
+import * as React from 'react';
+import { cn } from '../../lib/utils';
 
-/**
- * Surface — the one container primitive.
- *
- * Every panel, card and well in the application is a Surface with a tone. Depth comes from
- * tone, not from borders; elevation is opt-in and reserved for things that genuinely float.
- * This replaces the ~40 near-identical `styled.div` cards that were scattered across pages.
- */
-
-const tones = {
-  /** Sits directly on the page — the default card. */
-  low: css`
-    background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  `,
-  /** One tone up — nested panels, list rows, wells. */
-  base: css`
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-  `,
-  /** Two tones up — inputs, selected states, inset areas. */
-  high: css`
-    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-  `,
-  /** Accent-tinted — feature panels, highlighted cards. */
-  accent: css`
-    background: ${({ theme }) => theme.colors.accentContainer};
-  `,
-  /** Floats above the page — menus, dialogs, sheets. */
-  elevated: css`
-    background: ${({ theme }) => theme.colors.surfaceElevated};
-    box-shadow: ${({ theme }) => theme.elevation.lg};
-  `,
-  /** No background at all — for grouping without a visual container. */
-  transparent: css`
-    background: transparent;
-  `,
+const toneClasses = {
+  low: 'bg-[hsl(var(--card))]',
+  base: 'bg-[hsl(var(--muted))]',
+  high: 'bg-[hsl(var(--muted))/0.8]',
+  accent: 'bg-[hsl(var(--primary))/0.12]',
+  elevated: 'bg-[hsl(var(--popover))] shadow-lg',
+  transparent: 'bg-transparent',
 };
 
-const variants = {
-  /** Featured spotlight surface with subtle accent glow */
-  featured: css`
-    background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: 1px solid ${({ theme }) => theme.colors.accentLine};
-    box-shadow:
-      0 8px 30px -4px rgba(14, 165, 233, 0.12),
-      0 2px 8px -2px rgba(15, 23, 42, 0.04);
-  `,
-  /** Clean floating elevated surface */
-  elevated: css`
-    background: ${({ theme }) => theme.colors.surfaceElevated};
-    border: none;
-    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
-  `,
-  /** Minimal seamless surface with no background box */
-  ghost: css`
-    background: transparent;
-    border: none;
-    box-shadow: none;
-  `,
-  /** Inset sunken well */
-  inset: css`
-    background: ${({ theme }) => theme.colors.surfaceContainerLow};
-    border: none;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
-  `,
+const radiusClasses = {
+  none: 'rounded-none',
+  xs: 'rounded-[6px]',
+  sm: 'rounded-[10px]',
+  md: 'rounded-[14px]',
+  lg: 'rounded-[20px]',
+  xl: 'rounded-[28px]',
+  '2xl': 'rounded-[36px]',
+  '3xl': 'rounded-[48px]',
+  full: 'rounded-full',
 };
 
-export const Surface = styled.div`
-  border-radius: ${({ theme, $radius }) => theme.radii[$radius]};
-  padding: ${({ theme, $padding }) => ($padding === 'none' ? '0' : theme.spacing[$padding])};
-
-  ${({ $tone }) => tones[$tone] ?? tones.low}
-  ${({ $variant }) => $variant && variants[$variant]}
-
-  ${({ $bordered, theme }) =>
-    $bordered &&
-    css`
-      box-shadow: inset 0 0 0 1px ${theme.colors.lineSubtle};
-    `}
-
-  ${({ $elevation, theme }) =>
-    $elevation &&
-    css`
-      box-shadow: ${theme.elevation[$elevation]};
-    `}
-
-  ${({ $interactive, theme }) =>
-    $interactive &&
-    css`
-      cursor: pointer;
-      transition:
-        background ${theme.transitions.fast},
-        transform ${theme.transitions.fast},
-        box-shadow ${theme.transitions.fast};
-
-      &:hover {
-        background: ${theme.colors.surfaceContainerHigh};
-        transform: translateY(-2px);
-        box-shadow: ${theme.elevation.md};
-      }
-    `}
-`;
-
-Surface.defaultProps = {
-  $tone: 'low',
-  $radius: 'lg',
-  $padding: 'xl',
+const paddingClasses = {
+  none: 'p-0',
+  xs: 'p-1',
+  sm: 'p-2',
+  md: 'p-3',
+  lg: 'p-4',
+  xl: 'p-6',
+  '2xl': 'p-8',
 };
 
-/**
- * Card — a Surface with the conventional card geometry. Most callers want this.
- *
- * Supports `variant` ('elevated', 'featured', 'ghost', 'inset') and traditional `tone`.
- */
+const variantClasses = {
+  featured:
+    'bg-[hsl(var(--card))] border border-[hsl(var(--primary))/0.3] shadow-[0_8px_30px_-4px_rgba(14,165,233,0.12),0_2px_8px_-2px_rgba(15,23,42,0.04)]',
+  elevated: 'bg-[hsl(var(--card))] shadow-[0_4px_16px_-2px_rgba(15,23,42,0.05)] border-none',
+  ghost: 'bg-transparent border-none shadow-none',
+  inset: 'bg-[hsl(var(--muted))/0.4] border-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]',
+};
+
+export const Surface = React.forwardRef(
+  (
+    {
+      className,
+      $tone = 'low',
+      tone,
+      $radius = 'lg',
+      radius,
+      $padding = 'xl',
+      padding,
+      $variant,
+      variant,
+      $bordered,
+      bordered,
+      $interactive,
+      interactive,
+      children,
+      as: Comp = 'div',
+      ...props
+    },
+    ref
+  ) => {
+    const finalTone = tone || $tone || 'low';
+    const finalRadius = radius || $radius || 'lg';
+    const finalPadding = padding || $padding || 'xl';
+    const finalVariant = variant || $variant;
+    const isBordered = bordered ?? $bordered;
+    const isInteractive = interactive ?? $interactive;
+
+    return (
+      <Comp
+        ref={ref}
+        className={cn(
+          finalVariant ? variantClasses[finalVariant] : toneClasses[finalTone],
+          radiusClasses[finalRadius],
+          paddingClasses[finalPadding],
+          isBordered && 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] light:shadow-[inset_0_0_0_1px_rgba(15,23,42,0.08)]',
+          isInteractive &&
+            'cursor-pointer transition-all duration-150 hover:bg-[hsl(var(--muted))] hover:-translate-y-0.5 hover:shadow-md',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </Comp>
+    );
+  }
+);
+
+Surface.displayName = 'Surface';
+
 export function Card({
-  children,
+  className,
   variant,
   tone = 'low',
   radius = 'xl',
@@ -121,17 +100,19 @@ export function Card({
   bordered = false,
   elevation,
   interactive = false,
+  children,
   ...props
 }) {
   return (
     <Surface
-      $variant={variant}
-      $tone={tone}
-      $radius={radius}
-      $padding={padding}
-      $bordered={bordered}
-      $elevation={elevation}
-      $interactive={interactive}
+      variant={variant}
+      tone={tone}
+      radius={radius}
+      padding={padding}
+      bordered={bordered}
+      elevation={elevation}
+      interactive={interactive}
+      className={className}
       {...props}
     >
       {children}

@@ -38,10 +38,13 @@ export function Skeleton({
   const finalVariant = variant !== 'default' ? variant : ($variant || 'default');
   const finalWidth = width || $width;
   const finalHeight = height || $height;
+  const finalRadius = radius || $radius;
+
 
   const inlineStyle = {
     ...(finalWidth ? { width: typeof finalWidth === 'number' ? `${finalWidth}px` : finalWidth } : {}),
     ...(finalHeight ? { height: typeof finalHeight === 'number' ? `${finalHeight}px` : finalHeight } : {}),
+    ...(finalRadius ? { borderRadius: typeof finalRadius === 'number' ? `${finalRadius}px` : finalRadius } : {}),
     ...style,
   };
 

@@ -1,6 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
 import { formatDistanceToNow } from 'date-fns';
 import { ArrowLeft, FileText, MessageSquare, Heart, Eye, ExternalLink } from 'lucide-react';
 
@@ -9,142 +8,10 @@ import { analyticsService } from '../../services/analyticsService';
 import { Section } from '../../components/layout/PageShell';
 import { Card, EmptyState, ErrorState, Skeleton, StatTile, Button } from '../../components/ui';
 import { ReadRateHeadline } from '../../components/stats/ReadRateBar';
-import { text, clamp, media } from '../../styles/theme/mixins';
 import { queryKeys } from '../../services/queryKeys';
-import { iconPx } from '../../styles/theme';
-
-/**
- * One person's activity.
- *
- * `GET /user-activity/user/:userId` and `GET /user-activity/timeline/:userId` have existed on
- * the server with nothing calling them. An administrator looking at a reported account could
- * see its row in the people table — name, email, role, join date — and had no way to see what
- * it had actually been doing, which is the one thing that decides whether to suspend it.
- *
- * The totals come from the activity endpoint and the stream from the timeline endpoint, which
- * merges posts, comments, replies and likes into one time-ordered list.
- */
-
-const HeaderBar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.md};
-  flex-wrap: wrap;
-  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const PersonMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const PersonName = styled.h3`
-  ${text('md', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const PersonSub = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-const Back = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  ${text('sm', 'medium')}
-  color: ${({ theme }) => theme.colors.textMuted};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const Stats = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-
-  ${media.down('sm')`
-    grid-template-columns: repeat(2, 1fr);
-  `}
-`;
-
-const Entry = styled.div`
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: ${({ theme }) => theme.spacing.md};
-  align-items: start;
-  padding: ${({ theme }) => theme.spacing.lg};
-
-  & + & {
-    box-shadow: inset 0 1px 0 ${({ theme }) => theme.colors.lineSubtle};
-  }
-`;
-
-const Dot = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  svg {
-    width: 15px;
-    height: 15px;
-  }
-`;
-
-const Action = styled.div`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  min-width: 0;
-
-  strong {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-weight: 600;
-  }
-
-  a {
-    color: ${({ theme }) => theme.colors.accentText};
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
-
-const Said = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  ${clamp(2)}
-  margin-top: 2px;
-`;
-
-const When = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  white-space: nowrap;
-`;
 
 const ICONS = { post: FileText, comment: MessageSquare, reply: MessageSquare, like: Heart };
 
-/** Renders a timestamp that may be missing or malformed without printing "Invalid Date". */
 const ago = (value) => {
   const date = value ? new Date(value) : null;
   return date && !isNaN(date.getTime()) ? formatDistanceToNow(date, { addSuffix: true }) : '—';
@@ -166,13 +33,6 @@ export function AdminPersonActivity() {
     retry: false,
   });
 
-  /*
-    How much of this account's writing actually gets finished.
-
-    `GET /analytics/user/:userId` is scoped to that account or an administrator, and until now
-    only the post page called it — for the caller's own posts. It is the figure that separates
-    an account publishing a lot from one worth reading.
-  */
   const { data: writingResponse } = useQuery({
     queryKey: queryKeys.analytics.forUser(userId),
     queryFn: () => analyticsService.getUserAnalytics(userId),
@@ -189,17 +49,17 @@ export function AdminPersonActivity() {
 
   if (activityLoading) {
     return (
-      <div aria-hidden="true">
-        <Stats>
+      <div aria-hidden="true" className="flex flex-col gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} $width="100%" $height={78} $radius="lg" />
+            <Skeleton key={i} width="100%" height={78} className="rounded-2xl" />
           ))}
-        </Stats>
-        <Card tone="low" radius="xl" style={{ padding: 20 }}>
+        </div>
+        <Card tone="low" radius="xl" padding="lg">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} style={{ display: 'flex', gap: 16, padding: '12px 0' }}>
-              <Skeleton $variant="circle" $width={30} $height={30} />
-              <Skeleton $width="60%" $height={14} $radius="xs" />
+            <div key={i} className="flex gap-4 py-3 items-center">
+              <Skeleton variant="circle" width={30} height={30} />
+              <Skeleton width="60%" height={14} className="rounded" />
             </div>
           ))}
         </Card>
@@ -211,10 +71,12 @@ export function AdminPersonActivity() {
     const missing = activityError?.response?.status === 404;
     return (
       <>
-        <Back to="/admin/users">
-          <ArrowLeft /> Back to people
-        </Back>
-        {/* A deleted account is not a transient failure, so it gets no retry button. */}
+        <Link
+          to="/admin/users"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] mb-4 no-underline"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to people
+        </Link>
         <ErrorState
           title={missing ? 'No such account' : 'Could not load this activity'}
           error={missing ? undefined : activityError}
@@ -233,51 +95,59 @@ export function AdminPersonActivity() {
 
   return (
     <>
-      <HeaderBar>
-        <PersonMeta>
-          <Back to="/admin/users">
-            <ArrowLeft /> Back
-          </Back>
+      {/* Header Bar */}
+      <div className="flex items-center justify-between gap-4 flex-wrap p-4 px-6 rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] mb-6">
+        <div className="flex items-center gap-4">
+          <Link
+            to="/admin/users"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] no-underline"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back
+          </Link>
           <div>
-            <PersonName>{person?.username ?? 'Activity'}</PersonName>
-            <PersonSub>
+            <h3 className="text-base font-semibold text-[hsl(var(--foreground))]">
+              {person?.username ?? 'Activity'}
+            </h3>
+            <span className="text-xs text-[hsl(var(--muted-foreground))]">
               {person?.createdAt
                 ? `${person.email} · joined ${ago(person.createdAt)}`
                 : 'Account timeline and metrics'}
-            </PersonSub>
+            </span>
           </div>
-        </PersonMeta>
+        </div>
 
         <Button as={Link} to={`/user/${userId}`} variant="secondary" size="sm">
-          <ExternalLink size={iconPx.sm} /> View public page
+          <ExternalLink className="w-3.5 h-3.5 mr-1" /> View public page
         </Button>
-      </HeaderBar>
+      </div>
 
       <Section>
-        {/* Totals count everything the account has done, not the page of the stream below. */}
-        <Stats>
+        {/* Metric stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <StatTile label="Stories" value={activity?.posts?.total ?? 0} icon={FileText} />
           <StatTile label="Responses" value={activity?.comments?.total ?? 0} icon={MessageSquare} />
           <StatTile label="Likes given" value={activity?.likes?.total ?? 0} icon={Heart} />
           <StatTile label="Stories opened" value={activity?.views?.total ?? 0} icon={Eye} />
-        </Stats>
+        </div>
 
         {writing?.totalViews > 0 && (
-          <Card tone="low" radius="xl" padding="lg" style={{ marginBottom: 24 }}>
-            <ReadRateHeadline
-              views={writing.totalViews}
-              reads={writing.totalReads}
-              rate={writing.readRate}
-            />
-          </Card>
+          <div className="mb-6">
+            <Card tone="low" radius="xl" padding="lg">
+              <ReadRateHeadline
+                views={writing.totalViews}
+                reads={writing.totalReads}
+                rate={writing.readRate}
+              />
+            </Card>
+          </div>
         )}
 
         {timelineLoading ? (
-          <Card tone="low" radius="xl" style={{ padding: 20 }} aria-hidden="true">
+          <Card tone="low" radius="xl" padding="lg" aria-hidden="true">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} style={{ display: 'flex', gap: 16, padding: '12px 0' }}>
-                <Skeleton $variant="circle" $width={30} $height={30} />
-                <Skeleton $width="60%" $height={14} $radius="xs" />
+              <div key={i} className="flex gap-4 py-3 items-center">
+                <Skeleton variant="circle" width={30} height={30} />
+                <Skeleton width="60%" height={14} className="rounded" />
               </div>
             ))}
           </Card>
@@ -286,32 +156,50 @@ export function AdminPersonActivity() {
             This account has not written, replied to or liked anything.
           </EmptyState>
         ) : (
-          <Card tone="low" radius="xl" padding="sm">
-            {timeline.map((event) => {
-              const Icon = ICONS[event.type] ?? FileText;
-              // A post is its own subject; a comment or a like points at somebody else's.
-              const target = event.type === 'post' ? event : event.post;
+          <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
+            <div className="flex flex-col divide-y divide-[hsl(var(--border))/0.4]">
+              {timeline.map((event) => {
+                const Icon = ICONS[event.type] ?? FileText;
+                const target = event.type === 'post' ? event : event.post;
 
-              return (
-                <Entry key={`${event.type}-${event._id}`}>
-                  <Dot>
-                    <Icon />
-                  </Dot>
+                return (
+                  <div
+                    key={`${event.type}-${event._id}`}
+                    className="grid grid-cols-[auto_1fr_auto] gap-4 items-start p-4 hover:bg-[hsl(var(--muted))/0.5] transition-colors"
+                  >
+                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] shrink-0">
+                      <Icon className="w-4 h-4" />
+                    </div>
 
-                  <Action>
-                    <strong>{person?.username ?? 'This account'}</strong> {event.action}{' '}
-                    {target?._id ? (
-                      <Link to={`/post/${target._id}`}>{target.title}</Link>
-                    ) : (
-                      <em>a story since deleted</em>
-                    )}
-                    {event.message && <Said>“{event.message}”</Said>}
-                  </Action>
+                    <div className="text-sm text-[hsl(var(--muted-foreground))] min-w-0">
+                      <strong className="text-[hsl(var(--foreground))] font-semibold">
+                        {person?.username ?? 'This account'}
+                      </strong>{' '}
+                      {event.action}{' '}
+                      {target?._id ? (
+                        <Link
+                          to={`/post/${target._id}`}
+                          className="text-[hsl(var(--primary))] hover:underline"
+                        >
+                          {target.title}
+                        </Link>
+                      ) : (
+                        <em className="text-[hsl(var(--muted-foreground))]">a story since deleted</em>
+                      )}
+                      {event.message && (
+                        <p className="text-sm text-[hsl(var(--muted-foreground))] line-clamp-2 mt-0.5">
+                          “{event.message}”
+                        </p>
+                      )}
+                    </div>
 
-                  <When>{ago(event.createdAt)}</When>
-                </Entry>
-              );
-            })}
+                    <span className="text-xs text-[hsl(var(--muted-foreground))] whitespace-nowrap tabular-nums">
+                      {ago(event.createdAt)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </Card>
         )}
       </Section>

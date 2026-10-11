@@ -1,91 +1,64 @@
-import styled from 'styled-components';
-import { text, label as labelStyle, media } from '../../styles/theme/mixins';
+import * as React from 'react';
+import { cn } from '../../lib/utils';
 
-/**
- * Table — the admin console's data primitive.
- *
- * The three admin listings used @radix-ui/themes' Table, which rendered unstyled because
- * that package was never given its stylesheet or provider. This is the same structure on
- * theme tokens, with no borders between rows: separation comes from a hairline and from
- * row hover, in keeping with the rest of the design language.
- *
- * Wrap it in Table.Scroll on narrow screens — a data table is the one place where
- * horizontal scrolling beats reflowing, because the columns mean something together.
- */
-
-const Scroll = styled.div`
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-
-  /* The scrollbar should not draw attention until it is needed. */
-  scrollbar-width: thin;
-`;
-
-const Root = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-
-  ${media.down('md')`
-    min-width: 640px;
-  `}
-`;
-
-const Head = styled.thead`
-  th {
-    padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
-    ${labelStyle('sm')}
-    color: ${({ theme }) => theme.colors.textMuted};
-    white-space: nowrap;
-    border-bottom: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  }
-`;
-
-const Body = styled.tbody`
-  tr {
-    transition: background ${({ theme }) => theme.transitions.fast};
-  }
-
-  tr:hover {
-    background: ${({ theme }) => theme.colors.surfaceContainer};
-  }
-
-  tr + tr td {
-    box-shadow: inset 0 1px 0 ${({ theme }) => theme.colors.lineSubtle};
-  }
-
-  td {
-    padding: ${({ theme }) => theme.spacing.lg};
-    ${text('sm')}
-    color: ${({ theme }) => theme.colors.textSecondary};
-    vertical-align: middle;
-  }
-
-  /* First column carries the identity of the row, so it reads as primary. */
-  td:first-child {
-    ${text('sm', 'medium')}
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
-`;
-
-const Empty = styled.td`
-  padding: ${({ theme }) => theme.spacing['4xl']} ${({ theme }) => theme.spacing.lg} !important;
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textMuted} !important;
-`;
-
-export function Table({ children, ...props }) {
+export function Table({ children, className, ...props }) {
   return (
-    <Scroll>
-      <Root {...props}>{children}</Root>
-    </Scroll>
+    <div className="w-full overflow-x-auto [scrollbar-width:thin]">
+      <table
+        className={cn('w-full border-collapse text-left md:min-w-[640px]', className)}
+        {...props}
+      >
+        {children}
+      </table>
+    </div>
   );
 }
 
-Table.Head = Head;
-Table.Body = Body;
+function TableHead({ children, className, ...props }) {
+  return (
+    <thead
+      className={cn(
+        '[&_th]:px-6 [&_th]:py-3.5 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-[hsl(var(--muted-foreground))] [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-[hsl(var(--border))/0.4]',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </thead>
+  );
+}
+
+function TableBody({ children, className, ...props }) {
+  return (
+    <tbody
+      className={cn(
+        '[&_tr]:transition-colors [&_tr:hover]:bg-[hsl(var(--muted))/0.5] [&_tr+tr_td]:border-t [&_tr+tr_td]:border-[hsl(var(--border))/0.3] [&_td]:px-6 [&_td]:py-4 [&_td]:text-sm [&_td]:text-[hsl(var(--muted-foreground))] [&_td]:align-middle [&_td:first-child]:font-medium [&_td:first-child]:text-[hsl(var(--foreground))]',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </tbody>
+  );
+}
+
+function TableEmpty({ children, colSpan, className, ...props }) {
+  return (
+    <tr>
+      <td
+        colSpan={colSpan}
+        className={cn('py-16 px-6 text-center text-sm text-[hsl(var(--muted-foreground))]', className)}
+        {...props}
+      >
+        {children}
+      </td>
+    </tr>
+  );
+}
+
+Table.Head = TableHead;
+Table.Body = TableBody;
 Table.Row = 'tr';
 Table.Cell = 'td';
 Table.HeaderCell = 'th';
-Table.Empty = Empty;
+Table.Empty = TableEmpty;

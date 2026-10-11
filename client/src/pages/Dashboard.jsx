@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
 import { formatDistanceToNow } from 'date-fns';
 import {
   PenLine,
@@ -33,261 +32,7 @@ import {
   Skeleton,
   StatTile,
 } from '../components/ui';
-import { text, label as labelStyle, media, clamp, display } from '../styles/theme/mixins';
 import { queryKeys } from '../services/queryKeys';
-import { iconPx } from '../styles/theme';
-
-/**
- * Dashboard — how the writing is doing.
- *
- * Managing stories lives on its own page now. This one used to carry both, under a navigation
- * item honestly labelled "Dashboard & Stories": a filterable, sortable, paginated management
- * table wedged under the metrics and beside a sidebar of insight cards. Neither job was done
- * well, and the table in particular was squeezed into a third of the width, which is why every
- * story title rendered as an ellipsis.
- *
- * What is left answers one question — how am I doing — and hands off to Stories for the rest.
- */
-
-/* ── Metrics ─────────────────────────────────────────────────────────────── */
-
-/* ── Metrics ─────────────────────────────────────────────────────────────── */
-
-const MetricGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: ${({ theme }) => theme.spacing.lg};
-
-  ${media.down('lg')`grid-template-columns: repeat(2, 1fr);`}
-  ${media.down('sm')`grid-template-columns: 1fr;`}
-`;
-
-/* ── Banner ──────────────────────────────────────────────────────────────── */
-
-const CreatorBanner = styled.div`
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.surfaceContainerLow} 0%,
-    ${({ theme }) => theme.colors.accentContainer} 100%
-  );
-  border: 1px solid ${({ theme }) => theme.colors.accentLine};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing['2xl']};
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.xl};
-  flex-wrap: wrap;
-  box-shadow: ${({ theme }) => theme.elevation.sm};
-
-  ${media.down('sm')`
-    padding: ${({ theme }) => theme.spacing.lg};
-  `}
-`;
-
-const CreatorInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const CreatorDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const CreatorName = styled.h2`
-  ${text('xl', 'bold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  letter-spacing: -0.01em;
-
-  svg {
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-`;
-
-const CreatorBio = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 540px;
-  line-height: 1.5;
-`;
-
-/* ── Panels ──────────────────────────────────────────────────────────────── */
-
-const Split = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: ${({ theme }) => theme.spacing.xl};
-  align-items: start;
-
-  ${media.down('md')`grid-template-columns: 1fr;`}
-`;
-
-const PanelLabel = styled.span`
-  ${labelStyle('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-
-  svg {
-    width: 15px;
-    height: 15px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-  }
-`;
-
-const Note = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.6;
-  margin-top: ${({ theme }) => theme.spacing.md};
-`;
-
-const TopPost = styled(Link)`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: ${({ theme }) => theme.spacing.md} 0;
-  color: inherit;
-  text-decoration: none;
-  transition: transform ${({ theme }) => theme.transitions.fast};
-
-  & + & {
-    border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  }
-
-  &:hover h4 {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-const ItemTitle = styled.h4`
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  ${clamp(1)}
-  transition: color ${({ theme }) => theme.transitions.fast};
-`;
-
-const DraftRow = styled(Link)`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md} 0;
-  color: inherit;
-  text-decoration: none;
-
-  & + & {
-    border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  }
-
-  &:hover h4 {
-    color: ${({ theme }) => theme.colors.accentText};
-  }
-`;
-
-const Meta = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  display: block;
-`;
-
-const SeeAll = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  ${text('sm', 'semibold')}
-  color: ${({ theme }) => theme.colors.accentText};
-
-  svg {
-    width: 14px;
-    height: 14px;
-    transition: transform ${({ theme }) => theme.transitions.fast};
-  }
-
-  &:hover svg {
-    transform: translateX(3px);
-  }
-`;
-
-/* ── Reading ─────────────────────────────────────────────────────────────── */
-
-const ReadingGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing.lg};
-
-  ${media.down('lg')`grid-template-columns: 1fr 1fr;`}
-  ${media.down('sm')`grid-template-columns: 1fr;`}
-`;
-
-const ReadingItem = styled(Link)`
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px solid ${({ theme }) => theme.colors.lineDefault};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  padding: ${({ theme }) => theme.spacing.lg};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
-  text-decoration: none;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.accentLine};
-    transform: translateY(-2px);
-    box-shadow: ${({ theme }) => theme.elevation.sm};
-  }
-`;
-
-const ReadingTitle = styled.h4`
-  ${text('md', 'semibold')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-  ${clamp(2)}
-`;
-
-const ReadingMeta = styled.span`
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: auto;
-`;
-
-/* ── First run ───────────────────────────────────────────────────────────── */
-
-const FirstRun = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing['2xl']};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border: 1px dashed ${({ theme }) => theme.colors.accentLine};
-`;
-
-const FirstRunTitle = styled.h2`
-  ${display('xs')}
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const FirstRunBody = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  max-width: 62ch;
-  line-height: 1.6;
-`;
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -347,46 +92,50 @@ export function Dashboard() {
 
   return (
     <PageShell>
-      <CreatorBanner>
-        <CreatorInfo>
+      {/* Creator Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-[hsl(var(--card))] to-[hsl(var(--primary))/0.1] border border-[hsl(var(--primary))/0.2] rounded-[28px] p-6 sm:p-8 flex items-center justify-between gap-6 flex-wrap shadow-sm">
+        <div className="flex items-center gap-4 sm:gap-6 min-w-0">
           <Avatar src={avatarUrl} name={user?.username} size="lg" />
-          <CreatorDetails>
-            <CreatorName>
-              Welcome back, {firstName} <Sparkles size={iconPx.lg} />
-            </CreatorName>
-            <CreatorBio>
+          <div className="flex flex-col gap-1 min-w-0">
+            <h2 className="text-xl sm:text-2xl font-bold text-[hsl(var(--foreground))] flex items-center gap-2 tracking-tight">
+              Welcome back, {firstName}{' '}
+              <Sparkles className="w-5 h-5 text-[hsl(var(--primary))]" />
+            </h2>
+            <p className="text-sm text-[hsl(var(--muted-foreground))] max-w-[540px] leading-relaxed">
               {bio || 'How your writing is doing. Manage what you have written under Stories.'}
-            </CreatorBio>
-          </CreatorDetails>
-        </CreatorInfo>
+            </p>
+          </div>
+        </div>
 
         {(user?._id || user?.user_id) && (
           <Button as={Link} to={`/user/${user._id || user.user_id}`} variant="secondary" size="sm">
-            <User size={iconPx.sm} /> View public profile
+            <User className="w-3.5 h-3.5 mr-1" /> View public profile
           </Button>
         )}
-      </CreatorBanner>
+      </div>
 
       {/* Nothing to measure yet, so say what to do instead of reporting four zeroes. */}
       {!analyticsPending && !analyticsFailed && !hasWritten ? (
-        <FirstRun>
-          <FirstRunTitle>Publish your first story</FirstRunTitle>
-          <FirstRunBody>
+        <div className="flex flex-col items-start gap-4 p-8 rounded-[28px] bg-[hsl(var(--card))] border border-dashed border-[hsl(var(--primary))/0.4]">
+          <h2 className="text-xl font-bold text-[hsl(var(--foreground))] tracking-tight">
+            Publish your first story
+          </h2>
+          <p className="text-sm text-[hsl(var(--muted-foreground))] max-w-[62ch] leading-relaxed">
             Write in Markdown with a live preview. Save it as a draft while you work — only you can
             see a draft — and publish when you are ready. Views and read-through appear here once
             readers arrive.
-          </FirstRunBody>
+          </p>
           <Button as={Link} to="/write">
-            <PenLine /> Start writing
+            <PenLine className="w-4 h-4 mr-1.5" /> Start writing
           </Button>
-        </FirstRun>
+        </div>
       ) : (
         <>
           <Section
             title="Performance Overview"
             note="Aggregated readership across all your stories"
           >
-            <MetricGrid>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <StatTile
                 label="Total story views"
                 icon={Eye}
@@ -411,11 +160,11 @@ export function Dashboard() {
                 value={metric(analytics?.totalPosts)}
                 hint={drafts.length > 0 ? `${drafts.length} unfinished` : 'All published'}
               />
-            </MetricGrid>
+            </div>
           </Section>
 
           {analyticsFailed && (
-            <div style={{ marginBottom: 24 }}>
+            <div className="mb-6">
               <ErrorState
                 title="Your figures did not load"
                 error={analyticsError}
@@ -424,56 +173,74 @@ export function Dashboard() {
             </div>
           )}
 
-          <Split>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             <Card tone="low" radius="xl" padding="xl">
-              <PanelLabel>
-                <TrendingUp /> Best read-through
-              </PanelLabel>
+              <span className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] flex items-center gap-1.5 mb-2">
+                <TrendingUp className="w-3.5 h-3.5 text-[hsl(var(--primary))]" /> Best read-through
+              </span>
               {topFinished.length === 0 ? (
-                <Note>
+                <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed mt-2">
                   Once a published story is opened by a reader, its read-through appears here.
-                </Note>
+                </p>
               ) : (
-                <div style={{ marginTop: 8 }}>
+                <div className="mt-2 divide-y divide-[hsl(var(--border))/0.5]">
                   {topFinished.map((entry) => (
-                    <TopPost key={String(entry.postId)} to={`/post/${entry.postId}`}>
-                      <ItemTitle>{entry.title}</ItemTitle>
+                    <Link
+                      key={String(entry.postId)}
+                      to={`/post/${entry.postId}`}
+                      className="group flex flex-col gap-1.5 py-3 text-inherit no-underline first:pt-0 last:pb-0"
+                    >
+                      <h4 className="text-sm font-semibold text-[hsl(var(--foreground))] line-clamp-1 group-hover:text-[hsl(var(--primary))] transition-colors">
+                        {entry.title}
+                      </h4>
                       <ReadRateBar views={entry.views} reads={entry.reads} rate={entry.readRate} />
-                    </TopPost>
+                    </Link>
                   ))}
                 </div>
               )}
             </Card>
 
             <Card tone="low" radius="xl" padding="xl">
-              <PanelLabel>
-                <Pencil /> Pick up where you left off
-              </PanelLabel>
+              <span className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] flex items-center gap-1.5 mb-2">
+                <Pencil className="w-3.5 h-3.5 text-[hsl(var(--primary))]" /> Pick up where you left off
+              </span>
               {drafts.length === 0 ? (
-                <Note>No unfinished drafts. Anything you start and do not publish waits here.</Note>
+                <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed mt-2">
+                  No unfinished drafts. Anything you start and do not publish waits here.
+                </p>
               ) : (
-                <div style={{ marginTop: 8 }}>
+                <div className="mt-2 divide-y divide-[hsl(var(--border))/0.5]">
                   {drafts.map((post) => (
-                    <DraftRow key={post._id} to={`/edit/${post._id}`}>
-                      <span style={{ minWidth: 0 }}>
-                        <ItemTitle>{post.title || 'Untitled'}</ItemTitle>
-                        <Meta>
+                    <Link
+                      key={post._id}
+                      to={`/edit/${post._id}`}
+                      className="group flex items-center justify-between gap-3 py-3 text-inherit no-underline first:pt-0 last:pb-0"
+                    >
+                      <span className="min-w-0">
+                        <h4 className="text-sm font-semibold text-[hsl(var(--foreground))] line-clamp-1 group-hover:text-[hsl(var(--primary))] transition-colors">
+                          {post.title || 'Untitled'}
+                        </h4>
+                        <span className="text-xs text-[hsl(var(--muted-foreground))] block mt-0.5">
                           edited{' '}
                           {post.updatedAt
                             ? formatDistanceToNow(new Date(post.updatedAt), { addSuffix: true })
                             : 'recently'}
-                        </Meta>
+                        </span>
                       </span>
                       <Badge variant="neutral">draft</Badge>
-                    </DraftRow>
+                    </Link>
                   ))}
                 </div>
               )}
-              <SeeAll to="/stories">
-                Manage all stories <ArrowRight />
-              </SeeAll>
+              <Link
+                to="/stories"
+                className="group inline-flex items-center gap-1.5 mt-5 text-sm font-semibold text-[hsl(var(--primary))] hover:underline"
+              >
+                Manage all stories{' '}
+                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+              </Link>
             </Card>
-          </Split>
+          </div>
         </>
       )}
 
@@ -482,19 +249,19 @@ export function Dashboard() {
         note={unfinished.length > 0 ? 'Stories you opened and have not finished.' : undefined}
       >
         {readingLoading ? (
-          <ReadingGrid aria-hidden="true">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" aria-hidden="true">
             {Array.from({ length: 3 }).map((_, i) => (
               <Card
                 key={i}
                 tone="low"
                 radius="xl"
-                style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}
+                className="p-4 flex flex-col gap-3"
               >
-                <Skeleton $width="85%" $height={18} $radius="xs" />
-                <Skeleton $width="45%" $height={12} $radius="xs" />
+                <Skeleton width="85%" height={18} className="rounded" />
+                <Skeleton width="45%" height={12} className="rounded" />
               </Card>
             ))}
-          </ReadingGrid>
+          </div>
         ) : readingFailed ? (
           <ErrorState
             title="Reading activity did not load"
@@ -506,21 +273,27 @@ export function Dashboard() {
             Stories you open and do not finish are kept here so you can come back to them.
           </EmptyState>
         ) : (
-          <ReadingGrid>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {unfinished.map(({ post, lastOpenedAt }) => {
               const d = lastOpenedAt ? new Date(lastOpenedAt) : null;
               const when =
                 d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'recently';
               return (
-                <ReadingItem key={post._id} to={`/post/${post._id}`}>
-                  <ReadingTitle>{post.title}</ReadingTitle>
-                  <ReadingMeta>
+                <Link
+                  key={post._id}
+                  to={`/post/${post._id}`}
+                  className="bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] rounded-[20px] p-5 flex flex-col gap-2 no-underline hover:border-[hsl(var(--primary))/0.4] hover:-translate-y-0.5 hover:shadow-sm transition-all"
+                >
+                  <h4 className="text-base font-semibold text-[hsl(var(--foreground))] line-clamp-2">
+                    {post.title}
+                  </h4>
+                  <span className="text-xs text-[hsl(var(--muted-foreground))] mt-auto pt-2">
                     {post.user?.username ? `${post.user.username} · ` : ''}opened {when}
-                  </ReadingMeta>
-                </ReadingItem>
+                  </span>
+                </Link>
               );
             })}
-          </ReadingGrid>
+          </div>
         )}
       </Section>
     </PageShell>

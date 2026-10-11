@@ -1,323 +1,114 @@
 import { Link } from 'react-router-dom';
-import styled from 'styled-components';
 import { Github, PenLine, Compass, Heart } from 'lucide-react';
 import { useTags } from '../../hooks/useTags';
-import { text, media, interactive } from '../../styles/theme/mixins';
 import { BrandMark } from '../ui';
+import { cn } from '../../lib/utils';
 
 /**
  * Footer — high-end editorial footer with ambient watermark,
  * aligned gutters, and purposeful community discovery.
  */
-
-/** How many topics the discovery column shows. */
 const TOPIC_COUNT = 6;
 
-const Wrapper = styled.footer`
-  position: relative;
-  overflow: hidden;
-  margin-top: ${({ theme }) => theme.spacing['4xl']};
-  padding: ${({ theme }) => theme.spacing['3xl']} 0 ${({ theme }) => theme.spacing.xl};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  background: ${({ theme }) =>
-    theme.mode === 'light' ? 'rgba(248, 250, 252, 0.4)' : 'rgba(7, 11, 19, 0.4)'};
-`;
-
-const WatermarkText = styled.div`
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: clamp(70px, 14vw, 160px);
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  color: ${({ theme }) =>
-    theme.mode === 'light' ? 'rgba(15, 23, 42, 0.03)' : 'rgba(255, 255, 255, 0.02)'};
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
-`;
-
-const Container = styled.div`
-  position: relative;
-  z-index: 1;
-  max-width: ${({ theme }) => theme.layout.maxWidth};
-  margin: 0 auto;
-  padding: 0 ${({ theme }) => theme.spacing.xl};
-  width: 100%;
-
-  ${media.down('md')`
-    padding: 0 ${({ theme }) => theme.spacing.lg};
-  `}
-`;
-
-const MainGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
-  gap: ${({ theme }) => theme.spacing['3xl']};
-  align-items: start;
-
-  ${media.down('lg')`
-    grid-template-columns: 1.2fr 1fr;
-    gap: ${({ theme }) => theme.spacing['2xl']};
-  `}
-
-  ${media.down('sm')`
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing.xl};
-  `}
-`;
-
-const BrandBlock = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-  max-width: 440px;
-`;
-
-const BrandHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const BrandName = styled.span`
-  ${text('md', 'bold')}
-  letter-spacing: -0.02em;
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const StatusPill = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 10px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.accentContainer};
-  color: ${({ theme }) => theme.colors.accentText};
-  ${text('xs', 'semibold')}
-
-  span.dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: ${({ theme }) => theme.colors.successSolid};
-  }
-`;
-
-const Tagline = styled.p`
-  ${text('sm')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.65;
-`;
-
-const NavCol = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const ColTitle = styled.h4`
-  ${text('xs', 'semibold')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-`;
-
-const ColLinks = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const FooterNavLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  ${text('sm', 'medium')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  text-decoration: none;
-  transition: all ${({ theme }) => theme.transitions.fast};
-  width: fit-content;
-  ${interactive}
-
-  svg {
-    width: 15px;
-    height: 15px;
-    color: ${({ theme }) => theme.colors.accentSolid};
-    transition: transform ${({ theme }) => theme.transitions.fast};
-  }
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentText};
-    transform: translateX(2px);
-
-    svg {
-      transform: scale(1.1);
-    }
-  }
-`;
-
-const FooterExternalLink = styled.a`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  ${text('sm', 'medium')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  text-decoration: none;
-  transition: all ${({ theme }) => theme.transitions.fast};
-  width: fit-content;
-  ${interactive}
-
-  svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentText};
-    transform: translateX(2px);
-  }
-`;
-
-const TopicHashtags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
-
-const TopicTag = styled(Link)`
-  ${text('xs', 'medium')}
-  color: ${({ theme }) => theme.colors.textMuted};
-  text-decoration: none;
-  padding: 4px 10px;
-  border-radius: ${({ theme }) => theme.radii.full};
-  background: ${({ theme }) => theme.colors.surfaceContainerLow};
-  border: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  transition: all ${({ theme }) => theme.transitions.fast};
-  ${interactive}
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentText};
-    background: ${({ theme }) => theme.colors.accentContainer};
-    border-color: ${({ theme }) => theme.colors.accentLine};
-    transform: translateY(-1px);
-  }
-`;
-
-const BottomBar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-top: ${({ theme }) => theme.spacing['2xl']};
-  padding-top: ${({ theme }) => theme.spacing.lg};
-  border-top: 1px solid ${({ theme }) => theme.colors.lineSubtle};
-  flex-wrap: wrap;
-  ${text('xs')}
-  color: ${({ theme }) => theme.colors.textMuted};
-
-  span.built-with {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-
-    svg {
-      width: 13px;
-      height: 13px;
-      color: ${({ theme }) => theme.colors.dangerSolid};
-      fill: ${({ theme }) => theme.colors.dangerSolid};
-    }
-  }
-`;
-
 export function Footer() {
-  /*
-    Shared with the landing page, search and the editor through one hook, so the footer costs
-    no extra request on most pages. Only topics with something published belong under a
-    heading that calls them popular; when there are none the column is left out rather than
-    shown empty.
-  */
   const { tags } = useTags({ withPostsOnly: true });
   const topics = tags.slice(0, TOPIC_COUNT);
 
   return (
-    <Wrapper>
-      <WatermarkText>bloghub</WatermarkText>
+    <footer className="relative overflow-hidden mt-20 pt-16 pb-8 bg-[hsl(var(--muted))/0.25]">
+      {/* Background Ambient Watermark */}
+      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[clamp(70px,14vw,160px)] font-black tracking-tighter text-slate-900/[0.03] dark:text-white/[0.02] select-none pointer-events-none whitespace-nowrap z-0">
+        bloghub
+      </div>
 
-      <Container>
-        <MainGrid>
+      <div className="relative z-10 max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 sm:gap-12 items-start">
           {/* Brand Identity & Mission */}
-          <BrandBlock>
-            <BrandHeader>
+          <div className="flex flex-col gap-3 max-w-md">
+            <div className="flex items-center gap-2.5">
               <BrandMark letter="B" />
-              <BrandName>BlogHub</BrandName>
-              <StatusPill>
-                <span className="dot" /> Open Source
-              </StatusPill>
-            </BrandHeader>
+              <span className="text-base font-bold tracking-tight text-[hsl(var(--foreground))]">
+                BlogHub
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[hsl(var(--primary))/0.10] text-[hsl(var(--primary))] text-xs font-semibold select-none">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Open Source
+              </span>
+            </div>
 
-            <Tagline>
+            <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
               A distraction-free publishing space for writers, thinkers, and curious minds. Pure
               Markdown canvas, true read attention metrics, and zero ads.
-            </Tagline>
-          </BrandBlock>
+            </p>
+          </div>
 
           {/* Quick Discover Pathways */}
-          <NavCol>
-            <ColTitle>Explore</ColTitle>
-            <ColLinks>
-              <FooterNavLink to="/search">
-                <Compass /> Discover Stories
-              </FooterNavLink>
-              <FooterNavLink to="/write">
-                <PenLine /> Write an Article
-              </FooterNavLink>
-              <FooterExternalLink
+          <div className="flex flex-col gap-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              Explore
+            </h4>
+            <div className="flex flex-col gap-2.5">
+              <Link
+                to="/search"
+                className="inline-flex items-center gap-2 text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:translate-x-0.5 transition-all duration-150 w-fit group"
+              >
+                <Compass className="h-4 w-4 text-[hsl(var(--primary))] group-hover:scale-110 transition-transform" />
+                Discover Stories
+              </Link>
+              <Link
+                to="/write"
+                className="inline-flex items-center gap-2 text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:translate-x-0.5 transition-all duration-150 w-fit group"
+              >
+                <PenLine className="h-4 w-4 text-[hsl(var(--primary))] group-hover:scale-110 transition-transform" />
+                Write an Article
+              </Link>
+              <a
                 href="https://github.com/Purvesh-PJ/bloghub"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:translate-x-0.5 transition-all duration-150 w-fit group"
               >
-                <Github /> GitHub Repository
-              </FooterExternalLink>
-            </ColLinks>
-          </NavCol>
+                <Github className="h-4 w-4 text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))] transition-colors" />
+                GitHub Repository
+              </a>
+            </div>
+          </div>
 
-          {/*
-            Popular Community Topics.
-
-            These were six hardcoded hashtags — #technology, #design, #ai and so on — each a
-            real link into the search page. On any site that had not happened to use those
-            exact words they led to an empty result, under a heading claiming they were
-            popular. They come from the tag endpoint now, which already reports a published
-            post count per tag and sorts by it, and the column is omitted entirely rather
-            than shown empty when nothing qualifies.
-          */}
+          {/* Popular Community Topics */}
           {topics.length > 0 && (
-            <NavCol>
-              <ColTitle>Popular Topics</ColTitle>
-              <TopicHashtags>
+            <div className="flex flex-col gap-3 sm:col-span-2 lg:col-span-1">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                Popular Topics
+              </h4>
+              <div className="flex flex-wrap gap-2">
                 {topics.map((topic) => (
-                  <TopicTag
+                  <Link
                     key={topic._id ?? topic.name}
                     to={`/search?topic=${encodeURIComponent(topic.name)}`}
+                    className={cn(
+                      'text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-150 select-none',
+                      'bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] border-none shadow-none',
+                      'hover:bg-[hsl(var(--primary))/0.10] hover:text-[hsl(var(--primary))] hover:-translate-y-0.5'
+                    )}
                   >
                     #{topic.name}
-                  </TopicTag>
+                  </Link>
                 ))}
-              </TopicHashtags>
-            </NavCol>
+              </div>
+            </div>
           )}
-        </MainGrid>
+        </div>
 
-        <BottomBar>
+        {/* Bottom Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mt-12 pt-6 border-t border-[var(--line-subtle)] text-xs text-[hsl(var(--muted-foreground))]">
           <span>© {new Date().getFullYear()} BlogHub · All stories belong to their authors</span>
-          <span className="built-with">
-            Crafted with <Heart /> for open web publishing
+          <span className="inline-flex items-center gap-1.5">
+            Crafted with{' '}
+            <Heart className="h-3 w-3 text-[hsl(var(--destructive))] fill-[hsl(var(--destructive))]" />{' '}
+            for open web publishing
           </span>
-        </BottomBar>
-      </Container>
-    </Wrapper>
+        </div>
+      </div>
+    </footer>
   );
 }
