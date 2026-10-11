@@ -1,186 +1,132 @@
+import * as React from 'react';
 import { useId } from 'react';
-import styled, { css } from 'styled-components';
-import { text, label as labelStyle, interactive } from '../../styles/theme/mixins';
+import { cn } from '../../lib/utils';
 
-/**
- * Input and TextArea.
- *
- * Fields sit on a container tone with no border — the tone itself defines the field. A ring
- * appears on focus. This is the soft, borderless form language of the reference sites.
- */
-
-const Field = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
-  width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
-`;
-
-const Label = styled.label`
-  ${text('sm', 'medium')}
-  color: ${({ theme }) => theme.colors.textSecondary};
-  padding-left: ${({ theme }) => theme.spacing.xs};
-`;
-
-const controlBase = css`
-  width: 100%;
-  background: ${({ theme }) => theme.colors.surfaceContainer};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  border: none;
-  ${text('md')}
-  ${interactive}
-
-  /* Crisp border and smooth transition */
-  box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.lineDefault};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.textMuted};
-  }
-
-  &:hover:not(:disabled):not(:focus) {
-    background: ${({ theme }) => theme.colors.surfaceContainerLow};
-    box-shadow: inset 0 0 0 1px ${({ theme }) => theme.colors.lineStrong};
-  }
-
-  &:focus {
-    outline: none;
-    background: ${({ theme }) => theme.colors.surfaceElevated};
-    box-shadow:
-      inset 0 0 0 1.5px ${({ theme }) => theme.colors.accentSolid},
-      0 0 0 3px rgba(14, 165, 233, 0.2);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  ${({ $error, theme }) =>
-    $error &&
-    css`
-      box-shadow: inset 0 0 0 1.5px ${theme.colors.dangerLine};
-
-      &:focus {
-        box-shadow:
-          inset 0 0 0 1.5px ${theme.colors.dangerSolid},
-          0 0 0 3px rgba(239, 68, 68, 0.2);
-      }
-    `}
-`;
-
-const StyledInput = styled.input`
-  ${controlBase}
-  height: 48px;
-  padding: 0 ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
-
-  /* Room for a leading icon when one is present. */
-  ${({ $hasIcon, theme }) =>
-    $hasIcon &&
-    css`
-      padding-left: ${theme.spacing['3xl']};
-    `}
-`;
-
-const StyledTextArea = styled.textarea`
-  ${controlBase}
-  min-height: 120px;
-  padding: ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
-  resize: vertical;
-  line-height: 1.6;
-`;
-
-const ControlWrap = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-`;
-
-const LeadingIcon = styled.span`
-  position: absolute;
-  left: ${({ theme }) => theme.spacing.lg};
-  display: inline-flex;
-  pointer-events: none;
-  color: ${({ theme }) => theme.colors.textMuted};
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-`;
-
-const Message = styled.span`
-  ${text('sm')}
-  padding-left: ${({ theme }) => theme.spacing.xs};
-  color: ${({ theme, $error }) => ($error ? theme.colors.dangerText : theme.colors.textMuted)};
-`;
-
-/**
- * A label is only a label if it points at the field.
- *
- * `id ?? props.name` left `inputId` undefined whenever a caller passed neither — which is
- * seventeen fields across Settings, the editor and the admin console, every password box
- * among them. `htmlFor={undefined}` renders no `for` attribute at all, so the visible text
- * sat beside a control that assistive technology announced as unlabelled, and clicking the
- * label did not focus the field. `useId` gives every instance a stable fallback.
- */
-export function Input({ label, error, hint, icon, fullWidth = true, id, ...props }) {
+export function Input({
+  className,
+  label,
+  error,
+  hint,
+  icon,
+  fullWidth = true,
+  id,
+  type = 'text',
+  ...props
+}) {
   const generatedId = useId();
   const inputId = id ?? props.name ?? generatedId;
   const messageId = error || hint ? `${inputId}-message` : undefined;
 
   return (
-    <Field $fullWidth={fullWidth}>
-      {label && <Label htmlFor={inputId}>{label}</Label>}
-      <ControlWrap>
-        {icon && <LeadingIcon>{icon}</LeadingIcon>}
-        <StyledInput
+    <div className={cn('flex flex-col gap-1.5', fullWidth ? 'w-full' : 'w-auto')}>
+      {label && (
+        <label
+          htmlFor={inputId}
+          className="text-xs font-medium text-[hsl(var(--muted-foreground))] pl-0.5 select-none"
+        >
+          {label}
+        </label>
+      )}
+      <div className="relative flex items-center w-full">
+        {icon && (
+          <div className="absolute left-3.5 flex items-center pointer-events-none text-[hsl(var(--muted-foreground))] [&_svg]:h-4 [&_svg]:w-4">
+            {icon}
+          </div>
+        )}
+        <input
           id={inputId}
-          $error={Boolean(error)}
-          $hasIcon={Boolean(icon)}
+          type={type}
           aria-invalid={Boolean(error) || undefined}
-          // Announced with the field, so an error or a format hint is not left to sighted
-          // readers only.
           aria-describedby={messageId}
+          className={cn(
+            'flex h-10 w-full rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-4 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] transition-all duration-150',
+            'hover:border-[hsl(var(--ring))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            icon && 'pl-10',
+            error && 'border-red-500 focus-visible:ring-red-500',
+            className
+          )}
           {...props}
         />
-      </ControlWrap>
+      </div>
       {(error || hint) && (
-        <Message id={messageId} $error={Boolean(error)}>
+        <p
+          id={messageId}
+          className={cn(
+            'text-xs pl-1 font-normal',
+            error ? 'text-red-500 font-medium' : 'text-[hsl(var(--muted-foreground))]'
+          )}
+        >
           {error || hint}
-        </Message>
+        </p>
       )}
-    </Field>
+    </div>
   );
 }
 
-export function TextArea({ label, error, hint, fullWidth = true, id, ...props }) {
+export function TextArea({
+  className,
+  label,
+  error,
+  hint,
+  fullWidth = true,
+  id,
+  rows = 4,
+  ...props
+}) {
   const generatedId = useId();
   const inputId = id ?? props.name ?? generatedId;
   const messageId = error || hint ? `${inputId}-message` : undefined;
 
   return (
-    <Field $fullWidth={fullWidth}>
-      {label && <Label htmlFor={inputId}>{label}</Label>}
-      <StyledTextArea
+    <div className={cn('flex flex-col gap-1.5', fullWidth ? 'w-full' : 'w-auto')}>
+      {label && (
+        <label
+          htmlFor={inputId}
+          className="text-xs font-medium text-[hsl(var(--muted-foreground))] pl-0.5 select-none"
+        >
+          {label}
+        </label>
+      )}
+      <textarea
         id={inputId}
-        $error={Boolean(error)}
+        rows={rows}
         aria-invalid={Boolean(error) || undefined}
         aria-describedby={messageId}
+        className={cn(
+          'flex min-h-[90px] w-full rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-4 py-3 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] transition-all duration-150 resize-y',
+          'hover:border-[hsl(var(--ring))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
+          'disabled:cursor-not-allowed disabled:opacity-50',
+          error && 'border-red-500 focus-visible:ring-red-500',
+          className
+        )}
         {...props}
       />
       {(error || hint) && (
-        <Message id={messageId} $error={Boolean(error)}>
+        <p
+          id={messageId}
+          className={cn(
+            'text-xs pl-1 font-normal',
+            error ? 'text-red-500 font-medium' : 'text-[hsl(var(--muted-foreground))]'
+          )}
+        >
           {error || hint}
-        </Message>
+        </p>
       )}
-    </Field>
+    </div>
   );
 }
 
-/** Uppercase eyebrow used above section titles and stat values. */
-export const Eyebrow = styled.span`
-  ${labelStyle('md')}
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
+export function Eyebrow({ className, children, ...props }) {
+  return (
+    <span
+      className={cn(
+        'text-xs font-semibold tracking-wider uppercase text-[hsl(var(--muted-foreground))] select-none',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </span>
+  );
+}

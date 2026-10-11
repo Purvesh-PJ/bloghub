@@ -1,63 +1,38 @@
-import styled, { css } from 'styled-components';
-import { text } from '../../styles/theme/mixins';
+import * as React from 'react';
+import { cva } from 'class-variance-authority';
+import { cn } from '../../lib/utils';
 
-/**
- * Badge — a small status label.
- *
- * Every variant used to be a hard-coded hex pair (`rgba(99, 102, 241, 0.1)` / `#6366f1`),
- * which is why badges kept their indigo-on-white look in dark mode while everything around
- * them changed. They are tonal container/text pairs from the theme now, so they follow the
- * palette in both modes.
- */
-
-const variants = {
-  neutral: css`
-    background: ${({ theme }) => theme.colors.surfaceContainerHigh};
-    color: ${({ theme }) => theme.colors.textSecondary};
-  `,
-  primary: css`
-    background: ${({ theme }) => theme.colors.accentContainer};
-    color: ${({ theme }) => theme.colors.accentText};
-  `,
-  success: css`
-    background: ${({ theme }) => theme.colors.successContainer};
-    color: ${({ theme }) => theme.colors.successText};
-  `,
-  warning: css`
-    background: ${({ theme }) => theme.colors.warningContainer};
-    color: ${({ theme }) => theme.colors.warningText};
-  `,
-  danger: css`
-    background: ${({ theme }) => theme.colors.dangerContainer};
-    color: ${({ theme }) => theme.colors.dangerText};
-  `,
-  info: css`
-    background: ${({ theme }) => theme.colors.infoContainer};
-    color: ${({ theme }) => theme.colors.infoText};
-  `,
-};
-
-const StyledBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  padding: 3px ${({ theme }) => theme.spacing.sm};
-  border-radius: ${({ theme }) => theme.radii.full};
-  white-space: nowrap;
-  ${text('xs', 'medium')}
-
-  ${({ $variant }) => variants[$variant] || variants.neutral}
-
-  svg {
-    width: 12px;
-    height: 12px;
+export const badgeVariants = cva(
+  'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 select-none shrink-0',
+  {
+    variants: {
+      variant: {
+        neutral:
+          'bg-[hsl(var(--secondary))] text-[hsl(var(--muted-foreground))] border border-transparent',
+        primary:
+          'bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] border border-transparent',
+        success:
+          'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-transparent',
+        warning:
+          'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border border-transparent',
+        danger:
+          'bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300 border border-transparent',
+        info:
+          'bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border border-transparent',
+        outline:
+          'text-[hsl(var(--foreground))] border border-[hsl(var(--border))] bg-transparent',
+      },
+    },
+    defaultVariants: {
+      variant: 'neutral',
+    },
   }
-`;
+);
 
-export function Badge({ children, variant = 'neutral', ...props }) {
+export function Badge({ className, variant, children, ...props }) {
   return (
-    <StyledBadge $variant={variant} {...props}>
+    <span className={cn(badgeVariants({ variant }), className)} {...props}>
       {children}
-    </StyledBadge>
+    </span>
   );
 }
