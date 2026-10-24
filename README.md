@@ -27,8 +27,7 @@
   <a href="#tech-stack">Tech Stack</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#demo-credentials">Demo Accounts</a> •
-  <a href="#scripts">Scripts & Tests</a> •
-  <a href="#documentation">Docs Hub</a>
+  <a href="#scripts">Scripts & Tests</a>
 </p>
 
 </div>
@@ -357,8 +356,6 @@ bloghub/
 │   │   └── main.jsx            # Provider composition tree
 │   ├── vite.config.js          # Vite config, dev proxy & Rollup chunk splitting
 │   └── package.json
-│
-└── docs/                       # Complete Stage 3 Technical Documentation Suite
 ```
 
 ---
@@ -389,26 +386,6 @@ bloghub/
 | `npm run preview`                         | Locally preview the compiled production build                 |
 | `npm run lint` / `npm run lint:fix`       | Check or fix client source code with ESLint 9                 |
 | `npm run format:check` / `npm run format` | Check or format client files with Prettier 3                  |
-
----
-
-<a id="documentation"></a>
-
-## 📚 Documentation Hub
-
-BlogHub maintains an exhaustive, industry-grade documentation suite in **[`docs/`](docs/README.md)**, split the way Docker, Kubernetes, Stripe and React split theirs — **guides** (doing), **reference** (looking up), **architecture** (why), plus **operations**, **product** and **security**. The rule behind the split is in **[documentation-guide.md](docs/documentation-guide.md)**:
-
-<div align="center">
-
-| Section                   | Key Documents                                                                                                                                                                                                                                                           | Summary                                                                                                                                                                                                                                    |
-| :------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **🏛️ Architecture**       | **[System Overview](docs/architecture/overview.md)**<br/>**[Walkthrough](docs/architecture/walkthrough.md)**<br/>**[Frontend](docs/architecture/frontend.md)** • **[Backend](docs/architecture/backend.md)**<br/>**[ADRs (Decisions)](docs/architecture/decisions.md)** | • Monorepo layout & workspace boundaries<br/>• End-to-end request lifecycle tour<br/>• Provider trees, query caching & Express pipeline<br/>• Architectural Decision Records (ADR-001 to ADR-006)                                          |
-| **📖 Guides**             | **[Getting Started](docs/guides/getting-started.md)**<br/>**[Development](docs/guides/development.md)**<br/>**[Testing Guide](docs/guides/testing.md)**<br/>**[Troubleshooting](docs/guides/troubleshooting.md)**<br/>**[Code Quality](docs/guides/code-quality.md)**   | • Step-by-step setup & verification<br/>• File placement rules & coding standards<br/>• Test pyramid & in-memory runner guide<br/>• Common local errors & diagnostic tree<br/>• ESLint flat configs & Prettier standards                   |
-| **📐 Reference**          | **[API Contract](docs/reference/api.md)**<br/>**[Database & ERD](docs/reference/database.md)**<br/>**[Configuration](docs/reference/configuration.md)**<br/>**[Design System](docs/reference/design-system.md)**                                                        | • 57-endpoint catalog & schemas<br/>• Mongoose models, indexes & Mermaid ERD<br/>• Environment variable dictionary<br/>• 21 UI primitives & Light/Dark tokens                                                                              |
-| **⚙️ Operations**         | **[Deployment & CI/CD](docs/operations/deployment.md)**<br/>**[Operations Runbook](docs/operations/runbook.md)**                                                                                                                                                        | • Vercel serverless topology & CI/CD pipeline<br/>• Health probes, incident triage & logging                                                                                                                                               |
-| **🎯 Product & Security** | **[Features](docs/product/features.md)** • **[User Flows](docs/product/user-flows.md)**<br/>**[Roadmap](docs/product/roadmap.md)**<br/>**[Auth & RBAC](docs/security/auth.md)**<br/>**[Security Checklist](docs/security/checklist.md)**                                | • Complete capability matrix by persona<br/>• State machine & interaction sequence diagrams<br/>• Bug/Gap backlog & release phases<br/>• Dual JWT token lifecycle & session revocation<br/>• Security audit findings (`SEC-xx`) & defenses |
-
-</div>
 
 ---
 
