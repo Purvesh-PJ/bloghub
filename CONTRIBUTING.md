@@ -28,8 +28,6 @@ Thank you for contributing to BlogHub. This document outlines the streamlined pr
    - Backend API (`http://localhost:5000`): `npm run dev --prefix backend`
    - Client App (`http://localhost:3000`): `npm run dev --prefix client`
 
-For deep architecture and documentation, see [docs/README.md](docs/README.md).
-
 ---
 
 ## 🌿 Branching & Git Workflow
