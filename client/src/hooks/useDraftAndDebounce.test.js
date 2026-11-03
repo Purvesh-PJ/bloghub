@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useDebounced } from '../useDebounced';
-import { useDraftRecovery, useBeforeUnload } from '../useDraftRecovery';
+import { useDebounced } from './useDebounced';
+import { useDraftRecovery, useBeforeUnload } from './useDraftRecovery';
 
 describe('useDebounced hook', () => {
   beforeEach(() => {
@@ -224,3 +224,4 @@ describe('useBeforeUnload hook', () => {
     removeEventListenerSpy.mockRestore();
   });
 });
+

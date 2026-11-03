@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 
 const getPost = vi.fn();
 const deletePost = vi.fn();
-vi.mock('../../services/postService', () => ({
+vi.mock('../services/postService', () => ({
   postService: {
     getPost: (...args) => getPost(...args),
     deletePost: (...args) => deletePost(...args),
@@ -14,7 +14,7 @@ vi.mock('../../services/postService', () => ({
 
 const likePost = vi.fn().mockResolvedValue({ success: true });
 const unlikePost = vi.fn().mockResolvedValue({ success: true });
-vi.mock('../../services/likeService', () => ({
+vi.mock('../services/likeService', () => ({
   likeService: {
     likePost: (...args) => likePost(...args),
     unlikePost: (...args) => unlikePost(...args),
@@ -23,7 +23,7 @@ vi.mock('../../services/likeService', () => ({
 
 const createComment = vi.fn().mockResolvedValue({ success: true });
 const deleteComment = vi.fn().mockResolvedValue({ success: true });
-vi.mock('../../services/commentService', () => ({
+vi.mock('../services/commentService', () => ({
   commentService: {
     createComment: (...args) => createComment(...args),
     deleteComment: (...args) => deleteComment(...args),
@@ -34,7 +34,7 @@ const trackPageView = vi.fn().mockResolvedValue({});
 const getPageViewCount = vi.fn().mockResolvedValue({ count: 42 });
 const trackPostRead = vi.fn().mockResolvedValue({});
 const getPostAnalytics = vi.fn().mockResolvedValue({ data: {} });
-vi.mock('../../services/analyticsService', () => ({
+vi.mock('../services/analyticsService', () => ({
   analyticsService: {
     trackPageView,
     getPageViewCount,
@@ -43,8 +43,8 @@ vi.mock('../../services/analyticsService', () => ({
   },
 }));
 
-const { renderWithProviders } = await import('../../test/render');
-const { PostDetail } = await import('../PostDetail');
+const { renderWithProviders } = await import('../test/render');
+const { PostDetail } = await import('./PostDetail');
 
 const mockPost = {
   _id: 'post_101',
