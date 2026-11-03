@@ -28,6 +28,7 @@ const { tagService } = await import('../tagService');
 const { activityService } = await import('../activityService');
 const { searchService } = await import('../searchService');
 const { analyticsService } = await import('../analyticsService');
+const { settingsService } = await import('../settingsService');
 
 beforeEach(() => {
   [get, post, put, patch, del].forEach((fn) => fn.mockClear());
@@ -186,5 +187,30 @@ describe('analyticsService', () => {
 
     await analyticsService.trackPostRead('507f1f77bcf86cd799439011');
     expect(post).toHaveBeenCalledWith('/analytics/read/507f1f77bcf86cd799439011');
+  });
+});
+
+describe('settingsService', () => {
+  it('requests and updates user settings and preferences', async () => {
+    await settingsService.getUserSettings();
+    expect(get).toHaveBeenCalledWith('/settings/user');
+
+    await settingsService.updateUserSettings({ emailNotifications: true });
+    expect(put).toHaveBeenCalledWith('/settings/user', { emailNotifications: true });
+
+    await settingsService.getUserProfile();
+    expect(get).toHaveBeenCalledWith('/settings/profile');
+
+    await settingsService.getUserProfile('507f1f77bcf86cd799439011');
+    expect(get).toHaveBeenCalledWith('/settings/profile/507f1f77bcf86cd799439011');
+
+    await settingsService.updateUserProfile({ bio: 'Hello world' });
+    expect(put).toHaveBeenCalledWith('/settings/profile', { bio: 'Hello world' });
+
+    await settingsService.updatePrivacySettings({ isPrivate: false });
+    expect(put).toHaveBeenCalledWith('/settings/privacy', { isPrivate: false });
+
+    await settingsService.updateAppearanceSettings({ theme: 'dark' });
+    expect(put).toHaveBeenCalledWith('/settings/appearance', { theme: 'dark' });
   });
 });
