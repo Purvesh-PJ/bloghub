@@ -36,7 +36,7 @@
 
 <p align="center">
   <a href="https://bloghub-gold.vercel.app/">
-    <img src="client/public/screenshots/landing.png" alt="BlogHub Platform Hero Preview" width="100%" />
+    <img src="./client/public/screenshots/landing.png" alt="BlogHub Platform Hero Preview" width="100%" />
   </a>
 </p>
 
@@ -65,36 +65,36 @@ Below is the visual gallery across BlogHub's reading surfaces, editor studios, c
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/landing.png" alt="Landing Page & Trending Discovery" width="100%" />
+      <img src="./client/public/screenshots/landing.png" alt="Landing Page & Trending Discovery" width="100%" />
       <br/><strong>🏠 Landing Page & Trending Feed</strong><br/>
       <sub>Featured hero, topic marquee, 14-day trending algorithm, and story feed (<code>/</code>)</sub>
     </td>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/post.png" alt="Focused Reader View" width="100%" />
+      <img src="./client/public/screenshots/post.png" alt="Focused Reader View" width="100%" />
       <br/><strong>📖 Focused Reading View</strong><br/>
       <sub>720px reading column, author byline, atomic likes, and threaded replies (<code>/post/:id</code>)</sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/markdown-editor.png" alt="Markdown Authoring Studio" width="100%" />
+      <img src="./client/public/screenshots/markdown-editor.png" alt="Markdown Authoring Studio" width="100%" />
       <br/><strong>✍️ Markdown Authoring Studio</strong><br/>
       <sub>Synchronized split-view Markdown editor with live preview and cover URL (<code>/write</code>)</sub>
     </td>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/creator-workspace.png" alt="Creator Analytics Workspace" width="100%" />
+      <img src="./client/public/screenshots/creator-workspace.png" alt="Creator Analytics Workspace" width="100%" />
       <br/><strong>📊 Creator Analytics Workspace</strong><br/>
       <sub>Personal read-through rate bar, view-to-read conversions, and draft resume (<code>/dashboard</code>)</sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/posts-management.png" alt="Posts Management & Bulk Actions" width="100%" />
+      <img src="./client/public/screenshots/posts-management.png" alt="Posts Management & Bulk Actions" width="100%" />
       <br/><strong>📚 Posts & Story Management</strong><br/>
       <sub>Server-filtered stories table with bulk actions and visibility toggles (<code>/stories</code>)</sub>
     </td>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/admin-workspace.png" alt="Admin Management Workspace" width="100%" />
+      <img src="./client/public/screenshots/admin-workspace.png" alt="Admin Management Workspace" width="100%" />
       <br/><strong>🛡️ Admin Moderation Workspace</strong><br/>
       <sub>Site-wide health metrics, story catalog moderation, and user management (<code>/admin</code>)</sub>
     </td>
