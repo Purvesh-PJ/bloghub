@@ -16,9 +16,10 @@ const createWrapper = () => {
       queries: { retry: false, gcTime: 0 },
     },
   });
-  return ({ children }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  function QueryWrapper({ children }) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  }
+  return QueryWrapper;
 };
 
 describe('useCurrentUser hook', () => {
