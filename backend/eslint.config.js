@@ -3,7 +3,7 @@ const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommen
 module.exports = [
   eslintPluginPrettierRecommended,
   {
-    ignores: ['node_modules/**', 'uploads/**', 'dist/**'],
+    ignores: ['node_modules/**', 'uploads/**', 'dist/**', 'coverage/**'],
   },
   {
     languageOptions: {
@@ -24,6 +24,7 @@ module.exports = [
     rules: {
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-console': 'off',
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
 ];

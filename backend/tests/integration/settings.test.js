@@ -9,13 +9,6 @@ const userAccount = {
   confirmPassword: 'Password123!',
 };
 
-const otherAccount = {
-  username: 'settings_other',
-  email: 'settings_other@example.com',
-  password: 'Password123!',
-  confirmPassword: 'Password123!',
-};
-
 const signedInAs = async (account) => {
   await request(app).post('/api/auth/signup').send(account);
   const { body } = await request(app)
@@ -26,11 +19,9 @@ const signedInAs = async (account) => {
 
 describe('Settings API (/api/settings)', () => {
   let token;
-  let otherToken;
 
   beforeEach(async () => {
     token = await signedInAs(userAccount);
-    otherToken = await signedInAs(otherAccount);
   });
 
   describe('GET & PUT /api/settings/user', () => {

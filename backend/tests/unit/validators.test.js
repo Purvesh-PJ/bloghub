@@ -5,7 +5,6 @@ const {
   refreshRules,
   changePasswordRules,
   deleteAccountRules,
-  MIN_PASSWORD_LENGTH,
 } = require('../../validators/auth.validators');
 const {
   createPostRules,
@@ -19,7 +18,7 @@ const {
   roleRules,
   adminDeleteRules,
 } = require('../../validators/user.validators');
-const { validate, validateObjectId } = require('../../middlewares/validate');
+const { validateObjectId } = require('../../middlewares/validate');
 
 // Helper to run express-validator chains against a dummy request
 const runRules = async (rules, req) => {

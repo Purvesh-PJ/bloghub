@@ -1,6 +1,5 @@
 const request = require('supertest');
 const app = require('../../index');
-const Post = require('../../models/post.model');
 const View = require('../../models/view.model');
 const User = require('../../models/user.model');
 
@@ -135,4 +134,3 @@ describe('Page Views API', () => {
     });
   });
 });
-
