@@ -2,13 +2,13 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useCurrentUser } from './useCurrentUser';
-import { useReadingProgress, useReadTracking } from './useReading';
-import { useTags } from './useTags';
-import { userService } from '../services/userService';
-import { analyticsService } from '../services/analyticsService';
-import { tagService } from '../services/tagService';
-import * as AuthModule from '../context/AuthContext';
+import { useCurrentUser } from '../useCurrentUser';
+import { useReadingProgress, useReadTracking } from '../useReading';
+import { useTags } from '../useTags';
+import { userService } from '../../services/userService';
+import { analyticsService } from '../../services/analyticsService';
+import { tagService } from '../../services/tagService';
+import * as AuthModule from '../../context/AuthContext';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({

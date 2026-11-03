@@ -16,18 +16,18 @@ const put = vi.fn(() => Promise.resolve({ data: { success: true } }));
 const patch = vi.fn(() => Promise.resolve({ data: { success: true } }));
 const del = vi.fn(() => Promise.resolve({ data: { success: true } }));
 
-vi.mock('../config/api', () => ({
+vi.mock('../../config/api', () => ({
   default: { get, post, put, patch, delete: del },
 }));
 
-const { userService } = await import('./userService');
-const { postService } = await import('./postService');
-const { commentService } = await import('./commentService');
-const { likeService } = await import('./likeService');
-const { tagService } = await import('./tagService');
-const { activityService } = await import('./activityService');
-const { searchService } = await import('./searchService');
-const { analyticsService } = await import('./analyticsService');
+const { userService } = await import('../userService');
+const { postService } = await import('../postService');
+const { commentService } = await import('../commentService');
+const { likeService } = await import('../likeService');
+const { tagService } = await import('../tagService');
+const { activityService } = await import('../activityService');
+const { searchService } = await import('../searchService');
+const { analyticsService } = await import('../analyticsService');
 
 beforeEach(() => {
   [get, post, put, patch, del].forEach((fn) => fn.mockClear());

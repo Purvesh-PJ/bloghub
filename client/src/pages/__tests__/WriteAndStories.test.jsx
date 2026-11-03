@@ -9,7 +9,7 @@ const updatePost = vi.fn().mockResolvedValue({ success: true });
 const deletePost = vi.fn().mockResolvedValue({ success: true });
 const getPost = vi.fn().mockResolvedValue({ success: true, data: null });
 
-vi.mock('../services/postService', () => ({
+vi.mock('../../services/postService', () => ({
   postService: {
     getMyPosts: (...args) => getMyPosts(...args),
     createPost: (...args) => createPost(...args),
@@ -20,17 +20,17 @@ vi.mock('../services/postService', () => ({
 }));
 
 const getTags = vi.fn();
-vi.mock('../services/tagService', () => ({
+vi.mock('../../services/tagService', () => ({
   tagService: { getTags: (...args) => getTags(...args) },
 }));
 
 const getMyAnalytics = vi.fn();
-vi.mock('../services/analyticsService', () => ({
+vi.mock('../../services/analyticsService', () => ({
   analyticsService: { getMyAnalytics: (...args) => getMyAnalytics(...args) },
 }));
 
 // Mock useNavigationGuard to avoid requiring Data Router in unit tests
-vi.mock('../hooks/useDraftRecovery', async (importOriginal) => {
+vi.mock('../../hooks/useDraftRecovery', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -38,9 +38,9 @@ vi.mock('../hooks/useDraftRecovery', async (importOriginal) => {
   };
 });
 
-const { renderWithProviders } = await import('../test/render');
-const { WritePost } = await import('./WritePost');
-const { Stories } = await import('./Stories');
+const { renderWithProviders } = await import('../../test/render');
+const { WritePost } = await import('../WritePost');
+const { Stories } = await import('../Stories');
 
 describe('WritePost Page', () => {
   beforeEach(() => {
