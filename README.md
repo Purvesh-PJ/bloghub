@@ -367,6 +367,22 @@ bloghub/
 
 ## 🧪 Scripts & Tests
 
+### Root Commands (Unified Full-Stack)
+
+You can run full-stack operations directly from the root repository directory:
+
+| Command | Description |
+| :--- | :--- |
+| `npm test` | Run **complete test suite (all 328 tests across Backend & Client)** |
+| `npm run test:backend` | Run only Backend Jest test suite (190 tests) |
+| `npm run test:client` | Run only Client Vitest test suite (138 tests) |
+| `npm run test:coverage` | Run full coverage reports across both Backend and Client |
+| `npm run lint` / `npm run lint:fix` | Check or auto-fix linting across both Backend and Client |
+| `npm run format:check` / `npm run format` | Verify or format all files across the repository |
+| `npm run build` | Compile client production build |
+
+---
+
 ### Backend Commands (`cd backend`)
 
 | Command                                   | Description                                                                          |
