@@ -1,10 +1,10 @@
 const request = require('supertest');
-const app = require('../index');
-const User = require('../models/user.model');
-const Post = require('../models/post.model');
-const View = require('../models/view.model');
-const Read = require('../models/read.model');
-const Like = require('../models/like.model');
+const app = require('../../index');
+const User = require('../../models/user.model');
+const Post = require('../../models/post.model');
+const View = require('../../models/view.model');
+const Read = require('../../models/read.model');
+const Like = require('../../models/like.model');
 
 const author = {
   username: 'trend_author',
@@ -161,7 +161,7 @@ describe('GET /api/posts/trending', () => {
 describe('GET /api/posts?topic=', () => {
   it('queries the whole collection, not just the page the client already had', async () => {
     const token = await signIn();
-    const Tag = require('../models/tag.model');
+    const Tag = require('../../models/tag.model');
     const topic = await Tag.create({ name: 'widgets', posts: [] });
 
     // More stories than a single page, so a client-side filter over one page would miss some.
@@ -195,7 +195,7 @@ describe('GET /api/posts?topic=', () => {
 describe('GET /api/tags', () => {
   it('returns tags and reports post counts', async () => {
     const token = await signIn();
-    const Tag = require('../models/tag.model');
+    const Tag = require('../../models/tag.model');
     const [used, unused] = await Tag.create([
       { name: 'usedtag', posts: [] },
       { name: 'unusedtag', posts: [] },

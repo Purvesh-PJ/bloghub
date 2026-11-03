@@ -1,7 +1,7 @@
 const request = require('supertest');
-const app = require('../index');
-const Comment = require('../models/comment.model');
-const User = require('../models/user.model');
+const app = require('../../index');
+const Comment = require('../../models/comment.model');
+const User = require('../../models/user.model');
 
 /*
   Likes, replies and following — the three things a reader can do to somebody else's story.

@@ -1,6 +1,6 @@
 const request = require('supertest');
-const app = require('../index');
-const User = require('../models/user.model');
+const app = require('../../index');
+const User = require('../../models/user.model');
 
 /*
   The public profile page.

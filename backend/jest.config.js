@@ -5,8 +5,8 @@
 module.exports = {
   testEnvironment: 'node',
   // Environment first (the app asserts its config at import time), database second.
-  setupFiles: ['<rootDir>/tests/env.js'],
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+  setupFiles: ['<rootDir>/tests/setup/env.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup/setup.js'],
   // Starting the in-memory server on a cold cache is slow the first time it downloads a
   // binary; the default 5s is not enough.
   testTimeout: 30000,

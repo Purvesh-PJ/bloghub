@@ -1,7 +1,7 @@
 const request = require('supertest');
-const app = require('../index');
-const User = require('../models/user.model');
-const Post = require('../models/post.model');
+const app = require('../../index');
+const User = require('../../models/user.model');
+const Post = require('../../models/post.model');
 
 const account = (n) => ({
   username: `person_${n}`,
