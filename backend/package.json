@@ -8,6 +8,8 @@
     "dev": "nodemon index.js",
     "seed": "node scripts/seed.js",
     "test": "jest --runInBand",
+    "test:integration": "jest tests/integration --runInBand",
+    "test:unit": "jest tests/unit --runInBand",
     "test:watch": "jest --watch --runInBand",
     "test:coverage": "jest --coverage --runInBand",
     "lint": "eslint .",

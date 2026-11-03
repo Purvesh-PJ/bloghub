@@ -35,8 +35,8 @@ vi.mock('axios', () => {
 });
 
 const axios = (await import('axios')).default;
-await import('./api');
-const { authState } = await import('../context/AuthContext');
+await import('../api');
+const { authState } = await import('../../context/AuthContext');
 
 /** The rejection half of the response interceptor the module registered on import. */
 const api = axios.create.mock.results[0].value;

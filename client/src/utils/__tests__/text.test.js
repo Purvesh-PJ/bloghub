@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { stripMarkdown, excerpt, readingTime, readingTimeFromLength, initial } from './text';
+import { stripMarkdown, excerpt, readingTime, readingTimeFromLength, initial } from '../text';
 
 /*
   The text helpers.

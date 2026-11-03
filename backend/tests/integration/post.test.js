@@ -1,6 +1,6 @@
 const request = require('supertest');
-const app = require('../index');
-const Post = require('../models/post.model');
+const app = require('../../index');
+const Post = require('../../models/post.model');
 
 const author = {
   username: 'author_one',

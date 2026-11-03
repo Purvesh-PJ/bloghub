@@ -28,6 +28,11 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.js'],
     // vitest's default also picks up anything under node_modules/.
     include: ['src/**/*.test.{js,jsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: ['src/test/**', 'src/**/__tests__/**', 'node_modules/**'],
+    },
   },
 
   build: {

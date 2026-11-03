@@ -14,7 +14,7 @@
 [![Vite](https://img.shields.io/badge/Vite-7.2-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![TanStack Query](https://img.shields.io/badge/TanStack_Query-5.0-FF4154?style=flat-square&logo=reactquery&logoColor=white)](https://tanstack.com/query)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Tests](https://img.shields.io/badge/Tests-198_Passing-success?style=flat-square&logo=jest&logoColor=white)](https://jestjs.io/)
+[![Tests](https://img.shields.io/badge/Tests-327_Passing-success?style=flat-square&logo=jest&logoColor=white)](https://jestjs.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
 <br/>
@@ -36,7 +36,7 @@
 
 <p align="center">
   <a href="https://bloghub-gold.vercel.app/">
-    <img src="client/public/screenshots/landing.png" alt="BlogHub Platform Hero Preview" width="100%" />
+    <img src="./client/public/screenshots/landing.png" alt="BlogHub Platform Hero Preview" width="100%" />
   </a>
 </p>
 
@@ -65,36 +65,36 @@ Below is the visual gallery across BlogHub's reading surfaces, editor studios, c
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/landing.png" alt="Landing Page & Trending Discovery" width="100%" />
+      <img src="./client/public/screenshots/landing.png" alt="Landing Page & Trending Discovery" width="100%" />
       <br/><strong>🏠 Landing Page & Trending Feed</strong><br/>
       <sub>Featured hero, topic marquee, 14-day trending algorithm, and story feed (<code>/</code>)</sub>
     </td>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/post.png" alt="Focused Reader View" width="100%" />
+      <img src="./client/public/screenshots/post.png" alt="Focused Reader View" width="100%" />
       <br/><strong>📖 Focused Reading View</strong><br/>
       <sub>720px reading column, author byline, atomic likes, and threaded replies (<code>/post/:id</code>)</sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/markdown-editor.png" alt="Markdown Authoring Studio" width="100%" />
+      <img src="./client/public/screenshots/markdown-editor.png" alt="Markdown Authoring Studio" width="100%" />
       <br/><strong>✍️ Markdown Authoring Studio</strong><br/>
       <sub>Synchronized split-view Markdown editor with live preview and cover URL (<code>/write</code>)</sub>
     </td>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/creator-workspace.png" alt="Creator Analytics Workspace" width="100%" />
+      <img src="./client/public/screenshots/creator-workspace.png" alt="Creator Analytics Workspace" width="100%" />
       <br/><strong>📊 Creator Analytics Workspace</strong><br/>
       <sub>Personal read-through rate bar, view-to-read conversions, and draft resume (<code>/dashboard</code>)</sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/posts-management.png" alt="Posts Management & Bulk Actions" width="100%" />
+      <img src="./client/public/screenshots/posts-management.png" alt="Posts Management & Bulk Actions" width="100%" />
       <br/><strong>📚 Posts & Story Management</strong><br/>
       <sub>Server-filtered stories table with bulk actions and visibility toggles (<code>/stories</code>)</sub>
     </td>
     <td width="50%" align="center">
-      <img src="client/public/screenshots/admin-workspace.png" alt="Admin Management Workspace" width="100%" />
+      <img src="./client/public/screenshots/admin-workspace.png" alt="Admin Management Workspace" width="100%" />
       <br/><strong>🛡️ Admin Moderation Workspace</strong><br/>
       <sub>Site-wide health metrics, story catalog moderation, and user management (<code>/admin</code>)</sub>
     </td>
@@ -321,7 +321,7 @@ Visit **[`http://localhost:3000`](http://localhost:3000)** in your browser.
 
 ```
 bloghub/
-├── .github/workflows/ci.yml    # CI: Lint · Format · 198 Tests · Build · Audit
+├── .github/workflows/ci.yml    # CI: Lint · Format · 327 Tests · Build · Audit
 ├── .env.example                # Single root environment configuration template
 ├── CONTRIBUTING.md             # Contribution guidelines & PR workflow
 ├── CODE_OF_CONDUCT.md          # Community conduct standards
@@ -336,7 +336,9 @@ bloghub/
 │   ├── models/                 # 9 Mongoose schemas (User, Post, Comment, Tag, Like, etc.)
 │   ├── routes/                 # 11 Express router modules mounted under /api
 │   ├── services/               # postService, commentService, accountService, trendingService
-│   ├── tests/                  # 125 integration tests (Jest + mongodb-memory-server)
+│   ├── tests/                  # 190 tests across 15 suites (Jest + mongodb-memory-server)
+│   │   ├── unit/               # Fast isolated unit tests (middlewares, utils, validators)
+│   │   └── integration/        # End-to-end API integration tests with in-memory MongoDB
 │   ├── validators/             # express-validator schema rule sets
 │   ├── index.js                # Server entry point & composition root
 │   └── package.json
@@ -345,13 +347,14 @@ bloghub/
 │   ├── public/screenshots/     # UI preview assets & screenshot gallery
 │   ├── src/
 │   │   ├── components/         # ui/ (21 design primitives), posts/, layout/, marketing/
-│   │   ├── config/             # api.js (Axios client), markdown.js (rehype-sanitize schema)
-│   │   ├── context/            # AuthContext.jsx & authState singleton
-│   │   ├── guards/             # ProtectedRoute.jsx, AdminRoute.jsx
-│   │   ├── hooks/              # useCurrentUser, useReading, useTags, useDraftRecovery
-│   │   ├── pages/              # 12 Reader/Author pages + admin/ (6 screens)
-│   │   ├── services/           # 10 API service clients & queryKeys.js
-│   │   ├── styles/             # ThemeProvider & theme/ (Design tokens, Light/Dark)
+│   │   ├── config/             # api.js & __tests__/api.test.js
+│   │   ├── context/            # AuthContext.jsx & __tests__/AuthAndTheme.test.jsx
+│   │   ├── guards/             # ProtectedRoute.jsx & __tests__/RouteGuards.test.jsx
+│   │   ├── hooks/              # useCurrentUser, useReading & __tests__/
+│   │   ├── pages/              # 12 Reader/Author pages + admin/ + dedicated __tests__/
+│   │   ├── services/           # 10 API service clients & __tests__/services.test.js
+│   │   ├── styles/             # ThemeProvider & theme tokens
+│   │   ├── utils/              # text.js & __tests__/text.test.js
 │   │   ├── App.jsx             # Code-split routing table & Suspense boundaries
 │   │   └── main.jsx            # Provider composition tree
 │   ├── vite.config.js          # Vite config, dev proxy & Rollup chunk splitting
@@ -364,28 +367,48 @@ bloghub/
 
 ## 🧪 Scripts & Tests
 
+### Root Commands (Unified Full-Stack)
+
+You can run full-stack operations directly from the root repository directory:
+
+| Command | Description |
+| :--- | :--- |
+| `npm test` | Run **complete test suite (all 328 tests across Backend & Client)** |
+| `npm run test:backend` | Run only Backend Jest test suite (190 tests) |
+| `npm run test:client` | Run only Client Vitest test suite (138 tests) |
+| `npm run test:coverage` | Run full coverage reports across both Backend and Client |
+| `npm run lint` / `npm run lint:fix` | Check or auto-fix linting across both Backend and Client |
+| `npm run format:check` / `npm run format` | Verify or format all files across the repository |
+| `npm run build` | Compile client production build |
+
+---
+
 ### Backend Commands (`cd backend`)
 
-| Command                                   | Description                                                                   |
-| :---------------------------------------- | :---------------------------------------------------------------------------- |
-| `npm run dev`                             | Start API server in watch mode with nodemon                                   |
-| `npm test`                                | Run **125 Jest integration tests** in-process against `mongodb-memory-server` |
-| `npm run test:coverage`                   | Generate full backend code coverage report                                    |
-| `npm run seed`                            | Populate database with demo users, stories, and metrics                       |
-| `npm run migrate`                         | Execute database migrations (`--dry` to preview changes)                      |
-| `npm run lint` / `npm run lint:fix`       | Execute ESLint 9 code analysis & automated fixes                              |
-| `npm run format:check` / `npm run format` | Verify or format code with Prettier 3                                         |
+| Command                                   | Description                                                                          |
+| :---------------------------------------- | :----------------------------------------------------------------------------------- |
+| `npm run dev`                             | Start API server in watch mode with nodemon                                          |
+| `npm test`                                | Run **190 Jest tests (15 suites)** in-process against `mongodb-memory-server`        |
+| `npm run test:unit`                       | Run fast isolated unit tests for middlewares, utils, and validators                  |
+| `npm run test:integration`                | Run comprehensive API integration tests with in-memory MongoDB                       |
+| `npm run test:coverage`                   | Generate full backend code coverage report (**91.73% line coverage**)                |
+| `npm run seed`                            | Populate database with demo users, stories, and metrics                              |
+| `npm run migrate`                         | Execute database migrations (`--dry` to preview changes)                             |
+| `npm run lint` / `npm run lint:fix`       | Execute ESLint 9 code analysis & automated fixes                                     |
+| `npm run format:check` / `npm run format` | Verify or format code with Prettier 3                                                |
 
 ### Client Commands (`cd client`)
 
-| Command                                   | Description                                                   |
-| :---------------------------------------- | :------------------------------------------------------------ |
-| `npm run dev`                             | Launch Vite development server on `http://localhost:3000`     |
-| `npm test`                                | Run **73 Vitest unit & component tests** in jsdom environment |
-| `npm run build`                           | Compile optimized production bundle to `client/dist`          |
-| `npm run preview`                         | Locally preview the compiled production build                 |
-| `npm run lint` / `npm run lint:fix`       | Check or fix client source code with ESLint 9                 |
-| `npm run format:check` / `npm run format` | Check or format client files with Prettier 3                  |
+| Command                                   | Description                                                                          |
+| :---------------------------------------- | :----------------------------------------------------------------------------------- |
+| `npm run dev`                             | Launch Vite development server on `http://localhost:3000`                            |
+| `npm test`                                | Run **137 Vitest unit & integration tests (15 suites)** in jsdom                     |
+| `npm run test:coverage`                   | Generate full frontend code coverage report via `@vitest/coverage-v8`                |
+| `npm run test:watch`                      | Launch Vitest in interactive watch mode for TDD                                      |
+| `npm run build`                           | Compile optimized production bundle to `client/dist`                                 |
+| `npm run preview`                         | Locally preview the compiled production build                                        |
+| `npm run lint` / `npm run lint:fix`       | Check or fix client source code with ESLint 9                                        |
+| `npm run format:check` / `npm run format` | Check or format client files with Prettier 3                                         |
 
 ---
 

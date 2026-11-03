@@ -45,19 +45,19 @@ const activityService = {
   getUserTimeline: vi.fn(),
 };
 
-vi.mock('../../services/postService', () => ({ postService }));
-vi.mock('../../services/userService', () => ({ userService }));
-vi.mock('../../services/tagService', () => ({ tagService }));
-vi.mock('../../services/analyticsService', () => ({ analyticsService }));
-vi.mock('../../services/activityService', () => ({ activityService }));
+vi.mock('../../../services/postService', () => ({ postService }));
+vi.mock('../../../services/userService', () => ({ userService }));
+vi.mock('../../../services/tagService', () => ({ tagService }));
+vi.mock('../../../services/analyticsService', () => ({ analyticsService }));
+vi.mock('../../../services/activityService', () => ({ activityService }));
 
-const { renderWithProviders } = await import('../../test/render');
-const { AdminDashboard } = await import('./Dashboard');
-const { AdminPosts } = await import('./Posts');
-const { AdminTags } = await import('./Tags');
-const { AdminUsers } = await import('./Users');
-const { AdminActivity } = await import('./Activity');
-const { AdminPersonActivity } = await import('./PersonActivity');
+const { renderWithProviders } = await import('../../../test/render');
+const { AdminDashboard } = await import('../Dashboard');
+const { AdminPosts } = await import('../Posts');
+const { AdminTags } = await import('../Tags');
+const { AdminUsers } = await import('../Users');
+const { AdminActivity } = await import('../Activity');
+const { AdminPersonActivity } = await import('../PersonActivity');
 
 const ADMIN_ID = '507f1f77bcf86cd799439001';
 const OTHER_ID = '507f1f77bcf86cd799439002';

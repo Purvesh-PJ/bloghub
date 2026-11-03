@@ -26,16 +26,16 @@ const isFollowing = vi.fn();
 const followUser = vi.fn();
 const unfollowUser = vi.fn();
 
-vi.mock('../services/userService', () => ({
+vi.mock('../../services/userService', () => ({
   userService: { getPublicProfile, getUser, isFollowing, followUser, unfollowUser },
 }));
 
-vi.mock('../services/postService', () => ({
+vi.mock('../../services/postService', () => ({
   postService: { getPostsByAuthor, getPosts },
 }));
 
-const { renderWithProviders } = await import('../test/render');
-const { UserProfile } = await import('./UserProfile');
+const { renderWithProviders } = await import('../../test/render');
+const { UserProfile } = await import('../UserProfile');
 
 const AUTHOR_ID = '507f1f77bcf86cd799439011';
 const VIEWER_ID = '507f1f77bcf86cd799439012';
