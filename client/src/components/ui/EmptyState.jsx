@@ -34,9 +34,9 @@ export function EmptyState({
         </p>
       )}
       {children && (
-        <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] max-w-[46ch] leading-relaxed">
+        <div className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] max-w-[46ch] leading-relaxed">
           {children}
-        </p>
+        </div>
       )}
       {actions && (
         <div className="flex gap-2 flex-wrap justify-center mt-2">

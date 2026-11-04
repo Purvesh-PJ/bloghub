@@ -1,436 +1,309 @@
-<div align="center">
+# BlogHub
 
-# 📝 BlogHub
+An open-source, full-stack publishing platform focused on read-through engagement analytics, live Markdown authoring, and platform moderation.
 
-**An open-source, full-stack publishing platform engineered for deep reading, live Markdown authoring, read-through engagement analytics, and complete platform governance.**
+[![CI](https://github.com/Purvesh-PJ/blogging_platform/actions/workflows/ci.yml/badge.svg)](https://github.com/Purvesh-PJ/blogging_platform/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-6.0+-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 
-<br/>
+**[Live Demo](https://bloghub-gold.vercel.app/)** · [Architecture](ARCHITECTURE.md) · [Contributing](CONTRIBUTING.md)
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-bloghub--gold.vercel.app-0070F3?style=flat-square&logo=vercel&logoColor=white)](https://bloghub-gold.vercel.app/)
-[![React 19](https://img.shields.io/badge/React-19.2-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-4.18-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-6.0+-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Vite](https://img.shields.io/badge/Vite-7.2-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![TanStack Query](https://img.shields.io/badge/TanStack_Query-5.0-FF4154?style=flat-square&logo=reactquery&logoColor=white)](https://tanstack.com/query)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Tests](https://img.shields.io/badge/Tests-327_Passing-success?style=flat-square&logo=jest&logoColor=white)](https://jestjs.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+![BlogHub landing page](./client/public/screenshots/landing.png)
 
-<br/>
+## Table of Contents
 
-<p align="center">
-  <a href="https://bloghub-gold.vercel.app/">🌐 <strong>Live Demo</strong></a> •
-  <a href="#features">Features</a> •
-  <a href="#screenshots">Screenshots</a> •
-  <a href="#architecture">Architecture</a> •
-  <a href="#tech-stack">Tech Stack</a> •
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#demo-credentials">Demo Accounts</a> •
-  <a href="#scripts">Scripts & Tests</a>
-</p>
+- [Overview](#overview)
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Demo Accounts](#demo-accounts)
+- [API Overview](#api-overview)
+- [Scripts and Testing](#scripts-and-testing)
+- [Project Structure](#project-structure)
+- [Deployment](#deployment)
+- [Roadmap and Known Limitations](#roadmap-and-known-limitations)
+- [Contributing](#contributing)
+- [License](#license)
 
-</div>
+## Overview
 
----
+Most blogging tools report page views. BlogHub tracks **read-through rate**: how many visitors actually finish an article. This metric drives both the author analytics dashboard and the trending feed.
 
-<p align="center">
-  <a href="https://bloghub-gold.vercel.app/">
-    <img src="./client/public/screenshots/landing.png" alt="BlogHub Platform Hero Preview" width="100%" />
-  </a>
-</p>
+The project has three user-facing areas:
 
----
+| Readers | Authors | Administrators |
+| :-- | :-- | :-- |
+| 720px reading column | Split-pane live Markdown editor | Story moderation (public/private) |
+| Sanitized Markdown rendering | Auto-generated, editable slugs | User management and role promotion |
+| 14-day trending feed | Cover image and up to 5 tags per story | Instant session revocation |
+| Threaded comments and likes | Read-through analytics dashboard | Site-wide health metrics |
 
-## 💡 What makes BlogHub different?
+## Features
 
-Traditional blogging software optimizes for superficial page impressions (clicks). **BlogHub is engineered around read-through rate and genuine reader engagement** — measuring not just who clicked an article, but who actually finished reading it.
+**Authoring**
+- Split-screen Markdown editor with live preview.
+- Server-enforced visibility states: `draft`, `private`, `public`.
+- Auto-generated URL slugs with manual override.
+- Cover image support and tags created on demand.
 
-<br/>
+**Reading and social**
+- Light and dark themes.
+- Trending ranking over a 14-day window, weighted by verified read completions.
+- Nested (threaded) comments.
+- Idempotent likes and follows, enforced by MongoDB compound unique indexes.
 
-| 📖 Reader-Centric                                                                                                                                                         | ✍️ Modern Author Studio                                                                                                                                 | 🛡️ Platform Governance                                                                                                                                                       |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| • Clean 720px typography reading measure<br/>• Sanitized Markdown rendering (rehype-sanitize)<br/>• 14-day dynamic trending algorithm<br/>• Threaded nested discussions & likes | • Split-pane live Markdown preview<br/>• Auto-derived custom SEO slugs<br/>• Cover image & topic taxonomy<br/>• Real-time read-rate analytics dashboard | • Full public/private story moderation<br/>• User management & role promotion<br/>• Instant session revocation (`tokenVersion`)<br/>• In-memory isolated integration testing |
+**Analytics**
+- Per-author view-to-read conversion metrics.
+- Visitor deduplication using salted HMAC hashes over a 6-hour sliding window.
+- Separate author-level and platform-level (admin) analytics.
 
----
+**Security**
+- Dual-token JWT: access token (15 min) and refresh token (7 days), with silent renewal through an Axios interceptor.
+- Any credential change increments `tokenVersion`, which invalidates all active tokens across devices.
+- Helmet security headers, CORS origin pinning, rate limiting, `express-validator` input validation, and `rehype-sanitize` for rendered Markdown.
 
-<a id="screenshots"></a>
+## Screenshots
 
-## 📸 Interface Tour & Screenshots
+| | |
+| :-: | :-: |
+| ![Landing](./client/public/screenshots/landing.png)<br/>**Landing and trending feed** (`/`) | ![Reader](./client/public/screenshots/post.png)<br/>**Reading view** (`/post/:id`) |
+| ![Editor](./client/public/screenshots/markdown-editor.png)<br/>**Markdown editor** (`/write`) | ![Dashboard](./client/public/screenshots/creator-workspace.png)<br/>**Author analytics** (`/dashboard`) |
+| ![Stories](./client/public/screenshots/posts-management.png)<br/>**Story management** (`/stories`) | ![Admin](./client/public/screenshots/admin-workspace.png)<br/>**Admin console** (`/admin`) |
 
-Below is the visual gallery across BlogHub's reading surfaces, editor studios, creator workspaces, and admin console.
+## Architecture
 
-<div align="center">
+BlogHub is a decoupled three-tier application: a React 19 single-page app, a stateless Express 4 REST API, and a MongoDB database.
 
-<table>
-  <tr>
-    <td width="50%" align="center">
-      <img src="./client/public/screenshots/landing.png" alt="Landing Page & Trending Discovery" width="100%" />
-      <br/><strong>🏠 Landing Page & Trending Feed</strong><br/>
-      <sub>Featured hero, topic marquee, 14-day trending algorithm, and story feed (<code>/</code>)</sub>
-    </td>
-    <td width="50%" align="center">
-      <img src="./client/public/screenshots/post.png" alt="Focused Reader View" width="100%" />
-      <br/><strong>📖 Focused Reading View</strong><br/>
-      <sub>720px reading column, author byline, atomic likes, and threaded replies (<code>/post/:id</code>)</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <img src="./client/public/screenshots/markdown-editor.png" alt="Markdown Authoring Studio" width="100%" />
-      <br/><strong>✍️ Markdown Authoring Studio</strong><br/>
-      <sub>Synchronized split-view Markdown editor with live preview and cover URL (<code>/write</code>)</sub>
-    </td>
-    <td width="50%" align="center">
-      <img src="./client/public/screenshots/creator-workspace.png" alt="Creator Analytics Workspace" width="100%" />
-      <br/><strong>📊 Creator Analytics Workspace</strong><br/>
-      <sub>Personal read-through rate bar, view-to-read conversions, and draft resume (<code>/dashboard</code>)</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <img src="./client/public/screenshots/posts-management.png" alt="Posts Management & Bulk Actions" width="100%" />
-      <br/><strong>📚 Posts & Story Management</strong><br/>
-      <sub>Server-filtered stories table with bulk actions and visibility toggles (<code>/stories</code>)</sub>
-    </td>
-    <td width="50%" align="center">
-      <img src="./client/public/screenshots/admin-workspace.png" alt="Admin Management Workspace" width="100%" />
-      <br/><strong>🛡️ Admin Moderation Workspace</strong><br/>
-      <sub>Site-wide health metrics, story catalog moderation, and user management (<code>/admin</code>)</sub>
-    </td>
-  </tr>
-</table>
-
-</div>
-
----
-
-<a id="features"></a>
-
-## ✨ Core Capabilities
-
-### 1. ✍️ Composition & Lifecycle
-
-- **Synchronized Markdown Editor:** Split-screen writing with instant syntax-highlighted preview.
-- **Enforced Visibility State Machine:** Secure server-side isolation between `draft`, `private`, and `public` states.
-- **Slug Management:** Auto-generated URL slugs with custom edit overrides.
-- **Cover Image & Tags:** Header artwork support, plus up to five tags per story, created on demand.
-
-### 2. 📖 Reading & Social Features
-
-- **Editorial Typography:** Tailored 720px reading column with seamless Light/Dark theming.
-- **14-Day Trending Algorithm:** Dynamic ranking weighted by recent verified read completions.
-- **Threaded Discussions:** Nested comment hierarchies with parent-child reply trees.
-- **Idempotent Social Graph:** MongoDB compound unique indexes prevent duplicate likes or follow anomalies under high concurrency.
-
-### 3. 📊 Engagement Analytics
-
-- **Read-Through Conversion:** Visual metrics tracking viewer-to-reader completion ratios.
-- **Visitor Deduplication:** Salted HMAC visitor hashing with 6-hour sliding windows to prevent artificial view inflation.
-- **Author vs. Admin Analytics:** Private author workspaces vs. aggregate platform governance stats.
-
-### 4. 🔐 Security & Identity
-
-- **Dual-Token JWT:** Short-lived access tokens (15m) + refresh tokens (7d) with silent Axios interceptor renewal.
-- **Instant Session Revocation:** Any credential change increments `tokenVersion`, immediately terminating active tokens across all devices.
-- **Defense in Depth:** Helmet HTTP security headers, CORS origin pinning, input sanitization via express-validator, and `rehype-sanitize` stripping dangerous markup out of rendered Markdown.
-
----
-
-<a id="architecture"></a>
-
-## 🏛️ Architecture
-
-BlogHub is designed as a decoupled full-stack architecture: an **18-route React 19 SPA** interacting with a **stateless Express 4 API Gateway**, backed by an **indexed MongoDB cluster**.
-
-> 📖 **Deep Dive:** For the full system specification, database ERD, dual-token sequence flows, security boundaries, and testing architecture, read [ARCHITECTURE.md](ARCHITECTURE.md).
+For the full specification (ERD, auth sequence flows, security boundaries, testing strategy), see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ```mermaid
 flowchart TD
-    %% ===================================================
-    %% TIER 1: CLIENT TIER (React 19 SPA)
-    %% ===================================================
-    subgraph Tier1["🌐 Tier 1: Client Application (React 19 SPA • Vite 7)"]
+    subgraph Client["Client: React 19 SPA (Vite 7)"]
         direction LR
-        UI["UI & Feature Pages<br/>(Markdown Studio, Feed, Profile)"]
-        Cache["Server State Cache<br/>(TanStack Query v5)"]
-        Http["API Client Instance<br/>(Axios + Auto-Refresh)"]
+        UI["UI and pages"]
+        Cache["Server state cache<br/>(TanStack Query)"]
+        Http["Axios client<br/>(auto token refresh)"]
         UI --> Cache --> Http
     end
 
-    %% Network Transport Boundary
-    Http ==>|"HTTPS REST API / JSON"| Ingress
+    Http ==>|"HTTPS / JSON"| Ingress
 
-    %% ===================================================
-    %% TIER 2: SERVER APPLICATION TIER (Express 4)
-    %% ===================================================
-    subgraph Tier2["⚙️ Tier 2: Backend Application Server (Node.js 18+ • Express 4)"]
-        Ingress["Edge Middleware<br/>(Helmet • CORS • Rate Limiters)"]
-        Router["API Gateway Router & Input Validation<br/>(express-validator)"]
-
-        subgraph Pipeline["Request Execution Flow"]
-            direction LR
-            PublicPath["Public Route Path<br/>(Feed, Trending, Public Reads)"]
-            AuthGuard["Protected Route Path<br/>(JWT + Live tokenVersion Guard)"]
-        end
-
-        Controllers["Domain Business Controllers<br/>• Content: Posts, Slugs, Tags<br/>• Discovery: 14d Trending, 6h HMAC Dedup<br/>• Social: Threaded Comments, Likes"]
-
+    subgraph Server["Server: Node.js 18+ / Express 4"]
+        Ingress["Helmet, CORS, rate limiters"]
+        Router["Router and validation<br/>(express-validator)"]
+        Public["Public routes"]
+        Auth["Protected routes<br/>(JWT + tokenVersion check)"]
+        Controllers["Controllers and services<br/>posts, comments, likes, trending, analytics"]
         Ingress --> Router
-        Router -->|"Public Request"| PublicPath
-        Router -->|"Protected Request"| AuthGuard
-        PublicPath --> Controllers
-        AuthGuard --> Controllers
+        Router --> Public --> Controllers
+        Router --> Auth --> Controllers
     end
 
-    %% Database Transport Boundary
-    Controllers ==>|"Mongoose 8 Wire Protocol (TCP)"| ODM
+    Controllers ==>|"Mongoose 8"| DB
 
-    %% ===================================================
-    %% TIER 3: DATABASE TIER (MongoDB 6+)
-    %% ===================================================
-    subgraph Tier3["🍃 Tier 3: Database & Persistence Layer (MongoDB 6+)"]
-        direction LR
-        ODM["Mongoose 8 ODM Layer<br/>(Strict Schemas & Compound Indexes)"]
-        DB[("MongoDB 6+ Document Store<br/>users, posts, comments, likes, views, reads")]
-        Redis[("Redis Cache / Queue<br/>(Planned Future Scale)")]
-
-        ODM --> DB
-        ODM -.->|"Future Scale"| Redis
+    subgraph Data["Data: MongoDB 6+"]
+        DB[("users, posts, comments,<br/>likes, views, reads, tags")]
     end
 ```
 
----
+## Tech Stack
 
-<a id="tech-stack"></a>
+| Layer | Technologies |
+| :-- | :-- |
+| Frontend | React 19, Vite 7, Tailwind CSS 4, Radix UI, TanStack Query 5, React Router 7, Axios, `@uiw/react-md-editor` |
+| Backend | Node.js 18+, Express 4, Mongoose 8, jsonwebtoken, bcryptjs, express-validator, helmet, express-rate-limit, multer |
+| Database | MongoDB 6.0+ (local or Atlas) |
+| Testing | Jest, Vitest, Supertest, React Testing Library, mongodb-memory-server |
+| CI/CD | GitHub Actions (lint, format check, tests, build, dependency audit), Vercel |
 
-## 🛠️ Tech Stack
+## Getting Started
 
-<div align="center">
+### Prerequisites
 
-| Layer           | Primary Tech                   | Key Packages & Tooling                                                                                                   |
-| :-------------- | :----------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
-| **Frontend**    | **React 19.2** (Vite 7)        | **Tailwind CSS 4**, **Radix UI**, **TanStack Query 5**, **React Router 7**, **Axios**, **@uiw/react-md-editor** |
-| **Backend**     | **Node.js 18+** (Express 4)    | **Mongoose 8**, **jsonwebtoken**, **bcryptjs**, **express-validator**, **helmet**, **express-rate-limit**, **multer**    |
-| **Database**    | **MongoDB 6.0+** (Local/Atlas) | 9 Collections, 20 Declared Unique & Compound Indexes, Atomic Updates                                                     |
-| **Testing**     | **Jest & Vitest**              | **mongodb-memory-server** (In-process DB), **Supertest**, **React Testing Library**                                      |
-| **CI/CD & Ops** | **GitHub Actions & Vercel**    | Automated Linting, Prettier Format Checks, 198 Tests, Dependency Audits                                                  |
+- Node.js 18.0.0 or later
+- MongoDB 6.0+ (local instance or [MongoDB Atlas](https://www.mongodb.com/atlas))
 
-</div>
-
----
-
-<a id="quick-start"></a>
-
-## 🚀 Quick Start
-
-Get BlogHub up and running locally in 4 simple steps:
-
-### 📋 Prerequisites
-
-- **Node.js**: `18.0.0` or higher ([Download Node.js](https://nodejs.org/))
-- **MongoDB**: `6.0+` (Local daemon or [MongoDB Atlas](https://www.mongodb.com/atlas))
-
----
-
-### Step 1: Clone & Configure `.env`
+### 1. Clone and configure
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/Purvesh-PJ/blogging_platform.git bloghub
-cd bloghub
-
-# 2. Copy the environment template to root
+git clone https://github.com/Purvesh-PJ/blogging_platform.git
+cd blogging_platform
 cp .env.example .env
 ```
 
-Both workspaces read a **single `.env` located at the root directory**:
+Both workspaces read a single `.env` file at the repository root. See [Environment Variables](#environment-variables).
 
-```env
-NODE_ENV=development
-PORT=4000
-MONGO_DB_URI=mongodb://127.0.0.1:27017/bloghub
-CLIENT_URL=http://localhost:3000
-VITE_API_URL=http://localhost:4000
-JWT_SECRET=replace_with_a_secure_random_string_min_32_chars
-JWT_REFRESH_SECRET=replace_with_a_different_secure_random_string
-JWT_ACCESS_EXPIRES_IN=15m
-JWT_REFRESH_EXPIRES_IN=7d
-```
-
-> 💡 **Generate unique keys:** `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`
-
----
-
-### Step 2: Install Dependencies
+Generate secrets with:
 
 ```bash
-# Install backend dependencies
-cd backend && npm install
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
 
-# Install client dependencies
+### 2. Install dependencies
+
+```bash
+cd backend && npm install
 cd ../client && npm install
 ```
 
----
-
-### Step 3: Seed Database (Optional)
-
-Populate sample users, topics, draft/public stories, and engagement events:
+### 3. Seed the database (optional)
 
 ```bash
 cd backend && npm run seed
 ```
 
-> ⚠️ _Note: The seeder purges existing collections before inserting seed data._
+> **Warning:** the seeder deletes existing data in the target collections before inserting sample data. Never run it against a production database.
 
----
-
-<a id="demo-credentials"></a>
-
-### 🔑 Demo Credentials
-
-| Role                | Email Address       | Password      | Permissions Scope                                                       |
-| :------------------ | :------------------ | :------------ | :---------------------------------------------------------------------- |
-| **Member (Author)** | `john@example.com`  | `password123` | Story creation, live Markdown editor, workspace analytics, settings     |
-| **Administrator**   | `admin@bloghub.com` | `admin123`    | Platform dashboard, story moderation, user suspension & role governance |
-
----
-
-### Step 4: Run Development Servers
-
-Start backend and client servers in separate terminals:
+### 4. Start the development servers
 
 ```bash
-# Terminal 1 — Start Express API (Port 4000)
+# Terminal 1: API on http://localhost:4000
 cd backend && npm run dev
 
-# Terminal 2 — Start React SPA (Port 3000)
+# Terminal 2: client on http://localhost:3000
 cd client && npm run dev
 ```
 
-Visit **[`http://localhost:3000`](http://localhost:3000)** in your browser.
+Open http://localhost:3000.
 
----
+## Environment Variables
 
-<a id="project-structure"></a>
+| Variable | Required | Default / Example | Description |
+| :-- | :-: | :-- | :-- |
+| `NODE_ENV` | No | `development` | Runtime environment. |
+| `PORT` | No | `4000` | API server port. |
+| `MONGO_DB_URI` | Yes | `mongodb://127.0.0.1:27017/bloghub` | MongoDB connection string. |
+| `CLIENT_URL` | Yes | `http://localhost:3000` | Allowed CORS origin. |
+| `VITE_API_URL` | Yes | `http://localhost:4000` | API base URL used by the client. |
+| `JWT_SECRET` | Yes | none | Access token signing secret (minimum 32 characters). |
+| `JWT_REFRESH_SECRET` | Yes | none | Refresh token signing secret. Must differ from `JWT_SECRET`. |
+| `JWT_ACCESS_EXPIRES_IN` | No | `15m` | Access token lifetime. |
+| `JWT_REFRESH_EXPIRES_IN` | No | `7d` | Refresh token lifetime. |
 
-## 📂 Project Structure
+The backend validates required variables at boot (`backend/config/env.js`) and exits with an error if any are missing.
 
-```
-bloghub/
-├── .github/workflows/ci.yml    # CI: Lint · Format · 327 Tests · Build · Audit
-├── .env.example                # Single root environment configuration template
-├── CONTRIBUTING.md             # Contribution guidelines & PR workflow
-├── CODE_OF_CONDUCT.md          # Community conduct standards
-├── LICENSE                     # MIT License
-├── README.md                   # Repository landing page
-├── vercel.json                 # Vercel serverless deployment configuration
-│
-├── backend/                    # Express 4 REST API (CommonJS)
-│   ├── config/                 # db.js (MongoDB), env.js (Boot validation)
-│   ├── controllers/            # 12 HTTP request/response controllers
-│   ├── middlewares/            # JWT auth, role authorization, validation, upload, errorHandler
-│   ├── models/                 # 9 Mongoose schemas (User, Post, Comment, Tag, Like, etc.)
-│   ├── routes/                 # 11 Express router modules mounted under /api
-│   ├── services/               # postService, commentService, accountService, trendingService
-│   ├── tests/                  # 190 tests across 15 suites (Jest + mongodb-memory-server)
-│   │   ├── unit/               # Fast isolated unit tests (middlewares, utils, validators)
-│   │   └── integration/        # End-to-end API integration tests with in-memory MongoDB
-│   ├── validators/             # express-validator schema rule sets
-│   ├── index.js                # Server entry point & composition root
-│   └── package.json
-│
-├── client/                     # React 19 SPA (Vite + ES Modules)
-│   ├── public/screenshots/     # UI preview assets & screenshot gallery
-│   ├── src/
-│   │   ├── components/         # ui/ (21 design primitives), posts/, layout/, marketing/
-│   │   ├── config/             # api.js & __tests__/api.test.js
-│   │   ├── context/            # AuthContext.jsx & __tests__/AuthAndTheme.test.jsx
-│   │   ├── guards/             # ProtectedRoute.jsx & __tests__/RouteGuards.test.jsx
-│   │   ├── hooks/              # useCurrentUser, useReading & __tests__/
-│   │   ├── pages/              # 12 Reader/Author pages + admin/ + dedicated __tests__/
-│   │   ├── services/           # 10 API service clients & __tests__/services.test.js
-│   │   ├── styles/             # ThemeProvider & theme tokens
-│   │   ├── utils/              # text.js & __tests__/text.test.js
-│   │   ├── App.jsx             # Code-split routing table & Suspense boundaries
-│   │   └── main.jsx            # Provider composition tree
-│   ├── vite.config.js          # Vite config, dev proxy & Rollup chunk splitting
-│   └── package.json
-```
+## Demo Accounts
 
----
+Created by `npm run seed`. **For local development only.**
 
-<a id="scripts"></a>
+| Role | Email | Password |
+| :-- | :-- | :-- |
+| Member (author) | `john@example.com` | `password123` |
+| Administrator | `admin@bloghub.com` | `admin123` |
 
-## 🧪 Scripts & Tests
+The hosted demo may reset data periodically.
 
-### Root Commands (Unified Full-Stack)
+## API Overview
 
-You can run full-stack operations directly from the root repository directory:
+All endpoints are mounted under `/api`. Protected routes require an `Authorization: Bearer <accessToken>` header.
+
+| Resource | Base path | Auth | Description |
+| :-- | :-- | :-- | :-- |
+| Auth | `/api/auth` | Mixed | Register, login, token refresh, logout. |
+| Posts | `/api/posts` | Mixed | Create, read, update, delete, visibility, slugs, moderation. |
+| Users | `/api/users` | Mixed | Profiles, follow/unfollow, admin user management. |
+| Comments | `/api/comments` | Mixed | Threaded comments on posts. |
+| Likes | `/api/likes` | Required | Idempotent like and unlike. |
+| Tags | `/api/tags` | Mixed | Tag listing and lookup. |
+| Analytics | `/api/analytics` | Required | Author read-through and telemetry metrics. |
+
+## Scripts and Testing
+
+Run from the repository root:
 
 | Command | Description |
-| :--- | :--- |
-| `npm test` | Run **complete test suite (all 328 tests across Backend & Client)** |
-| `npm run test:backend` | Run only Backend Jest test suite (190 tests) |
-| `npm run test:client` | Run only Client Vitest test suite (138 tests) |
-| `npm run test:coverage` | Run full coverage reports across both Backend and Client |
-| `npm run lint` / `npm run lint:fix` | Check or auto-fix linting across both Backend and Client |
-| `npm run format:check` / `npm run format` | Verify or format all files across the repository |
-| `npm run build` | Compile client production build |
+| :-- | :-- |
+| `npm test` | Run backend and client test suites. |
+| `npm run test:backend` | Backend tests only (Jest). |
+| `npm run test:client` | Client tests only (Vitest). |
+| `npm run test:coverage` | Coverage reports for both workspaces. |
+| `npm run lint` / `npm run lint:fix` | ESLint check or auto-fix. |
+| `npm run format:check` / `npm run format` | Prettier check or write. |
+| `npm run build` | Production build of the client. |
 
----
+**Backend** (`cd backend`)
 
-### Backend Commands (`cd backend`)
+| Command | Description |
+| :-- | :-- |
+| `npm run dev` | Start the API with nodemon. |
+| `npm run test:unit` | Unit tests (middlewares, utils, validators). |
+| `npm run test:integration` | API integration tests against an in-memory MongoDB. |
+| `npm run seed` | Populate demo data. |
+| `npm run migrate` | Run database migrations (`--dry` to preview). |
 
-| Command                                   | Description                                                                          |
-| :---------------------------------------- | :----------------------------------------------------------------------------------- |
-| `npm run dev`                             | Start API server in watch mode with nodemon                                          |
-| `npm test`                                | Run **190 Jest tests (15 suites)** in-process against `mongodb-memory-server`        |
-| `npm run test:unit`                       | Run fast isolated unit tests for middlewares, utils, and validators                  |
-| `npm run test:integration`                | Run comprehensive API integration tests with in-memory MongoDB                       |
-| `npm run test:coverage`                   | Generate full backend code coverage report (**91.73% line coverage**)                |
-| `npm run seed`                            | Populate database with demo users, stories, and metrics                              |
-| `npm run migrate`                         | Execute database migrations (`--dry` to preview changes)                             |
-| `npm run lint` / `npm run lint:fix`       | Execute ESLint 9 code analysis & automated fixes                                     |
-| `npm run format:check` / `npm run format` | Verify or format code with Prettier 3                                                |
+**Client** (`cd client`)
 
-### Client Commands (`cd client`)
+| Command | Description |
+| :-- | :-- |
+| `npm run dev` | Vite dev server on port 3000. |
+| `npm run test:watch` | Vitest in watch mode. |
+| `npm run preview` | Preview the production build locally. |
 
-| Command                                   | Description                                                                          |
-| :---------------------------------------- | :----------------------------------------------------------------------------------- |
-| `npm run dev`                             | Launch Vite development server on `http://localhost:3000`                            |
-| `npm test`                                | Run **137 Vitest unit & integration tests (15 suites)** in jsdom                     |
-| `npm run test:coverage`                   | Generate full frontend code coverage report via `@vitest/coverage-v8`                |
-| `npm run test:watch`                      | Launch Vitest in interactive watch mode for TDD                                      |
-| `npm run build`                           | Compile optimized production bundle to `client/dist`                                 |
-| `npm run preview`                         | Locally preview the compiled production build                                        |
-| `npm run lint` / `npm run lint:fix`       | Check or fix client source code with ESLint 9                                        |
-| `npm run format:check` / `npm run format` | Check or format client files with Prettier 3                                         |
+Test counts and coverage are reported by CI. See the CI badge above and the latest workflow run.
 
----
+## Project Structure
 
-## 🤝 Contributing
+```
+.
+├── .github/workflows/ci.yml   # Lint, format, test, build, audit
+├── backend/                   # Express 4 REST API (CommonJS)
+│   ├── config/                # DB connection, env validation
+│   ├── controllers/           # HTTP request/response handlers
+│   ├── middlewares/           # Auth, roles, validation, upload, error handling
+│   ├── models/                # Mongoose schemas
+│   ├── routes/                # Express routers mounted under /api
+│   ├── services/              # Business logic (posts, comments, accounts, trending)
+│   ├── validators/            # express-validator rule sets
+│   └── tests/                 # unit/ and integration/
+├── client/                    # React 19 SPA (Vite)
+│   ├── public/screenshots/
+│   └── src/
+│       ├── components/        # ui primitives, posts, layout, marketing
+│       ├── context/           # Auth and theme providers
+│       ├── guards/            # Route protection
+│       ├── hooks/
+│       ├── pages/             # Reader, author, and admin pages
+│       ├── services/          # API clients
+│       └── utils/
+├── .env.example
+├── vercel.json
+├── CONTRIBUTING.md
+└── LICENSE
+```
 
-Contributions are welcome! Please follow these steps:
+## Deployment
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'feat: add amazing feature'`)
-4. Verify Tests & Formatting (`npm test` and `npm run format:check`)
-5. Push to the Branch (`git push origin feature/AmazingFeature`)
-6. Open a Pull Request
+The live demo runs on Vercel using the configuration in `vercel.json`.
 
-Review **[CONTRIBUTING.md](CONTRIBUTING.md)** and **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** for detailed contribution guidelines.
+1. Provision a MongoDB Atlas cluster and create a database user.
+2. Import the repository into Vercel.
+3. Set all required [environment variables](#environment-variables) in the Vercel project settings. Use production-grade secrets, and set `CLIENT_URL` and `VITE_API_URL` to the deployed URLs.
+4. Deploy. Do not run `npm run seed` against the production database.
 
----
+## Roadmap and Known Limitations
 
-## 📄 License
+- [ ] Redis for caching and background jobs (not implemented yet).
+- [ ] OpenAPI / Swagger documentation.
+- [ ] Image upload storage on external object storage.
+- [ ] Email verification and password reset flow.
 
-Distributed under the **MIT License**. See **[`LICENSE`](LICENSE)** for details.
+## Contributing
 
----
+Contributions are welcome.
 
-<p align="center">
-  Crafted with modern web standards and architectural discipline.
-</p>
+1. Fork the repository.
+2. Create a branch: `git checkout -b feature/your-feature`.
+3. Commit using [Conventional Commits](https://www.conventionalcommits.org/): `git commit -m "feat: add your feature"`.
+4. Run `npm test` and `npm run format:check`.
+5. Push and open a pull request.
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+
+## License
+
+Released under the [MIT License](LICENSE).
