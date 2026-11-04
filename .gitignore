@@ -36,6 +36,4 @@ yarn-error.log*
 .agents/
 .claude/
 skills-lock.json
-.archify/
-.archify-render-*.tmp
 
