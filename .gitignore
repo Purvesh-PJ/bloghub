@@ -32,3 +32,10 @@ yarn-error.log*
 # windsurf rules
 .windsurfrules
 
+# agent skills & tools
+.agents/
+.claude/
+skills-lock.json
+.archify/
+.archify-render-*.tmp
+

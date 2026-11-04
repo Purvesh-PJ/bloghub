@@ -143,63 +143,61 @@ Below is the visual gallery across BlogHub's reading surfaces, editor studios, c
 
 BlogHub is designed as a decoupled full-stack architecture: an **18-route React 19 SPA** interacting with a **stateless Express 4 API Gateway**, backed by an **indexed MongoDB cluster**.
 
+> 📖 **Deep Dive:** For the full system specification, database ERD, dual-token sequence flows, security boundaries, and testing architecture, read [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ```mermaid
-flowchart TB
-    subgraph TopRow[" "]
+flowchart TD
+    %% ===================================================
+    %% TIER 1: CLIENT TIER (React 19 SPA)
+    %% ===================================================
+    subgraph Tier1["🌐 Tier 1: Client Application (React 19 SPA • Vite 7)"]
         direction LR
-        subgraph ClientTier["🌐 CLIENT TIER (React 19 SPA)"]
-            direction TB
-            UI["🎨 UI Components\n• 18 Code-Split Routes\n• Tailwind CSS v4 & Radix UI\n• Slate/Sky Theme Tokens"]
-            Editor["✍️ Markdown Studio\n• Synchronized Split-View\n• rehype-sanitize Schema"]
-            ClientState["⚡ State & Networking\n• TanStack Query v5\n• Axios 401 Interceptors"]
-            UI & Editor --> ClientState
-        end
-
-        subgraph GatewayTier["🛡️ EDGE & GATEWAY TIER"]
-            direction TB
-            Proxy["🌐 Edge Proxy (trust proxy: 1)"]
-            SecMW["🔒 Security & Headers\n• Helmet (CSP/HSTS)\n• Pinned CORS Origin"]
-            Rate["⏱️ Rate Limiters\n• /auth: 10 req / 15m\n• General: 300 req / 15m"]
-            AuthMW["🔑 JWT Auth & RBAC\n• authenticateUser\n• authorizeAdmin / Self"]
-            Proxy --> SecMW --> Rate --> AuthMW
-        end
+        UI["UI & Feature Pages<br/>(Markdown Studio, Feed, Profile)"]
+        Cache["Server State Cache<br/>(TanStack Query v5)"]
+        Http["API Client Instance<br/>(Axios + Auto-Refresh)"]
+        UI --> Cache --> Http
     end
 
-    subgraph BottomRow[" "]
-        direction LR
-        subgraph ServicesTier["⚙️ DOMAIN SERVICES TIER"]
-            direction TB
-            Validators["🔍 express-validator Schemas"]
+    %% Network Transport Boundary
+    Http ==>|"HTTPS REST API / JSON"| Ingress
 
-            subgraph DomainEngines["Domain Logic & Controllers"]
-                direction TB
-                AuthSvc["🔐 Auth & Session (Dual JWT)"]
-                PostSvc["📰 Post & Editorial Lifecycle"]
-                TrendSvc["🔥 14-Day Trending Velocity"]
-                SocialSvc["💬 Comments, Replies & Likes"]
-                AdminSvc["🛡️ User Governance & Moderation"]
-            end
-            Validators --> DomainEngines
+    %% ===================================================
+    %% TIER 2: SERVER APPLICATION TIER (Express 4)
+    %% ===================================================
+    subgraph Tier2["⚙️ Tier 2: Backend Application Server (Node.js 18+ • Express 4)"]
+        Ingress["Edge Middleware<br/>(Helmet • CORS • Rate Limiters)"]
+        Router["API Gateway Router & Input Validation<br/>(express-validator)"]
+
+        subgraph Pipeline["Request Execution Flow"]
+            direction LR
+            PublicPath["Public Route Path<br/>(Feed, Trending, Public Reads)"]
+            AuthGuard["Protected Route Path<br/>(JWT + Live tokenVersion Guard)"]
         end
 
-        subgraph PersistenceTier["🍃 PERSISTENCE TIER"]
-            direction TB
-            ODM["Mongoose 8 ODM Engine"]
+        Controllers["Domain Business Controllers<br/>• Content: Posts, Slugs, Tags<br/>• Discovery: 14d Trending, 6h HMAC Dedup<br/>• Social: Threaded Comments, Likes"]
 
-            subgraph DBCollections["MongoDB 6+ (20 Declared Indexes)"]
-                direction TB
-                C_Users[("👤 users & userprofiles")]
-                C_Posts[("📰 posts & tags")]
-                C_Social[("❤️ likes & comments")]
-                C_Metrics[("📊 views & reads (6h dedup)")]
-            end
-            ODM --> DBCollections
-        end
+        Ingress --> Router
+        Router -->|"Public Request"| PublicPath
+        Router -->|"Protected Request"| AuthGuard
+        PublicPath --> Controllers
+        AuthGuard --> Controllers
     end
 
-    ClientState -->|"HTTPS / REST API\nBearer <accessToken>"| Proxy
-    AuthMW -->|"Validated Request Pipeline"| Validators
-    DomainEngines -->|"Mongoose Wire Protocol"| ODM
+    %% Database Transport Boundary
+    Controllers ==>|"Mongoose 8 Wire Protocol (TCP)"| ODM
+
+    %% ===================================================
+    %% TIER 3: DATABASE TIER (MongoDB 6+)
+    %% ===================================================
+    subgraph Tier3["🍃 Tier 3: Database & Persistence Layer (MongoDB 6+)"]
+        direction LR
+        ODM["Mongoose 8 ODM Layer<br/>(Strict Schemas & Compound Indexes)"]
+        DB[("MongoDB 6+ Document Store<br/>users, posts, comments, likes, views, reads")]
+        Redis[("Redis Cache / Queue<br/>(Planned Future Scale)")]
+
+        ODM --> DB
+        ODM -.->|"Future Scale"| Redis
+    end
 ```
 
 ---
