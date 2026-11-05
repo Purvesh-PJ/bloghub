@@ -129,6 +129,10 @@ export function UserProfile() {
   });
 
   const handleFollowToggle = () => {
+    if (!isAuthenticated) {
+      toast('Sign in to follow this author', { icon: '👤' });
+      return;
+    }
     if (isFollowing) {
       unfollowMutation.mutate();
     } else {

@@ -51,12 +51,26 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Sends the session to the login screen. Called from a single place so that every way a
+// Sends the session to the login screen on protected routes. Called from a single place so that every way a
 // refresh can fail ends the same way, rather than leaving a signed-out user clicking through
-// a UI that 401s on every request.
+// a UI that 401s on every request. On public reader routes (e.g. /post/:id, /, /search), we simply
+// clear stale authentication state without interrupting the reader's view.
+const isProtectedRoute = (pathname) => {
+  const protectedPrefixes = [
+    '/dashboard',
+    '/stories',
+    '/comments',
+    '/write',
+    '/edit',
+    '/settings',
+    '/admin',
+  ];
+  return protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
+};
+
 const endSession = () => {
   authState.logout();
-  if (window.location.pathname !== '/login') {
+  if (isProtectedRoute(window.location.pathname) && window.location.pathname !== '/login') {
     window.location.href = '/login';
   }
 };

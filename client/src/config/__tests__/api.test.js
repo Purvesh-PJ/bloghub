@@ -166,4 +166,14 @@ describe('response interceptor', () => {
     // Assigning href to the page you are on reloads it, discarding whatever was typed.
     expect(assignedHref).toBeNull();
   });
+
+  it('does not redirect to /login when 401 occurs on a public reader route like /post/:id', async () => {
+    window.location.pathname = '/post/post_123';
+
+    const error = unauthorized({ headers: {}, url: '/posts' });
+    await expect(onRejected(error)).rejects.toBe(error);
+
+    expect(authState.isAuthenticated).toBe(false);
+    expect(assignedHref).toBeNull();
+  });
 });
