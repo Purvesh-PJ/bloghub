@@ -85,11 +85,24 @@ flowchart TD
 
 ### How a request moves through the system
 
-1. **Client (`client/src/`).** Built with React 19, Tailwind CSS v4 and Radix UI. Server data is fetched and cached with TanStack Query. When an access token expires, Axios catches the 401, asks the server for a new token pair via `POST /api/auth/refresh`, and replays the failed requests. The user never notices.
+1. **Client (`client/src/`).** Built with React 19, Tailwind CSS v4, and Radix UI. Organized following a **Feature-Driven Architecture** (`src/features/`), where each domain (auth, posts, users, comments, analytics, admin) encapsulates its own components, custom hooks, pages, services, and colocated tests behind a clear `index.js` public boundary. Server state is fetched and cached with TanStack Query v5 using centralized `config/queryKeys.js`. When an access token expires, Axios catches the 401, asks the server for a new token pair via `POST /api/auth/refresh`, and replays the failed requests seamlessly.
 2. **Edge of the server (`backend/index.js`).** Every request first passes through Helmet (security headers), CORS (only our frontend origin is allowed) and rate limiters (300 requests per 15 minutes for the general API, 10 per 15 minutes for login attempts). We also set `trust proxy: 1`, so the server sees the real client IP when it runs behind a load balancer or CDN such as Vercel or Nginx.
 3. **Routing and validation.** Routes are split into public (feed, trending, reading posts) and protected (writing, liking, settings). Incoming data is checked with `express-validator` before any business logic runs.
 4. **Authentication (`backend/middlewares/authenticateUser.js`).** Most JWT setups only check the token signature. We go one step further and load `roles`, `tokenVersion` and `suspended` from MongoDB on every protected request. The extra database read is a deliberate trade-off: when an admin suspends someone or a user changes their password, the old tokens stop working immediately instead of living until they expire.
 5. **Persistence (`backend/models/`).** Nine Mongoose schemas define the data. The important rules, like "one like per user per post", are enforced by the database itself through unique indexes, not only by application code.
+
+### Client Architecture: Feature-Driven Domain Colocation
+
+Rather than a traditional horizontal layer structure (`components/`, `hooks/`, `services/`, `pages/`), BlogHub's frontend uses a **Feature-Driven Architecture** (`client/src/features/`). Code is organized vertically by business domain:
+
+- **`features/auth/`** — Login, Registration, `AuthContext`, session state, route guards (`ProtectedRoute`, `AdminRoute`), and auth API services.
+- **`features/posts/`** — Home feed, search, reader (`PostDetail`), Markdown editor studio (`WritePost`), story management, draft recovery hooks (`useDraftRecovery`), and post services.
+- **`features/users/`** — User profiles, account settings, creator dashboard, and user management services.
+- **`features/comments/`** — Reader discussions, nested comment trees, and response services.
+- **`features/analytics/`** — Reader telemetry, dwell time tracking, read completion bars (`ReadRateBar`), and analytics services.
+- **`features/admin/`** — Moderation console, administrative dashboards, tag manager, user roles, and activity audits.
+
+Each feature folder is self-contained with its own `components/`, `hooks/`, `pages/`, `services/`, and colocated `__tests__/`. Cross-feature interactions are exposed through explicit public barrel interfaces (`index.js`). Shared building blocks (`components/ui/`, `components/layout/`, `config/queryKeys.js`, `styles/ThemeProvider.jsx`) remain global. See [ADR-0008](docs/adr/0008-feature-driven-frontend-architecture.md) for full context and trade-offs.
 
 ---
 
@@ -388,7 +401,7 @@ Tests are split into fast unit tests and slower integration tests that use a rea
 ```
 
 - **Backend:** 15 test suites with 190 tests. Unit tests live in `backend/tests/unit/` and run in milliseconds. Integration tests live in `backend/tests/integration/` and run against `mongodb-memory-server`, so no real database is needed.
-- **Frontend:** 15 test suites with 138 tests, placed next to the code in `__tests__/` folders and run with Vitest in `jsdom`.
+- **Frontend:** 15 test suites with 142 tests, placed next to the code in feature `__tests__/` folders and run with Vitest in `jsdom`.
 - **Commands:** run everything from the repo root with `npm test`, `npm run test:coverage` and `npm run lint`.
 
 *Test counts are accurate at the time of writing and will change as the project grows.*

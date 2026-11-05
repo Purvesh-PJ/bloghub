@@ -13,6 +13,7 @@ This directory documents the key architectural decisions made in BlogHub. Each r
 | [ADR-0005](0005-privacy-preserving-telemetry-deduplication.md) | Privacy-Preserving Salted HMAC Telemetry & Dwell Tracking | **Accepted** | 2026-11-05 |
 | [ADR-0006](0006-in-memory-token-storage-and-silent-refresh.md) | In-Memory Access Token Storage with Silent 401 Refresh | **Accepted** | 2026-11-05 |
 | [ADR-0007](0007-in-memory-mongodb-testing-strategy.md) | In-Memory MongoDB Testing Architecture (`mongodb-memory-server`) | **Accepted** | 2026-11-05 |
+| [ADR-0008](0008-feature-driven-frontend-architecture.md) | Feature-Driven Frontend Architecture & Domain Colocation | **Accepted** | 2026-11-06 |
 
 ---
 

@@ -49,8 +49,8 @@ We follow standard GitHub flow:
 3. **Testing Before Commits:**
    Ensure all automated integration and unit tests pass:
    ```bash
-   npm test --prefix backend   # Runs 125 Jest integration tests
-   npm test --prefix client    # Runs 73 Vitest client tests
+   npm test --prefix backend   # Runs 190 Jest tests (unit + integration)
+   npm test --prefix client    # Runs 142 Vitest client tests
    ```
 
 ---

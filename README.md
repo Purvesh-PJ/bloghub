@@ -263,13 +263,18 @@ Test counts and coverage are reported by CI. See the CI badge above and the late
 ├── client/                    # React 19 SPA (Vite)
 │   ├── public/screenshots/
 │   └── src/
-│       ├── components/        # ui primitives, posts, layout, marketing
-│       ├── context/           # Auth and theme providers
-│       ├── guards/            # Route protection
-│       ├── hooks/
-│       ├── pages/             # Reader, author, and admin pages
-│       ├── services/          # API clients
-│       └── utils/
+│       ├── components/        # Shared UI primitives (Radix) & global layout
+│       ├── config/            # API client (Axios) & TanStack queryKeys
+│       ├── features/          # Domain-driven feature modules
+│       │   ├── admin/         # Moderation & system administration
+│       │   ├── analytics/     # Telemetry & reading completion metrics
+│       │   ├── auth/          # Authentication, AuthContext & route guards
+│       │   ├── comments/      # Discussion threads & responses
+│       │   ├── posts/         # Feed, reader, Markdown editor, drafts
+│       │   └── users/         # Profiles, settings, & user dashboards
+│       ├── lib/               # Utility libraries (tailwind-merge, clsx)
+│       ├── styles/            # ThemeProvider & global styling
+│       └── utils/             # Formatting & helper utilities
 ├── .env.example
 ├── vercel.json
 ├── CONTRIBUTING.md
