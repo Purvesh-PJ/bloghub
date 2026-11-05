@@ -1,4 +1,4 @@
-# ADR-0006: In-Memory Access Token Storage with Silent 401 Refresh
+# ADR-0006: Silent Access Token Refresh
 
 - **Status:** Accepted
 - **Date:** 2026-11-05

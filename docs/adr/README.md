@@ -6,14 +6,15 @@ This directory documents the key architectural decisions made in BlogHub. Each r
 
 | ADR | Title | Status | Date |
 | :--- | :--- | :--- | :--- |
-| [ADR-0001](0001-decoupled-react-spa-and-express-api.md) | Decoupled React 19 SPA and Express API Architecture | **Accepted** | 2026-11-05 |
-| [ADR-0002](0002-dual-token-auth-with-live-revocation.md) | Dual-Token Authentication with Live Database Revocation | **Accepted** | 2026-11-05 |
-| [ADR-0003](0003-compound-indexes-for-concurrency.md) | Compound Unique Indexes for Race Condition Prevention | **Accepted** | 2026-11-05 |
-| [ADR-0004](0004-14-day-weighted-trending-formula.md) | 14-Day Rolling Window Weighted Trending Score Formula | **Accepted** | 2026-11-05 |
-| [ADR-0005](0005-privacy-preserving-telemetry-deduplication.md) | Privacy-Preserving Salted HMAC Telemetry & Dwell Tracking | **Accepted** | 2026-11-05 |
-| [ADR-0006](0006-in-memory-token-storage-and-silent-refresh.md) | In-Memory Access Token Storage with Silent 401 Refresh | **Accepted** | 2026-11-05 |
-| [ADR-0007](0007-in-memory-mongodb-testing-strategy.md) | In-Memory MongoDB Testing Architecture (`mongodb-memory-server`) | **Accepted** | 2026-11-05 |
-| [ADR-0008](0008-feature-driven-frontend-architecture.md) | Feature-Driven Frontend Architecture & Domain Colocation | **Accepted** | 2026-11-06 |
+| [ADR-0001](0001-separate-frontend-and-backend.md) | Separate Frontend and Backend Architecture | **Accepted** | 2026-11-05 |
+| [ADR-0002](0002-jwt-auth-and-session-revocation.md) | JWT Authentication and Session Revocation | **Accepted** | 2026-11-05 |
+| [ADR-0003](0003-prevent-duplicate-likes-and-follows.md) | Prevent Duplicate Likes and Follows | **Accepted** | 2026-11-05 |
+| [ADR-0004](0004-trending-posts-formula.md) | Trending Posts Score Formula | **Accepted** | 2026-11-05 |
+| [ADR-0005](0005-read-time-and-view-tracking.md) | Read Time and View Tracking | **Accepted** | 2026-11-05 |
+| [ADR-0006](0006-silent-token-refresh.md) | Silent Access Token Refresh | **Accepted** | 2026-11-05 |
+| [ADR-0007](0007-in-memory-database-for-testing.md) | In-Memory Database for Testing | **Accepted** | 2026-11-05 |
+| [ADR-0008](0008-feature-driven-frontend.md) | Feature-Driven Frontend Architecture | **Accepted** | 2026-11-06 |
+| [ADR-0009](0009-performance-and-load-testing-plan.md) | Performance and Load Testing Plan | **Draft** | 2026-11-06 |
 
 ---
 

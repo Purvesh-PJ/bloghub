@@ -1,4 +1,4 @@
-# ADR-0001: Decoupled React 19 SPA and Express API Architecture
+# ADR-0001: Separate Frontend and Backend Architecture
 
 - **Status:** Accepted
 - **Date:** 2026-11-05

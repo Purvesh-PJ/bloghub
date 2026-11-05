@@ -1,4 +1,4 @@
-# ADR-0002: Dual-Token Authentication with Live Database Revocation
+# ADR-0002: JWT Authentication and Session Revocation
 
 - **Status:** Accepted
 - **Date:** 2026-11-05

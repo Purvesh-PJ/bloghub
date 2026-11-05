@@ -1,4 +1,4 @@
-# ADR-0004: 14-Day Rolling Window Weighted Trending Score Formula
+# ADR-0004: Trending Posts Score Formula
 
 - **Status:** Accepted
 - **Date:** 2026-11-05

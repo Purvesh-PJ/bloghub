@@ -1,4 +1,4 @@
-# ADR-0007: In-Memory MongoDB Testing Strategy (`mongodb-memory-server`)
+# ADR-0007: In-Memory Database for Testing
 
 - **Status:** Accepted
 - **Date:** 2026-11-05

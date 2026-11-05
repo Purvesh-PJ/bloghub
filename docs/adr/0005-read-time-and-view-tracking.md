@@ -1,4 +1,4 @@
-# ADR-0005: Privacy-Preserving Salted HMAC Telemetry & Dwell Tracking
+# ADR-0005: Read Time and View Tracking
 
 - **Status:** Accepted
 - **Date:** 2026-11-05

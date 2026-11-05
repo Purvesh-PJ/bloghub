@@ -102,7 +102,7 @@ Rather than a traditional horizontal layer structure (`components/`, `hooks/`, `
 - **`features/analytics/`** — Reader telemetry, dwell time tracking, read completion bars (`ReadRateBar`), and analytics services.
 - **`features/admin/`** — Moderation console, administrative dashboards, tag manager, user roles, and activity audits.
 
-Each feature folder is self-contained with its own `components/`, `hooks/`, `pages/`, `services/`, and colocated `__tests__/`. Cross-feature interactions are exposed through explicit public barrel interfaces (`index.js`). Shared building blocks (`components/ui/`, `components/layout/`, `config/queryKeys.js`, `styles/ThemeProvider.jsx`) remain global. See [ADR-0008](docs/adr/0008-feature-driven-frontend-architecture.md) for full context and trade-offs.
+Each feature folder is self-contained with its own `components/`, `hooks/`, `pages/`, `services/`, and colocated `__tests__/`. Cross-feature interactions are exposed through explicit public barrel interfaces (`index.js`). Shared building blocks (`components/ui/`, `components/layout/`, `config/queryKeys.js`, `styles/ThemeProvider.jsx`) remain global. See [ADR-0008](docs/adr/0008-feature-driven-frontend.md) for full context and trade-offs.
 
 ---
 

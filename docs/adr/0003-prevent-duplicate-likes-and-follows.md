@@ -1,4 +1,4 @@
-# ADR-0003: Compound Unique Indexes for Race Condition Prevention
+# ADR-0003: Prevent Duplicate Likes and Follows
 
 - **Status:** Accepted
 - **Date:** 2026-11-05
