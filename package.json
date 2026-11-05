@@ -14,7 +14,11 @@
     "lint:fix": "npm --prefix backend run lint:fix && npm --prefix client run lint:fix",
     "format": "npm --prefix backend run format && npm --prefix client run format",
     "format:check": "npm --prefix backend run format:check && npm --prefix client run format:check",
-    "build": "npm --prefix client run build"
+    "build": "npm --prefix client run build",
+    "bump": "node scripts/bump-version.js",
+    "bump:patch": "node scripts/bump-version.js patch",
+    "bump:minor": "node scripts/bump-version.js minor",
+    "bump:major": "node scripts/bump-version.js major"
   },
   "keywords": [
     "blog",
