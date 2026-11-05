@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '../styles/ThemeProvider';
-import { AuthProvider, authState } from '../context/AuthContext';
+import { AuthProvider, authState } from '../features/auth';
 
 /**
  * Renders a screen with the providers it expects from main.jsx.

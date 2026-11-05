@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, PenLine, User, Settings, LogOut, LayoutDashboard } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useAuth } from '../../features/auth';
+import { useCurrentUser } from '../../features/users';
 import { ThemeToggle } from './ThemeToggle';
 import { Button, DropdownMenu, BrandMark, Avatar } from '../ui';
 import { cn } from '../../lib/utils';

@@ -14,8 +14,8 @@ import {
   X,
   ChevronRight,
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useAuth } from '../../features/auth';
+import { useCurrentUser } from '../../features/users';
 import { ThemeToggle } from './ThemeToggle';
 import { Button, Avatar, Modal, BrandMark } from '../ui';
 import { cn } from '../../lib/utils';

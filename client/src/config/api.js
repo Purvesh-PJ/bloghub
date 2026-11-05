@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { authState } from '../context/AuthContext';
+import { authState } from '../features/auth';
 
 // The API is mounted at /api and nowhere else. It used to also answer on the bare root,
 // which is why a base URL without the suffix worked; accept both spellings here so an
