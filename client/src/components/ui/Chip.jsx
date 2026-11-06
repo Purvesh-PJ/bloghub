@@ -14,9 +14,9 @@ const chipVariants = cva(
         md: 'h-9 px-4 text-sm',
       },
       selected: {
-        true: 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm font-semibold',
+        true: 'bg-primary text-primary-foreground shadow-sm font-semibold',
         false:
-          'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
+          'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
       },
     },
     defaultVariants: {
@@ -57,7 +57,7 @@ export const Chip = React.forwardRef(
         aria-pressed={onClick ? isSelected : undefined}
         className={cn(
           chipVariants({ size: finalSize, selected: isSelected }),
-          (!isClickable || !isInteractive) && 'cursor-default pointer-events-none hover:bg-[hsl(var(--muted))]',
+          (!isClickable || !isInteractive) && 'cursor-default pointer-events-none hover:bg-muted',
           isClickable && isInteractive && 'cursor-pointer active:scale-95',
           className
         )}

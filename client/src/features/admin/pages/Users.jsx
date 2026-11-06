@@ -67,7 +67,7 @@ export function AdminUsers() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="flex items-center justify-between py-3 border-b border-[hsl(var(--border))/0.4] last:border-b-0"
+              className="flex items-center justify-between py-3 border-b border-border/40 last:border-b-0"
             >
               <div className="flex items-center gap-3 flex-1">
                 <Skeleton variant="circle" width={36} height={36} />

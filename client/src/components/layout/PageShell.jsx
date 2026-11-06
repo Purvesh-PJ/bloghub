@@ -46,22 +46,22 @@ export function PageHeader({ badge, title, subtitle, actions, divider = true, cl
     <header
       className={cn(
         'flex flex-col gap-4',
-        divider && 'pb-6 border-b border-[hsl(var(--border))/0.4]',
+        divider && 'pb-6 border-b border-border/40',
         className
       )}
     >
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex flex-col gap-1.5 min-w-0 flex-1">
           {badge && (
-            <span className="inline-flex items-center gap-1 w-fit px-2 py-0.5 rounded-full bg-[hsl(var(--primary))/0.10] text-[hsl(var(--primary))] text-[11px] font-bold tracking-wider uppercase mb-0.5 select-none">
+            <span className="inline-flex items-center gap-1 w-fit px-2 py-0.5 rounded-full bg-primary/10 text-primary text-caption font-bold tracking-wider uppercase mb-0.5 select-none">
               {badge}
             </span>
           )}
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))] leading-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] max-w-[65ch] leading-relaxed">
+            <p className="text-sm sm:text-base text-muted-foreground max-w-[65ch] leading-relaxed">
               {subtitle}
             </p>
           )}
@@ -87,11 +87,11 @@ export function Section({ title, note, aside, children, className, ...props }) {
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <div>
             {title && (
-              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
                 {title}
               </h2>
             )}
-            {note && <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">{note}</p>}
+            {note && <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{note}</p>}
           </div>
           {aside}
         </div>

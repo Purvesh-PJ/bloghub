@@ -96,11 +96,11 @@ export function Dashboard() {
 
       {/* Nothing to measure yet */}
       {!analyticsPending && !analyticsFailed && !hasWritten ? (
-        <div className="flex flex-col items-start gap-4 p-8 rounded-[28px] bg-[hsl(var(--card))] border border-dashed border-[hsl(var(--primary))/0.4]">
-          <h2 className="text-xl font-bold text-[hsl(var(--foreground))] tracking-tight">
+        <div className="flex flex-col items-start gap-4 p-8 rounded-2xl bg-card border border-dashed border-primary/40">
+          <h2 className="text-xl font-bold text-foreground tracking-tight">
             Publish your first story
           </h2>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] max-w-[62ch] leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-[62ch] leading-relaxed">
             Write in Markdown with a live preview. Save it as a draft while you work — only you can
             see a draft — and publish when you are ready. Views and read-through appear here once
             readers arrive.
@@ -198,12 +198,12 @@ export function Dashboard() {
                 <Link
                   key={post._id}
                   to={`/post/${post._id}`}
-                  className="bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] rounded-[20px] p-5 flex flex-col gap-2 no-underline hover:border-[hsl(var(--primary))/0.4] hover:-translate-y-0.5 hover:shadow-sm transition-all"
+                  className="bg-card border border-border/60 rounded-lg p-5 flex flex-col gap-2 no-underline hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-sm transition-all"
                 >
-                  <h4 className="text-base font-semibold text-[hsl(var(--foreground))] line-clamp-2">
+                  <h4 className="text-base font-semibold text-foreground line-clamp-2">
                     {post.title}
                   </h4>
-                  <span className="text-xs text-[hsl(var(--muted-foreground))] mt-auto pt-2">
+                  <span className="text-xs text-muted-foreground mt-auto pt-2">
                     {post.user?.username ? `${post.user.username} · ` : ''}opened {when}
                   </span>
                 </Link>

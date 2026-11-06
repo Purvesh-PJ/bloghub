@@ -57,7 +57,7 @@ export function PublishSettingsSidebar({
 
       {/* Visibility choice */}
       <Card tone="low" radius="lg" padding="lg">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-3 select-none">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 select-none">
           Who can see it
         </p>
         <div className="flex flex-col gap-1.5">
@@ -72,16 +72,16 @@ export function PublishSettingsSidebar({
                 className={cn(
                   'flex items-start gap-3 p-3 rounded-xl text-left transition-colors cursor-pointer select-none',
                   isActive
-                    ? 'bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))]'
-                    : 'text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]'
+                    ? 'bg-primary/12 text-primary'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 )}
               >
                 <option.icon className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>
-                  <span className="text-sm font-semibold block text-[hsl(var(--foreground))]">
+                  <span className="text-sm font-semibold block text-foreground">
                     {option.name}
                   </span>
-                  <span className="text-xs text-[hsl(var(--muted-foreground))] block">
+                  <span className="text-xs text-muted-foreground block">
                     {option.note}
                   </span>
                 </span>
@@ -93,7 +93,7 @@ export function PublishSettingsSidebar({
 
       {/* Tags card */}
       <Card tone="low" radius="lg" padding="lg">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-3 select-none">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 select-none">
           Tags & Topics
         </p>
         {tags.length > 0 && (
@@ -122,13 +122,13 @@ export function PublishSettingsSidebar({
           }}
           onBlur={() => onAddTag(tagDraft)}
         />
-        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1.5">
+        <p className="text-xs text-muted-foreground mt-1.5">
           {tags.length}/{maxTags} · lowercase, letters, numbers and hyphens
         </p>
 
         {popularSuggestions.length > 0 && tags.length < maxTags && (
           <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
-            <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+            <span className="text-xs font-medium text-muted-foreground">
               Popular:
             </span>
             {popularSuggestions.map((s) => (
@@ -142,7 +142,7 @@ export function PublishSettingsSidebar({
 
       {/* Details card */}
       <Card tone="low" radius="lg" padding="lg">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-3 select-none">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 select-none">
           Details
         </p>
         <Input
@@ -152,7 +152,7 @@ export function PublishSettingsSidebar({
           onChange={(event) => onImageURLChange(event.target.value)}
         />
         {imageURL && (
-          <div className="mt-3 rounded-xl overflow-hidden aspect-[21/9] bg-[hsl(var(--muted))]">
+          <div className="mt-3 rounded-xl overflow-hidden aspect-[21/9] bg-muted">
             <img
               src={imageURL}
               alt=""
@@ -174,33 +174,33 @@ export function PublishSettingsSidebar({
 
       {/* Length facts */}
       <Card tone="low" radius="lg" padding="lg">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-3 select-none">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 select-none">
           Length
         </p>
         <dl className="flex flex-col gap-2">
-          <div className="flex items-baseline justify-between gap-4 text-sm text-[hsl(var(--muted-foreground))]">
+          <div className="flex items-baseline justify-between gap-4 text-sm text-muted-foreground">
             <dt>Words</dt>
-            <dd className="font-semibold text-[hsl(var(--foreground))] tabular-nums">
+            <dd className="font-semibold text-foreground tabular-nums">
               {words}
             </dd>
           </div>
-          <div className="flex items-baseline justify-between gap-4 text-sm text-[hsl(var(--muted-foreground))]">
+          <div className="flex items-baseline justify-between gap-4 text-sm text-muted-foreground">
             <dt>Reading time</dt>
-            <dd className="font-semibold text-[hsl(var(--foreground))] tabular-nums">
+            <dd className="font-semibold text-foreground tabular-nums">
               {readingMinutes} min
             </dd>
           </div>
           {isEditing && (
             <>
-              <div className="flex items-baseline justify-between gap-4 text-sm text-[hsl(var(--muted-foreground))]">
+              <div className="flex items-baseline justify-between gap-4 text-sm text-muted-foreground">
                 <dt>Likes</dt>
-                <dd className="font-semibold text-[hsl(var(--foreground))] tabular-nums">
+                <dd className="font-semibold text-foreground tabular-nums">
                   {likesCount}
                 </dd>
               </div>
-              <div className="flex items-baseline justify-between gap-4 text-sm text-[hsl(var(--muted-foreground))]">
+              <div className="flex items-baseline justify-between gap-4 text-sm text-muted-foreground">
                 <dt>Responses</dt>
-                <dd className="font-semibold text-[hsl(var(--foreground))] tabular-nums">
+                <dd className="font-semibold text-foreground tabular-nums">
                   {commentsCount}
                 </dd>
               </div>

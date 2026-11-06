@@ -26,9 +26,9 @@ const Band = ({ items, reverse, duration = 38 }) => (
           <div
             key={`${name}-${index}`}
             aria-hidden={index >= items.length}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[hsl(var(--card))] shadow-[0_1px_3px_rgba(0,0,0,0.05),inset_0_0_0_1px_rgba(255,255,255,0.06)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] text-sm font-medium text-[hsl(var(--foreground))] whitespace-nowrap"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-card border border-border shadow-xs text-sm font-medium text-foreground whitespace-nowrap"
           >
-            <Icon className="h-4.5 w-4.5 text-[hsl(var(--primary))]" />
+            <Icon className="h-4.5 w-4.5 text-primary" />
             {name}
           </div>
         );

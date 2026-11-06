@@ -18,7 +18,7 @@ const List = React.forwardRef(({ className, ...props }, ref) => (
   <RadixTabs.List
     ref={ref}
     className={cn(
-      'flex items-center gap-1 border-b border-[hsl(var(--border))] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+      'flex items-center gap-1 border-b border-border overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
       className
     )}
     {...props}
@@ -30,11 +30,11 @@ const Trigger = React.forwardRef(({ className, ...props }, ref) => (
   <RadixTabs.Trigger
     ref={ref}
     className={cn(
-      'relative shrink-0 px-4 py-3 text-sm font-medium text-[hsl(var(--muted-foreground))] whitespace-nowrap cursor-pointer select-none transition-colors duration-150',
-      'hover:text-[hsl(var(--foreground))]',
-      'data-[state=active]:text-[hsl(var(--foreground))] data-[state=active]:font-semibold',
+      'relative shrink-0 px-4 py-3 text-sm font-medium text-muted-foreground whitespace-nowrap cursor-pointer select-none transition-colors duration-150',
+      'hover:text-foreground',
+      'data-[state=active]:text-foreground data-[state=active]:font-semibold',
       'after:content-[""] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent after:transition-colors',
-      'data-[state=active]:after:bg-[hsl(var(--primary))]',
+      'data-[state=active]:after:bg-primary',
       'disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
       className
     )}

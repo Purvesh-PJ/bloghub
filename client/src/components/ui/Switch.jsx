@@ -18,7 +18,7 @@ export function Switch({
     <label
       htmlFor={id}
       className={cn(
-        'flex items-center justify-between gap-6 py-4 cursor-pointer border-b border-[hsl(var(--border))/0.4] last:border-b-0',
+        'flex items-center justify-between gap-6 py-4 cursor-pointer border-b border-border/40 last:border-b-0',
         disabled && 'opacity-50 cursor-not-allowed',
         className
       )}
@@ -26,12 +26,12 @@ export function Switch({
       {(label || note) && (
         <span>
           {label && (
-            <span className="text-base font-medium text-[hsl(var(--foreground))] block">
+            <span className="text-base font-medium text-foreground block">
               {label}
             </span>
           )}
           {note && (
-            <span className="text-sm text-[hsl(var(--muted-foreground))] block mt-0.5">
+            <span className="text-sm text-muted-foreground block mt-0.5">
               {note}
             </span>
           )}
@@ -50,7 +50,7 @@ export function Switch({
       <div
         className={cn(
           'relative w-12 h-7 rounded-full transition-colors duration-200 shrink-0 cursor-pointer',
-          checked ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--muted))]'
+          checked ? 'bg-primary' : 'bg-muted'
         )}
       >
         <span

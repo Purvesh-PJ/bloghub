@@ -24,17 +24,17 @@ export function EmptyState({
       )}
     >
       {IconComponent && (
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] mb-1">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-muted text-muted-foreground mb-1">
           <IconComponent className="w-6 h-6" />
         </div>
       )}
       {title && (
-        <p className="text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+        <p className="text-xl font-bold tracking-tight text-foreground">
           {title}
         </p>
       )}
       {children && (
-        <div className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] max-w-[46ch] leading-relaxed">
+        <div className="text-sm sm:text-base text-muted-foreground max-w-[46ch] leading-relaxed">
           {children}
         </div>
       )}

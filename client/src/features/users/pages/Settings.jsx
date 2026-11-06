@@ -182,8 +182,8 @@ export function Settings() {
                 className={cn(
                   'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors text-left whitespace-nowrap cursor-pointer select-none',
                   isActive
-                    ? 'bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))] font-semibold'
-                    : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                    ? 'bg-primary/12 text-primary font-semibold'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 )}
               >
                 <item.icon className="w-4 h-4 shrink-0" />

@@ -199,7 +199,7 @@ export function Stories() {
       />
 
       {/* Toolbar: Filter chips, sort select, and title search */}
-      <div className="flex items-center gap-2.5 flex-wrap p-3 rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] mb-4">
+      <div className="flex items-center gap-2.5 flex-wrap p-3 rounded-2xl bg-card border border-border/60 mb-4">
         {FILTERS.map((option) => (
           <Chip
             key={option.id}
@@ -215,7 +215,7 @@ export function Stories() {
           value={sort}
           onChange={(e) => resetToFirstPage(() => setSort(e.target.value))}
           aria-label="Sort stories"
-          className="h-9 px-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-sm text-[hsl(var(--foreground))] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))/0.3]"
+          className="h-9 px-3 rounded-xl border border-border bg-secondary text-sm text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
         >
           {SORTS.map((option) => (
             <option key={option.id} value={option.id}>
@@ -241,7 +241,7 @@ export function Stories() {
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="flex items-center justify-between p-4 border-b border-[hsl(var(--border))/0.4] last:border-b-0"
+              className="flex items-center justify-between p-4 border-b border-border/40 last:border-b-0"
             >
               <div className="flex items-center gap-4 flex-1">
                 <Skeleton width={20} height={20} className="rounded" />
@@ -276,14 +276,14 @@ export function Stories() {
             <div
               role="status"
               aria-live="polite"
-              className="absolute top-2 right-4 z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[hsl(var(--primary))/0.15] text-[hsl(var(--primary))] text-xs font-semibold"
+              className="absolute top-2 right-4 z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/15 text-primary text-xs font-semibold"
             >
               <Spinner size="12px" /> Updating…
             </div>
           )}
 
           {/* Select all row */}
-          <label className="flex items-center gap-3 px-4 py-2 text-xs text-[hsl(var(--muted-foreground))] cursor-pointer border-b border-[hsl(var(--border))/0.4]">
+          <label className="flex items-center gap-3 px-4 py-2 text-xs text-muted-foreground cursor-pointer border-b border-border/40">
             <input
               type="checkbox"
               checked={allOnPageSelected}
@@ -295,7 +295,7 @@ export function Stories() {
                 )
               }
               aria-label="Select every story on this page"
-              className="w-4 h-4 rounded accent-[hsl(var(--primary))] cursor-pointer"
+              className="w-4 h-4 rounded accent-primary cursor-pointer"
             />
             <span>Select all on this page</span>
           </label>

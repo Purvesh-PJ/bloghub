@@ -9,8 +9,8 @@ export function Loading({ text = 'Loading...', className }) {
         className
       )}
     >
-      <Spinner size="32px" className="text-[hsl(var(--primary))]" />
-      <span className="text-sm text-[hsl(var(--muted-foreground))]">{text}</span>
+      <Spinner size="32px" className="text-primary" />
+      <span className="text-sm text-muted-foreground">{text}</span>
     </div>
   );
 }

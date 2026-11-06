@@ -25,7 +25,7 @@ export function WorkspaceLayout() {
   const openSignOut = useCallback(() => setConfirmSignOut(true), []);
 
   return (
-    <div className="flex min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="flex min-h-screen bg-background text-foreground">
       {/* Studio Sidebar & Mobile Drawer */}
       <WorkspaceSidebar
         pathname={pathname}
@@ -41,7 +41,7 @@ export function WorkspaceLayout() {
       <div className="flex flex-1 min-w-0 flex-col">
         <WorkspaceHeader pathname={pathname} onOpenMobile={openMobile} />
 
-        <main className="flex-1 min-w-0 flex flex-col bg-[hsl(var(--background))]">
+        <main className="flex-1 min-w-0 flex flex-col bg-background">
           <Outlet />
         </main>
       </div>

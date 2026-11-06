@@ -8,11 +8,11 @@ import { cn } from '../../lib/utils';
  * Smooth image loading with graceful initial fallback and BlogHub gradient background.
  */
 const avatarVariants = cva(
-  'inline-flex shrink-0 items-center justify-center select-none overflow-hidden align-middle bg-gradient-to-tr from-[hsl(var(--primary))] to-[hsl(var(--primary-hover))] shadow-sm',
+  'inline-flex shrink-0 items-center justify-center select-none overflow-hidden align-middle bg-gradient-to-tr from-primary to-sky-600 shadow-sm',
   {
     variants: {
       size: {
-        xs: 'h-6 w-6 text-[11px]',
+        xs: 'h-6 w-6 text-caption',
         sm: 'h-8 w-8 text-xs',
         md: 'h-10 w-10 text-sm',
         lg: 'h-12 w-12 text-base',

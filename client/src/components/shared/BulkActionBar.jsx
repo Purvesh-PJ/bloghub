@@ -24,22 +24,22 @@ export function BulkActionBar({
       aria-label="Bulk actions"
       className={cn(
         isBanner
-          ? 'flex items-center gap-2 flex-wrap p-3 px-5 mb-4 rounded-2xl bg-[hsl(var(--primary))/0.12] border border-[hsl(var(--primary))/0.2]'
-          : 'fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-[hsl(var(--card))] border border-[hsl(var(--border))] shadow-2xl backdrop-blur-xl animate-in fade-in-0 slide-in-from-bottom-4 duration-200 flex-wrap justify-center',
+          ? 'flex items-center gap-2 flex-wrap p-3 px-5 mb-4 rounded-2xl bg-primary/12 border border-primary/20'
+          : 'fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-card border border-border shadow-2xl backdrop-blur-xl animate-in fade-in-0 slide-in-from-bottom-4 duration-200 flex-wrap justify-center',
         className
       )}
     >
       <span
         className={cn(
           isBanner
-            ? 'text-sm font-semibold text-[hsl(var(--primary))] mr-auto'
-            : 'text-xs font-semibold text-[hsl(var(--foreground))] whitespace-nowrap'
+            ? 'text-sm font-semibold text-primary mr-auto'
+            : 'text-xs font-semibold text-foreground whitespace-nowrap'
         )}
       >
         {label || `${selectedCount} selected`}
       </span>
 
-      {!isBanner && <div className="h-4 w-px bg-[hsl(var(--border))]" />}
+      {!isBanner && <div className="h-4 w-px bg-border" />}
 
       {actions.map((action, i) => (
         <Button

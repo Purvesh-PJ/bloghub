@@ -6,14 +6,14 @@ import { cn } from '../../lib/utils';
  * Skeleton — animated shimmer placeholder for loading states.
  */
 const skeletonVariants = cva(
-  'animate-pulse shrink-0 bg-[hsl(var(--muted))]',
+  'animate-pulse shrink-0 bg-muted',
   {
     variants: {
       variant: {
         default: 'rounded-md',
         circle: 'rounded-full',
         pill: 'rounded-full',
-        card: 'rounded-2xl border border-[hsl(var(--border))]',
+        card: 'rounded-2xl border border-border',
       },
     },
     defaultVariants: {

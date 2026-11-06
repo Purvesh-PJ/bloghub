@@ -195,7 +195,7 @@ export function PostDetail() {
         aria-hidden="true"
       >
         <div
-          className="h-full bg-[hsl(var(--primary))] transition-[width] duration-75 ease-linear"
+          className="h-full bg-primary transition-[width] duration-75 ease-linear"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -211,7 +211,7 @@ export function PostDetail() {
         {/* Article Body */}
         <article
           ref={articleRef}
-          className="text-[17px] sm:text-lg leading-[1.8] text-[hsl(var(--foreground))] [&_.wmde-markdown]:bg-transparent [&_.wmde-markdown]:text-inherit [&_.wmde-markdown]:font-sans [&_.wmde-markdown_h1]:text-3xl [&_.wmde-markdown_h1]:font-bold [&_.wmde-markdown_h1]:mt-8 [&_.wmde-markdown_h1]:mb-3 [&_.wmde-markdown_h2]:text-2xl [&_.wmde-markdown_h2]:font-bold [&_.wmde-markdown_h2]:mt-7 [&_.wmde-markdown_h2]:mb-3 [&_.wmde-markdown_h3]:text-xl [&_.wmde-markdown_h3]:font-semibold [&_.wmde-markdown_h3]:mt-6 [&_.wmde-markdown_h3]:mb-2 [&_.wmde-markdown_p]:text-[hsl(var(--muted-foreground))] [&_.wmde-markdown_p]:mb-4 [&_.wmde-markdown_li]:text-[hsl(var(--muted-foreground))] [&_.wmde-markdown_a]:text-[hsl(var(--primary))] [&_.wmde-markdown_a]:underline [&_.wmde-markdown_blockquote]:border-l-4 [&_.wmde-markdown_blockquote]:border-[hsl(var(--primary))] [&_.wmde-markdown_blockquote]:bg-[hsl(var(--muted))/0.5] [&_.wmde-markdown_blockquote]:rounded-r-xl [&_.wmde-markdown_blockquote]:p-4 [&_.wmde-markdown_blockquote]:my-4 [&_.wmde-markdown_pre]:rounded-xl [&_.wmde-markdown_pre]:bg-[hsl(var(--card))] [&_.wmde-markdown_img]:rounded-2xl"
+          className="text-[17px] sm:text-lg leading-[1.8] text-foreground [&_.wmde-markdown]:bg-transparent [&_.wmde-markdown]:text-inherit [&_.wmde-markdown]:font-sans [&_.wmde-markdown_h1]:text-3xl [&_.wmde-markdown_h1]:font-bold [&_.wmde-markdown_h1]:mt-8 [&_.wmde-markdown_h1]:mb-3 [&_.wmde-markdown_h2]:text-2xl [&_.wmde-markdown_h2]:font-bold [&_.wmde-markdown_h2]:mt-7 [&_.wmde-markdown_h2]:mb-3 [&_.wmde-markdown_h3]:text-xl [&_.wmde-markdown_h3]:font-semibold [&_.wmde-markdown_h3]:mt-6 [&_.wmde-markdown_h3]:mb-2 [&_.wmde-markdown_p]:text-muted-foreground [&_.wmde-markdown_p]:mb-4 [&_.wmde-markdown_li]:text-muted-foreground [&_.wmde-markdown_a]:text-primary [&_.wmde-markdown_a]:underline [&_.wmde-markdown_blockquote]:border-l-4 [&_.wmde-markdown_blockquote]:border-primary [&_.wmde-markdown_blockquote]:bg-muted/50 [&_.wmde-markdown_blockquote]:rounded-r-xl [&_.wmde-markdown_blockquote]:p-4 [&_.wmde-markdown_blockquote]:my-4 [&_.wmde-markdown_pre]:rounded-xl [&_.wmde-markdown_pre]:bg-card [&_.wmde-markdown_img]:rounded-2xl"
         >
           <div data-color-mode={mode}>
             <Markdown source={post.content} rehypePlugins={rehypePlugins} />
@@ -232,7 +232,7 @@ export function PostDetail() {
                 <Link
                   key={name}
                   to={`/search?topic=${encodeURIComponent(name)}`}
-                  className="px-3 py-1 rounded-full text-xs font-semibold bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))/0.1] transition-colors"
+                  className="px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                 >
                   #{name}
                 </Link>

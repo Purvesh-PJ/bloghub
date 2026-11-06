@@ -22,14 +22,14 @@ export function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="text-xs font-medium text-[hsl(var(--muted-foreground))] pl-0.5 select-none"
+          className="text-xs font-medium text-muted-foreground pl-0.5 select-none"
         >
           {label}
         </label>
       )}
       <div className="relative flex items-center w-full">
         {icon && (
-          <div className="absolute left-3.5 flex items-center pointer-events-none text-[hsl(var(--muted-foreground))] [&_svg]:h-4 [&_svg]:w-4">
+          <div className="absolute left-3.5 flex items-center pointer-events-none text-muted-foreground [&_svg]:h-4 [&_svg]:w-4">
             {icon}
           </div>
         )}
@@ -39,12 +39,12 @@ export function Input({
           aria-invalid={Boolean(error) || undefined}
           aria-describedby={messageId}
           className={cn(
-            'flex h-11 w-full rounded-full bg-[hsl(var(--secondary))] px-4 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] transition-all duration-150',
-            'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] light:shadow-[inset_0_0_0_1px_rgba(15,23,42,0.08)]',
-            'hover:bg-[hsl(var(--muted))] focus-visible:outline-none focus-visible:bg-[hsl(var(--card))] focus-visible:shadow-[inset_0_0_0_1.5px_#0ea5e9,0_0_0_3px_rgba(14,165,233,0.2)]',
+            'flex h-11 w-full rounded-full bg-secondary px-4 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-150',
+            'border border-border',
+            'hover:bg-muted focus-visible:outline-none focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary',
             'disabled:cursor-not-allowed disabled:opacity-50',
             icon && 'pl-10',
-            error && 'shadow-[inset_0_0_0_1.5px_#ef4444] focus-visible:shadow-[inset_0_0_0_1.5px_#ef4444,0_0_0_3px_rgba(239,68,68,0.2)]',
+            error && 'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20',
             className
           )}
           {...props}
@@ -55,7 +55,7 @@ export function Input({
           id={messageId}
           className={cn(
             'text-xs pl-1 font-normal',
-            error ? 'text-red-500 font-medium' : 'text-[hsl(var(--muted-foreground))]'
+            error ? 'text-destructive font-medium' : 'text-muted-foreground'
           )}
         >
           {error || hint}
@@ -84,7 +84,7 @@ export function TextArea({
       {label && (
         <label
           htmlFor={inputId}
-          className="text-xs font-medium text-[hsl(var(--muted-foreground))] pl-0.5 select-none"
+          className="text-xs font-medium text-muted-foreground pl-0.5 select-none"
         >
           {label}
         </label>
@@ -95,11 +95,11 @@ export function TextArea({
         aria-invalid={Boolean(error) || undefined}
         aria-describedby={messageId}
         className={cn(
-          'flex min-h-[100px] w-full rounded-2xl bg-[hsl(var(--secondary))] px-4 py-3 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] transition-all duration-150 resize-y',
-          'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] light:shadow-[inset_0_0_0_1px_rgba(15,23,42,0.08)]',
-          'hover:bg-[hsl(var(--muted))] focus-visible:outline-none focus-visible:bg-[hsl(var(--card))] focus-visible:shadow-[inset_0_0_0_1.5px_#0ea5e9,0_0_0_3px_rgba(14,165,233,0.2)]',
+          'flex min-h-[100px] w-full rounded-2xl bg-secondary px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-150 resize-y',
+          'border border-border',
+          'hover:bg-muted focus-visible:outline-none focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary',
           'disabled:cursor-not-allowed disabled:opacity-50',
-          error && 'shadow-[inset_0_0_0_1.5px_#ef4444] focus-visible:shadow-[inset_0_0_0_1.5px_#ef4444,0_0_0_3px_rgba(239,68,68,0.2)]',
+          error && 'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20',
           className
         )}
         {...props}
@@ -109,7 +109,7 @@ export function TextArea({
           id={messageId}
           className={cn(
             'text-xs pl-1 font-normal',
-            error ? 'text-red-500 font-medium' : 'text-[hsl(var(--muted-foreground))]'
+            error ? 'text-destructive font-medium' : 'text-muted-foreground'
           )}
         >
           {error || hint}
@@ -123,7 +123,7 @@ export function Eyebrow({ className, children, ...props }) {
   return (
     <span
       className={cn(
-        'text-xs font-semibold tracking-wider uppercase text-[hsl(var(--muted-foreground))] select-none',
+        'text-xs font-semibold tracking-wider uppercase text-muted-foreground select-none',
         className
       )}
       {...props}

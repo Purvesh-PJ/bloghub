@@ -196,17 +196,17 @@ export function WritePost() {
         <div className="flex flex-col gap-6 min-w-0">
           {preview ? (
             <Card tone="low" radius="xl" padding="2xl">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))] mb-4">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-4">
                 {title || 'Untitled'}
               </h1>
               {imageURL && (
-                <div className="mt-4 rounded-2xl overflow-hidden aspect-[21/9] bg-[hsl(var(--muted))]">
+                <div className="mt-4 rounded-2xl overflow-hidden aspect-[21/9] bg-muted">
                   <img src={imageURL} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
               <div
                 data-color-mode={mode}
-                className="mt-6 text-lg leading-relaxed text-[hsl(var(--foreground))] [&_.wmde-markdown]:bg-transparent [&_.wmde-markdown_h1]:text-3xl [&_.wmde-markdown_h1]:font-bold [&_.wmde-markdown_h2]:text-2xl [&_.wmde-markdown_h2]:font-bold [&_.wmde-markdown_p]:text-[hsl(var(--muted-foreground))] [&_.wmde-markdown_li]:text-[hsl(var(--muted-foreground))] [&_.wmde-markdown_a]:text-[hsl(var(--primary))] [&_.wmde-markdown_pre]:rounded-xl [&_.wmde-markdown_pre]:bg-[hsl(var(--card))]"
+                className="mt-6 text-lg leading-relaxed text-foreground [&_.wmde-markdown]:bg-transparent [&_.wmde-markdown_h1]:text-3xl [&_.wmde-markdown_h1]:font-bold [&_.wmde-markdown_h2]:text-2xl [&_.wmde-markdown_h2]:font-bold [&_.wmde-markdown_p]:text-muted-foreground [&_.wmde-markdown_li]:text-muted-foreground [&_.wmde-markdown_a]:text-primary [&_.wmde-markdown_pre]:rounded-xl [&_.wmde-markdown_pre]:bg-card"
               >
                 <MDEditor.Markdown
                   source={content || '_Nothing written yet._'}
@@ -227,13 +227,13 @@ export function WritePost() {
                   event.target.style.height = `${event.target.scrollHeight}px`;
                 }}
                 aria-label="Post title"
-                className="w-full resize-none border-none bg-transparent text-2xl sm:text-4xl font-extrabold tracking-tight text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))/0.5] focus:outline-none"
+                className="w-full resize-none border-none bg-transparent text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
               />
 
               {/* MD Editor Container */}
               <div
                 data-color-mode={mode}
-                className="rounded-2xl overflow-hidden border border-[hsl(var(--border))/0.6] shadow-sm [&_.w-md-editor]:bg-[hsl(var(--card))] [&_.w-md-editor]:shadow-none [&_.w-md-editor-toolbar]:bg-[hsl(var(--muted))/0.5] [&_.w-md-editor-toolbar]:border-b [&_.w-md-editor-toolbar]:border-[hsl(var(--border))/0.4] [&_.w-md-editor-text-input]:text-base [&_.wmde-markdown]:bg-transparent"
+                className="rounded-2xl overflow-hidden border border-border/60 shadow-sm [&_.w-md-editor]:bg-card [&_.w-md-editor]:shadow-none [&_.w-md-editor-toolbar]:bg-muted/50 [&_.w-md-editor-toolbar]:border-b [&_.w-md-editor-toolbar]:border-border/40 [&_.w-md-editor-text-input]:text-base [&_.wmde-markdown]:bg-transparent"
               >
                 <MDEditor
                   value={content}

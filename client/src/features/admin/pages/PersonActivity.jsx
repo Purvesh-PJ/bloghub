@@ -73,7 +73,7 @@ export function AdminPersonActivity() {
       <>
         <Link
           to="/admin/users"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] mb-4 no-underline"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary mb-4 no-underline"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Back to people
         </Link>
@@ -96,19 +96,19 @@ export function AdminPersonActivity() {
   return (
     <>
       {/* Header Bar */}
-      <div className="flex items-center justify-between gap-4 flex-wrap p-4 px-6 rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] mb-6">
+      <div className="flex items-center justify-between gap-4 flex-wrap p-4 px-6 rounded-2xl bg-card border border-border/60 mb-6">
         <div className="flex items-center gap-4">
           <Link
             to="/admin/users"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] no-underline"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary no-underline"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back
           </Link>
           <div>
-            <h3 className="text-base font-semibold text-[hsl(var(--foreground))]">
+            <h3 className="text-base font-semibold text-foreground">
               {person?.username ?? 'Activity'}
             </h3>
-            <span className="text-xs text-[hsl(var(--muted-foreground))]">
+            <span className="text-xs text-muted-foreground">
               {person?.createdAt
                 ? `${person.email} · joined ${ago(person.createdAt)}`
                 : 'Account timeline and metrics'}
@@ -157,7 +157,7 @@ export function AdminPersonActivity() {
           </EmptyState>
         ) : (
           <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
-            <div className="flex flex-col divide-y divide-[hsl(var(--border))/0.4]">
+            <div className="flex flex-col divide-y divide-border/40">
               {timeline.map((event) => {
                 const Icon = ICONS[event.type] ?? FileText;
                 const target = event.type === 'post' ? event : event.post;
@@ -165,35 +165,35 @@ export function AdminPersonActivity() {
                 return (
                   <div
                     key={`${event.type}-${event._id}`}
-                    className="grid grid-cols-[auto_1fr_auto] gap-4 items-start p-4 hover:bg-[hsl(var(--muted))/0.5] transition-colors"
+                    className="grid grid-cols-[auto_1fr_auto] gap-4 items-start p-4 hover:bg-muted/50 transition-colors"
                   >
-                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] shrink-0">
+                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted text-muted-foreground shrink-0">
                       <Icon className="w-4 h-4" />
                     </div>
 
-                    <div className="text-sm text-[hsl(var(--muted-foreground))] min-w-0">
-                      <strong className="text-[hsl(var(--foreground))] font-semibold">
+                    <div className="text-sm text-muted-foreground min-w-0">
+                      <strong className="text-foreground font-semibold">
                         {person?.username ?? 'This account'}
                       </strong>{' '}
                       {event.action}{' '}
                       {target?._id ? (
                         <Link
                           to={`/post/${target._id}`}
-                          className="text-[hsl(var(--primary))] hover:underline"
+                          className="text-primary hover:underline"
                         >
                           {target.title}
                         </Link>
                       ) : (
-                        <em className="text-[hsl(var(--muted-foreground))]">a story since deleted</em>
+                        <em className="text-muted-foreground">a story since deleted</em>
                       )}
                       {event.message && (
-                        <p className="text-sm text-[hsl(var(--muted-foreground))] line-clamp-2 mt-0.5">
+                        <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
                           “{event.message}”
                         </p>
                       )}
                     </div>
 
-                    <span className="text-xs text-[hsl(var(--muted-foreground))] whitespace-nowrap tabular-nums">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
                       {ago(event.createdAt)}
                     </span>
                   </div>

@@ -27,7 +27,7 @@ export function WorkspaceSidebar({
       {/* Sidebar Aside */}
       <aside
         className={cn(
-          'w-[260px] md:w-[260px] shrink-0 flex flex-col p-5 bg-[hsl(var(--card))] sticky top-0 h-screen z-50 transition-transform duration-200 ease-out',
+          'w-[260px] md:w-[260px] shrink-0 flex flex-col p-5 bg-card sticky top-0 h-screen z-50 transition-transform duration-200 ease-out',
           'max-md:fixed max-md:left-0 max-md:top-0 max-md:bottom-0 max-md:w-[280px] max-md:shadow-2xl',
           mobileMenuOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'
         )}
@@ -37,11 +37,11 @@ export function WorkspaceSidebar({
           <Link
             to="/dashboard"
             onClick={onCloseMobile}
-            className="inline-flex items-center gap-2 text-base font-bold text-[hsl(var(--foreground))] tracking-tight"
+            className="inline-flex items-center gap-2 text-base font-bold text-foreground tracking-tight"
           >
             <BrandMark letter="B" />
             <span>BlogHub</span>
-            <span className="px-2 py-0.5 rounded-full bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))] text-[10px] font-extrabold uppercase tracking-wider select-none">
+            <span className="px-2 py-0.5 rounded-full bg-primary/12 text-primary text-2xs font-extrabold uppercase tracking-wider select-none">
               Studio
             </span>
           </Link>
@@ -49,7 +49,7 @@ export function WorkspaceSidebar({
             type="button"
             onClick={onCloseMobile}
             aria-label="Close menu"
-            className="inline-flex md:hidden items-center justify-center h-8 w-8 rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+            className="inline-flex md:hidden items-center justify-center h-8 w-8 rounded-lg bg-muted text-muted-foreground hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>

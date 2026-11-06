@@ -93,11 +93,11 @@ export function AdminDashboard() {
         >
           <Card tone="low" radius="xl" padding="lg">
             {topPosts.length === 0 ? (
-              <span className="text-xs text-[hsl(var(--muted-foreground))]">
+              <span className="text-xs text-muted-foreground">
                 Nothing has been opened yet.
               </span>
             ) : (
-              <div className="flex flex-col divide-y divide-[hsl(var(--border))/0.4]">
+              <div className="flex flex-col divide-y divide-border/40">
                 {topPosts.map((entry) => (
                   <div
                     key={entry._id}
@@ -105,11 +105,11 @@ export function AdminDashboard() {
                   >
                     <Link
                       to={`/post/${entry._id}`}
-                      className="text-sm font-medium text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 no-underline"
+                      className="text-sm font-medium text-foreground hover:text-primary transition-colors line-clamp-1 no-underline"
                     >
                       {entry.title}
                     </Link>
-                    <span className="text-xs text-[hsl(var(--muted-foreground))] whitespace-nowrap tabular-nums">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
                       {format(entry.viewCount)} opened
                     </span>
                   </div>
@@ -129,11 +129,11 @@ export function AdminDashboard() {
         >
           <Card tone="low" radius="xl" padding="lg">
             {topUsers.length === 0 ? (
-              <span className="text-xs text-[hsl(var(--muted-foreground))]">
+              <span className="text-xs text-muted-foreground">
                 Nobody has published yet.
               </span>
             ) : (
-              <div className="flex flex-col divide-y divide-[hsl(var(--border))/0.4]">
+              <div className="flex flex-col divide-y divide-border/40">
                 {topUsers.map((entry) => (
                   <div
                     key={entry._id}
@@ -141,11 +141,11 @@ export function AdminDashboard() {
                   >
                     <Link
                       to={`/user/${entry._id}`}
-                      className="text-sm font-medium text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 no-underline"
+                      className="text-sm font-medium text-foreground hover:text-primary transition-colors line-clamp-1 no-underline"
                     >
                       {entry.username}
                     </Link>
-                    <span className="text-xs text-[hsl(var(--muted-foreground))] whitespace-nowrap tabular-nums">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
                       {entry.postCount} {entry.postCount === 1 ? 'story' : 'stories'}
                     </span>
                   </div>
@@ -162,7 +162,7 @@ export function AdminDashboard() {
                 Posts will appear here as people write them.
               </EmptyState>
             ) : (
-              <div className="flex flex-col divide-y divide-[hsl(var(--border))/0.4]">
+              <div className="flex flex-col divide-y divide-border/40">
                 {recent.map((post) => (
                   <div
                     key={post._id}
@@ -171,11 +171,11 @@ export function AdminDashboard() {
                     <div className="min-w-0">
                       <Link
                         to={`/post/${post._id}`}
-                        className="text-sm font-medium text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 no-underline block"
+                        className="text-sm font-medium text-foreground hover:text-primary transition-colors line-clamp-1 no-underline block"
                       >
                         {post.title}
                       </Link>
-                      <span className="text-xs text-[hsl(var(--muted-foreground))] block mt-0.5">
+                      <span className="text-xs text-muted-foreground block mt-0.5">
                         {post.user?.username ?? 'Unknown'} ·{' '}
                         {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                       </span>
@@ -200,7 +200,7 @@ export function AdminDashboard() {
 
         <Section title="Jump to">
           <Card tone="low" radius="xl" padding="lg">
-            <h2 className="text-sm font-semibold text-[hsl(var(--foreground))] mb-3">
+            <h2 className="text-sm font-semibold text-foreground mb-3">
               Common tasks
             </h2>
             <div className="grid grid-cols-2 gap-2.5">

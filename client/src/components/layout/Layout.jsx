@@ -5,7 +5,7 @@ import { SkipLink } from './SkipLink';
 
 export function Layout() {
   return (
-    <div className="flex flex-col min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] transition-colors duration-200">
+    <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-200">
       <SkipLink />
       <Header />
       {/* tabIndex={-1} so the skip link can move focus here, not just scroll to it. */}

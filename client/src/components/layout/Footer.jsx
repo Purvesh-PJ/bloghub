@@ -15,7 +15,7 @@ export function Footer() {
   const topics = tags.slice(0, TOPIC_COUNT);
 
   return (
-    <footer className="relative overflow-hidden mt-20 pt-16 pb-8 bg-[hsl(var(--muted))/0.25]">
+    <footer className="relative overflow-hidden mt-20 pt-16 pb-8 bg-muted/25">
       {/* Background Ambient Watermark */}
       <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[clamp(70px,14vw,160px)] font-black tracking-tighter text-slate-900/[0.03] dark:text-white/[0.02] select-none pointer-events-none whitespace-nowrap z-0">
         bloghub
@@ -27,16 +27,16 @@ export function Footer() {
           <div className="flex flex-col gap-3 max-w-md">
             <div className="flex items-center gap-2.5">
               <BrandMark letter="B" />
-              <span className="text-base font-bold tracking-tight text-[hsl(var(--foreground))]">
+              <span className="text-base font-bold tracking-tight text-foreground">
                 BlogHub
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[hsl(var(--primary))/0.10] text-[hsl(var(--primary))] text-xs font-semibold select-none">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold select-none">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Open Source
               </span>
             </div>
 
-            <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               A distraction-free publishing space for writers, thinkers, and curious minds. Pure
               Markdown canvas, true read attention metrics, and zero ads.
             </p>
@@ -44,31 +44,31 @@ export function Footer() {
 
           {/* Quick Discover Pathways */}
           <div className="flex flex-col gap-3">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Explore
             </h4>
             <div className="flex flex-col gap-2.5">
               <Link
                 to="/search"
-                className="inline-flex items-center gap-2 text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:translate-x-0.5 transition-all duration-150 w-fit group"
+                className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:translate-x-0.5 transition-all duration-150 w-fit group"
               >
-                <Compass className="h-4 w-4 text-[hsl(var(--primary))] group-hover:scale-110 transition-transform" />
+                <Compass className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
                 Discover Stories
               </Link>
               <Link
                 to="/write"
-                className="inline-flex items-center gap-2 text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:translate-x-0.5 transition-all duration-150 w-fit group"
+                className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:translate-x-0.5 transition-all duration-150 w-fit group"
               >
-                <PenLine className="h-4 w-4 text-[hsl(var(--primary))] group-hover:scale-110 transition-transform" />
+                <PenLine className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
                 Write an Article
               </Link>
               <a
                 href="https://github.com/Purvesh-PJ/bloghub"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:translate-x-0.5 transition-all duration-150 w-fit group"
+                className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:translate-x-0.5 transition-all duration-150 w-fit group"
               >
-                <Github className="h-4 w-4 text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))] transition-colors" />
+                <Github className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 GitHub Repository
               </a>
             </div>
@@ -77,7 +77,7 @@ export function Footer() {
           {/* Popular Community Topics */}
           {topics.length > 0 && (
             <div className="flex flex-col gap-3 sm:col-span-2 lg:col-span-1">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Popular Topics
               </h4>
               <div className="flex flex-wrap gap-2">
@@ -87,8 +87,8 @@ export function Footer() {
                     to={`/search?topic=${encodeURIComponent(topic.name)}`}
                     className={cn(
                       'text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-150 select-none',
-                      'bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] border-none shadow-none',
-                      'hover:bg-[hsl(var(--primary))/0.10] hover:text-[hsl(var(--primary))] hover:-translate-y-0.5'
+                      'bg-card text-muted-foreground border-none shadow-none',
+                      'hover:bg-primary/10 hover:text-primary hover:-translate-y-0.5'
                     )}
                   >
                     #{topic.name}
@@ -100,11 +100,11 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mt-12 pt-6 border-t border-[var(--line-subtle)] text-xs text-[hsl(var(--muted-foreground))]">
+        <div className="flex flex-wrap items-center justify-between gap-4 mt-12 pt-6 border-t border-border text-xs text-muted-foreground">
           <span>© {new Date().getFullYear()} BlogHub · All stories belong to their authors</span>
           <span className="inline-flex items-center gap-1.5">
             Crafted with{' '}
-            <Heart className="h-3 w-3 text-[hsl(var(--destructive))] fill-[hsl(var(--destructive))]" />{' '}
+            <Heart className="h-3 w-3 text-destructive fill-destructive" />{' '}
             for open web publishing
           </span>
         </div>

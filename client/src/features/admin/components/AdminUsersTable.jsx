@@ -51,7 +51,7 @@ export function AdminUsersTable({
                 <td className="pl-6">
                   <Link
                     to={`/user/${user._id}`}
-                    className="inline-flex items-center gap-3 text-sm font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors no-underline"
+                    className="inline-flex items-center gap-3 text-sm font-semibold text-foreground hover:text-primary transition-colors no-underline"
                   >
                     <Avatar name={user.username} size="sm" />
                     <span>{user.username}</span>
@@ -78,7 +78,7 @@ export function AdminUsersTable({
                 </td>
                 <td className="text-right pr-6">
                   {isSelf ? (
-                    <span className="text-xs text-[hsl(var(--muted-foreground))]">You</span>
+                    <span className="text-xs text-muted-foreground">You</span>
                   ) : (
                     <DropdownMenu
                       trigger={

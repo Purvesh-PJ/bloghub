@@ -68,7 +68,7 @@ export function Responses() {
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="flex gap-4 py-4 border-b border-[hsl(var(--border))/0.4] last:border-b-0"
+                className="flex gap-4 py-4 border-b border-border/40 last:border-b-0"
               >
                 <Skeleton variant="circle" width={36} height={36} />
                 <div className="flex-1 flex flex-col gap-2">
@@ -101,7 +101,7 @@ export function Responses() {
       ) : (
         <>
           {/* Post picker toolbar */}
-          <div className="flex items-center gap-4 flex-wrap p-4 px-6 rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] mb-6">
+          <div className="flex items-center gap-4 flex-wrap p-4 px-6 rounded-2xl bg-card border border-border/60 mb-6">
             <div className="min-w-[260px] flex-1 max-w-[440px] max-sm:max-w-full">
               <Select
                 label="Story"
@@ -115,7 +115,7 @@ export function Responses() {
             </div>
 
             {selectedPost && (
-              <span className="text-sm font-semibold text-[hsl(var(--primary))] inline-flex items-center gap-1.5 whitespace-nowrap shrink-0">
+              <span className="text-sm font-semibold text-primary inline-flex items-center gap-1.5 whitespace-nowrap shrink-0">
                 <span>Viewing:</span>
                 <Link to={`/post/${selectedPost._id}`} className="hover:underline">
                   {selectedPost.title || 'Untitled'}
@@ -123,7 +123,7 @@ export function Responses() {
               </span>
             )}
 
-            <span className="text-xs text-[hsl(var(--muted-foreground))] tabular-nums ml-auto">
+            <span className="text-xs text-muted-foreground tabular-nums ml-auto">
               {commentsData?.pagination?.total ?? comments.length} response
               {(commentsData?.pagination?.total ?? comments.length) === 1 ? '' : 's'}
             </span>
@@ -134,7 +134,7 @@ export function Responses() {
               {Array.from({ length: 3 }).map((_, i) => (
                 <div
                   key={i}
-                  className="flex gap-4 py-4 border-b border-[hsl(var(--border))/0.4] last:border-b-0"
+                  className="flex gap-4 py-4 border-b border-border/40 last:border-b-0"
                 >
                   <Skeleton variant="circle" width={36} height={36} />
                   <div className="flex-1 flex flex-col gap-2">
@@ -156,7 +156,7 @@ export function Responses() {
             </EmptyState>
           ) : (
             <Card tone="low" radius="xl" padding="sm">
-              <div className="flex flex-col divide-y divide-[hsl(var(--border))/0.4]">
+              <div className="flex flex-col divide-y divide-border/40">
                 {comments.map((comment) => (
                   <ResponseItem
                     key={comment._id}
@@ -187,7 +187,7 @@ export function Responses() {
         onConfirm={() => deleteMutation.mutate(pendingDelete._id)}
       >
         <Card tone="low" radius="md" padding="md" className="mt-2">
-          <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed m-0">
+          <p className="text-sm text-muted-foreground leading-relaxed m-0">
             {pendingDelete?.message}
           </p>
         </Card>

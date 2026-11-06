@@ -34,13 +34,13 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[hsl(var(--background))/0.85] backdrop-blur-xl backdrop-saturate-180">
+    <header className="sticky top-0 z-40 w-full bg-background/85 backdrop-blur-xl backdrop-saturate-180">
       <div className="max-w-[1200px] mx-auto h-16 px-4 sm:px-6 flex items-center justify-between gap-4">
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-6 min-w-0">
           <Link
             to="/"
-            className="inline-flex items-center gap-2.5 text-base font-bold tracking-tight text-[hsl(var(--foreground))] shrink-0 transition-opacity hover:opacity-85"
+            className="inline-flex items-center gap-2.5 text-base font-bold tracking-tight text-foreground shrink-0 transition-opacity hover:opacity-85"
           >
             <BrandMark letter="B" />
             <span>BlogHub</span>
@@ -55,13 +55,13 @@ export function Header() {
             aria-label="Search stories (⌘K)"
             className={cn(
               'inline-flex items-center gap-2 h-[34px] px-2.5 sm:px-3 rounded-full text-xs font-medium cursor-pointer transition-all duration-150 select-none',
-              'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border-none shadow-none',
-              'hover:bg-[hsl(var(--muted))/0.8] hover:text-[hsl(var(--foreground))]'
+              'bg-muted text-muted-foreground border-none shadow-none',
+              'hover:bg-muted/80 hover:text-foreground'
             )}
           >
             <Search className="h-3.5 w-3.5 shrink-0" />
             <span className="hidden sm:inline opacity-80">Search...</span>
-            <kbd className="hidden sm:inline-flex items-center font-sans text-[10px] px-1.5 py-0.5 rounded bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] border-none">
+            <kbd className="hidden sm:inline-flex items-center font-sans text-2xs px-1.5 py-0.5 rounded bg-card text-muted-foreground border-none">
               ⌘K
             </kbd>
           </button>
@@ -88,11 +88,11 @@ export function Header() {
                   </button>
                 }
               >
-                <div className="px-3 py-2.5 border-b border-[var(--line-subtle)] mb-1">
-                  <div className="text-sm font-semibold text-[hsl(var(--foreground))] truncate">
+                <div className="px-3 py-2.5 border-b border-border mb-1">
+                  <div className="text-sm font-semibold text-foreground truncate">
                     {user?.username}
                   </div>
-                  <div className="text-xs text-[hsl(var(--muted-foreground))] truncate">
+                  <div className="text-xs text-muted-foreground truncate">
                     {user?.email}
                   </div>
                 </div>
