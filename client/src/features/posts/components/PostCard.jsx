@@ -135,7 +135,7 @@ export function PostCardCompact({ post, rank }) {
       to={`/post/${post._id}`}
       className="flex gap-3 items-baseline p-3 -mx-3 rounded-xl no-underline transition-all duration-150 hover:bg-muted hover:translate-x-1"
     >
-      {rank != null && (
+      {rank !== null && rank !== undefined && (
         <span className="text-xs font-bold text-primary tabular-nums shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 select-none">
           {String(rank).padStart(2, '0')}
         </span>
