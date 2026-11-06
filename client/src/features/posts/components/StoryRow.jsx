@@ -47,9 +47,7 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
     <div
       className={cn(
         'grid grid-cols-[28px_minmax(0,1fr)_44px] sm:grid-cols-[28px_minmax(0,1fr)_170px_96px] lg:grid-cols-[28px_minmax(0,1fr)_170px_110px_96px] items-center gap-4 sm:gap-6 p-4 rounded-xl transition-colors border-b border-border/40 last:border-b-0',
-        selected
-          ? 'bg-primary/12'
-          : 'hover:bg-muted/50'
+        selected ? 'bg-primary/12' : 'hover:bg-muted/50'
       )}
     >
       {/* Select Cell */}
@@ -122,11 +120,13 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
           </DropdownMenu.Item>
 
           <DropdownMenu.Item onSelect={() => navigate(`/post/${post._id}`)}>
-            <ExternalLink className="w-3.5 h-3.5 mr-2" /> {isPublic ? 'View live story' : 'Preview as reader'}
+            <ExternalLink className="w-3.5 h-3.5 mr-2" />{' '}
+            {isPublic ? 'View live story' : 'Preview as reader'}
           </DropdownMenu.Item>
 
           <DropdownMenu.Item onSelect={handleCopyLink}>
-            <Share2 className="w-3.5 h-3.5 mr-2" /> {isPublic ? 'Copy public link' : 'Copy private link'}
+            <Share2 className="w-3.5 h-3.5 mr-2" />{' '}
+            {isPublic ? 'Copy public link' : 'Copy private link'}
           </DropdownMenu.Item>
 
           <DropdownMenu.Separator />
@@ -150,4 +150,3 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
     </div>
   );
 }
-

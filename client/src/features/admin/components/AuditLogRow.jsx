@@ -65,4 +65,3 @@ export function AuditLogRow({ row, tab }) {
     </tr>
   );
 }
-

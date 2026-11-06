@@ -20,9 +20,11 @@ export function ConfirmDialog({
   width = 'max-w-md',
 }) {
   const isBusy = loading || isLoading;
-  const handleOpenChange = onOpenChange || ((isOpen) => {
-    if (!isOpen && onClose) onClose();
-  });
+  const handleOpenChange =
+    onOpenChange ||
+    ((isOpen) => {
+      if (!isOpen && onClose) onClose();
+    });
 
   return (
     <Modal
@@ -44,11 +46,7 @@ export function ConfirmDialog({
         >
           {cancelText}
         </Button>
-        <Button
-          variant={confirmVariant}
-          onClick={onConfirm}
-          disabled={confirmDisabled || isBusy}
-        >
+        <Button variant={confirmVariant} onClick={onConfirm} disabled={confirmDisabled || isBusy}>
           {isBusy ? 'Processing…' : confirmText}
         </Button>
       </Modal.Footer>

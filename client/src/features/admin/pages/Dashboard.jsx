@@ -93,9 +93,7 @@ export function AdminDashboard() {
         >
           <Card tone="low" radius="xl" padding="lg">
             {topPosts.length === 0 ? (
-              <span className="text-xs text-muted-foreground">
-                Nothing has been opened yet.
-              </span>
+              <span className="text-xs text-muted-foreground">Nothing has been opened yet.</span>
             ) : (
               <div className="flex flex-col divide-y divide-border/40">
                 {topPosts.map((entry) => (
@@ -129,9 +127,7 @@ export function AdminDashboard() {
         >
           <Card tone="low" radius="xl" padding="lg">
             {topUsers.length === 0 ? (
-              <span className="text-xs text-muted-foreground">
-                Nobody has published yet.
-              </span>
+              <span className="text-xs text-muted-foreground">Nobody has published yet.</span>
             ) : (
               <div className="flex flex-col divide-y divide-border/40">
                 {topUsers.map((entry) => (
@@ -200,9 +196,7 @@ export function AdminDashboard() {
 
         <Section title="Jump to">
           <Card tone="low" radius="xl" padding="lg">
-            <h2 className="text-sm font-semibold text-foreground mb-3">
-              Common tasks
-            </h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Common tasks</h2>
             <div className="grid grid-cols-2 gap-2.5">
               <Button as={Link} to="/write" variant="tonal">
                 <PenLine className="w-3.5 h-3.5 mr-1" /> Write

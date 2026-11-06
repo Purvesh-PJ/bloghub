@@ -41,11 +41,7 @@ export function PostCommentsSection({
                 aria-label="Write a response"
               />
             </div>
-            <Button
-              type="submit"
-              isLoading={isCommentPending}
-              disabled={!comment.trim()}
-            >
+            <Button type="submit" isLoading={isCommentPending} disabled={!comment.trim()}>
               Respond
             </Button>
           </form>

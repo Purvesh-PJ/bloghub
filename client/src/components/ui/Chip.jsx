@@ -15,8 +15,7 @@ const chipVariants = cva(
       },
       selected: {
         true: 'bg-primary text-primary-foreground shadow-sm font-semibold',
-        false:
-          'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+        false: 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
       },
     },
     defaultVariants: {

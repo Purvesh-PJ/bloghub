@@ -17,9 +17,7 @@ export function ProfileSettingsForm({
   return (
     <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-bold tracking-tight text-foreground">
-          Profile
-        </h2>
+        <h2 className="text-xl font-bold tracking-tight text-foreground">Profile</h2>
         <p className="text-sm text-muted-foreground mt-1">
           Your name and bio appear on your public page and beside everything you publish.
         </p>
@@ -171,4 +169,3 @@ export function ProfileSettingsForm({
     </Card>
   );
 }
-

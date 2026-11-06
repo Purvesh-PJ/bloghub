@@ -52,14 +52,8 @@ vi.mock('../../analytics/services/analyticsService', () => ({ analyticsService }
 vi.mock('../../analytics/services/activityService', () => ({ activityService }));
 
 const { renderWithProviders } = await import('../../../test/render');
-const {
-  AdminDashboard,
-  AdminPosts,
-  AdminTags,
-  AdminUsers,
-  AdminActivity,
-  AdminPersonActivity,
-} = await import('../');
+const { AdminDashboard, AdminPosts, AdminTags, AdminUsers, AdminActivity, AdminPersonActivity } =
+  await import('../');
 
 const ADMIN_ID = '507f1f77bcf86cd799439001';
 const OTHER_ID = '507f1f77bcf86cd799439002';

@@ -27,9 +27,7 @@ export function Footer() {
           <div className="flex flex-col gap-3 max-w-md">
             <div className="flex items-center gap-2.5">
               <BrandMark letter="B" />
-              <span className="text-base font-bold tracking-tight text-foreground">
-                BlogHub
-              </span>
+              <span className="text-base font-bold tracking-tight text-foreground">BlogHub</span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold select-none">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Open Source
@@ -103,9 +101,8 @@ export function Footer() {
         <div className="flex flex-wrap items-center justify-between gap-4 mt-12 pt-6 border-t border-border text-xs text-muted-foreground">
           <span>© {new Date().getFullYear()} BlogHub · All stories belong to their authors</span>
           <span className="inline-flex items-center gap-1.5">
-            Crafted with{' '}
-            <Heart className="h-3 w-3 text-destructive fill-destructive" />{' '}
-            for open web publishing
+            Crafted with <Heart className="h-3 w-3 text-destructive fill-destructive" /> for open
+            web publishing
           </span>
         </div>
       </div>

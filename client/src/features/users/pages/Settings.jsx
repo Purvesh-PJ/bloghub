@@ -230,10 +230,7 @@ export function Settings() {
               )}
 
               {tab === 'appearance' && (
-                <AppearanceSettings
-                  preference={preference}
-                  onThemeChange={handleThemeChange}
-                />
+                <AppearanceSettings preference={preference} onThemeChange={handleThemeChange} />
               )}
 
               {tab === 'notifications' && (

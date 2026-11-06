@@ -5,12 +5,8 @@ export function NotificationSettings({ emailNotifications, onNotificationsChange
   return (
     <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-bold tracking-tight text-foreground">
-          Notifications
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          What reaches you, and where.
-        </p>
+        <h2 className="text-xl font-bold tracking-tight text-foreground">Notifications</h2>
+        <p className="text-sm text-muted-foreground mt-1">What reaches you, and where.</p>
       </div>
 
       <div className="flex flex-col">
@@ -32,4 +28,3 @@ export function NotificationSettings({ emailNotifications, onNotificationsChange
     </Card>
   );
 }
-

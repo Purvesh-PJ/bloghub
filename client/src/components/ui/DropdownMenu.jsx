@@ -28,29 +28,27 @@ const DropdownMenuContent = React.forwardRef(
 );
 DropdownMenuContent.displayName = 'DropdownMenuContent';
 
-const DropdownMenuItem = React.forwardRef(
-  ({ className, tone, $tone, ...props }, ref) => {
-    const finalTone = tone || $tone;
-    const isDanger = finalTone === 'danger';
+const DropdownMenuItem = React.forwardRef(({ className, tone, $tone, ...props }, ref) => {
+  const finalTone = tone || $tone;
+  const isDanger = finalTone === 'danger';
 
-    return (
-      <RadixDropdown.Item
-        ref={ref}
-        className={cn(
-          'relative flex h-[34px] cursor-pointer select-none items-center gap-2 rounded-lg px-2.5 text-sm outline-none transition-colors duration-100',
-          'focus:bg-muted focus:text-foreground',
-          'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-          '[&_svg]:shrink-0 [&_svg]:text-muted-foreground',
-          isDanger
-            ? 'text-destructive focus:bg-destructive/10 focus:text-destructive [&_svg]:text-destructive'
-            : 'text-foreground',
-          className
-        )}
-        {...props}
-      />
-    );
-  }
-);
+  return (
+    <RadixDropdown.Item
+      ref={ref}
+      className={cn(
+        'relative flex h-[34px] cursor-pointer select-none items-center gap-2 rounded-lg px-2.5 text-sm outline-none transition-colors duration-100',
+        'focus:bg-muted focus:text-foreground',
+        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        '[&_svg]:shrink-0 [&_svg]:text-muted-foreground',
+        isDanger
+          ? 'text-destructive focus:bg-destructive/10 focus:text-destructive [&_svg]:text-destructive'
+          : 'text-foreground',
+        className
+      )}
+      {...props}
+    />
+  );
+});
 DropdownMenuItem.displayName = 'DropdownMenuItem';
 
 const DropdownMenuLabel = React.forwardRef(({ className, ...props }, ref) => (

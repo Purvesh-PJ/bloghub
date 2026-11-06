@@ -2,11 +2,7 @@ import { useState, useCallback } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../features/auth';
 import { useCurrentUser } from '../../features/users';
-import {
-  WorkspaceSidebar,
-  WorkspaceHeader,
-  WorkspaceSignOutModal,
-} from './workspace';
+import { WorkspaceSidebar, WorkspaceHeader, WorkspaceSignOutModal } from './workspace';
 
 /**
  * WorkspaceLayout — Creator studio shell.

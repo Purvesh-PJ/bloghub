@@ -42,17 +42,7 @@ const initialsFrom = (name) =>
 
 export const Avatar = React.forwardRef(
   (
-    {
-      className,
-      src,
-      name,
-      size = 'md',
-      shape = 'circle',
-      delayMs = 300,
-      $size,
-      $shape,
-      ...props
-    },
+    { className, src, name, size = 'md', shape = 'circle', delayMs = 300, $size, $shape, ...props },
     ref
   ) => {
     const finalSize = size || $size || 'md';

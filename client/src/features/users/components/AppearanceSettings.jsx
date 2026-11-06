@@ -12,9 +12,7 @@ export function AppearanceSettings({ preference, onThemeChange }) {
   return (
     <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-bold tracking-tight text-foreground">
-          Appearance
-        </h2>
+        <h2 className="text-xl font-bold tracking-tight text-foreground">Appearance</h2>
         <p className="text-sm text-muted-foreground mt-1">
           System follows whatever your device is set to, and changes with it.
         </p>
@@ -50,4 +48,3 @@ export function AppearanceSettings({ preference, onThemeChange }) {
     </Card>
   );
 }
-

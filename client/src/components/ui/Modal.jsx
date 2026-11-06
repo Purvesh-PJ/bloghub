@@ -23,9 +23,7 @@ export function Modal({
   width = 'max-w-md',
   showClose = true,
 }) {
-  const widthClass = typeof width === 'string' && width.startsWith('max-w-') 
-    ? width 
-    : undefined;
+  const widthClass = typeof width === 'string' && width.startsWith('max-w-') ? width : undefined;
   const widthStyle = !widthClass && width ? { maxWidth: width } : undefined;
 
   return (

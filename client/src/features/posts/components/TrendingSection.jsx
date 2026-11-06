@@ -38,9 +38,7 @@ export function TrendingSection({
       {/* Post Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => (
-            <PostCardSkeleton key={index} layout="row" />
-          ))
+          Array.from({ length: 6 }).map((_, index) => <PostCardSkeleton key={index} layout="row" />)
         ) : posts.length === 0 ? (
           <div className="col-span-full py-16 px-6 text-center flex flex-col items-center gap-4 bg-card border border-border/40 rounded-xl">
             <Feather className="h-10 w-10 text-muted-foreground opacity-50" />
@@ -67,11 +65,11 @@ export function TrendingSection({
               'hover:bg-primary/10 hover:-translate-y-0.5 hover:shadow'
             )}
           >
-            Explore all stories <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            Explore all stories{' '}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
       )}
     </div>
   );
 }
-

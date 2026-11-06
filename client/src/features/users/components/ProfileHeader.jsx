@@ -42,9 +42,7 @@ export function ProfileHeader({
               {authorName}
             </h1>
             {author.fullName && (
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {author.fullName}
-              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">{author.fullName}</p>
             )}
           </div>
 

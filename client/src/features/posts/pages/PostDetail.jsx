@@ -12,16 +12,15 @@ import { analyticsService } from '../../analytics/services/analyticsService';
 import { useAuth } from '../../../features/auth';
 import { useTheme } from '../../../styles/ThemeProvider';
 import { useReadTracking, useReadingProgress } from '../../analytics/hooks/useReading';
-import { markdownRehypePlugins, hasCodeBlock, loadSyntaxHighlighting } from '../../../config/markdown';
+import {
+  markdownRehypePlugins,
+  hasCodeBlock,
+  loadSyntaxHighlighting,
+} from '../../../config/markdown';
 import { PageShell } from '../../../components/layout/PageShell';
 import { Button, EmptyState } from '../../../components/ui';
 import { ConfirmDialog } from '../../../components/shared';
-import {
-  PostDetailSkeleton,
-  PostHeader,
-  PostActionBar,
-  PostCommentsSection,
-} from '../components';
+import { PostDetailSkeleton, PostHeader, PostActionBar, PostCommentsSection } from '../components';
 import { queryKeys } from '../../../config/queryKeys';
 
 export function PostDetail() {
@@ -61,7 +60,7 @@ export function PostDetail() {
 
   const likedByServer = Boolean(
     user?.user_id &&
-      post?.likes?.some((like) => String(like?.user ?? like) === String(user.user_id))
+    post?.likes?.some((like) => String(like?.user ?? like) === String(user.user_id))
   );
 
   if (syncedLike !== likedByServer) {
@@ -145,8 +144,7 @@ export function PostDetail() {
       queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
       toast.success('Response removed');
     },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || 'Could not remove that response'),
+    onError: (err) => toast.error(err.response?.data?.message || 'Could not remove that response'),
   });
 
   const canDeleteComment = (entry) =>

@@ -7,9 +7,7 @@ import { cn } from '../../../lib/utils';
  */
 
 const Band = ({ items, reverse, duration = 38 }) => (
-  <div
-    className="relative overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] [-webkit-mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]"
-  >
+  <div className="relative overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] [-webkit-mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
     <div
       style={{
         animationDuration: `${duration}s`,

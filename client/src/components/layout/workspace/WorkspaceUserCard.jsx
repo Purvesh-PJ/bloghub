@@ -34,4 +34,3 @@ export function WorkspaceUserCard({ user, avatarUrl, onOpenSignOut, onCloseMobil
     </div>
   );
 }
-

@@ -177,10 +177,7 @@ export function AdminPersonActivity() {
                       </strong>{' '}
                       {event.action}{' '}
                       {target?._id ? (
-                        <Link
-                          to={`/post/${target._id}`}
-                          className="text-primary hover:underline"
-                        >
+                        <Link to={`/post/${target._id}`} className="text-primary hover:underline">
                           {target.title}
                         </Link>
                       ) : (

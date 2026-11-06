@@ -32,8 +32,8 @@ export function ResponseItem({ comment, onDelete }) {
                   <span className="text-xs text-muted-foreground">
                     {reply.createdAt
                       ? formatDistanceToNow(new Date(reply.createdAt), {
-                        addSuffix: true,
-                      })
+                          addSuffix: true,
+                        })
                       : 'recently'}
                   </span>
                 </div>
@@ -57,4 +57,3 @@ export function ResponseItem({ comment, onDelete }) {
     </div>
   );
 }
-

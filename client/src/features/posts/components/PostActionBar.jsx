@@ -2,14 +2,7 @@ import { Heart, MessageCircle, Eye, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cn } from '../../../lib/utils';
 
-export function PostActionBar({
-  post,
-  liked,
-  commentsCount,
-  viewCount,
-  isAuthenticated,
-  onLike,
-}) {
+export function PostActionBar({ post, liked, commentsCount, viewCount, isAuthenticated, onLike }) {
   const handleLikeClick = () => {
     if (isAuthenticated) {
       onLike();
@@ -74,4 +67,3 @@ export function PostActionBar({
     </div>
   );
 }
-

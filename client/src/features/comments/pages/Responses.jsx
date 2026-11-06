@@ -66,10 +66,7 @@ export function Responses() {
           <Skeleton width="300px" height={40} className="rounded-xl" />
           <Card tone="low" radius="xl" padding="md">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex gap-4 py-4 border-b border-border/40 last:border-b-0"
-              >
+              <div key={i} className="flex gap-4 py-4 border-b border-border/40 last:border-b-0">
                 <Skeleton variant="circle" width={36} height={36} />
                 <div className="flex-1 flex flex-col gap-2">
                   <Skeleton width="140px" height={14} className="rounded" />
@@ -132,10 +129,7 @@ export function Responses() {
           {commentsLoading ? (
             <Card tone="low" radius="xl" padding="md" aria-hidden="true">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex gap-4 py-4 border-b border-border/40 last:border-b-0"
-                >
+                <div key={i} className="flex gap-4 py-4 border-b border-border/40 last:border-b-0">
                   <Skeleton variant="circle" width={36} height={36} />
                   <div className="flex-1 flex flex-col gap-2">
                     <Skeleton width="140px" height={14} className="rounded" />
@@ -158,11 +152,7 @@ export function Responses() {
             <Card tone="low" radius="xl" padding="sm">
               <div className="flex flex-col divide-y divide-border/40">
                 {comments.map((comment) => (
-                  <ResponseItem
-                    key={comment._id}
-                    comment={comment}
-                    onDelete={setPendingDelete}
-                  />
+                  <ResponseItem key={comment._id} comment={comment} onDelete={setPendingDelete} />
                 ))}
               </div>
             </Card>

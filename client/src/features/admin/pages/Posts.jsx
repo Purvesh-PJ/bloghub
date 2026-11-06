@@ -1,25 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Search as SearchIcon,
-  Trash2,
-  FileText,
-  Globe,
-  Lock,
-  FileEdit,
-} from 'lucide-react';
+import { Search as SearchIcon, Trash2, FileText, Globe, Lock, FileEdit } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { postService } from '../../posts/services/postService';
 import { useDebounced } from '../../posts/hooks/useDebounced';
 import { Section } from '../../../components/layout/PageShell';
-import {
-  Card,
-  Input,
-  Chip,
-  EmptyState,
-  Skeleton,
-} from '../../../components/ui';
+import { Card, Input, Chip, EmptyState, Skeleton } from '../../../components/ui';
 import { ConfirmDialog, BulkActionBar } from '../../../components/shared';
 import { AdminPostsTable } from '../components/AdminPostsTable';
 import { queryKeys } from '../../../config/queryKeys';

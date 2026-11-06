@@ -29,10 +29,8 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
       'bg-card border border-border shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:bg-card hover:border-line-default hover:shadow-[0_14px_28px_-6px_rgba(15,23,42,0.08),0_0_16px_-2px_rgba(14,165,233,0.10)]',
     featured:
       'bg-card border border-border shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)] hover:bg-card hover:border-line-default hover:shadow-[0_16px_32px_-6px_rgba(15,23,42,0.1),0_0_16px_-2px_rgba(14,165,233,0.15)]',
-    ghost:
-      'bg-transparent border border-transparent hover:bg-muted/50',
-    inset:
-      'bg-muted/40 border border-border shadow-inner hover:bg-muted/60',
+    ghost: 'bg-transparent border border-transparent hover:bg-muted/50',
+    inset: 'bg-muted/40 border border-border shadow-inner hover:bg-muted/60',
   };
 
   return (
@@ -51,9 +49,7 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
         <div
           className={cn(
             'relative rounded-lg overflow-hidden bg-muted w-full shrink-0',
-            layout === 'stacked'
-              ? 'aspect-video h-auto'
-              : 'h-full min-h-[155px] aspect-[16/10]'
+            layout === 'stacked' ? 'aspect-video h-auto' : 'h-full min-h-[155px] aspect-[16/10]'
           )}
         >
           <img

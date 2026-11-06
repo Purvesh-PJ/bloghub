@@ -104,6 +104,14 @@ Rather than a traditional horizontal layer structure (`components/`, `hooks/`, `
 
 Each feature folder is self-contained with its own `components/`, `hooks/`, `pages/`, `services/`, and colocated `__tests__/`. Cross-feature interactions are exposed through explicit public barrel interfaces (`index.js`). Shared building blocks (`components/ui/`, `components/layout/`, `config/queryKeys.js`, `styles/ThemeProvider.jsx`) remain global. See [ADR-0008](docs/adr/0008-feature-driven-frontend.md) for full context and trade-offs.
 
+### Design Tokens and Styling Architecture
+
+BlogHub uses Tailwind CSS v4 with a CSS-first token architecture declared in `client/src/index.css` via `@theme`:
+
+- **Semantic Color Tokens:** All surfaces, typography, and borders map to CSS variables (`--color-background`, `--color-foreground`, `--color-card`, `--color-primary`, `--color-border`, `--color-muted-foreground`, etc.). Utility classes like `bg-card`, `text-foreground`, and `border-border/40` adapt across light and dark themes without conditional code.
+- **Radius and Typography Scales:** Explicit tokens standardize geometry (`--radius-xs` through `--radius-4xl`) and micro-typography (`--text-2xs`, `--text-caption`).
+- **Automated Enforcement:** A custom ESLint rule (`design-system/enforce-tokens`) in `client/eslint.config.js` blocks raw bracket values (`[hsl(...)]`, `[#...]`), arbitrary border radii (`rounded-[...px]`), and arbitrary font sizes. Violations fail the build at lint time.
+
 ---
 
 ## 2. Data Model
@@ -401,8 +409,8 @@ Tests are split into fast unit tests and slower integration tests that use a rea
 ```
 
 - **Backend:** 15 test suites with 190 tests. Unit tests live in `backend/tests/unit/` and run in milliseconds. Integration tests live in `backend/tests/integration/` and run against `mongodb-memory-server`, so no real database is needed.
-- **Frontend:** 15 test suites with 142 tests, placed next to the code in feature `__tests__/` folders and run with Vitest in `jsdom`.
-- **Commands:** run everything from the repo root with `npm test`, `npm run test:coverage` and `npm run lint`.
+- **Frontend:** 18 test files with 146 tests, placed next to the code in feature `__tests__/` folders and run with Vitest in `jsdom`.
+- **Commands:** run everything from the repo root with `npm test`, `npm run test:coverage` and `npm run lint`. Total: 336 tests across the full stack.
 
 *Test counts are accurate at the time of writing and will change as the project grows.*
 

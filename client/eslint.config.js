@@ -106,10 +106,7 @@ export default [
 
               return {
                 JSXAttribute(node) {
-                  if (
-                    node.name &&
-                    (node.name.name === 'className' || node.name.name === 'class')
-                  ) {
+                  if (node.name && (node.name.name === 'className' || node.name.name === 'class')) {
                     if (node.value) {
                       inspectNode(node.value);
                     }

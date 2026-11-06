@@ -61,4 +61,3 @@ export function HomeHero({ startHref, startLabel }) {
     </div>
   );
 }
-

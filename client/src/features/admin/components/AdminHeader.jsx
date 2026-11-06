@@ -19,7 +19,10 @@ export function AdminHeader({ pathname, onOpenMobile }) {
           <Menu className="h-4 w-4" aria-hidden="true" />
         </button>
 
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground select-none">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground select-none"
+        >
           <span className="text-muted-foreground">Admin</span>
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
           <strong className="text-foreground font-semibold">{pageTitle}</strong>

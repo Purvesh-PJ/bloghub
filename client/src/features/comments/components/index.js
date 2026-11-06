@@ -1,2 +1,1 @@
 export { ResponseItem } from './ResponseItem';
-

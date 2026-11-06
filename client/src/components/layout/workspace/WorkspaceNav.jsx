@@ -49,4 +49,3 @@ export function WorkspaceNav({ pathname, isAdmin, onCloseMobile }) {
     </nav>
   );
 }
-

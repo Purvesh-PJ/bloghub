@@ -37,7 +37,9 @@ export function HomeFeatures({ startHref, startLabel }) {
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-primary/12 text-primary">
               <Feather className="h-5 w-5" />
             </div>
-            <h3 className="text-base font-bold text-foreground tracking-tight">Pure Markdown Canvas</h3>
+            <h3 className="text-base font-bold text-foreground tracking-tight">
+              Pure Markdown Canvas
+            </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Write in clean, effortless Markdown with live side-by-side preview, code syntax
               highlighting, cover image support, and distraction-free typography.
@@ -48,7 +50,9 @@ export function HomeFeatures({ startHref, startLabel }) {
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-primary/12 text-primary">
               <BarChart2 className="h-5 w-5" />
             </div>
-            <h3 className="text-base font-bold text-foreground tracking-tight">Meaningful Read Metrics</h3>
+            <h3 className="text-base font-bold text-foreground tracking-tight">
+              Meaningful Read Metrics
+            </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Go far beyond superficial page clicks. Track how many readers actually finished your
               entire article and understand where your ideas truly resonate.
@@ -59,7 +63,9 @@ export function HomeFeatures({ startHref, startLabel }) {
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-primary/12 text-primary">
               <MessageCircle className="h-5 w-5" />
             </div>
-            <h3 className="text-base font-bold text-foreground tracking-tight">Thoughtful Discussions</h3>
+            <h3 className="text-base font-bold text-foreground tracking-tight">
+              Thoughtful Discussions
+            </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Engage with curious readers through threaded responses, meaningful reactions, and
               streamlined creator moderation tools.
@@ -70,7 +76,9 @@ export function HomeFeatures({ startHref, startLabel }) {
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-primary/12 text-primary">
               <ShieldCheck className="h-5 w-5" />
             </div>
-            <h3 className="text-base font-bold text-foreground tracking-tight">Complete Creative & Privacy Control</h3>
+            <h3 className="text-base font-bold text-foreground tracking-tight">
+              Complete Creative & Privacy Control
+            </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Keep works in progress safe with Private Drafts, test ideas privately with direct
               links, or publish publicly to the global feed with curated topics and custom tags.
@@ -81,7 +89,9 @@ export function HomeFeatures({ startHref, startLabel }) {
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-primary/12 text-primary">
               <Sparkles className="h-5 w-5" />
             </div>
-            <h3 className="text-base font-bold text-foreground tracking-tight">Serene Reading Sanctuary</h3>
+            <h3 className="text-base font-bold text-foreground tracking-tight">
+              Serene Reading Sanctuary
+            </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               No intrusive popups, no noisy advertising, and no clickbait algorithms. Just clean,
               fast-loading pages with effortless dark and light mode switching.
@@ -132,4 +142,3 @@ export function HomeFeatures({ startHref, startLabel }) {
     </>
   );
 }
-

@@ -2,33 +2,15 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
-import {
-  PenLine,
-  BookOpen,
-  Eye,
-  CheckCircle2,
-  BarChart2,
-  FileText,
-} from 'lucide-react';
+import { PenLine, BookOpen, Eye, CheckCircle2, BarChart2, FileText } from 'lucide-react';
 
 import { useAuth } from '../../../features/auth';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { postService } from '../../posts/services/postService';
 import { analyticsService } from '../../analytics/services/analyticsService';
 import { PageShell, Section } from '../../../components/layout/PageShell';
-import {
-  Button,
-  Card,
-  EmptyState,
-  ErrorState,
-  Skeleton,
-  StatTile,
-} from '../../../components/ui';
-import {
-  DashboardBanner,
-  TopStoriesSection,
-  DraftsAndReadingSection,
-} from '../components';
+import { Button, Card, EmptyState, ErrorState, Skeleton, StatTile } from '../../../components/ui';
+import { DashboardBanner, TopStoriesSection, DraftsAndReadingSection } from '../components';
 import { queryKeys } from '../../../config/queryKeys';
 
 export function Dashboard() {
@@ -87,12 +69,7 @@ export function Dashboard() {
   return (
     <PageShell>
       {/* Creator Banner */}
-      <DashboardBanner
-        user={user}
-        avatarUrl={avatarUrl}
-        bio={bio}
-        firstName={firstName}
-      />
+      <DashboardBanner user={user} avatarUrl={avatarUrl} bio={bio} firstName={firstName} />
 
       {/* Nothing to measure yet */}
       {!analyticsPending && !analyticsFailed && !hasWritten ? (
@@ -167,12 +144,7 @@ export function Dashboard() {
         {readingLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" aria-hidden="true">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Card
-                key={i}
-                tone="low"
-                radius="xl"
-                className="p-4 flex flex-col gap-3"
-              >
+              <Card key={i} tone="low" radius="xl" className="p-4 flex flex-col gap-3">
                 <Skeleton width="85%" height={18} className="rounded" />
                 <Skeleton width="45%" height={12} className="rounded" />
               </Card>

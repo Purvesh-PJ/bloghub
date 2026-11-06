@@ -45,9 +45,7 @@ export function AccountSecuritySettings({
       {/* Privacy Settings */}
       <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">
-            Privacy
-          </h2>
+          <h2 className="text-xl font-bold tracking-tight text-foreground">Privacy</h2>
           <p className="text-sm text-muted-foreground mt-1">
             What other people can see on your public page.
           </p>
@@ -72,9 +70,7 @@ export function AccountSecuritySettings({
       {/* Change Password */}
       <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">
-            Change password
-          </h2>
+          <h2 className="text-xl font-bold tracking-tight text-foreground">Change password</h2>
           <p className="text-sm text-muted-foreground mt-1">
             You will be signed out everywhere once it changes, including here — that is what makes
             changing it useful if the old one leaked.
@@ -175,4 +171,3 @@ export function AccountSecuritySettings({
     </>
   );
 }
-

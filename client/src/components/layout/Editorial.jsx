@@ -9,10 +9,7 @@ import { cn } from '../../lib/utils';
 /** Escapes the centred column and runs the full width of the viewport. */
 export function FullBleed({ className, children, ...props }) {
   return (
-    <div
-      className={cn('w-screen ml-[calc(50%-50vw)] mr-[calc(50%-50vw)]', className)}
-      {...props}
-    >
+    <div className={cn('w-screen ml-[calc(50%-50vw)] mr-[calc(50%-50vw)]', className)} {...props}>
       {children}
     </div>
   );
@@ -36,14 +33,11 @@ export function Inverted({ className, children, ...props }) {
 
 /** Re-establishes the reading column inside a full-bleed band. */
 export function Column({ className, children, width = 'maxWidth', $width, ...props }) {
-  const finalWidth = width !== 'maxWidth' ? width : ($width || 'maxWidth');
+  const finalWidth = width !== 'maxWidth' ? width : $width || 'maxWidth';
   const widthClass = finalWidth === 'maxWidthNarrow' ? 'max-w-[768px]' : 'max-w-[1200px]';
 
   return (
-    <div
-      className={cn('w-full mx-auto px-4 sm:px-6', widthClass, className)}
-      {...props}
-    >
+    <div className={cn('w-full mx-auto px-4 sm:px-6', widthClass, className)} {...props}>
       {children}
     </div>
   );
@@ -84,7 +78,10 @@ export function Kicker({ className, children, ...props }) {
 export function Headline({ className, children, ...props }) {
   return (
     <h2
-      className={cn('text-2xl sm:text-3xl font-bold tracking-tight text-foreground max-w-[18ch]', className)}
+      className={cn(
+        'text-2xl sm:text-3xl font-bold tracking-tight text-foreground max-w-[18ch]',
+        className
+      )}
       {...props}
     >
       {children}
@@ -95,7 +92,10 @@ export function Headline({ className, children, ...props }) {
 export function Body({ className, children, ...props }) {
   return (
     <p
-      className={cn('text-base sm:text-lg text-muted-foreground max-w-[56ch] leading-relaxed', className)}
+      className={cn(
+        'text-base sm:text-lg text-muted-foreground max-w-[56ch] leading-relaxed',
+        className
+      )}
       {...props}
     >
       {children}

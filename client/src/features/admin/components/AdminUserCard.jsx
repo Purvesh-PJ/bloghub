@@ -15,9 +15,7 @@ export function AdminUserCard({ onSignOut }) {
       <div className="flex items-center gap-2.5 min-w-0 flex-1 p-0.5">
         <Avatar src={avatarUrl} name={user?.username} size="sm" />
         <div className="flex flex-col min-w-0">
-          <span className="text-sm font-semibold text-foreground truncate">
-            {user?.username}
-          </span>
+          <span className="text-sm font-semibold text-foreground truncate">{user?.username}</span>
           <span className="text-caption font-medium text-destructive flex items-center gap-1">
             <Shield className="h-2.5 w-2.5" aria-hidden="true" /> Administrator
           </span>

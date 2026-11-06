@@ -111,7 +111,9 @@ describe('NotFound Page', () => {
     });
 
     expect(screen.getByText('404')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'There is nothing at this address' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'There is nothing at this address' })
+    ).toBeInTheDocument();
     expect(screen.getByText('/invalid-path-12345')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /explore/i })).toBeInTheDocument();

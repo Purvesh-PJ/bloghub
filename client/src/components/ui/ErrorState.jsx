@@ -19,9 +19,7 @@ export function ErrorState({ title = 'That did not load', error, onRetry, childr
       <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-destructive/10 text-destructive">
         <AlertTriangle className="w-6 h-6" />
       </div>
-      <p className="text-xl font-bold tracking-tight text-foreground">
-        {title}
-      </p>
+      <p className="text-xl font-bold tracking-tight text-foreground">{title}</p>
       <p className="text-sm sm:text-base text-muted-foreground max-w-[46ch] leading-relaxed">
         {children ??
           (isOffline

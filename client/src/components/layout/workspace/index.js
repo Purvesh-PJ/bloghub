@@ -4,4 +4,3 @@ export { WorkspaceUserCard } from './WorkspaceUserCard';
 export { WorkspaceSidebar } from './WorkspaceSidebar';
 export { WorkspaceHeader } from './WorkspaceHeader';
 export { WorkspaceSignOutModal } from './WorkspaceSignOutModal';
-

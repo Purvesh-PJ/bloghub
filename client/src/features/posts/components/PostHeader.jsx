@@ -69,4 +69,3 @@ export function PostHeader({ post, isAuthor, postStats, onOpenDelete }) {
     </>
   );
 }
-

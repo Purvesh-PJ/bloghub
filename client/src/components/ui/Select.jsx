@@ -37,9 +37,7 @@ export function Select({
             'disabled:cursor-not-allowed disabled:opacity-50',
             'data-[placeholder]:text-muted-foreground',
             density === 'compact' ? 'h-9' : 'h-10',
-            error
-              ? 'border-destructive focus-visible:ring-destructive'
-              : 'border-border',
+            error ? 'border-destructive focus-visible:ring-destructive' : 'border-border',
             className
           )}
         >

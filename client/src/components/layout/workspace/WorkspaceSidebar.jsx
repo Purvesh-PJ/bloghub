@@ -56,11 +56,7 @@ export function WorkspaceSidebar({
         </div>
 
         {/* Navigation */}
-        <WorkspaceNav
-          pathname={pathname}
-          isAdmin={isAdmin}
-          onCloseMobile={onCloseMobile}
-        />
+        <WorkspaceNav pathname={pathname} isAdmin={isAdmin} onCloseMobile={onCloseMobile} />
 
         {/* User Card */}
         <WorkspaceUserCard
@@ -73,4 +69,3 @@ export function WorkspaceSidebar({
     </>
   );
 }
-

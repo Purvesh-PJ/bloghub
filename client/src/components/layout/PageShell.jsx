@@ -12,14 +12,8 @@ const widthClasses = {
   full: 'max-w-full',
 };
 
-export function PageShell({
-  children,
-  width = 'wide',
-  $width,
-  className,
-  ...props
-}) {
-  const finalWidth = width !== 'wide' ? width : ($width || 'wide');
+export function PageShell({ children, width = 'wide', $width, className, ...props }) {
+  const finalWidth = width !== 'wide' ? width : $width || 'wide';
   const maxWidthClass = widthClasses[finalWidth] || 'max-w-[1200px]';
 
   return (
@@ -44,11 +38,7 @@ export function PageShell({
 export function PageHeader({ badge, title, subtitle, actions, divider = true, className }) {
   return (
     <header
-      className={cn(
-        'flex flex-col gap-4',
-        divider && 'pb-6 border-b border-border/40',
-        className
-      )}
+      className={cn('flex flex-col gap-4', divider && 'pb-6 border-b border-border/40', className)}
     >
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex flex-col gap-1.5 min-w-0 flex-1">
@@ -66,11 +56,7 @@ export function PageHeader({ badge, title, subtitle, actions, divider = true, cl
             </p>
           )}
         </div>
-        {actions && (
-          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
-            {actions}
-          </div>
-        )}
+        {actions && <div className="flex items-center gap-2.5 shrink-0 flex-wrap">{actions}</div>}
       </div>
     </header>
   );

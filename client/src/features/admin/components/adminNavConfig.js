@@ -1,12 +1,4 @@
-import {
-  LayoutDashboard,
-  FileText,
-  Users,
-  Hash,
-  Activity,
-  Compass,
-  Globe,
-} from 'lucide-react';
+import { LayoutDashboard, FileText, Users, Hash, Activity, Compass, Globe } from 'lucide-react';
 
 /**
  * Declarative admin navigation configuration.
@@ -91,4 +83,3 @@ export function getAdminPageTitle(pathname) {
   if (pathname.startsWith('/admin/activity')) return 'Activity';
   return 'Admin Console';
 }
-

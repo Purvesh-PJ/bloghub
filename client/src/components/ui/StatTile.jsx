@@ -9,8 +9,7 @@ export function StatTile({ label, value, hint, icon: Icon, padded = true, classN
     <div
       className={cn(
         'flex flex-col gap-1',
-        padded &&
-          'p-6 rounded-2xl bg-card border border-border/60 shadow-sm',
+        padded && 'p-6 rounded-2xl bg-card border border-border/60 shadow-sm',
         className
       )}
       {...rest}

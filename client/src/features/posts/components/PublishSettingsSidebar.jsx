@@ -38,11 +38,7 @@ export function PublishSettingsSidebar({
     <aside className="flex flex-col gap-5 lg:sticky lg:top-20">
       {/* Preview Toggle Button */}
       <Card tone="low" radius="lg" padding="md">
-        <Button
-          variant={preview ? 'primary' : 'secondary'}
-          fullWidth
-          onClick={onTogglePreview}
-        >
+        <Button variant={preview ? 'primary' : 'secondary'} fullWidth onClick={onTogglePreview}>
           {preview ? (
             <>
               <Pencil className="w-3.5 h-3.5 mr-1" /> Keep writing
@@ -78,12 +74,8 @@ export function PublishSettingsSidebar({
               >
                 <option.icon className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>
-                  <span className="text-sm font-semibold block text-foreground">
-                    {option.name}
-                  </span>
-                  <span className="text-xs text-muted-foreground block">
-                    {option.note}
-                  </span>
+                  <span className="text-sm font-semibold block text-foreground">{option.name}</span>
+                  <span className="text-xs text-muted-foreground block">{option.note}</span>
                 </span>
               </button>
             );
@@ -106,9 +98,7 @@ export function PublishSettingsSidebar({
           </div>
         )}
         <Input
-          placeholder={
-            tags.length >= maxTags ? 'Tag limit reached' : 'Add tag (e.g. ai, react)'
-          }
+          placeholder={tags.length >= maxTags ? 'Tag limit reached' : 'Add tag (e.g. ai, react)'}
           value={tagDraft}
           disabled={tags.length >= maxTags}
           onChange={(event) => onTagDraftChange(event.target.value)}
@@ -128,9 +118,7 @@ export function PublishSettingsSidebar({
 
         {popularSuggestions.length > 0 && tags.length < maxTags && (
           <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
-            <span className="text-xs font-medium text-muted-foreground">
-              Popular:
-            </span>
+            <span className="text-xs font-medium text-muted-foreground">Popular:</span>
             {popularSuggestions.map((s) => (
               <Chip key={s.name} size="sm" onClick={() => onAddTag(s.name)}>
                 +{s.name}
@@ -180,29 +168,21 @@ export function PublishSettingsSidebar({
         <dl className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between gap-4 text-sm text-muted-foreground">
             <dt>Words</dt>
-            <dd className="font-semibold text-foreground tabular-nums">
-              {words}
-            </dd>
+            <dd className="font-semibold text-foreground tabular-nums">{words}</dd>
           </div>
           <div className="flex items-baseline justify-between gap-4 text-sm text-muted-foreground">
             <dt>Reading time</dt>
-            <dd className="font-semibold text-foreground tabular-nums">
-              {readingMinutes} min
-            </dd>
+            <dd className="font-semibold text-foreground tabular-nums">{readingMinutes} min</dd>
           </div>
           {isEditing && (
             <>
               <div className="flex items-baseline justify-between gap-4 text-sm text-muted-foreground">
                 <dt>Likes</dt>
-                <dd className="font-semibold text-foreground tabular-nums">
-                  {likesCount}
-                </dd>
+                <dd className="font-semibold text-foreground tabular-nums">{likesCount}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-4 text-sm text-muted-foreground">
                 <dt>Responses</dt>
-                <dd className="font-semibold text-foreground tabular-nums">
-                  {commentsCount}
-                </dd>
+                <dd className="font-semibold text-foreground tabular-nums">{commentsCount}</dd>
               </div>
             </>
           )}
@@ -215,12 +195,7 @@ export function PublishSettingsSidebar({
           {isEditing ? 'Save changes' : visibility === 'public' ? 'Publish' : 'Save'}
         </Button>
         {visibility !== 'draft' && !isEditing && (
-          <Button
-            variant="secondary"
-            fullWidth
-            disabled={pending}
-            onClick={onSaveDraft}
-          >
+          <Button variant="secondary" fullWidth disabled={pending} onClick={onSaveDraft}>
             Save as draft
           </Button>
         )}
@@ -231,4 +206,3 @@ export function PublishSettingsSidebar({
     </aside>
   );
 }
-

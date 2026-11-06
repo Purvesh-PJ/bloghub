@@ -7,6 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 
+### Added
+- **Design System Token Architecture**: Added Tailwind CSS v4 `@theme` block in `client/src/index.css` defining semantic color variables, border-radius scale (`rounded-xs` to `rounded-4xl`), and typography tokens (`text-2xs`, `text-caption`).
+- **ESLint Design System Token Enforcer**: Added custom `design-system/enforce-tokens` rule in `client/eslint.config.js` to block raw HSL brackets, arbitrary HEX values, arbitrary border-radii, and hardcoded font sizes.
+- **Strict Code Safety Rules**: Added `eqeqeq`, `no-var`, `prefer-const`, `no-duplicate-imports`, `no-unneeded-ternary`, and `no-empty` checks across both client and backend ESLint configurations.
+- **Backend & React Safety Rules**: Added `no-eval`, `no-implied-eval`, `no-async-promise-executor`, and `no-promise-executor-return` in backend ESLint; upgraded `react-hooks/exhaustive-deps` to error and enabled `react/jsx-key`, `react/no-danger`, and `react/self-closing-comp` in client ESLint.
+
+### Changed
+- **Component Styling Standardization**: Standardized styling across all 80 client components (primitives, layouts, and feature pages) to use semantic Tailwind utility classes instead of raw bracket values.
+
+### Fixed
+- **Legacy Border Hack Removal**: Removed the legacy `!important` border override hack from `client/src/index.css`.
+- **Lint & Syntax Corrections**: Fixed loose inequality check in `PostCard.jsx`, promise executor return values in `backend/scripts/seed.js` and `backend/tests/integration/profile.test.js`, and an arbitrary border radius in `PostDetailSkeleton.jsx`.
+
 ---
 
 ## [1.0.0] - Initial Release

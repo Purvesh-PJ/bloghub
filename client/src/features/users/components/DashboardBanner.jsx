@@ -11,8 +11,7 @@ export function DashboardBanner({ user, avatarUrl, bio, firstName }) {
         <Avatar src={avatarUrl} name={user?.username} size="lg" />
         <div className="flex flex-col gap-1 min-w-0">
           <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight">
-            Welcome back, {firstName}{' '}
-            <Sparkles className="w-5 h-5 text-primary" />
+            Welcome back, {firstName} <Sparkles className="w-5 h-5 text-primary" />
           </h2>
           <p className="text-sm text-muted-foreground max-w-[540px] leading-relaxed">
             {bio || 'How your writing is doing. Manage what you have written under Stories.'}
@@ -28,4 +27,3 @@ export function DashboardBanner({ user, avatarUrl, bio, firstName }) {
     </div>
   );
 }
-

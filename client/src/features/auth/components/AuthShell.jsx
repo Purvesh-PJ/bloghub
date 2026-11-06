@@ -25,10 +25,7 @@ export function AuthHeading({ className, children, ...props }) {
 
 export function AuthSubheading({ className, children, ...props }) {
   return (
-    <p
-      className={cn('text-base sm:text-lg text-muted-foreground -mt-3', className)}
-      {...props}
-    >
+    <p className={cn('text-base sm:text-lg text-muted-foreground -mt-3', className)} {...props}>
       {children}
     </p>
   );

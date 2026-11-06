@@ -10,12 +10,7 @@ import { cn } from '../../../lib/utils';
  * Responsive admin sidebar shell containing brand header, navigation, and user card.
  * Handles mobile drawer transition and accessible backdrop.
  */
-export function AdminSidebar({
-  pathname,
-  mobileMenuOpen,
-  onCloseMobile,
-  onOpenSignOut,
-}) {
+export function AdminSidebar({ pathname, mobileMenuOpen, onCloseMobile, onOpenSignOut }) {
   // Close drawer on Escape key press
   useEffect(() => {
     if (!mobileMenuOpen) return;

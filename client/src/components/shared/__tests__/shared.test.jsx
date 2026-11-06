@@ -10,7 +10,12 @@ describe('Shared Components & Primitives', () => {
     it('renders label and handles toggle change', () => {
       const handleChange = vi.fn();
       renderWithProviders(
-        <Switch label="Email Alerts" note="Receive weekly summaries" checked={false} onChange={handleChange} />
+        <Switch
+          label="Email Alerts"
+          note="Receive weekly summaries"
+          checked={false}
+          onChange={handleChange}
+        />
       );
 
       expect(screen.getByText('Email Alerts')).toBeInTheDocument();
@@ -82,4 +87,3 @@ describe('Shared Components & Primitives', () => {
     });
   });
 });
-

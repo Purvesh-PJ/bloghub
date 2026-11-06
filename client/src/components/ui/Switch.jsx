@@ -25,16 +25,8 @@ export function Switch({
     >
       {(label || note) && (
         <span>
-          {label && (
-            <span className="text-base font-medium text-foreground block">
-              {label}
-            </span>
-          )}
-          {note && (
-            <span className="text-sm text-muted-foreground block mt-0.5">
-              {note}
-            </span>
-          )}
+          {label && <span className="text-base font-medium text-foreground block">{label}</span>}
+          {note && <span className="text-sm text-muted-foreground block mt-0.5">{note}</span>}
         </span>
       )}
       <input
@@ -63,4 +55,3 @@ export function Switch({
     </label>
   );
 }
-

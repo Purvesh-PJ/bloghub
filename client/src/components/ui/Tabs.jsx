@@ -6,11 +6,7 @@ import { cn } from '../../lib/utils';
  * Tabs — Radix Tabs with Tailwind styling and clean accessibility.
  */
 const Root = React.forwardRef(({ className, ...props }, ref) => (
-  <RadixTabs.Root
-    ref={ref}
-    className={cn('flex flex-col gap-6', className)}
-    {...props}
-  />
+  <RadixTabs.Root ref={ref} className={cn('flex flex-col gap-6', className)} {...props} />
 ));
 Root.displayName = 'TabsRoot';
 
@@ -46,13 +42,23 @@ Trigger.displayName = 'TabsTrigger';
 const Content = React.forwardRef(({ className, ...props }, ref) => (
   <RadixTabs.Content
     ref={ref}
-    className={cn('focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', className)}
+    className={cn(
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      className
+    )}
     {...props}
   />
 ));
 Content.displayName = 'TabsContent';
 
-export function Tabs({ tabs = [], value, defaultValue, onValueChange, ariaLabel = 'Tabs', className }) {
+export function Tabs({
+  tabs = [],
+  value,
+  defaultValue,
+  onValueChange,
+  ariaLabel = 'Tabs',
+  className,
+}) {
   return (
     <Root
       value={value}

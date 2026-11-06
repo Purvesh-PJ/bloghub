@@ -233,7 +233,8 @@ export function Search() {
                 </div>
                 <div className="flex items-center justify-between gap-3 pt-2 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {readingTimeFromLength(result.contentLength)} min read
+                    <Clock className="w-3 h-3" /> {readingTimeFromLength(result.contentLength)} min
+                    read
                   </span>
                   {result.user?.username && <span>by {result.user.username}</span>}
                   <span className="text-primary font-semibold inline-flex items-center gap-1">

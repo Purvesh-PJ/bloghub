@@ -44,7 +44,8 @@ export function Input({
             'hover:bg-muted focus-visible:outline-none focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary',
             'disabled:cursor-not-allowed disabled:opacity-50',
             icon && 'pl-10',
-            error && 'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20',
+            error &&
+              'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20',
             className
           )}
           {...props}
@@ -99,7 +100,8 @@ export function TextArea({
           'border border-border',
           'hover:bg-muted focus-visible:outline-none focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary',
           'disabled:cursor-not-allowed disabled:opacity-50',
-          error && 'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20',
+          error &&
+            'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20',
           className
         )}
         {...props}

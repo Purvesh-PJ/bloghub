@@ -61,10 +61,9 @@ export function ReadRateHeadline({ views = 0, reads = 0, rate, label = 'Read-thr
 
       <p className="text-xs text-muted-foreground mt-1">
         <strong className="text-foreground font-semibold">{format(reads)}</strong> of{' '}
-        <strong className="text-foreground font-semibold">{format(views)}</strong>{' '}
-        readers reached the end and stayed long enough to finish.
+        <strong className="text-foreground font-semibold">{format(views)}</strong> readers reached
+        the end and stayed long enough to finish.
       </p>
     </div>
   );
 }
-

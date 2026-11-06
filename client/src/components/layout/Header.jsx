@@ -92,9 +92,7 @@ export function Header() {
                   <div className="text-sm font-semibold text-foreground truncate">
                     {user?.username}
                   </div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    {user?.email}
-                  </div>
+                  <div className="text-xs text-muted-foreground truncate">{user?.email}</div>
                 </div>
 
                 {isAdmin() && (

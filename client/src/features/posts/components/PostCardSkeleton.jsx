@@ -3,10 +3,8 @@ import { cn } from '../../../lib/utils';
 
 export function PostCardSkeleton({ layout = 'row', hasThumb = true, variant = 'elevated' }) {
   const variantClasses = {
-    elevated:
-      'bg-card border border-border/40 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)]',
-    featured:
-      'bg-card border border-border/50 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)]',
+    elevated: 'bg-card border border-border/40 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)]',
+    featured: 'bg-card border border-border/50 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)]',
     ghost: 'bg-transparent border border-transparent',
     inset: 'bg-muted/40 border border-border/40',
   };
@@ -26,9 +24,7 @@ export function PostCardSkeleton({ layout = 'row', hasThumb = true, variant = 'e
         <Skeleton
           className={cn(
             'w-full rounded-lg',
-            layout === 'stacked'
-              ? 'aspect-video h-auto'
-              : 'h-full min-h-[155px] aspect-[16/10]'
+            layout === 'stacked' ? 'aspect-video h-auto' : 'h-full min-h-[155px] aspect-[16/10]'
           )}
         />
       )}

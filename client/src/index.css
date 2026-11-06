@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --color-background: hsl(var(--background));
@@ -56,13 +56,21 @@
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes marquee-reverse {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 .animate-marquee {
@@ -74,7 +82,9 @@
 }
 
 @layer base {
-  *, ::before, ::after {
+  *,
+  ::before,
+  ::after {
     border-color: var(--line-subtle);
   }
 
@@ -121,7 +131,8 @@
     --ring: 199 89% 48%;
   }
 
-  .dark, [data-theme="dark"] {
+  .dark,
+  [data-theme='dark'] {
     /* Rich Obsidian & Deep Navy in dark mode */
     --surface-page: #070b13;
     --surface-container-low: #0d1424;
@@ -175,11 +186,21 @@
   }
 
   body {
-    font-family: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family:
+      'Inter Variable',
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      Helvetica,
+      Arial,
+      sans-serif;
     color: var(--text-primary);
     background-color: var(--surface-page);
     min-height: 100vh;
-    transition: background-color 220ms cubic-bezier(0.32, 0.72, 0, 1), color 220ms cubic-bezier(0.32, 0.72, 0, 1);
+    transition:
+      background-color 220ms cubic-bezier(0.32, 0.72, 0, 1),
+      color 220ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   /* One focus ring for the whole application */
@@ -199,8 +220,13 @@
     scrollbar-color: var(--line-strong) transparent;
   }
 
-  ::-webkit-scrollbar { width: 12px; height: 12px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
   ::-webkit-scrollbar-thumb {
     background: var(--line-strong);
     border-radius: 9999px;
@@ -220,7 +246,9 @@
   color: var(--text-secondary);
 }
 
-.post-content > * + * { margin-top: 1.4em; }
+.post-content > * + * {
+  margin-top: 1.4em;
+}
 
 .post-content h1,
 .post-content h2,
@@ -232,9 +260,15 @@
   margin-bottom: 0.6em;
 }
 
-.post-content h1 { font-size: 2.25rem; }
-.post-content h2 { font-size: 1.5rem; }
-.post-content h3 { font-size: 1.25rem; }
+.post-content h1 {
+  font-size: 2.25rem;
+}
+.post-content h2 {
+  font-size: 1.5rem;
+}
+.post-content h3 {
+  font-size: 1.25rem;
+}
 
 .post-content a {
   color: #0284c7;
@@ -247,8 +281,12 @@
 }
 
 .post-content ul,
-.post-content ol { padding-left: 1.4em; }
-.post-content li + li { margin-top: 0.4em; }
+.post-content ol {
+  padding-left: 1.4em;
+}
+.post-content li + li {
+  margin-top: 0.4em;
+}
 
 .post-content blockquote {
   border-left: 3px solid #0ea5e9;
@@ -277,7 +315,10 @@
   font-size: 0.875em;
 }
 
-.post-content pre code { background: none; padding: 0; }
+.post-content pre code {
+  background: none;
+  padding: 0;
+}
 
 .post-content hr {
   border: none;
@@ -309,9 +350,15 @@
 }
 
 @keyframes topProgress {
-  0% { transform: translateX(-100%); }
-  50% { transform: translateX(0%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .animate-top-progress {
@@ -319,11 +366,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
-

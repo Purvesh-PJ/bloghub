@@ -1,14 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  PenLine,
-  Search as SearchIcon,
-  EyeOff,
-  Globe,
-  Lock,
-  Trash2,
-} from 'lucide-react';
+import { PenLine, Search as SearchIcon, EyeOff, Globe, Lock, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { useDebounced } from '../hooks/useDebounced';

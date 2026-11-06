@@ -159,4 +159,3 @@ describe('AdminRoute', () => {
     expect(screen.queryByText('Home Landing Page')).not.toBeInTheDocument();
   });
 });
-

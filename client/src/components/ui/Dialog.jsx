@@ -62,10 +62,7 @@ export const DialogHeader = ({ className, ...props }) => (
 DialogHeader.displayName = 'DialogHeader';
 
 export const DialogFooter = ({ className, ...props }) => (
-  <div
-    className={cn('flex items-center justify-end gap-2.5 mt-4', className)}
-    {...props}
-  />
+  <div className={cn('flex items-center justify-end gap-2.5 mt-4', className)} {...props} />
 );
 DialogFooter.displayName = 'DialogFooter';
 

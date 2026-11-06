@@ -28,21 +28,13 @@ export function EmptyState({
           <IconComponent className="w-6 h-6" />
         </div>
       )}
-      {title && (
-        <p className="text-xl font-bold tracking-tight text-foreground">
-          {title}
-        </p>
-      )}
+      {title && <p className="text-xl font-bold tracking-tight text-foreground">{title}</p>}
       {children && (
         <div className="text-sm sm:text-base text-muted-foreground max-w-[46ch] leading-relaxed">
           {children}
         </div>
       )}
-      {actions && (
-        <div className="flex gap-2 flex-wrap justify-center mt-2">
-          {actions}
-        </div>
-      )}
+      {actions && <div className="flex gap-2 flex-wrap justify-center mt-2">{actions}</div>}
     </Surface>
   );
 }

@@ -31,7 +31,10 @@ function RowsSkeleton() {
   return (
     <Card tone="low" radius="xl" padding="lg" aria-hidden="true">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 py-3 border-b border-border/40 last:border-b-0">
+        <div
+          key={i}
+          className="flex items-center gap-4 py-3 border-b border-border/40 last:border-b-0"
+        >
           <Skeleton width="20%" height={14} className="rounded" />
           <Skeleton width="45%" height={14} className="rounded" />
           <Skeleton width="15%" height={12} className="rounded" />

@@ -6,13 +6,7 @@ import toast from 'react-hot-toast';
 import { userService } from '../../users/services/userService';
 import { useAuth } from '../../../features/auth';
 import { Section } from '../../../components/layout/PageShell';
-import {
-  Card,
-  EmptyState,
-  ErrorState,
-  Input,
-  Skeleton,
-} from '../../../components/ui';
+import { Card, EmptyState, ErrorState, Input, Skeleton } from '../../../components/ui';
 import { ConfirmDialog } from '../../../components/shared';
 import { AdminUsersTable } from '../components/AdminUsersTable';
 import { queryKeys } from '../../../config/queryKeys';

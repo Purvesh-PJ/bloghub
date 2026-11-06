@@ -30,4 +30,3 @@ export function WorkspaceHeader({ pathname, onOpenMobile }) {
     </header>
   );
 }
-

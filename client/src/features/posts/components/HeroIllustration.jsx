@@ -13,7 +13,10 @@ import {
 
 export function HeroIllustration() {
   return (
-    <div className="relative w-full max-w-[520px] lg:max-w-[480px] mx-auto select-none max-lg:mt-6" aria-hidden="true">
+    <div
+      className="relative w-full max-w-[520px] lg:max-w-[480px] mx-auto select-none max-lg:mt-6"
+      aria-hidden="true"
+    >
       {/* Ambient Glow */}
       <div className="absolute top-[10%] left-[15%] w-[360px] h-[360px] rounded-full bg-[radial-gradient(circle,rgba(14,165,233,0.22)_0%,rgba(14,165,233,0.08)_40%,transparent_70%)] blur-[52px] pointer-events-none z-0 animate-pulse duration-1000" />
 
@@ -61,8 +64,7 @@ export function HeroIllustration() {
               BH
             </div>
             <div className="text-xs text-muted-foreground">
-              <strong className="text-foreground">Community Voice</strong>{' '}
-              <span>· 3 min read</span>
+              <strong className="text-foreground">Community Voice</strong> <span>· 3 min read</span>
             </div>
           </div>
 
