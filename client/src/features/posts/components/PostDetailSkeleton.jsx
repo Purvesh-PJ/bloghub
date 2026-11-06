@@ -19,7 +19,7 @@ export function PostDetailSkeleton() {
         </div>
       </div>
 
-      <div className="rounded-2xl sm:rounded-3xl bg-card border border-border/40 p-6 sm:p-10 flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
         <SkeletonText lines={4} lineHeight="18px" lastLineWidth="80%" gap="md" />
         <SkeletonText lines={5} lineHeight="18px" lastLineWidth="65%" gap="md" />
         <SkeletonText lines={3} lineHeight="18px" lastLineWidth="90%" gap="md" />

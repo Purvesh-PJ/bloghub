@@ -349,6 +349,16 @@
   line-height: 1.7 !important;
 }
 
+/* ── Seamless Markdown Preview (prevents hardcoded dark box & square corners) ── */
+.wmde-markdown,
+.wmde-markdown-var,
+[data-color-mode*='dark'] .wmde-markdown,
+[data-color-mode*='light'] .wmde-markdown {
+  background-color: transparent !important;
+  color: inherit !important;
+  font-family: inherit !important;
+}
+
 @keyframes topProgress {
   0% {
     transform: translateX(-100%);
