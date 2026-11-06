@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { formatDistanceToNow } from 'date-fns';
-import { MessageSquare, Trash2 } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { postService } from '../../posts/services/postService';
@@ -12,13 +11,13 @@ import {
   Button,
   Card,
   Select,
-  Avatar,
-  Modal,
   EmptyState,
   ErrorState,
   Skeleton,
   SkeletonText,
 } from '../../../components/ui';
+import { ConfirmDialog } from '../../../components/shared';
+import { ResponseItem } from '../components/ResponseItem';
 import { queryKeys } from '../../../config/queryKeys';
 
 export function Responses() {
@@ -159,60 +158,11 @@ export function Responses() {
             <Card tone="low" radius="xl" padding="sm">
               <div className="flex flex-col divide-y divide-[hsl(var(--border))/0.4]">
                 {comments.map((comment) => (
-                  <div
+                  <ResponseItem
                     key={comment._id}
-                    className="grid grid-cols-[auto_1fr_auto] gap-4 items-start p-4 hover:bg-[hsl(var(--muted))/0.5] transition-colors rounded-xl"
-                  >
-                    <Avatar name={comment.user?.username} size="sm" />
-                    <div className="min-w-0">
-                      <div className="flex items-baseline gap-2 flex-wrap mb-0.5">
-                        <span className="text-sm font-semibold text-[hsl(var(--foreground))]">
-                          {comment.user?.username || 'Someone'}
-                        </span>
-                        <span className="text-xs text-[hsl(var(--muted-foreground))]">
-                          {comment.createdAt
-                            ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })
-                            : 'recently'}
-                        </span>
-                      </div>
-                      <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed whitespace-pre-wrap break-words">
-                        {comment.message}
-                      </p>
-
-                      {comment.replies?.length > 0 && (
-                        <div className="mt-3 pl-4 border-l-2 border-[hsl(var(--border))/0.6] flex flex-col gap-3">
-                          {comment.replies.map((reply) => (
-                            <div key={reply._id}>
-                              <div className="flex items-baseline gap-2 flex-wrap mb-0.5">
-                                <span className="text-sm font-semibold text-[hsl(var(--foreground))]">
-                                  {reply.user?.username || 'Someone'}
-                                </span>
-                                <span className="text-xs text-[hsl(var(--muted-foreground))]">
-                                  {reply.createdAt
-                                    ? formatDistanceToNow(new Date(reply.createdAt), {
-                                      addSuffix: true,
-                                    })
-                                    : 'recently'}
-                                </span>
-                              </div>
-                              <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed whitespace-pre-wrap break-words">
-                                {reply.message}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      aria-label={`Remove response from ${comment.user?.username || 'this reader'}`}
-                      onClick={() => setPendingDelete(comment)}
-                    >
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
-                  </div>
+                    comment={comment}
+                    onDelete={setPendingDelete}
+                  />
                 ))}
               </div>
             </Card>
@@ -221,7 +171,7 @@ export function Responses() {
       )}
 
       {/* Delete Confirmation Modal */}
-      <Modal
+      <ConfirmDialog
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title="Remove this response?"
@@ -230,25 +180,18 @@ export function Responses() {
             ? `The ${pendingDelete.replies.length} repl${pendingDelete.replies.length === 1 ? 'y' : 'ies'} beneath it go too. This cannot be undone.`
             : 'It will be removed from your story. This cannot be undone.'
         }
+        confirmText={deleteMutation.isPending ? 'Removing…' : 'Remove'}
+        cancelText="Keep it"
+        confirmVariant="danger"
+        loading={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate(pendingDelete._id)}
       >
         <Card tone="low" radius="md" padding="md" className="mt-2">
           <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed m-0">
             {pendingDelete?.message}
           </p>
         </Card>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setPendingDelete(null)}>
-            Keep it
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => deleteMutation.mutate(pendingDelete._id)}
-            disabled={deleteMutation.isPending}
-          >
-            {deleteMutation.isPending ? 'Removing…' : 'Remove'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      </ConfirmDialog>
     </PageShell>
   );
 }

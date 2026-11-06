@@ -1,12 +1,7 @@
 import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { formatDistanceToNow } from 'date-fns';
 import {
   Search as SearchIcon,
-  MoreHorizontal,
-  Eye,
-  Pencil,
   Trash2,
   FileText,
   Globe,
@@ -19,22 +14,15 @@ import { postService } from '../../posts/services/postService';
 import { useDebounced } from '../../posts/hooks/useDebounced';
 import { Section } from '../../../components/layout/PageShell';
 import {
-  Button,
   Card,
   Input,
   Chip,
-  Badge,
-  Modal,
-  Table,
   EmptyState,
-  DropdownMenu,
   Skeleton,
-  Pagination,
 } from '../../../components/ui';
+import { ConfirmDialog, BulkActionBar } from '../../../components/shared';
+import { AdminPostsTable } from '../components/AdminPostsTable';
 import { queryKeys } from '../../../config/queryKeys';
-
-const TONE = { public: 'success', draft: 'warning', private: 'neutral' };
-const LABEL = { public: 'Published', draft: 'Draft', private: 'Private' };
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -47,7 +35,6 @@ const PAGE_SIZE = 20;
 
 export function AdminPosts() {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const [pendingDelete, setPendingDelete] = useState(null);
   const [pendingBulkDelete, setPendingBulkDelete] = useState(null);
   const [query, setQuery] = useState('');
@@ -120,6 +107,37 @@ export function AdminPosts() {
       current.includes(id) ? current.filter((entry) => entry !== id) : [...current, id]
     );
 
+  const bulkActions = [
+    {
+      label: 'Publish',
+      icon: <Globe className="w-3.5 h-3.5" />,
+      variant: 'secondary',
+      onClick: () => bulkMutation.mutate({ ids: selectedIds, action: 'public' }),
+      disabled: bulkMutation.isPending,
+    },
+    {
+      label: 'Unpublish',
+      icon: <FileEdit className="w-3.5 h-3.5" />,
+      variant: 'secondary',
+      onClick: () => bulkMutation.mutate({ ids: selectedIds, action: 'draft' }),
+      disabled: bulkMutation.isPending,
+    },
+    {
+      label: 'Make private',
+      icon: <Lock className="w-3.5 h-3.5" />,
+      variant: 'secondary',
+      onClick: () => bulkMutation.mutate({ ids: selectedIds, action: 'private' }),
+      disabled: bulkMutation.isPending,
+    },
+    {
+      label: 'Delete',
+      icon: <Trash2 className="w-3.5 h-3.5" />,
+      variant: 'danger',
+      onClick: () => setPendingBulkDelete(selectedIds),
+      disabled: bulkMutation.isPending,
+    },
+  ];
+
   if (isLoading) {
     return (
       <div aria-hidden="true">
@@ -144,48 +162,15 @@ export function AdminPosts() {
   return (
     <>
       <Section>
-        {selectedIds.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap p-3 px-5 mb-4 rounded-2xl bg-[hsl(var(--primary))/0.12] border border-[hsl(var(--primary))/0.2]">
-            <span className="text-sm font-semibold text-[hsl(var(--primary))] mr-auto">
-              {selectedIds.length} selected on this page
-            </span>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'public' })}
-              disabled={bulkMutation.isPending}
-            >
-              <Globe className="w-3.5 h-3.5 mr-1" /> Publish
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'draft' })}
-              disabled={bulkMutation.isPending}
-            >
-              <FileEdit className="w-3.5 h-3.5 mr-1" /> Unpublish
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'private' })}
-              disabled={bulkMutation.isPending}
-            >
-              <Lock className="w-3.5 h-3.5 mr-1" /> Make private
-            </Button>
-            <Button
-              size="sm"
-              variant="danger"
-              onClick={() => setPendingBulkDelete(selectedIds)}
-              disabled={bulkMutation.isPending}
-            >
-              <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
-              Clear
-            </Button>
-          </div>
-        )}
+        {/* Bulk action banner */}
+        <BulkActionBar
+          selectedCount={selectedIds.length}
+          label={`${selectedIds.length} selected on this page`}
+          variant="banner"
+          actions={bulkActions}
+          clearLabel="Clear"
+          onClear={() => setSelectedIds([])}
+        />
 
         {/* Toolbar with filter chips and search */}
         <div className="flex items-center gap-2.5 flex-wrap p-3 rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] mb-4">
@@ -218,131 +203,42 @@ export function AdminPosts() {
               : 'Nobody has written anything yet.'}
           </EmptyState>
         ) : (
-          <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
-            <Table>
-              <Table.Head>
-                <tr>
-                  <th className="w-10 pl-6">
-                    <input
-                      type="checkbox"
-                      checked={allVisibleSelected}
-                      onChange={() =>
-                        setSelectedIds(
-                          allVisibleSelected
-                            ? selectedIds.filter((id) => !visibleIds.includes(id))
-                            : [...new Set([...selectedIds, ...visibleIds])]
-                        )
-                      }
-                      aria-label={
-                        allVisibleSelected ? 'Clear this page' : 'Select every story on this page'
-                      }
-                      className="w-4 h-4 rounded accent-[hsl(var(--primary))] cursor-pointer"
-                    />
-                  </th>
-                  <th>Title</th>
-                  <th>Author</th>
-                  <th>Status</th>
-                  <th>Engagement</th>
-                  <th>Created</th>
-                  <th aria-label="Actions" className="pr-6" />
-                </tr>
-              </Table.Head>
-              <Table.Body>
-                {visible.map((post) => (
-                  <tr key={post._id}>
-                    <td className="pl-6">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(post._id)}
-                        onChange={() => toggleSelected(post._id)}
-                        aria-label={`Select ${post.title}`}
-                        className="w-4 h-4 rounded accent-[hsl(var(--primary))] cursor-pointer"
-                      />
-                    </td>
-                    <td>
-                      <Link
-                        to={`/post/${post._id}`}
-                        className="text-sm font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 max-w-[320px] no-underline block"
-                      >
-                        {post.title}
-                      </Link>
-                    </td>
-                    <td>{post.user?.username || 'Unknown'}</td>
-                    <td>
-                      <Badge variant={TONE[post.visibility] || 'neutral'}>
-                        {LABEL[post.visibility] || post.visibility}
-                      </Badge>
-                    </td>
-                    <td>
-                      {post.likes?.length || 0} likes · {post.comments?.length || 0} replies
-                    </td>
-                    <td>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</td>
-                    <td className="text-right pr-6">
-                      <DropdownMenu
-                        trigger={
-                          <button
-                            type="button"
-                            aria-label={`Actions for ${post.title}`}
-                            className="inline-flex items-center justify-center w-8 h-8 rounded-full text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors cursor-pointer"
-                          >
-                            <MoreHorizontal className="w-4 h-4" />
-                          </button>
-                        }
-                      >
-                        <DropdownMenu.Item onSelect={() => navigate(`/post/${post._id}`)}>
-                          <Eye className="w-3.5 h-3.5 mr-2" /> View
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item onSelect={() => navigate(`/edit/${post._id}`)}>
-                          <Pencil className="w-3.5 h-3.5 mr-2" /> Edit
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Separator />
-                        <DropdownMenu.Item tone="danger" onSelect={() => setPendingDelete(post)}>
-                          <Trash2 className="w-3.5 h-3.5 mr-2 text-red-500" /> Delete
-                        </DropdownMenu.Item>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
-              </Table.Body>
-            </Table>
-
-            <Pagination
-              page={pagination.page}
-              pages={pagination.pages}
-              total={pagination.total}
-              noun="stories"
-              onChange={(next) => {
-                setPage(next);
-                setSelectedIds([]);
-              }}
-            />
-          </Card>
+          <AdminPostsTable
+            visible={visible}
+            selectedIds={selectedIds}
+            onToggleSelected={toggleSelected}
+            allVisibleSelected={allVisibleSelected}
+            onToggleSelectAll={() =>
+              setSelectedIds(
+                allVisibleSelected
+                  ? selectedIds.filter((id) => !visibleIds.includes(id))
+                  : [...new Set([...selectedIds, ...visibleIds])]
+              )
+            }
+            onDelete={setPendingDelete}
+            pagination={pagination}
+            onPageChange={(next) => {
+              setPage(next);
+              setSelectedIds([]);
+            }}
+          />
         )}
       </Section>
 
-      <Modal
+      <ConfirmDialog
         open={Boolean(pendingBulkDelete)}
         onOpenChange={(open) => !open && setPendingBulkDelete(null)}
         title={`Delete ${pendingBulkDelete?.length ?? 0} ${
           pendingBulkDelete?.length === 1 ? 'story' : 'stories'
         }?`}
         description="They and their responses will be removed. This cannot be undone."
-      >
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setPendingBulkDelete(null)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => bulkMutation.mutate({ ids: pendingBulkDelete, action: 'delete' })}
-            disabled={bulkMutation.isPending}
-          >
-            {bulkMutation.isPending ? 'Deleting…' : 'Delete all'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        confirmText={bulkMutation.isPending ? 'Deleting…' : 'Delete all'}
+        confirmVariant="danger"
+        loading={bulkMutation.isPending}
+        onConfirm={() => bulkMutation.mutate({ ids: pendingBulkDelete, action: 'delete' })}
+      />
 
-      <Modal
+      <ConfirmDialog
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title="Delete this post?"
@@ -351,20 +247,11 @@ export function AdminPosts() {
             ? `"${pendingDelete.title}" by ${pendingDelete.user?.username || 'an unknown author'} and its comments will be removed. This cannot be undone.`
             : ''
         }
-      >
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setPendingDelete(null)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => deleteMutation.mutate(pendingDelete._id)}
-            disabled={deleteMutation.isPending}
-          >
-            {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        confirmText={deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+        confirmVariant="danger"
+        loading={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate(pendingDelete._id)}
+      />
     </>
   );
 }

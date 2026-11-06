@@ -1,40 +1,24 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Shield,
-  ShieldOff,
-  Users as UsersIcon,
-  MoreHorizontal,
-  Ban,
-  CircleCheck,
-  Trash2,
-  Activity,
-} from 'lucide-react';
+import { Users as UsersIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { userService } from '../../users/services/userService';
 import { useAuth } from '../../../features/auth';
 import { Section } from '../../../components/layout/PageShell';
 import {
-  Button,
   Card,
-  Badge,
-  Table,
   EmptyState,
   ErrorState,
-  DropdownMenu,
-  Modal,
   Input,
   Skeleton,
-  Avatar,
-  Pagination,
 } from '../../../components/ui';
+import { ConfirmDialog } from '../../../components/shared';
+import { AdminUsersTable } from '../components/AdminUsersTable';
 import { queryKeys } from '../../../config/queryKeys';
 
 export function AdminUsers() {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const { user: me } = useAuth();
   const [page, setPage] = useState(1);
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -118,139 +102,19 @@ export function AdminUsers() {
             Accounts appear here as people register.
           </EmptyState>
         ) : (
-          <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
-            <Table>
-              <Table.Head>
-                <tr>
-                  <th className="pl-6">Person</th>
-                  <th>Email</th>
-                  <th>Roles</th>
-                  <th>Joined</th>
-                  <th aria-label="Actions" className="pr-6" />
-                </tr>
-              </Table.Head>
-              <Table.Body>
-                {users.map((user) => {
-                  const isUserAdmin = user.roles?.includes('admin');
-                  const isSelf = String(user._id) === String(myId);
-
-                  return (
-                    <tr key={user._id}>
-                      <td className="pl-6">
-                        <Link
-                          to={`/user/${user._id}`}
-                          className="inline-flex items-center gap-3 text-sm font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors no-underline"
-                        >
-                          <Avatar name={user.username} size="sm" />
-                          <span>{user.username}</span>
-                        </Link>
-                      </td>
-                      <td>{user.email}</td>
-                      <td>
-                        <div className="flex gap-1.5 flex-wrap">
-                          {user.roles?.map((role) => (
-                            <Badge key={role} variant={role === 'admin' ? 'warning' : 'neutral'}>
-                              {role === 'admin' && <Shield className="w-3 h-3 mr-1 inline" />}
-                              {role}
-                            </Badge>
-                          ))}
-                          {user.suspended && <Badge variant="danger">suspended</Badge>}
-                        </div>
-                      </td>
-                      <td>
-                        {new Date(user.createdAt).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </td>
-                      <td className="text-right pr-6">
-                        {isSelf ? (
-                          <span className="text-xs text-[hsl(var(--muted-foreground))]">You</span>
-                        ) : (
-                          <DropdownMenu
-                            trigger={
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                aria-label={`Actions for ${user.username}`}
-                              >
-                                <MoreHorizontal className="w-4 h-4" />
-                              </Button>
-                            }
-                          >
-                            <DropdownMenu.Item
-                              onSelect={() => navigate(`/admin/users/${user._id}/activity`)}
-                            >
-                              <Activity className="w-3.5 h-3.5 mr-2" /> View activity
-                            </DropdownMenu.Item>
-
-                            <DropdownMenu.Separator />
-
-                            {user.suspended ? (
-                              <DropdownMenu.Item
-                                onSelect={() =>
-                                  suspendMutation.mutate({ id: user._id, suspended: false })
-                                }
-                              >
-                                <CircleCheck className="w-3.5 h-3.5 mr-2 text-emerald-500" /> Restore access
-                              </DropdownMenu.Item>
-                            ) : (
-                              <DropdownMenu.Item
-                                onSelect={() =>
-                                  suspendMutation.mutate({ id: user._id, suspended: true })
-                                }
-                              >
-                                <Ban className="w-3.5 h-3.5 mr-2 text-amber-500" /> Suspend account
-                              </DropdownMenu.Item>
-                            )}
-
-                            <DropdownMenu.Separator />
-                            <DropdownMenu.Label>Role</DropdownMenu.Label>
-
-                            {isUserAdmin ? (
-                              <DropdownMenu.Item
-                                onSelect={() => roleMutation.mutate({ id: user._id, admin: false })}
-                              >
-                                <ShieldOff className="w-3.5 h-3.5 mr-2" /> Revoke administrator
-                              </DropdownMenu.Item>
-                            ) : (
-                              <DropdownMenu.Item
-                                onSelect={() => roleMutation.mutate({ id: user._id, admin: true })}
-                              >
-                                <Shield className="w-3.5 h-3.5 mr-2" /> Make administrator
-                              </DropdownMenu.Item>
-                            )}
-
-                            <DropdownMenu.Separator />
-
-                            <DropdownMenu.Item
-                              tone="danger"
-                              onSelect={() => setPendingDelete(user)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5 mr-2 text-red-500" /> Delete account
-                            </DropdownMenu.Item>
-                          </DropdownMenu>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </Table.Body>
-            </Table>
-
-            <Pagination
-              page={pagination.page}
-              pages={pagination.pages}
-              total={pagination.total}
-              noun="accounts"
-              onChange={setPage}
-            />
-          </Card>
+          <AdminUsersTable
+            users={users}
+            myId={myId}
+            onSuspend={(id, suspended) => suspendMutation.mutate({ id, suspended })}
+            onRoleChange={(id, admin) => roleMutation.mutate({ id, admin })}
+            onDelete={setPendingDelete}
+            pagination={pagination}
+            onPageChange={setPage}
+          />
         )}
       </Section>
 
-      <Modal
+      <ConfirmDialog
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => {
           if (!open) {
@@ -260,15 +124,15 @@ export function AdminUsers() {
         }}
         title={`Delete ${pendingDelete?.username}?`}
         description="Their account, stories, and the comments and likes on them are removed permanently. Suspending is reversible; this is not."
+        confirmText="Delete permanently"
+        confirmVariant="danger"
+        loading={deleteMutation.isPending}
+        onConfirm={() => {
+          if (!password) return toast.error('Enter your password to confirm');
+          deleteMutation.mutate({ id: pendingDelete._id, password });
+        }}
       >
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!password) return toast.error('Enter your password to confirm');
-            deleteMutation.mutate({ id: pendingDelete._id, password });
-          }}
-          className="flex flex-col gap-4"
-        >
+        <div className="my-2">
           <Input
             label="Confirm with your own password"
             type="password"
@@ -277,16 +141,8 @@ export function AdminUsers() {
             onChange={(event) => setPassword(event.target.value)}
             hint="Holding an admin session is not by itself authority to destroy an account."
           />
-          <Modal.Footer>
-            <Button type="button" variant="secondary" onClick={() => setPendingDelete(null)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="danger" disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? 'Deleting…' : 'Delete permanently'}
-            </Button>
-          </Modal.Footer>
-        </form>
-      </Modal>
+        </div>
+      </ConfirmDialog>
     </>
   );
 }
