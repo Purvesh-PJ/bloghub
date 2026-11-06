@@ -4,50 +4,90 @@ These rules define standard industry best practices for building and maintaining
 
 ---
 
-## 1. React & Client-Side Architecture
+## 1. Working Process
+
+- **Plan First:** For any change touching 3+ files or any refactor, list the problems and the proposed file structure first, then wait for approval before editing.
+- **No Silent Changes:** Do not change behavior, visuals, or public APIs unless explicitly asked. Refactors must keep props and API contracts backward compatible.
+- **Ask Before Adding Dependencies:** Prefer existing patterns and libraries. Ask before introducing a new package.
+- **Small Steps:** One logical change per task and per commit. Never commit secrets or `.env` files.
+- **Summarize:** End every task with a short summary of what changed, why, and anything intentionally left alone.
+
+---
+
+## 2. React & Client-Side Architecture
 
 - **Functional Components:** Use functional components exclusively with modern React hooks; do not use class components.
-- **Separation of Concerns:** Keep UI presentation separate from business logic. Extract complex state, side effects, and API calls into custom hooks.
-- **Server vs Local State:** Use specialized cache libraries (e.g., TanStack Query) for server state; do not manually duplicate server responses into local `useState`.
-- **Component Colocation:** Colocate tightly coupled components, helper utilities, and tests close to where they are used rather than scattering them across arbitrary global directories.
-- **Single Responsibility:** Keep components small, composable, and focused on one visual or behavioral task.
+- **Separation of Concerns:** Keep UI presentation separate from business logic. Extract complex state, side effects, and API calls into custom hooks (`useXyz`).
+- **Server vs Local State:** Use specialized cache libraries (e.g., TanStack Query) for server state; do not manually duplicate server responses into local `useState`. Do not store derived data in state; compute it during render.
+- **Component Colocation:** Colocate tightly coupled components, hooks, helpers, config, and tests in the same feature folder rather than scattering them across global directories.
+- **Single Responsibility:** Keep components small, composable, and focused on one task. Split a component when it exceeds ~150 lines or mixes layout, state, and business logic. Do not extract single-use pieces under ~20 lines into separate files.
+- **Config-Driven UI:** If the same JSX pattern repeats 3+ times (nav items, menu entries, table columns, form fields), replace it with a config array and `.map()`.
+- **Effects:** Use `useEffect` only to sync with external systems. Do not use it to transform data or handle events that a handler can handle. Always clean up subscriptions, timers, and listeners.
+- **Routing:** Use `NavLink` for active state, not manual `pathname.startsWith` checks. Close mobile menus via an effect on route change, not per-link `onClick`. Lazy-load route-level components.
+- **No Premature Optimization:** Do not add `useMemo`, `useCallback`, or `React.memo` without a measured performance problem.
+- **UI States:** Every data-driven component handles loading, error, and empty states. Async actions must `await`, catch errors, show a pending state, and navigate only on success.
+- **Error Boundaries:** Wrap route trees in error boundaries with a recovery action.
 
 ---
 
-## 2. Express & Node.js API Architecture
+## 3. Accessibility (WCAG 2.2 AA)
 
-- **Thin Controllers:** Keep controllers thin; their only job is to extract request parameters, call the service layer, and return HTTP responses.
-- **Dedicated Service Layer:** Place all business logic, external API calls, and calculations inside reusable service modules.
-- **Centralized Error Handling:** Never handle errors with ad-hoc response sends in try/catch blocks; pass errors to next (`next(err)`) and handle them via central Express error middleware.
+- **Semantic HTML:** Use `nav`, `aside`, `main`, `header`, `button`, and `ul/li`. Never use `div` with `onClick` for actions.
+- **Labels:** Icon-only buttons require `aria-label`. Decorative icons get `aria-hidden="true"`. Repeated landmarks get distinct `aria-label`s.
+- **Current Page:** The active navigation item must expose `aria-current="page"`.
+- **Modals & Drawers:** Provide a focus trap, `Escape` to close, focus restoration on close, and body scroll lock. Closed drawers must not be keyboard-focusable.
+- **Focus & Contrast:** Keep visible `focus-visible` styles. Text contrast must be at least 4.5:1. Never convey meaning by color alone.
+- **Forms:** Link field errors with `aria-describedby`, and associate every input with a label.
+
+---
+
+## 4. Express & Node.js API Architecture
+
+- **Layering:** Follow routes -> controllers -> services -> models. Dependencies point one way only.
+- **Thin Controllers:** Controllers only extract request parameters, call the service layer, and return HTTP responses.
+- **Dedicated Service Layer:** Place all business logic, external API calls, and calculations inside reusable service modules that never touch `req` or `res`.
+- **Centralized Error Handling:** Never handle errors with ad-hoc response sends in try/catch blocks; pass errors to next (`next(err)`) and handle them via central Express error middleware. Use a custom `ApiError` class and map known errors (validation, cast, duplicate key, JWT) to proper 4xx responses. Never leak stack traces to clients.
 - **Asynchronous Execution:** Use `async/await` consistently and ensure all asynchronous operations are properly awaited or wrapped with an async handler.
-- **Consistent Responses:** Always use standard HTTP status codes (200, 201, 400, 401, 403, 404, 409, 500) and return predictable JSON payload shapes `{ success, data, message }`.
+- **Consistent Responses:** Always use standard HTTP status codes (200, 201, 204, 400, 401, 403, 404, 409, 422, 429, 500) and return predictable JSON payload shapes `{ success, data, message }`.
+- **Pagination:** Every list endpoint is paginated with an enforced maximum limit. No unbounded queries.
+- **Configuration:** Read environment variables through a single config module, validated at startup. Fail fast when required values are missing. Keep a `.env.example`; never commit `.env`.
+- **Logging:** Use a structured logger (e.g., pino) instead of `console.log`. Never log passwords, tokens, or other sensitive data.
+- **Operations:** Expose a health endpoint and shut down gracefully on `SIGTERM` (finish in-flight requests, close the DB connection).
 
 ---
 
-## 3. MongoDB & Mongoose Data Layer
+## 5. MongoDB & Mongoose Data Layer
 
-- **Strict Schema Definitions:** Always define explicit Mongoose schemas with strict types, required fields, and built-in validators.
+- **Strict Schema Definitions:** Always define explicit Mongoose schemas with strict types, required fields, and built-in validators. Enable `timestamps`.
 - **Database-Level Integrity:** Enforce data constraints (e.g., uniqueness, foreign references) at the database layer with indexes, not solely in application code.
 - **Index Optimization:** Create explicit single-field and compound indexes for fields used in queries, filtering, or sorting.
-- **Query Performance:** Use `.lean()` on read-only queries to bypass Mongoose document hydration overhead when update methods are not needed.
+- **Query Performance:** Use `.lean()` on read-only queries to bypass Mongoose document hydration overhead when update methods are not needed. Use `.select()` to fetch only required fields.
 - **Avoid N+1 Queries:** Retrieve related records efficiently using targeted population (`.populate()`) or aggregation pipelines instead of querying in nested loops.
+- **Sensitive Fields:** Mark password and token fields `select: false` and strip them from JSON output.
+- **Transactions:** Use transactions for multi-document operations that must succeed or fail together.
 
 ---
 
-## 4. Application & API Security
+## 6. Application & API Security
 
-- **Input Validation:** Validate and sanitize all incoming request bodies, query params, and route parameters before any business logic executes.
-- **Content Sanitization:** Sanitize all rich text, HTML, or user-supplied markdown before rendering to prevent Cross-Site Scripting (XSS).
-- **Security Headers & CORS:** Keep Helmet enabled for standard security headers and pin CORS strictly to allowed client origins with credentials.
+- **Input Validation:** Validate and sanitize all incoming request bodies, query params, and route parameters with a schema validator (e.g., Zod or Joi) before any business logic executes. Reject unknown fields.
+- **Mass Assignment:** Never pass `req.body` directly to `create` or `update`. Pick allowed fields explicitly.
+- **NoSQL Injection:** Never build queries from raw user-supplied objects. Validate types and strip operator keys (`$ne`, `$gt`, etc.).
+- **Authentication:** Use short-lived access tokens with refresh rotation. Prefer httpOnly, Secure, SameSite cookies over `localStorage`. Use generic login-failure messages to prevent user enumeration.
+- **Authorization:** Enforce role and ownership checks on the server for every protected route and resource (prevent IDOR). Deny by default. Frontend route guards are UX only, never security.
+- **Content Sanitization:** Sanitize all rich text, HTML, or user-supplied markdown before rendering to prevent Cross-Site Scripting (XSS). Never use `dangerouslySetInnerHTML` with unsanitized content.
+- **Security Headers & CORS:** Keep Helmet enabled for standard security headers and pin CORS strictly to allowed client origins with credentials. Limit request body size.
 - **Rate Limiting:** Protect authentication and write-heavy routes with IP-based rate limiting to prevent brute force attacks and request flooding.
-- **Credential Protection:** Never store passwords or secrets in plain text; hash credentials using bcrypt with appropriate salt rounds.
+- **Credential Protection:** Never store passwords or secrets in plain text; hash credentials with bcrypt (cost factor 12 or higher) or argon2. Never commit secrets or expose them in client bundles.
+- **Dependencies:** Run `npm audit` regularly and keep dependencies updated.
 
 ---
 
-## 5. Testing & Code Quality
+## 7. Testing & Code Quality
 
 - **Hermetic Testing:** Integration tests must run against isolated, in-memory databases (e.g., `mongodb-memory-server`) to ensure tests never depend on or mutate external data.
-- **Test Placement:** Colocate unit and component tests directly adjacent to the code they verify in dedicated `__tests__/` directories.
-- **Non-Breaking Changes:** Never consider a task complete without running and verifying that all tests pass (`npm test`).
-- **Static Analysis:** Maintain clean code standards with zero linter errors or warnings (`npm run lint`).
-
+- **Test Placement:** Colocate tests next to the code they verify (e.g., `Component.test.jsx`, `user.service.test.js`).
+- **Test Behavior:** Test behavior, not implementation. Query UI by role or label. Cover success, validation failure, 401, 403, and 404 paths for API routes.
+- **Definition of Done:** A task is complete only when `npm run lint`, `npm run build`, and `npm test` all pass with zero errors or warnings.
+- **No New Failures:** Never introduce new failing tests. If a test was already failing before your change, report it instead of hiding or deleting it.
+- **Clean Code:** No dead code, commented-out blocks, or `console.log` in committed code. Comments explain why, not what.
