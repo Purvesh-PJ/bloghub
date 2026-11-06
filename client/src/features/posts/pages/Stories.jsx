@@ -1,20 +1,13 @@
 import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { formatDistanceToNow } from 'date-fns';
 import {
   PenLine,
   Search as SearchIcon,
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-  ExternalLink,
-  Eye,
   EyeOff,
   Globe,
-  Share2,
-  Heart,
   Lock,
+  Trash2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -22,157 +15,20 @@ import { useDebounced } from '../hooks/useDebounced';
 import { postService } from '../services/postService';
 import { analyticsService } from '../../analytics/services/analyticsService';
 import { PageShell } from '../../../components/layout/PageShell';
-import { ReadRateBar } from '../../analytics/components/ReadRateBar';
+import { StoryRow } from '../components/StoryRow';
+import { ConfirmDialog, BulkActionBar } from '../../../components/shared';
 import {
   Button,
   Card,
   Input,
   Chip,
-  Badge,
-  Modal,
   EmptyState,
   ErrorState,
-  DropdownMenu,
   Spinner,
   Skeleton,
   Pagination,
 } from '../../../components/ui';
 import { queryKeys } from '../../../config/queryKeys';
-import { cn } from '../../../lib/utils';
-
-function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSelected }) {
-  const navigate = useNavigate();
-  const isPublic = post.visibility === 'public';
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/post/${post._id}`);
-    if (isPublic) {
-      toast.success('Public link copied');
-    } else {
-      toast('Link copied — but this story is not published, so only you can open it', {
-        icon: '🔒',
-      });
-    }
-  };
-
-  const visibilityActions = [
-    { value: 'public', label: 'Publish story live', icon: <Globe className="w-3.5 h-3.5 mr-2" /> },
-    { value: 'draft', label: 'Move to drafts', icon: <EyeOff className="w-3.5 h-3.5 mr-2" /> },
-    { value: 'private', label: 'Make private', icon: <Lock className="w-3.5 h-3.5 mr-2" /> },
-  ].filter((option) => option.value !== (post.visibility || 'draft'));
-
-  const views = stats?.views ?? post.views?.length ?? 0;
-  const reads = stats?.reads ?? 0;
-  const rate = stats?.readRate ?? (views > 0 ? Math.round((reads / views) * 100) : 0);
-
-  return (
-    <div
-      className={cn(
-        'grid grid-cols-[28px_minmax(0,1fr)_44px] sm:grid-cols-[28px_minmax(0,1fr)_170px_96px] lg:grid-cols-[28px_minmax(0,1fr)_170px_110px_96px] items-center gap-4 sm:gap-6 p-4 rounded-xl transition-colors border-b border-[hsl(var(--border))/0.4] last:border-b-0',
-        selected
-          ? 'bg-[hsl(var(--primary))/0.12]'
-          : 'hover:bg-[hsl(var(--muted))/0.5]'
-      )}
-    >
-      {/* Select Cell */}
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={() => onToggleSelected(post._id)}
-          aria-label={`Select ${post.title || 'Untitled'}`}
-          className="w-4 h-4 rounded accent-[hsl(var(--primary))] cursor-pointer"
-        />
-      </div>
-
-      {/* Title & Metadata Cell */}
-      <div className="min-w-0">
-        <Link
-          to={`/post/${post._id}`}
-          className="text-base font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 no-underline"
-        >
-          {post.title || 'Untitled'}
-        </Link>
-        <div className="flex items-center gap-2 mt-1 text-xs text-[hsl(var(--muted-foreground))] flex-wrap">
-          <Badge
-            variant={isPublic ? 'success' : post.visibility === 'private' ? 'warning' : 'neutral'}
-          >
-            {post.visibility || 'draft'}
-          </Badge>
-          <span>
-            {(() => {
-              const d = post.createdAt ? new Date(post.createdAt) : null;
-              return d && !isNaN(d.getTime())
-                ? formatDistanceToNow(d, { addSuffix: true })
-                : 'recently';
-            })()}
-          </span>
-          {post.tags?.[0] && <span>· #{post.tags[0]?.name ?? post.tags[0]}</span>}
-        </div>
-      </div>
-
-      {/* Read Rate Bar Cell */}
-      <div className="max-sm:col-start-2 max-sm:col-span-2 max-sm:mt-1">
-        <ReadRateBar views={views} reads={reads} rate={rate} />
-      </div>
-
-      {/* Engagement Stats Cell */}
-      <div className="hidden lg:flex items-center gap-4 text-sm text-[hsl(var(--muted-foreground))] tabular-nums">
-        <span title="Total views" className="inline-flex items-center gap-1">
-          <Eye className="w-3.5 h-3.5 text-[hsl(var(--primary))]" /> {views}
-        </span>
-        <span title="Likes received" className="inline-flex items-center gap-1">
-          <Heart className="w-3.5 h-3.5 text-[hsl(var(--primary))]" /> {post.likes?.length ?? 0}
-        </span>
-      </div>
-
-      {/* Row Actions Cell */}
-      <div className="flex items-center justify-end">
-        <DropdownMenu
-          trigger={
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label={`Actions for ${post.title || 'Untitled'}`}
-            >
-              <MoreHorizontal className="w-4 h-4" />
-            </Button>
-          }
-        >
-          <DropdownMenu.Item onSelect={() => navigate(`/edit/${post._id}`)}>
-            <Pencil className="w-3.5 h-3.5 mr-2" /> Edit story
-          </DropdownMenu.Item>
-
-          <DropdownMenu.Item onSelect={() => navigate(`/post/${post._id}`)}>
-            <ExternalLink className="w-3.5 h-3.5 mr-2" /> {isPublic ? 'View live story' : 'Preview as reader'}
-          </DropdownMenu.Item>
-
-          <DropdownMenu.Item onSelect={handleCopyLink}>
-            <Share2 className="w-3.5 h-3.5 mr-2" /> {isPublic ? 'Copy public link' : 'Copy private link'}
-          </DropdownMenu.Item>
-
-          <DropdownMenu.Separator />
-          <DropdownMenu.Label>Visibility</DropdownMenu.Label>
-
-          {visibilityActions.map((option) => (
-            <DropdownMenu.Item
-              key={option.value}
-              onSelect={() => onSetVisibility(post, option.value)}
-            >
-              {option.icon} {option.label}
-            </DropdownMenu.Item>
-          ))}
-
-          <DropdownMenu.Separator />
-
-          <DropdownMenu.Item tone="danger" onSelect={() => onDelete(post)}>
-            <Trash2 className="w-3.5 h-3.5 mr-2 text-red-500" /> Delete story
-          </DropdownMenu.Item>
-        </DropdownMenu>
-      </div>
-    </div>
-  );
-}
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -299,51 +155,48 @@ export function Stories() {
     setSelectedIds([]);
   };
 
+  const bulkActions = [
+    {
+      label: 'Publish',
+      icon: <Globe className="w-3.5 h-3.5" />,
+      variant: 'tonal',
+      onClick: () => bulkMutation.mutate({ ids: selectedIds, action: 'public' }),
+      disabled: bulkMutation.isPending,
+    },
+    {
+      label: 'To drafts',
+      icon: <EyeOff className="w-3.5 h-3.5" />,
+      variant: 'secondary',
+      onClick: () => bulkMutation.mutate({ ids: selectedIds, action: 'draft' }),
+      disabled: bulkMutation.isPending,
+    },
+    {
+      label: 'Make private',
+      icon: <Lock className="w-3.5 h-3.5" />,
+      variant: 'secondary',
+      onClick: () => bulkMutation.mutate({ ids: selectedIds, action: 'private' }),
+      disabled: bulkMutation.isPending,
+    },
+    {
+      label: 'Delete',
+      icon: <Trash2 className="w-3.5 h-3.5" />,
+      variant: 'dangerTonal',
+      onClick: () => setPendingBulk(selectedIds),
+      disabled: bulkMutation.isPending,
+    },
+  ];
+
   return (
     <PageShell>
       {/* Bulk actions banner */}
-      {selectedIds.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap p-3 px-5 mb-4 rounded-2xl bg-[hsl(var(--primary))/0.12] border border-[hsl(var(--primary))/0.2]">
-          <span className="text-sm font-semibold text-[hsl(var(--primary))] mr-auto">
-            {selectedIds.length} selected on this page
-          </span>
-          <Button
-            size="sm"
-            variant="tonal"
-            onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'public' })}
-            disabled={bulkMutation.isPending}
-          >
-            <Globe className="w-3.5 h-3.5 mr-1" /> Publish
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'draft' })}
-            disabled={bulkMutation.isPending}
-          >
-            <EyeOff className="w-3.5 h-3.5 mr-1" /> To drafts
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => bulkMutation.mutate({ ids: selectedIds, action: 'private' })}
-            disabled={bulkMutation.isPending}
-          >
-            <Lock className="w-3.5 h-3.5 mr-1" /> Make private
-          </Button>
-          <Button
-            size="sm"
-            variant="dangerTonal"
-            onClick={() => setPendingBulk(selectedIds)}
-            disabled={bulkMutation.isPending}
-          >
-            <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
-            Cancel
-          </Button>
-        </div>
-      )}
+      <BulkActionBar
+        selectedCount={selectedIds.length}
+        label={`${selectedIds.length} selected on this page`}
+        variant="banner"
+        actions={bulkActions}
+        clearLabel="Cancel"
+        onClear={() => setSelectedIds([])}
+      />
 
       {/* Toolbar: Filter chips, sort select, and title search */}
       <div className="flex items-center gap-2.5 flex-wrap p-3 rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] mb-4">
@@ -482,7 +335,7 @@ export function Stories() {
       )}
 
       {/* Delete confirmation modals */}
-      <Modal
+      <ConfirmDialog
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title="Delete this story?"
@@ -491,40 +344,22 @@ export function Stories() {
             ? `"${pendingDelete.title || 'Untitled'}" will be permanently removed, along with its comments and likes. This cannot be undone.`
             : ''
         }
-      >
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setPendingDelete(null)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => deleteMutation.mutate(pendingDelete._id)}
-            disabled={deleteMutation.isPending}
-          >
-            {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        confirmText={deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+        confirmVariant="danger"
+        loading={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate(pendingDelete._id)}
+      />
 
-      <Modal
+      <ConfirmDialog
         open={Boolean(pendingBulk)}
         onOpenChange={(open) => !open && setPendingBulk(null)}
         title={`Delete ${pendingBulk?.length ?? 0} ${pendingBulk?.length === 1 ? 'story' : 'stories'}?`}
         description="They will be permanently removed, along with their comments and likes. This cannot be undone."
-      >
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setPendingBulk(null)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => bulkMutation.mutate({ ids: pendingBulk, action: 'delete' })}
-            disabled={bulkMutation.isPending}
-          >
-            {bulkMutation.isPending ? 'Deleting…' : 'Delete all'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        confirmText={bulkMutation.isPending ? 'Deleting…' : 'Delete all'}
+        confirmVariant="danger"
+        loading={bulkMutation.isPending}
+        onConfirm={() => bulkMutation.mutate({ ids: pendingBulk, action: 'delete' })}
+      />
     </PageShell>
   );
 }
