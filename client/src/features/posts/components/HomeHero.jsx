@@ -11,21 +11,21 @@ export function HomeHero({ startHref, startLabel }) {
       <header className="pt-8 sm:pt-12 pb-4 grid grid-cols-1 lg:grid-cols-[1.12fr_0.88fr] items-center gap-10 lg:gap-14">
         <div className="flex flex-col items-start text-left gap-6 w-full">
           {/* Pill Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[hsl(var(--primary))/0.10] border border-[hsl(var(--primary))/0.25] text-xs font-semibold text-[hsl(var(--primary))] select-none">
-            <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-xs font-semibold text-primary select-none">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
             <span>A sanctuary for thoughtful writing</span>
           </div>
 
           {/* Hero Title */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[hsl(var(--foreground))] leading-[1.15] max-w-[800px]">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.15] max-w-[800px]">
             Where ideas find their voice & stories find{' '}
-            <span className="bg-gradient-to-r from-[hsl(var(--primary))] to-sky-600 bg-clip-text text-transparent inline-block">
+            <span className="bg-gradient-to-r from-primary to-sky-600 bg-clip-text text-transparent inline-block">
               curious minds.
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-base sm:text-lg text-[hsl(var(--muted-foreground))] leading-relaxed max-w-[660px]">
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-[660px]">
             BlogHub is a modern, distraction-free publishing space for writers, thinkers, and
             storytellers. Write effortlessly in Markdown, track genuine reader attention, and
             discover perspectives that broaden your world.
@@ -42,15 +42,15 @@ export function HomeHero({ startHref, startLabel }) {
           </div>
 
           {/* Feature Pills */}
-          <div className="flex items-center gap-4 sm:gap-6 flex-wrap pt-2 text-xs font-medium text-[hsl(var(--muted-foreground))]">
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap pt-2 text-xs font-medium text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-[hsl(var(--primary))]" /> Pure Markdown Canvas
+              <Check className="h-3.5 w-3.5 text-primary" /> Pure Markdown Canvas
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-[hsl(var(--primary))]" /> True Read Completion Metrics
+              <Check className="h-3.5 w-3.5 text-primary" /> True Read Completion Metrics
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-[hsl(var(--primary))]" /> 100% Free & Open
+              <Check className="h-3.5 w-3.5 text-primary" /> 100% Free & Open
             </span>
           </div>
         </div>
@@ -61,4 +61,3 @@ export function HomeHero({ startHref, startLabel }) {
     </div>
   );
 }
-

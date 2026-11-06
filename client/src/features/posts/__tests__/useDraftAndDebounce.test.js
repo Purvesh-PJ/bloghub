@@ -181,10 +181,7 @@ describe('useDraftRecovery hook', () => {
   });
 
   it('clear() removes draft from localStorage and clears recovered state', () => {
-    localStorage.setItem(
-      'bloghub:draft:test',
-      JSON.stringify({ title: 'A', savedAt: Date.now() })
-    );
+    localStorage.setItem('bloghub:draft:test', JSON.stringify({ title: 'A', savedAt: Date.now() }));
 
     const { result } = renderHook(() =>
       useDraftRecovery({
@@ -224,4 +221,3 @@ describe('useBeforeUnload hook', () => {
     removeEventListenerSpy.mockRestore();
   });
 });
-

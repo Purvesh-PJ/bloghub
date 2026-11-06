@@ -3,18 +3,16 @@ import { cn } from '../../../lib/utils';
 
 export function PostCardSkeleton({ layout = 'row', hasThumb = true, variant = 'elevated' }) {
   const variantClasses = {
-    elevated:
-      'bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)]',
-    featured:
-      'bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.5] shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)]',
+    elevated: 'bg-card border border-border/40 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)]',
+    featured: 'bg-card border border-border/50 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)]',
     ghost: 'bg-transparent border border-transparent',
-    inset: 'bg-[hsl(var(--muted))/0.4] border border-[hsl(var(--border))/0.4]',
+    inset: 'bg-muted/40 border border-border/40',
   };
 
   return (
     <div
       className={cn(
-        'grid gap-4 sm:gap-6 p-5 sm:p-6 rounded-[24px]',
+        'grid gap-4 sm:gap-6 p-5 sm:p-6 rounded-xl',
         variantClasses[variant] || variantClasses.elevated,
         layout === 'stacked' || !hasThumb
           ? 'grid-cols-1 items-start'
@@ -25,10 +23,8 @@ export function PostCardSkeleton({ layout = 'row', hasThumb = true, variant = 'e
       {hasThumb && (
         <Skeleton
           className={cn(
-            'w-full rounded-[16px]',
-            layout === 'stacked'
-              ? 'aspect-video h-auto'
-              : 'h-full min-h-[155px] aspect-[16/10]'
+            'w-full rounded-lg',
+            layout === 'stacked' ? 'aspect-video h-auto' : 'h-full min-h-[155px] aspect-[16/10]'
           )}
         />
       )}

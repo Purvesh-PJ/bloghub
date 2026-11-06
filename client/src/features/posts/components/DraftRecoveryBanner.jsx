@@ -12,9 +12,8 @@ export function DraftRecoveryBanner({ recovered, onRestore, onDiscard }) {
     >
       <RotateCcw className="w-4 h-4 shrink-0" />
       <span className="mr-auto">
-        Unsaved work from{' '}
-        {formatDistanceToNow(new Date(recovered.savedAt), { addSuffix: true })} was found on
-        this device.
+        Unsaved work from {formatDistanceToNow(new Date(recovered.savedAt), { addSuffix: true })}{' '}
+        was found on this device.
       </span>
       <Button size="sm" variant="tonal" onClick={onRestore}>
         Restore it
@@ -25,4 +24,3 @@ export function DraftRecoveryBanner({ recovered, onRestore, onDiscard }) {
     </div>
   );
 }
-

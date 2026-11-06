@@ -33,10 +33,10 @@ export function AuthorByline({
       <div className={cn('flex items-center gap-3 min-w-0', className)}>
         <Avatar src={avatarUrl} name={displayName} size={size ?? 'md'} />
         <span className="flex flex-col min-w-0">
-          <span className="text-base font-bold text-[hsl(var(--foreground))] block leading-tight">
+          <span className="text-base font-bold text-foreground block leading-tight">
             {displayName}
           </span>
-          <span className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))] mt-1">
+          <span className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
             {note ?? (
               <>
                 <span>{when}</span>
@@ -53,21 +53,21 @@ export function AuthorByline({
   return (
     <div
       className={cn(
-        'flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))] min-w-0 select-none flex-wrap',
+        'flex items-center gap-2 text-xs text-muted-foreground min-w-0 select-none flex-wrap',
         className
       )}
     >
       <Avatar src={avatarUrl} name={displayName} size={size ?? 'xs'} />
-      <span className="font-medium text-[hsl(var(--foreground))]">{displayName}</span>
+      <span className="font-medium text-foreground">{displayName}</span>
       {when && (
         <>
-          <span className="text-[hsl(var(--muted-foreground))/0.5]">·</span>
+          <span className="text-muted-foreground/50">·</span>
           <span>{when}</span>
         </>
       )}
       {readingMinutes ? (
         <>
-          <span className="text-[hsl(var(--muted-foreground))/0.5]">·</span>
+          <span className="text-muted-foreground/50">·</span>
           <span>{readingMinutes} min read</span>
         </>
       ) : null}

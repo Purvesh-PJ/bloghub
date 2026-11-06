@@ -182,7 +182,9 @@ describe('GET /api/users/:id/avatar', () => {
     const before = (await request(app).get(`/api/users/${authorId}/avatar`)).headers.etag;
 
     // A second upload writes the profile again, moving its updatedAt.
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 10);
+    });
     await uploadAvatar(token);
 
     const after = (await request(app).get(`/api/users/${authorId}/avatar`)).headers.etag;

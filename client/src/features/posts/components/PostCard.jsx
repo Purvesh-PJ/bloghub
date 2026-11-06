@@ -26,20 +26,18 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
 
   const variantClasses = {
     elevated:
-      'bg-[hsl(var(--card))] border border-[var(--line-subtle)] shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:bg-[hsl(var(--card))] hover:border-[var(--line-default)] hover:shadow-[0_14px_28px_-6px_rgba(15,23,42,0.08),0_0_16px_-2px_rgba(14,165,233,0.10)]',
+      'bg-card border border-border shadow-[0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:bg-card hover:border-line-default hover:shadow-[0_14px_28px_-6px_rgba(15,23,42,0.08),0_0_16px_-2px_rgba(14,165,233,0.10)]',
     featured:
-      'bg-[hsl(var(--card))] border border-[var(--line-subtle)] shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)] hover:bg-[hsl(var(--card))] hover:border-[var(--line-default)] hover:shadow-[0_16px_32px_-6px_rgba(15,23,42,0.1),0_0_16px_-2px_rgba(14,165,233,0.15)]',
-    ghost:
-      'bg-transparent border border-transparent hover:bg-[hsl(var(--muted))/0.5]',
-    inset:
-      'bg-[hsl(var(--muted))/0.4] border border-[var(--line-subtle)] shadow-inner hover:bg-[hsl(var(--muted))/0.6]',
+      'bg-card border border-border shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)] hover:bg-card hover:border-line-default hover:shadow-[0_16px_32px_-6px_rgba(15,23,42,0.1),0_0_16px_-2px_rgba(14,165,233,0.15)]',
+    ghost: 'bg-transparent border border-transparent hover:bg-muted/50',
+    inset: 'bg-muted/40 border border-border shadow-inner hover:bg-muted/60',
   };
 
   return (
     <Link
       to={`/post/${post._id}`}
       className={cn(
-        'group relative grid gap-4 sm:gap-6 p-5 sm:p-6 rounded-[24px] text-inherit no-underline overflow-hidden transition-all duration-200 hover:-translate-y-0.5',
+        'group relative grid gap-4 sm:gap-6 p-5 sm:p-6 rounded-xl text-inherit no-underline overflow-hidden transition-all duration-200 hover:-translate-y-0.5',
         variantClasses[variant] || variantClasses.elevated,
         layout === 'stacked' || !showThumb
           ? 'grid-cols-1 items-start'
@@ -50,10 +48,8 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
       {showThumb && (
         <div
           className={cn(
-            'relative rounded-[16px] overflow-hidden bg-[hsl(var(--muted))] w-full shrink-0',
-            layout === 'stacked'
-              ? 'aspect-video h-auto'
-              : 'h-full min-h-[155px] aspect-[16/10]'
+            'relative rounded-lg overflow-hidden bg-muted w-full shrink-0',
+            layout === 'stacked' ? 'aspect-video h-auto' : 'h-full min-h-[155px] aspect-[16/10]'
           )}
         >
           <img
@@ -72,7 +68,7 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
           {/* 1. Title */}
           <h3
             className={cn(
-              'font-bold leading-snug tracking-tight text-[hsl(var(--foreground))] line-clamp-2 transition-colors duration-150 group-hover:text-[hsl(var(--primary))]',
+              'font-bold leading-snug tracking-tight text-foreground line-clamp-2 transition-colors duration-150 group-hover:text-primary',
               variant === 'featured' ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl'
             )}
           >
@@ -89,7 +85,7 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
           {/* 3. Description / Excerpt */}
           <p
             className={cn(
-              'text-sm leading-relaxed text-[hsl(var(--muted-foreground))]',
+              'text-sm leading-relaxed text-muted-foreground',
               showThumb ? 'line-clamp-2' : 'line-clamp-3'
             )}
           >
@@ -110,7 +106,7 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
                       navigate(`/search?topic=${encodeURIComponent(clean)}`);
                     }}
                     title={`Explore stories in #${clean}`}
-                    className="text-xs font-semibold text-[hsl(var(--primary))] tracking-wide cursor-pointer hover:underline hover:underline-offset-4 transition-colors"
+                    className="text-xs font-semibold text-primary tracking-wide cursor-pointer hover:underline hover:underline-offset-4 transition-colors"
                   >
                     #{clean}
                   </span>
@@ -133,18 +129,18 @@ export function PostCardCompact({ post, rank }) {
   return (
     <Link
       to={`/post/${post._id}`}
-      className="flex gap-3 items-baseline p-3 -mx-3 rounded-xl no-underline transition-all duration-150 hover:bg-[hsl(var(--muted))] hover:translate-x-1"
+      className="flex gap-3 items-baseline p-3 -mx-3 rounded-xl no-underline transition-all duration-150 hover:bg-muted hover:translate-x-1"
     >
-      {rank != null && (
-        <span className="text-xs font-bold text-[hsl(var(--primary))] tabular-nums shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-[hsl(var(--primary))/0.10] select-none">
+      {rank !== null && rank !== undefined && (
+        <span className="text-xs font-bold text-primary tabular-nums shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 select-none">
           {String(rank).padStart(2, '0')}
         </span>
       )}
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-[hsl(var(--foreground))] line-clamp-2 leading-snug">
+        <p className="text-sm font-medium text-foreground line-clamp-2 leading-snug">
           {post.title}
         </p>
-        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 truncate">
+        <p className="text-xs text-muted-foreground mt-1 truncate">
           {post.user?.username ?? 'Anonymous'} · {post.likes?.length ?? 0} likes
         </p>
       </div>

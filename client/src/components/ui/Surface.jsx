@@ -2,23 +2,23 @@ import * as React from 'react';
 import { cn } from '../../lib/utils';
 
 const toneClasses = {
-  low: 'bg-[hsl(var(--card))]',
-  base: 'bg-[hsl(var(--muted))]',
-  high: 'bg-[hsl(var(--muted))/0.8]',
-  accent: 'bg-[hsl(var(--primary))/0.12]',
-  elevated: 'bg-[hsl(var(--popover))] shadow-lg',
+  low: 'bg-card',
+  base: 'bg-muted',
+  high: 'bg-muted/80',
+  accent: 'bg-primary/12',
+  elevated: 'bg-popover shadow-lg',
   transparent: 'bg-transparent',
 };
 
 const radiusClasses = {
   none: 'rounded-none',
-  xs: 'rounded-[6px]',
-  sm: 'rounded-[10px]',
-  md: 'rounded-[14px]',
-  lg: 'rounded-[20px]',
-  xl: 'rounded-[28px]',
-  '2xl': 'rounded-[36px]',
-  '3xl': 'rounded-[48px]',
+  xs: 'rounded-xs',
+  sm: 'rounded-sm',
+  md: 'rounded-md',
+  lg: 'rounded-lg',
+  xl: 'rounded-2xl',
+  '2xl': 'rounded-3xl',
+  '3xl': 'rounded-4xl',
   full: 'rounded-full',
 };
 
@@ -34,10 +34,10 @@ const paddingClasses = {
 
 const variantClasses = {
   featured:
-    'bg-[hsl(var(--card))] border border-[hsl(var(--primary))/0.3] shadow-[0_8px_30px_-4px_rgba(14,165,233,0.12),0_2px_8px_-2px_rgba(15,23,42,0.04)]',
-  elevated: 'bg-[hsl(var(--card))] shadow-[0_4px_16px_-2px_rgba(15,23,42,0.05)] border-none',
+    'bg-card border border-primary/30 shadow-[0_8px_30px_-4px_rgba(14,165,233,0.12),0_2px_8px_-2px_rgba(15,23,42,0.04)]',
+  elevated: 'bg-card shadow-[0_4px_16px_-2px_rgba(15,23,42,0.05)] border-none',
   ghost: 'bg-transparent border-none shadow-none',
-  inset: 'bg-[hsl(var(--muted))/0.4] border-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]',
+  inset: 'bg-muted/40 border-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]',
 };
 
 export const Surface = React.forwardRef(
@@ -76,9 +76,9 @@ export const Surface = React.forwardRef(
           finalVariant ? variantClasses[finalVariant] : toneClasses[finalTone],
           radiusClasses[finalRadius],
           paddingClasses[finalPadding],
-          isBordered && 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] light:shadow-[inset_0_0_0_1px_rgba(15,23,42,0.08)]',
+          isBordered && 'border border-border',
           isInteractive &&
-            'cursor-pointer transition-all duration-150 hover:bg-[hsl(var(--muted))] hover:-translate-y-0.5 hover:shadow-md',
+            'cursor-pointer transition-all duration-150 hover:bg-muted hover:-translate-y-0.5 hover:shadow-md',
           className
         )}
         {...props}

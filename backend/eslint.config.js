@@ -22,8 +22,23 @@ module.exports = [
       },
     },
     rules: {
+      // Core JavaScript & Bug Prevention guarantees
+      eqeqeq: ['error', 'always'],
+      'no-var': 'error',
+      'prefer-const': 'error',
+      'no-duplicate-imports': 'error',
+      'no-unneeded-ternary': 'error',
+      'no-empty': ['error', { allowEmptyCatch: false }],
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-console': 'off',
+
+      // Backend & Security Guarantees
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-async-promise-executor': 'error',
+      'no-promise-executor-return': 'error',
+
+      // Formatting
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },

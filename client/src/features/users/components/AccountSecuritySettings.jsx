@@ -45,10 +45,8 @@ export function AccountSecuritySettings({
       {/* Privacy Settings */}
       <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">
-            Privacy
-          </h2>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">Privacy</h2>
+          <p className="text-sm text-muted-foreground mt-1">
             What other people can see on your public page.
           </p>
         </div>
@@ -72,17 +70,15 @@ export function AccountSecuritySettings({
       {/* Change Password */}
       <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">
-            Change password
-          </h2>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">Change password</h2>
+          <p className="text-sm text-muted-foreground mt-1">
             You will be signed out everywhere once it changes, including here — that is what makes
             changing it useful if the old one leaked.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-[hsl(var(--muted))] text-sm text-[hsl(var(--muted-foreground))]">
-          <Info className="w-4 h-4 shrink-0 text-[hsl(var(--primary))]" />
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-muted text-sm text-muted-foreground">
+          <Info className="w-4 h-4 shrink-0 text-primary" />
           <span>
             Signed in as <strong>{userEmail}</strong>. Sessions use a short-lived token that
             refreshes silently while you are active.
@@ -130,8 +126,8 @@ export function AccountSecuritySettings({
       {/* Delete Account */}
       <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-red-500">Delete account</h2>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">
+          <h2 className="text-xl font-bold tracking-tight text-destructive">Delete account</h2>
+          <p className="text-sm text-muted-foreground mt-1">
             Removes your account, your stories, and the comments and likes on them. This cannot be
             undone.
           </p>
@@ -175,4 +171,3 @@ export function AccountSecuritySettings({
     </>
   );
 }
-

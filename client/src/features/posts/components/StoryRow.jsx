@@ -46,10 +46,8 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
   return (
     <div
       className={cn(
-        'grid grid-cols-[28px_minmax(0,1fr)_44px] sm:grid-cols-[28px_minmax(0,1fr)_170px_96px] lg:grid-cols-[28px_minmax(0,1fr)_170px_110px_96px] items-center gap-4 sm:gap-6 p-4 rounded-xl transition-colors border-b border-[hsl(var(--border))/0.4] last:border-b-0',
-        selected
-          ? 'bg-[hsl(var(--primary))/0.12]'
-          : 'hover:bg-[hsl(var(--muted))/0.5]'
+        'grid grid-cols-[28px_minmax(0,1fr)_44px] sm:grid-cols-[28px_minmax(0,1fr)_170px_96px] lg:grid-cols-[28px_minmax(0,1fr)_170px_110px_96px] items-center gap-4 sm:gap-6 p-4 rounded-xl transition-colors border-b border-border/40 last:border-b-0',
+        selected ? 'bg-primary/12' : 'hover:bg-muted/50'
       )}
     >
       {/* Select Cell */}
@@ -59,7 +57,7 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
           checked={selected}
           onChange={() => onToggleSelected(post._id)}
           aria-label={`Select ${post.title || 'Untitled'}`}
-          className="w-4 h-4 rounded accent-[hsl(var(--primary))] cursor-pointer"
+          className="w-4 h-4 rounded accent-primary cursor-pointer"
         />
       </div>
 
@@ -67,11 +65,11 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
       <div className="min-w-0">
         <Link
           to={`/post/${post._id}`}
-          className="text-base font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 no-underline"
+          className="text-base font-semibold text-foreground hover:text-primary transition-colors line-clamp-1 no-underline"
         >
           {post.title || 'Untitled'}
         </Link>
-        <div className="flex items-center gap-2 mt-1 text-xs text-[hsl(var(--muted-foreground))] flex-wrap">
+        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
           <Badge
             variant={isPublic ? 'success' : post.visibility === 'private' ? 'warning' : 'neutral'}
           >
@@ -95,12 +93,12 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
       </div>
 
       {/* Engagement Stats Cell */}
-      <div className="hidden lg:flex items-center gap-4 text-sm text-[hsl(var(--muted-foreground))] tabular-nums">
+      <div className="hidden lg:flex items-center gap-4 text-sm text-muted-foreground tabular-nums">
         <span title="Total views" className="inline-flex items-center gap-1">
-          <Eye className="w-3.5 h-3.5 text-[hsl(var(--primary))]" /> {views}
+          <Eye className="w-3.5 h-3.5 text-primary" /> {views}
         </span>
         <span title="Likes received" className="inline-flex items-center gap-1">
-          <Heart className="w-3.5 h-3.5 text-[hsl(var(--primary))]" /> {post.likes?.length ?? 0}
+          <Heart className="w-3.5 h-3.5 text-primary" /> {post.likes?.length ?? 0}
         </span>
       </div>
 
@@ -122,11 +120,13 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
           </DropdownMenu.Item>
 
           <DropdownMenu.Item onSelect={() => navigate(`/post/${post._id}`)}>
-            <ExternalLink className="w-3.5 h-3.5 mr-2" /> {isPublic ? 'View live story' : 'Preview as reader'}
+            <ExternalLink className="w-3.5 h-3.5 mr-2" />{' '}
+            {isPublic ? 'View live story' : 'Preview as reader'}
           </DropdownMenu.Item>
 
           <DropdownMenu.Item onSelect={handleCopyLink}>
-            <Share2 className="w-3.5 h-3.5 mr-2" /> {isPublic ? 'Copy public link' : 'Copy private link'}
+            <Share2 className="w-3.5 h-3.5 mr-2" />{' '}
+            {isPublic ? 'Copy public link' : 'Copy private link'}
           </DropdownMenu.Item>
 
           <DropdownMenu.Separator />
@@ -142,12 +142,11 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
           ))}
 
           <DropdownMenu.Separator />
-          <DropdownMenu.Item onSelect={() => onDelete(post)} className="text-red-500">
-            <Trash2 className="w-3.5 h-3.5 mr-2 text-red-500" /> Delete story
+          <DropdownMenu.Item onSelect={() => onDelete(post)} className="text-destructive">
+            <Trash2 className="w-3.5 h-3.5 mr-2 text-destructive" /> Delete story
           </DropdownMenu.Item>
         </DropdownMenu>
       </div>
     </div>
   );
 }
-

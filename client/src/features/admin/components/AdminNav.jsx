@@ -6,10 +6,10 @@ const navItemClass = (active) =>
   cn(
     'relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 select-none cursor-pointer',
     active
-      ? 'bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))] font-semibold before:content-[""] before:absolute before:-left-2 before:top-1/4 before:bottom-1/4 before:w-1 before:rounded-full before:bg-[hsl(var(--primary))]'
-      : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]',
+      ? 'bg-primary/12 text-primary font-semibold before:content-[""] before:absolute before:-left-2 before:top-1/4 before:bottom-1/4 before:w-1 before:rounded-full before:bg-primary'
+      : 'text-muted-foreground hover:text-foreground hover:bg-muted',
     '[&>svg]:shrink-0 [&>svg]:h-4 [&>svg]:w-4',
-    active ? '[&>svg]:text-[hsl(var(--primary))]' : '[&>svg]:text-[hsl(var(--muted-foreground))]'
+    active ? '[&>svg]:text-primary' : '[&>svg]:text-muted-foreground'
   );
 
 /**
@@ -30,7 +30,7 @@ export function AdminNav({ pathname, onNavigate }) {
         <div key={section.id} className="flex flex-col gap-1">
           <span
             className={cn(
-              'text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] px-3 pb-1 select-none',
+              'text-caption font-bold uppercase tracking-wider text-muted-foreground px-3 pb-1 select-none',
               sectionIdx === 0 ? 'pt-2' : 'pt-4'
             )}
           >

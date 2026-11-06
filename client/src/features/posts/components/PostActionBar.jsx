@@ -2,14 +2,7 @@ import { Heart, MessageCircle, Eye, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cn } from '../../../lib/utils';
 
-export function PostActionBar({
-  post,
-  liked,
-  commentsCount,
-  viewCount,
-  isAuthenticated,
-  onLike,
-}) {
+export function PostActionBar({ post, liked, commentsCount, viewCount, isAuthenticated, onLike }) {
   const handleLikeClick = () => {
     if (isAuthenticated) {
       onLike();
@@ -24,7 +17,7 @@ export function PostActionBar({
   };
 
   return (
-    <div className="flex items-center gap-2 sm:gap-3 flex-wrap py-4 border-y border-[hsl(var(--border))/0.6]">
+    <div className="flex items-center gap-2 sm:gap-3 flex-wrap py-4 border-y border-border/60">
       <button
         type="button"
         onClick={handleLikeClick}
@@ -33,12 +26,12 @@ export function PostActionBar({
         className={cn(
           'inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium transition-colors select-none cursor-pointer',
           liked
-            ? 'bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20'
-            : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))/0.8]'
+            ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
+            : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
         )}
       >
         <Heart
-          className={cn('h-4 w-4 shrink-0', liked && 'fill-current text-red-500')}
+          className={cn('h-4 w-4 shrink-0', liked && 'fill-current text-destructive')}
           aria-hidden="true"
         />
         <span>{post.likes?.length || 0}</span>
@@ -47,7 +40,7 @@ export function PostActionBar({
       <a
         href="#comments"
         aria-label={`Jump to ${commentsCount} responses`}
-        className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))/0.8] transition-colors select-none"
+        className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors select-none"
       >
         <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span>{commentsCount}</span>
@@ -56,7 +49,7 @@ export function PostActionBar({
       {typeof viewCount === 'number' && viewCount > 0 && (
         <span
           aria-label={`${viewCount} ${viewCount === 1 ? 'reader has' : 'readers have'} opened this`}
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] select-none"
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium bg-muted text-muted-foreground select-none"
         >
           <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span>{viewCount}</span>
@@ -66,7 +59,7 @@ export function PostActionBar({
       <button
         type="button"
         onClick={handleShareClick}
-        className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))/0.8] transition-colors select-none cursor-pointer"
+        className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors select-none cursor-pointer"
       >
         <Share2 className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span>Share</span>
@@ -74,4 +67,3 @@ export function PostActionBar({
     </div>
   );
 }
-

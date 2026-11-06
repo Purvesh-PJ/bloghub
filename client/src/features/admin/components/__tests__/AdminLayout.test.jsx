@@ -51,9 +51,7 @@ describe('AdminLayout Component', () => {
     const signOutBtn = screen.getByRole('button', { name: /sign out/i });
     await user.click(signOutBtn);
 
-    expect(
-      await screen.findByText('Sign out of Administrator Console?')
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Sign out of Administrator Console?')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /stay signed in/i })).toBeInTheDocument();
   });
 

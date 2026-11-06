@@ -17,25 +17,23 @@ export function ProfileSettingsForm({
   return (
     <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">
-          Profile
-        </h2>
-        <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">Profile</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Your name and bio appear on your public page and beside everything you publish.
         </p>
       </div>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-6">
         {/* Avatar row */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pb-6 border-b border-[hsl(var(--border))/0.4]">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pb-6 border-b border-border/40">
           <Avatar src={avatarPreview || avatarUrl} name={form.username} size="xl" />
           <div className="flex flex-col gap-2 min-w-0">
-            <p className="text-xs text-[hsl(var(--muted-foreground))]">
+            <p className="text-xs text-muted-foreground">
               JPEG, PNG, WebP or GIF, up to 2 MB. Square images look best.
             </p>
             <div className="flex items-center gap-2 flex-wrap">
               <label className="cursor-pointer">
-                <span className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] border border-[hsl(var(--border))] text-xs font-medium hover:bg-[hsl(var(--muted))] transition-colors select-none">
+                <span className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full bg-secondary text-secondary-foreground border border-border text-xs font-medium hover:bg-muted transition-colors select-none">
                   <ImagePlus className="w-3.5 h-3.5" />
                   {avatarUrl || avatarFile ? 'Replace' : 'Upload'}
                 </span>
@@ -171,4 +169,3 @@ export function ProfileSettingsForm({
     </Card>
   );
 }
-

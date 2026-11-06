@@ -2,33 +2,15 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
-import {
-  PenLine,
-  BookOpen,
-  Eye,
-  CheckCircle2,
-  BarChart2,
-  FileText,
-} from 'lucide-react';
+import { PenLine, BookOpen, Eye, CheckCircle2, BarChart2, FileText } from 'lucide-react';
 
 import { useAuth } from '../../../features/auth';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { postService } from '../../posts/services/postService';
 import { analyticsService } from '../../analytics/services/analyticsService';
 import { PageShell, Section } from '../../../components/layout/PageShell';
-import {
-  Button,
-  Card,
-  EmptyState,
-  ErrorState,
-  Skeleton,
-  StatTile,
-} from '../../../components/ui';
-import {
-  DashboardBanner,
-  TopStoriesSection,
-  DraftsAndReadingSection,
-} from '../components';
+import { Button, Card, EmptyState, ErrorState, Skeleton, StatTile } from '../../../components/ui';
+import { DashboardBanner, TopStoriesSection, DraftsAndReadingSection } from '../components';
 import { queryKeys } from '../../../config/queryKeys';
 
 export function Dashboard() {
@@ -87,20 +69,15 @@ export function Dashboard() {
   return (
     <PageShell>
       {/* Creator Banner */}
-      <DashboardBanner
-        user={user}
-        avatarUrl={avatarUrl}
-        bio={bio}
-        firstName={firstName}
-      />
+      <DashboardBanner user={user} avatarUrl={avatarUrl} bio={bio} firstName={firstName} />
 
       {/* Nothing to measure yet */}
       {!analyticsPending && !analyticsFailed && !hasWritten ? (
-        <div className="flex flex-col items-start gap-4 p-8 rounded-[28px] bg-[hsl(var(--card))] border border-dashed border-[hsl(var(--primary))/0.4]">
-          <h2 className="text-xl font-bold text-[hsl(var(--foreground))] tracking-tight">
+        <div className="flex flex-col items-start gap-4 p-8 rounded-2xl bg-card border border-dashed border-primary/40">
+          <h2 className="text-xl font-bold text-foreground tracking-tight">
             Publish your first story
           </h2>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] max-w-[62ch] leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-[62ch] leading-relaxed">
             Write in Markdown with a live preview. Save it as a draft while you work — only you can
             see a draft — and publish when you are ready. Views and read-through appear here once
             readers arrive.
@@ -167,12 +144,7 @@ export function Dashboard() {
         {readingLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" aria-hidden="true">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Card
-                key={i}
-                tone="low"
-                radius="xl"
-                className="p-4 flex flex-col gap-3"
-              >
+              <Card key={i} tone="low" radius="xl" className="p-4 flex flex-col gap-3">
                 <Skeleton width="85%" height={18} className="rounded" />
                 <Skeleton width="45%" height={12} className="rounded" />
               </Card>
@@ -198,12 +170,12 @@ export function Dashboard() {
                 <Link
                   key={post._id}
                   to={`/post/${post._id}`}
-                  className="bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.6] rounded-[20px] p-5 flex flex-col gap-2 no-underline hover:border-[hsl(var(--primary))/0.4] hover:-translate-y-0.5 hover:shadow-sm transition-all"
+                  className="bg-card border border-border/60 rounded-lg p-5 flex flex-col gap-2 no-underline hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-sm transition-all"
                 >
-                  <h4 className="text-base font-semibold text-[hsl(var(--foreground))] line-clamp-2">
+                  <h4 className="text-base font-semibold text-foreground line-clamp-2">
                     {post.title}
                   </h4>
-                  <span className="text-xs text-[hsl(var(--muted-foreground))] mt-auto pt-2">
+                  <span className="text-xs text-muted-foreground mt-auto pt-2">
                     {post.user?.username ? `${post.user.username} · ` : ''}opened {when}
                   </span>
                 </Link>

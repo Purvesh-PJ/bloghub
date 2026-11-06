@@ -112,14 +112,14 @@ export function Search() {
       {/* ── 1. Top Header: Icon, Title & Subtitle + Search Bar ─── */}
       <div className="flex items-center justify-between gap-6 flex-wrap">
         <div className="flex items-center gap-4 min-w-0">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-[24px] bg-[hsl(var(--primary))/0.12] text-[hsl(var(--primary))] shrink-0">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/12 text-primary shrink-0">
             <Compass className="w-6 h-6" />
           </div>
           <div className="flex flex-col gap-0.5 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[hsl(var(--foreground))]">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
               Explore Stories
             </h1>
-            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] max-w-[54ch]">
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-[54ch]">
               Discover deep-dive breakdowns, engineering essays, and creative perspectives.
             </p>
           </div>
@@ -127,7 +127,7 @@ export function Search() {
 
         {/* Search input box */}
         <div className="relative w-full sm:max-w-[360px]">
-          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--primary))] pointer-events-none" />
+          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary pointer-events-none" />
           <input
             type="text"
             placeholder="Search titles, stories, tags and authors…"
@@ -135,14 +135,14 @@ export function Search() {
             onChange={(e) => setDraft(e.target.value)}
             aria-label="Search stories"
             autoFocus={Boolean(query)}
-            className="w-full h-10 pl-10 pr-9 rounded-full bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] text-sm border-none focus:outline-none focus:bg-[hsl(var(--card))] focus:ring-2 focus:ring-[hsl(var(--primary))/0.3] transition-all"
+            className="w-full h-10 pl-10 pr-9 rounded-full bg-muted text-foreground placeholder:text-muted-foreground text-sm border-none focus:outline-none focus:bg-card focus:ring-2 focus:ring-primary/30 transition-all"
           />
           {draft && (
             <button
               type="button"
               onClick={clearSearch}
               title="Clear search"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))/0.8] transition-colors cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -176,11 +176,11 @@ export function Search() {
 
       {/* ── 3. Active Topic Filter Reset Indicator ───────────────────────── */}
       {!query && topic && (
-        <div className="flex items-center justify-between gap-4 px-4 py-3 bg-[hsl(var(--muted))/0.5] rounded-2xl">
-          <span className="text-sm font-medium text-[hsl(var(--foreground))] flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[hsl(var(--primary))]" /> Filtered by{' '}
+        <div className="flex items-center justify-between gap-4 px-4 py-3 bg-muted/50 rounded-2xl">
+          <span className="text-sm font-medium text-foreground flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" /> Filtered by{' '}
             <strong>{formatTopicTitle(topic)}</strong>
-            <span className="text-[hsl(var(--muted-foreground))] font-normal">
+            <span className="text-muted-foreground font-normal">
               (
               {loadingPosts
                 ? '…'
@@ -219,24 +219,25 @@ export function Search() {
               <Link
                 key={result._id}
                 to={`/post/${result._id}`}
-                className="group flex flex-col justify-between gap-3 p-6 rounded-[28px] bg-[hsl(var(--card))] border border-[hsl(var(--border))/0.4] shadow-sm hover:shadow-md hover:bg-[hsl(var(--muted))/0.4] transition-all"
+                className="group flex flex-col justify-between gap-3 p-6 rounded-2xl bg-card border border-border/40 shadow-sm hover:shadow-md hover:bg-muted/40 transition-all"
               >
                 <div>
-                  <h3 className="text-base font-bold text-[hsl(var(--foreground))] line-clamp-2 leading-snug group-hover:text-[hsl(var(--primary))] transition-colors">
+                  <h3 className="text-base font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
                     {result.title}
                   </h3>
-                  <p className="text-sm text-[hsl(var(--muted-foreground))] line-clamp-3 mt-2 leading-relaxed">
+                  <p className="text-sm text-muted-foreground line-clamp-3 mt-2 leading-relaxed">
                     {result.truncatedContent
                       ? excerpt(result.truncatedContent, 180)
                       : excerpt(result.content, 180)}
                   </p>
                 </div>
-                <div className="flex items-center justify-between gap-3 pt-2 text-xs text-[hsl(var(--muted-foreground))]">
+                <div className="flex items-center justify-between gap-3 pt-2 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {readingTimeFromLength(result.contentLength)} min read
+                    <Clock className="w-3 h-3" /> {readingTimeFromLength(result.contentLength)} min
+                    read
                   </span>
                   {result.user?.username && <span>by {result.user.username}</span>}
-                  <span className="text-[hsl(var(--primary))] font-semibold inline-flex items-center gap-1">
+                  <span className="text-primary font-semibold inline-flex items-center gap-1">
                     Read story <ArrowRight className="w-3 h-3" />
                   </span>
                 </div>

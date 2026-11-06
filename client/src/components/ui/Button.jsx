@@ -15,21 +15,17 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm hover:brightness-105 active:brightness-95 shadow-[0_2px_10px_-2px_rgba(14,165,233,0.35)] hover:shadow-[0_4px_16px_0_rgba(14,165,233,0.45)]',
+          'bg-primary text-primary-foreground shadow-sm hover:brightness-105 active:brightness-95 shadow-[0_2px_10px_-2px_rgba(14,165,233,0.35)] hover:shadow-[0_4px_16px_0_rgba(14,165,233,0.45)]',
         secondary:
-          'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] hover:border-[hsl(var(--ring))]',
-        tonal:
-          'bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-95 dark:hover:brightness-110',
+          'bg-secondary text-secondary-foreground border border-border hover:bg-muted hover:border-ring',
+        tonal: 'bg-accent text-accent-foreground hover:brightness-95 dark:hover:brightness-110',
         outline:
-          'border border-[hsl(var(--border))] bg-transparent text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]',
-        ghost:
-          'bg-transparent text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]',
-        danger:
-          'bg-[hsl(var(--destructive))] text-[hsl(var(--destructive-foreground))] hover:brightness-90 shadow-sm',
+          'border border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground',
+        ghost: 'bg-transparent text-foreground hover:bg-muted',
+        danger: 'bg-destructive text-destructive-foreground hover:brightness-90 shadow-sm',
         dangerTonal:
-          'bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 active:bg-red-500/25',
-        subtle:
-          'bg-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]',
+          'bg-destructive/10 text-destructive hover:bg-destructive/20 active:bg-destructive/25',
+        subtle: 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted',
       },
       size: {
         sm: 'h-8 px-3.5 text-xs',
@@ -65,7 +61,7 @@ export const Button = React.forwardRef(
     ref
   ) => {
     const isBusy = loading || isLoading;
-    const Comp = asChild ? Slot : (as || 'button');
+    const Comp = asChild ? Slot : as || 'button';
     const isDisabled = disabled || isBusy;
 
     return (
@@ -73,11 +69,7 @@ export const Button = React.forwardRef(
         ref={ref}
         disabled={Comp === 'button' ? isDisabled : undefined}
         aria-disabled={isDisabled || undefined}
-        className={cn(
-          buttonVariants({ variant, size }),
-          fullWidth && 'w-full',
-          className
-        )}
+        className={cn(buttonVariants({ variant, size }), fullWidth && 'w-full', className)}
         {...props}
       >
         {loading && <Spinner size="sm" />}
@@ -106,4 +98,3 @@ export const IconButton = React.forwardRef(
 );
 
 IconButton.displayName = 'IconButton';
-

@@ -73,7 +73,9 @@ describe('Home Page', () => {
     });
 
     // Hero title
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Where ideas find their voice/i);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      /Where ideas find their voice/i
+    );
     expect(screen.getAllByText('Start Writing for Free').length).toBeGreaterThan(0);
 
     // Trending posts

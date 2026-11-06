@@ -5,22 +5,19 @@ import { cn } from '../../lib/utils';
 /**
  * Skeleton — animated shimmer placeholder for loading states.
  */
-const skeletonVariants = cva(
-  'animate-pulse shrink-0 bg-[hsl(var(--muted))]',
-  {
-    variants: {
-      variant: {
-        default: 'rounded-md',
-        circle: 'rounded-full',
-        pill: 'rounded-full',
-        card: 'rounded-2xl border border-[hsl(var(--border))]',
-      },
+const skeletonVariants = cva('animate-pulse shrink-0 bg-muted', {
+  variants: {
+    variant: {
+      default: 'rounded-md',
+      circle: 'rounded-full',
+      pill: 'rounded-full',
+      card: 'rounded-2xl border border-border',
     },
-    defaultVariants: {
-      variant: 'default',
-    },
-  }
-);
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+});
 
 export function Skeleton({
   className,
@@ -35,16 +32,21 @@ export function Skeleton({
   style,
   ...props
 }) {
-  const finalVariant = variant !== 'default' ? variant : ($variant || 'default');
+  const finalVariant = variant !== 'default' ? variant : $variant || 'default';
   const finalWidth = width || $width;
   const finalHeight = height || $height;
   const finalRadius = radius || $radius;
 
-
   const inlineStyle = {
-    ...(finalWidth ? { width: typeof finalWidth === 'number' ? `${finalWidth}px` : finalWidth } : {}),
-    ...(finalHeight ? { height: typeof finalHeight === 'number' ? `${finalHeight}px` : finalHeight } : {}),
-    ...(finalRadius ? { borderRadius: typeof finalRadius === 'number' ? `${finalRadius}px` : finalRadius } : {}),
+    ...(finalWidth
+      ? { width: typeof finalWidth === 'number' ? `${finalWidth}px` : finalWidth }
+      : {}),
+    ...(finalHeight
+      ? { height: typeof finalHeight === 'number' ? `${finalHeight}px` : finalHeight }
+      : {}),
+    ...(finalRadius
+      ? { borderRadius: typeof finalRadius === 'number' ? `${finalRadius}px` : finalRadius }
+      : {}),
     ...style,
   };
 
@@ -71,14 +73,7 @@ export function SkeletonText({
       {Array.from({ length: lines }).map((_, index) => {
         const isLast = index === lines - 1;
         const width = isLast ? lastLineWidth : index % 2 === 1 ? '92%' : '100%';
-        return (
-          <Skeleton
-            key={index}
-            width={width}
-            height={lineHeight}
-            className="rounded"
-          />
-        );
+        return <Skeleton key={index} width={width} height={lineHeight} className="rounded" />;
       })}
     </div>
   );

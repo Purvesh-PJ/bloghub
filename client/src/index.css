@@ -1,15 +1,76 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: var(--line-subtle);
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-line-subtle: var(--line-subtle);
+  --color-line-default: var(--line-default);
+  --color-line-strong: var(--line-strong);
+
+  --color-surface-page: var(--surface-page);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-elevated: var(--surface-elevated);
+
+  --color-success: #10b981;
+  --color-success-foreground: #ffffff;
+  --color-warning: #f59e0b;
+  --color-warning-foreground: #ffffff;
+  --color-info: #0ea5e9;
+  --color-info-foreground: #ffffff;
+
+  --radius-xs: 0.375rem;
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 1.75rem;
+  --radius-3xl: 2.25rem;
+  --radius-4xl: 3rem;
+
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 0.875rem;
+  --text-caption: 0.6875rem;
+  --text-caption--line-height: 1rem;
+}
 
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes marquee-reverse {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 .animate-marquee {
@@ -21,7 +82,9 @@
 }
 
 @layer base {
-  *, ::before, ::after {
+  *,
+  ::before,
+  ::after {
     border-color: var(--line-subtle);
   }
 
@@ -68,7 +131,8 @@
     --ring: 199 89% 48%;
   }
 
-  .dark, [data-theme="dark"] {
+  .dark,
+  [data-theme='dark'] {
     /* Rich Obsidian & Deep Navy in dark mode */
     --surface-page: #070b13;
     --surface-container-low: #0d1424;
@@ -122,11 +186,21 @@
   }
 
   body {
-    font-family: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family:
+      'Inter Variable',
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      Helvetica,
+      Arial,
+      sans-serif;
     color: var(--text-primary);
     background-color: var(--surface-page);
     min-height: 100vh;
-    transition: background-color 220ms cubic-bezier(0.32, 0.72, 0, 1), color 220ms cubic-bezier(0.32, 0.72, 0, 1);
+    transition:
+      background-color 220ms cubic-bezier(0.32, 0.72, 0, 1),
+      color 220ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   /* One focus ring for the whole application */
@@ -146,8 +220,13 @@
     scrollbar-color: var(--line-strong) transparent;
   }
 
-  ::-webkit-scrollbar { width: 12px; height: 12px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
   ::-webkit-scrollbar-thumb {
     background: var(--line-strong);
     border-radius: 9999px;
@@ -167,7 +246,9 @@
   color: var(--text-secondary);
 }
 
-.post-content > * + * { margin-top: 1.4em; }
+.post-content > * + * {
+  margin-top: 1.4em;
+}
 
 .post-content h1,
 .post-content h2,
@@ -179,9 +260,15 @@
   margin-bottom: 0.6em;
 }
 
-.post-content h1 { font-size: 2.25rem; }
-.post-content h2 { font-size: 1.5rem; }
-.post-content h3 { font-size: 1.25rem; }
+.post-content h1 {
+  font-size: 2.25rem;
+}
+.post-content h2 {
+  font-size: 1.5rem;
+}
+.post-content h3 {
+  font-size: 1.25rem;
+}
 
 .post-content a {
   color: #0284c7;
@@ -194,8 +281,12 @@
 }
 
 .post-content ul,
-.post-content ol { padding-left: 1.4em; }
-.post-content li + li { margin-top: 0.4em; }
+.post-content ol {
+  padding-left: 1.4em;
+}
+.post-content li + li {
+  margin-top: 0.4em;
+}
 
 .post-content blockquote {
   border-left: 3px solid #0ea5e9;
@@ -224,7 +315,10 @@
   font-size: 0.875em;
 }
 
-.post-content pre code { background: none; padding: 0; }
+.post-content pre code {
+  background: none;
+  padding: 0;
+}
 
 .post-content hr {
   border: none;
@@ -256,9 +350,15 @@
 }
 
 @keyframes topProgress {
-  0% { transform: translateX(-100%); }
-  50% { transform: translateX(0%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .animate-top-progress {
@@ -266,21 +366,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* ── Seamless border refinement — map harsh borders to subtle line tokens ── */
-[class*="border-[hsl(var(--border))"],
-[class*="divide-[hsl(var(--border))"] > :not(:last-child),
-.border-\[hsl\(var\(--border\)\)\/0\.6\],
-.border-\[hsl\(var\(--border\)\)\/0\.5\],
-.border-\[hsl\(var\(--border\)\)\/0\.4\],
-.border-\[hsl\(var\(--border\)\)\/0\.3\],
-.border-\[hsl\(var\(--border\)\)\] {
-  border-color: var(--line-subtle) !important;
 }

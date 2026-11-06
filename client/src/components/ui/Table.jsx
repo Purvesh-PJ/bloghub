@@ -18,7 +18,7 @@ function TableHead({ children, className, ...props }) {
   return (
     <thead
       className={cn(
-        '[&_th]:px-6 [&_th]:py-3.5 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-[hsl(var(--muted-foreground))] [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-[hsl(var(--border))/0.4]',
+        '[&_th]:px-6 [&_th]:py-3.5 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-muted-foreground [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border/40',
         className
       )}
       {...props}
@@ -32,7 +32,7 @@ function TableBody({ children, className, ...props }) {
   return (
     <tbody
       className={cn(
-        '[&_tr]:transition-colors [&_tr:hover]:bg-[hsl(var(--muted))/0.5] [&_tr+tr_td]:border-t [&_tr+tr_td]:border-[hsl(var(--border))/0.3] [&_td]:px-6 [&_td]:py-4 [&_td]:text-sm [&_td]:text-[hsl(var(--muted-foreground))] [&_td]:align-middle [&_td:first-child]:font-medium [&_td:first-child]:text-[hsl(var(--foreground))]',
+        '[&_tr]:transition-colors [&_tr:hover]:bg-muted/50 [&_tr+tr_td]:border-t [&_tr+tr_td]:border-border/30 [&_td]:px-6 [&_td]:py-4 [&_td]:text-sm [&_td]:text-muted-foreground [&_td]:align-middle [&_td:first-child]:font-medium [&_td:first-child]:text-foreground',
         className
       )}
       {...props}
@@ -47,7 +47,7 @@ function TableEmpty({ children, colSpan, className, ...props }) {
     <tr>
       <td
         colSpan={colSpan}
-        className={cn('py-16 px-6 text-center text-sm text-[hsl(var(--muted-foreground))]', className)}
+        className={cn('py-16 px-6 text-center text-sm text-muted-foreground', className)}
         {...props}
       >
         {children}

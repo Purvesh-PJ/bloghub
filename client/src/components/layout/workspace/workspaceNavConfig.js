@@ -52,4 +52,3 @@ export function getWorkspacePageTitle(pathname) {
   if (pathname === '/settings') return 'Settings';
   return 'Creator Studio';
 }
-

@@ -19,4 +19,3 @@ export function WorkspaceSignOutModal({ open, onOpenChange, onLogout }) {
     </Modal>
   );
 }
-

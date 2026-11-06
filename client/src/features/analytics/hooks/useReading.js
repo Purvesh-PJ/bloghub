@@ -105,4 +105,3 @@ export function useReadingProgress(articleRef) {
 
   return progress;
 }
-

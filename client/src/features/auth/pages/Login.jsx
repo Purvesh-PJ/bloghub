@@ -5,7 +5,13 @@ import { AtSign, Lock } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { Button, Input, Alert } from '../../../components/ui';
-import { AuthShell, AuthHeading, AuthSubheading, AuthForm, AuthFooter } from '../components/AuthShell';
+import {
+  AuthShell,
+  AuthHeading,
+  AuthSubheading,
+  AuthForm,
+  AuthFooter,
+} from '../components/AuthShell';
 
 export function Login() {
   const [credential, setCredential] = useState('');

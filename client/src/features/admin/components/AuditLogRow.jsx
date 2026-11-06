@@ -14,26 +14,26 @@ export const PostRef = ({ post }) =>
   post?._id ? (
     <Link
       to={`/post/${post._id}`}
-      className="text-sm text-[hsl(var(--primary))] hover:underline line-clamp-1 max-w-[280px] no-underline block"
+      className="text-sm text-primary hover:underline line-clamp-1 max-w-[280px] no-underline block"
     >
       {post.title}
     </Link>
   ) : (
-    <span className="text-sm text-[hsl(var(--muted-foreground))] italic">A deleted story</span>
+    <span className="text-sm text-muted-foreground italic">A deleted story</span>
   );
 
 export function AuditLogRow({ row, tab }) {
   return (
     <tr>
       <td className="pl-6">
-        <span className="text-sm font-semibold text-[hsl(var(--foreground))]">
+        <span className="text-sm font-semibold text-foreground">
           {row.user?.username || 'A signed-out visitor'}
         </span>
       </td>
 
       <td>
         {tab === 'comments' ? (
-          <span className="text-sm text-[hsl(var(--muted-foreground))] line-clamp-2 max-w-[420px] block">
+          <span className="text-sm text-muted-foreground line-clamp-2 max-w-[420px] block">
             {row.message}
           </span>
         ) : tab === 'posts' || tab === 'edits' ? (
@@ -58,11 +58,10 @@ export function AuditLogRow({ row, tab }) {
       )}
 
       <td className="pr-6">
-        <span className="text-xs text-[hsl(var(--muted-foreground))] whitespace-nowrap tabular-nums">
+        <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
           {ago(tab === 'edits' ? row.updatedAt : row.createdAt)}
         </span>
       </td>
     </tr>
   );
 }
-

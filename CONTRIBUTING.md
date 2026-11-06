@@ -46,12 +46,14 @@ We follow standard GitHub flow:
    - `fix(editor): fix split-pane scrolling desync`
    - `docs: update setup steps in getting-started`
 
-3. **Testing Before Commits:**
-   Ensure all automated integration and unit tests pass:
+3. **Linting and Testing Before Commits:**
+   Ensure all linting checks and automated tests pass:
    ```bash
-   npm test --prefix backend   # Runs 190 Jest tests (unit + integration)
-   npm test --prefix client    # Runs 142 Vitest client tests
+   npm run lint               # Enforces code safety, React rules, and design tokens
+   npm test --prefix backend  # Runs 190 Jest tests (unit + integration)
+   npm test --prefix client   # Runs 146 Vitest client tests
    ```
+   *Note: Client linting strictly blocks raw arbitrary brackets (`[hsl(...)`, `[#...]`, `rounded-[...px]`). Use design tokens from `client/src/index.css` instead.*
 
 ---
 

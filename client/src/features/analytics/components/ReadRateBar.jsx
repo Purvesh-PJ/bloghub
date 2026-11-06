@@ -18,18 +18,18 @@ export function ReadRateBar({ views = 0, reads = 0, rate, size = 'sm', showLegen
     >
       <div
         className={cn(
-          'relative w-full rounded-full bg-[hsl(var(--muted))] overflow-hidden',
+          'relative w-full rounded-full bg-muted overflow-hidden',
           size === 'sm' ? 'h-1.5' : 'h-2.5'
         )}
       >
         <div
           style={{ width: `${clamped}%` }}
-          className="h-full rounded-full bg-[hsl(var(--primary))] transition-[width] duration-500 ease-out min-w-[4px]"
+          className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out min-w-[4px]"
         />
       </div>
 
       {showLegend && (
-        <div className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))]">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{clamped.toFixed(0)}% read through</span>
           <span className="tabular-nums">
             {format(reads)} / {format(views)}
@@ -47,24 +47,23 @@ export function ReadRateHeadline({ views = 0, reads = 0, rate, label = 'Read-thr
   const percent = rate ?? (views > 0 ? (reads / views) * 100 : 0);
 
   return (
-    <div className="flex flex-col gap-2 p-5 rounded-2xl bg-[hsl(var(--card))] border border-[var(--line-subtle)]">
+    <div className="flex flex-col gap-2 p-5 rounded-2xl bg-card border border-border">
       <div className="flex items-baseline justify-between gap-4">
-        <span className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
-        <span className="text-2xl font-bold tracking-tight text-[hsl(var(--foreground))] tabular-nums">
+        <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
           {percent.toFixed(1)}%
         </span>
       </div>
 
       <ReadRateBar views={views} reads={reads} rate={percent} size="lg" showLegend={false} />
 
-      <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
-        <strong className="text-[hsl(var(--foreground))] font-semibold">{format(reads)}</strong> of{' '}
-        <strong className="text-[hsl(var(--foreground))] font-semibold">{format(views)}</strong>{' '}
-        readers reached the end and stayed long enough to finish.
+      <p className="text-xs text-muted-foreground mt-1">
+        <strong className="text-foreground font-semibold">{format(reads)}</strong> of{' '}
+        <strong className="text-foreground font-semibold">{format(views)}</strong> readers reached
+        the end and stayed long enough to finish.
       </p>
     </div>
   );
 }
-

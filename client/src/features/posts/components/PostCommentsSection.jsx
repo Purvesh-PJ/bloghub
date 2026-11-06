@@ -26,7 +26,7 @@ export function PostCommentsSection({
   return (
     <>
       <section id="comments" className="flex flex-col gap-6 pt-2">
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           {comments.length} {comments.length === 1 ? 'response' : 'responses'}
         </h2>
 
@@ -41,18 +41,14 @@ export function PostCommentsSection({
                 aria-label="Write a response"
               />
             </div>
-            <Button
-              type="submit"
-              isLoading={isCommentPending}
-              disabled={!comment.trim()}
-            >
+            <Button type="submit" isLoading={isCommentPending} disabled={!comment.trim()}>
               Respond
             </Button>
           </form>
         ) : (
           <Card tone="low" radius="lg" padding="lg">
-            <p className="text-sm text-[hsl(var(--muted-foreground))] m-0">
-              <Link to="/login" className="text-[hsl(var(--primary))] font-medium hover:underline">
+            <p className="text-sm text-muted-foreground m-0">
+              <Link to="/login" className="text-primary font-medium hover:underline">
                 Sign in
               </Link>{' '}
               to join the conversation.
@@ -71,10 +67,10 @@ export function PostCommentsSection({
                 <Avatar name={entry.user?.username} size="sm" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="text-sm font-semibold text-[hsl(var(--foreground))]">
+                    <span className="text-sm font-semibold text-foreground">
                       {entry.user?.username || 'Anonymous'}
                     </span>
-                    <span className="text-xs text-[hsl(var(--muted-foreground))]">
+                    <span className="text-xs text-muted-foreground">
                       {(() => {
                         const d = entry.date ? new Date(entry.date) : null;
                         return d && !isNaN(d.getTime())
@@ -83,7 +79,7 @@ export function PostCommentsSection({
                       })()}
                     </span>
                   </div>
-                  <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] mt-1 whitespace-pre-wrap leading-relaxed">
+                  <p className="text-sm sm:text-base text-muted-foreground mt-1 whitespace-pre-wrap leading-relaxed">
                     {entry.message}
                   </p>
 
@@ -92,7 +88,7 @@ export function PostCommentsSection({
                       <button
                         type="button"
                         onClick={() => setReplyTo(replyTo === entry._id ? null : entry._id)}
-                        className="text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors cursor-pointer"
+                        className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                       >
                         {replyTo === entry._id ? 'Cancel' : 'Reply'}
                       </button>
@@ -103,7 +99,7 @@ export function PostCommentsSection({
                         type="button"
                         onClick={() => setPendingCommentDelete(entry)}
                         aria-label={`Delete the response from ${entry.user?.username || 'this reader'}`}
-                        className="text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-red-500 transition-colors cursor-pointer"
+                        className="text-xs font-medium text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                       >
                         Delete
                       </button>
@@ -139,16 +135,16 @@ export function PostCommentsSection({
 
                   {/* Nested Replies */}
                   {entry.replies?.length > 0 && (
-                    <div className="flex flex-col gap-4 mt-4 pl-4 border-l-2 border-[hsl(var(--border))/0.6]">
+                    <div className="flex flex-col gap-4 mt-4 pl-4 border-l-2 border-border/60">
                       {entry.replies.map((reply) => (
                         <div key={reply._id} className="flex gap-3">
                           <Avatar name={reply.user?.username} size="sm" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-baseline gap-2 flex-wrap">
-                              <span className="text-sm font-semibold text-[hsl(var(--foreground))]">
+                              <span className="text-sm font-semibold text-foreground">
                                 {reply.user?.username || 'Anonymous'}
                               </span>
-                              <span className="text-xs text-[hsl(var(--muted-foreground))]">
+                              <span className="text-xs text-muted-foreground">
                                 {(() => {
                                   const d = reply.date ? new Date(reply.date) : null;
                                   return d && !isNaN(d.getTime())
@@ -157,7 +153,7 @@ export function PostCommentsSection({
                                 })()}
                               </span>
                             </div>
-                            <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] mt-1 whitespace-pre-wrap leading-relaxed">
+                            <p className="text-sm sm:text-base text-muted-foreground mt-1 whitespace-pre-wrap leading-relaxed">
                               {reply.message}
                             </p>
 
@@ -167,7 +163,7 @@ export function PostCommentsSection({
                                   type="button"
                                   onClick={() => setPendingCommentDelete(reply)}
                                   aria-label={`Delete the reply from ${reply.user?.username || 'this reader'}`}
-                                  className="text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-red-500 transition-colors cursor-pointer"
+                                  className="text-xs font-medium text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                                 >
                                   Delete
                                 </button>

@@ -51,7 +51,7 @@ export function AdminUsersTable({
                 <td className="pl-6">
                   <Link
                     to={`/user/${user._id}`}
-                    className="inline-flex items-center gap-3 text-sm font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors no-underline"
+                    className="inline-flex items-center gap-3 text-sm font-semibold text-foreground hover:text-primary transition-colors no-underline"
                   >
                     <Avatar name={user.username} size="sm" />
                     <span>{user.username}</span>
@@ -78,7 +78,7 @@ export function AdminUsersTable({
                 </td>
                 <td className="text-right pr-6">
                   {isSelf ? (
-                    <span className="text-xs text-[hsl(var(--muted-foreground))]">You</span>
+                    <span className="text-xs text-muted-foreground">You</span>
                   ) : (
                     <DropdownMenu
                       trigger={
@@ -100,15 +100,12 @@ export function AdminUsersTable({
                       <DropdownMenu.Separator />
 
                       {user.suspended ? (
-                        <DropdownMenu.Item
-                          onSelect={() => onSuspend(user._id, false)}
-                        >
-                          <CircleCheck className="w-3.5 h-3.5 mr-2 text-emerald-500" /> Restore access
+                        <DropdownMenu.Item onSelect={() => onSuspend(user._id, false)}>
+                          <CircleCheck className="w-3.5 h-3.5 mr-2 text-emerald-500" /> Restore
+                          access
                         </DropdownMenu.Item>
                       ) : (
-                        <DropdownMenu.Item
-                          onSelect={() => onSuspend(user._id, true)}
-                        >
+                        <DropdownMenu.Item onSelect={() => onSuspend(user._id, true)}>
                           <Ban className="w-3.5 h-3.5 mr-2 text-amber-500" /> Suspend account
                         </DropdownMenu.Item>
                       )}
@@ -117,25 +114,18 @@ export function AdminUsersTable({
                       <DropdownMenu.Label>Role</DropdownMenu.Label>
 
                       {isUserAdmin ? (
-                        <DropdownMenu.Item
-                          onSelect={() => onRoleChange(user._id, false)}
-                        >
+                        <DropdownMenu.Item onSelect={() => onRoleChange(user._id, false)}>
                           <ShieldOff className="w-3.5 h-3.5 mr-2" /> Revoke administrator
                         </DropdownMenu.Item>
                       ) : (
-                        <DropdownMenu.Item
-                          onSelect={() => onRoleChange(user._id, true)}
-                        >
+                        <DropdownMenu.Item onSelect={() => onRoleChange(user._id, true)}>
                           <Shield className="w-3.5 h-3.5 mr-2" /> Make administrator
                         </DropdownMenu.Item>
                       )}
 
                       <DropdownMenu.Separator />
 
-                      <DropdownMenu.Item
-                        tone="danger"
-                        onSelect={() => onDelete(user)}
-                      >
+                      <DropdownMenu.Item tone="danger" onSelect={() => onDelete(user)}>
                         <Trash2 className="w-3.5 h-3.5 mr-2 text-red-500" /> Delete account
                       </DropdownMenu.Item>
                     </DropdownMenu>
@@ -157,4 +147,3 @@ export function AdminUsersTable({
     </Card>
   );
 }
-

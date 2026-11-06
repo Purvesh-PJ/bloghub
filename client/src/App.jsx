@@ -44,10 +44,7 @@ const AdminPosts = lazyPage(() => import('./features/admin'), 'AdminPosts');
 const AdminTags = lazyPage(() => import('./features/admin'), 'AdminTags');
 const AdminUsers = lazyPage(() => import('./features/admin'), 'AdminUsers');
 const AdminActivity = lazyPage(() => import('./features/admin'), 'AdminActivity');
-const AdminPersonActivity = lazyPage(
-  () => import('./features/admin'),
-  'AdminPersonActivity'
-);
+const AdminPersonActivity = lazyPage(() => import('./features/admin'), 'AdminPersonActivity');
 
 // Top route suspense progress bar
 const TopProgressBar = () => (
@@ -55,7 +52,6 @@ const TopProgressBar = () => (
     <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-sky-400 to-sky-600 animate-top-progress" />
   </div>
 );
-
 
 function App() {
   return (

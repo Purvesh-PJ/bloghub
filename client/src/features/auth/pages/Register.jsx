@@ -4,7 +4,13 @@ import toast from 'react-hot-toast';
 import { AtSign, Lock, User } from 'lucide-react';
 import { authService } from '../services/authService';
 import { Button, Input, Alert } from '../../../components/ui';
-import { AuthShell, AuthHeading, AuthSubheading, AuthForm, AuthFooter } from '../components/AuthShell';
+import {
+  AuthShell,
+  AuthHeading,
+  AuthSubheading,
+  AuthForm,
+  AuthFooter,
+} from '../components/AuthShell';
 
 export function Register() {
   const [username, setUsername] = useState('');

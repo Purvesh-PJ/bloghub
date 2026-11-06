@@ -12,7 +12,7 @@ export function PostHeader({ post, isAuthor, postStats, onOpenDelete }) {
     <>
       {/* Cover Image */}
       {post.imageURL && (
-        <div className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-[28px] sm:rounded-[36px] overflow-hidden bg-[hsl(var(--muted))] border border-[hsl(var(--border))/0.4]">
+        <div className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-2xl sm:rounded-3xl overflow-hidden bg-muted border border-border/40">
           <img
             src={post.imageURL}
             alt={`Cover image for ${post.title}`}
@@ -24,12 +24,12 @@ export function PostHeader({ post, isAuthor, postStats, onOpenDelete }) {
       )}
 
       {/* Article Title */}
-      <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-[hsl(var(--foreground))] leading-tight sm:leading-snug">
+      <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight sm:leading-snug">
         {post.title}
       </h1>
 
       {/* Byline & Author Actions */}
-      <div className="flex items-center justify-between gap-4 flex-wrap pb-6 border-b border-[hsl(var(--border))/0.6]">
+      <div className="flex items-center justify-between gap-4 flex-wrap pb-6 border-b border-border/60">
         <Link
           to={post.user?._id ? `/user/${post.user._id}` : '#'}
           className="hover:opacity-90 transition-opacity"
@@ -69,4 +69,3 @@ export function PostHeader({ post, isAuthor, postStats, onOpenDelete }) {
     </>
   );
 }
-

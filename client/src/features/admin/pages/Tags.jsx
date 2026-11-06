@@ -101,8 +101,8 @@ export function AdminTags() {
                     return (
                       <tr key={tag._id || tag.name}>
                         <td className="pl-6">
-                          <span className="inline-flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground))]">
-                            <Icon className="w-4 h-4 text-[hsl(var(--primary))]" />#{tag.name}
+                          <span className="inline-flex items-center gap-2.5 text-sm font-semibold text-foreground">
+                            <Icon className="w-4 h-4 text-primary" />#{tag.name}
                           </span>
                         </td>
                         <td>{tag.postCount ?? tag.posts?.length ?? 0}</td>

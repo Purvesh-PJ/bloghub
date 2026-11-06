@@ -4,7 +4,7 @@ import { Skeleton, SkeletonText } from '../../../components/ui/Skeleton';
 export function PostDetailSkeleton() {
   return (
     <PageShell width="reading" aria-hidden="true">
-      <Skeleton className="w-full aspect-video max-h-[420px] rounded-[28px] mb-8" />
+      <Skeleton className="w-full aspect-video max-h-[420px] rounded-2xl mb-8" />
 
       <div className="flex flex-col gap-4 mb-8">
         <Skeleton variant="pill" width={90} height={28} />

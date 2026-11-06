@@ -304,7 +304,7 @@ Contributions are welcome.
 1. Fork the repository.
 2. Create a branch: `git checkout -b feature/your-feature`.
 3. Commit using [Conventional Commits](https://www.conventionalcommits.org/): `git commit -m "feat: add your feature"`.
-4. Run `npm test` and `npm run format:check`.
+4. Run `npm run lint`, `npm run format:check`, and `npm test`.
 5. Push and open a pull request.
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.

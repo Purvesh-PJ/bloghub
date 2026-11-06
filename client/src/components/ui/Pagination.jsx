@@ -12,11 +12,11 @@ export function Pagination({ page, pages, total, noun = 'items', onChange, class
     <nav
       aria-label="Pagination"
       className={cn(
-        'flex flex-col sm:flex-row items-center justify-between gap-3 p-4 px-5 border-t border-[hsl(var(--border))/0.4]',
+        'flex flex-col sm:flex-row items-center justify-between gap-3 p-4 px-5 border-t border-border/40',
         className
       )}
     >
-      <span role="status" aria-live="polite" className="text-xs text-[hsl(var(--muted-foreground))] tabular-nums">
+      <span role="status" aria-live="polite" className="text-xs text-muted-foreground tabular-nums">
         Page {page} of {pages}
         {typeof total === 'number' ? ` · ${total} ${noun}` : ''}
       </span>

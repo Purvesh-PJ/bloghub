@@ -38,13 +38,11 @@ export function ProfileHeader({
       <div className="flex-1 min-w-0 flex flex-col gap-3 w-full">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               {authorName}
             </h1>
             {author.fullName && (
-              <p className="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-                {author.fullName}
-              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">{author.fullName}</p>
             )}
           </div>
 
@@ -67,16 +65,16 @@ export function ProfileHeader({
         </div>
 
         {author.bio && (
-          <p className="text-base sm:text-lg text-[hsl(var(--muted-foreground))] max-w-[60ch] leading-relaxed">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-[60ch] leading-relaxed">
             {author.bio}
           </p>
         )}
 
         {(author.location || author.website || socials.length > 0) && (
-          <div className="flex items-center gap-4 sm:gap-6 flex-wrap text-sm text-[hsl(var(--muted-foreground))]">
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap text-sm text-muted-foreground">
             {author.location && (
               <span className="inline-flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" /> {author.location}
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground" /> {author.location}
               </span>
             )}
 
@@ -85,7 +83,7 @@ export function ProfileHeader({
                 href={author.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 hover:text-[hsl(var(--primary))] transition-colors"
+                className="inline-flex items-center gap-1.5 hover:text-primary transition-colors"
               >
                 <LinkIcon className="h-3.5 w-3.5" /> {author.website.replace(/^https?:\/\//, '')}
               </a>
@@ -97,7 +95,7 @@ export function ProfileHeader({
                 href={href(author.socialLinks[key])}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 hover:text-[hsl(var(--primary))] transition-colors"
+                className="inline-flex items-center gap-1.5 hover:text-primary transition-colors"
               >
                 <Icon className="h-3.5 w-3.5" />
                 <span className="capitalize">{key}</span>
@@ -109,26 +107,26 @@ export function ProfileHeader({
         {/* Counts from server */}
         <dl className="flex gap-6 sm:gap-8 flex-wrap pt-2">
           <div className="flex items-baseline gap-1.5">
-            <dt className="text-base font-semibold text-[hsl(var(--foreground))] tabular-nums">
+            <dt className="text-base font-semibold text-foreground tabular-nums">
               {author.counts?.posts ?? 0}
             </dt>
-            <dd className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            <dd className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {author.counts?.posts === 1 ? 'story' : 'stories'}
             </dd>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <dt className="text-base font-semibold text-[hsl(var(--foreground))] tabular-nums">
+            <dt className="text-base font-semibold text-foreground tabular-nums">
               {author.counts?.followers ?? 0}
             </dt>
-            <dd className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            <dd className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {author.counts?.followers === 1 ? 'follower' : 'followers'}
             </dd>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <dt className="text-base font-semibold text-[hsl(var(--foreground))] tabular-nums">
+            <dt className="text-base font-semibold text-foreground tabular-nums">
               {author.counts?.following ?? 0}
             </dt>
-            <dd className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+            <dd className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               following
             </dd>
           </div>

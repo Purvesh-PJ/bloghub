@@ -11,10 +11,10 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        info: 'bg-[hsl(var(--primary))/0.08] text-[hsl(var(--foreground))] border-[hsl(var(--primary))/0.25] [&>svg]:text-[hsl(var(--primary))]',
-        success: 'bg-emerald-500/10 text-[hsl(var(--foreground))] border-emerald-500/25 [&>svg]:text-emerald-500',
-        warning: 'bg-amber-500/10 text-[hsl(var(--foreground))] border-amber-500/25 [&>svg]:text-amber-500',
-        danger: 'bg-[hsl(var(--destructive))/0.10] text-[hsl(var(--destructive))] border-[hsl(var(--destructive))/0.25] [&>svg]:text-[hsl(var(--destructive))]',
+        info: 'bg-primary/10 text-foreground border-primary/25 [&>svg]:text-primary',
+        success: 'bg-success/10 text-foreground border-success/25 [&>svg]:text-emerald-500',
+        warning: 'bg-warning/10 text-foreground border-warning/25 [&>svg]:text-amber-500',
+        danger: 'bg-destructive/10 text-destructive border-destructive/25 [&>svg]:text-destructive',
       },
     },
     defaultVariants: {
@@ -42,7 +42,7 @@ export function Alert({ children, variant = 'info', title, className, ...props }
     >
       <Icon className="h-5 w-5 shrink-0 mt-0.5" />
       <div className="flex-1">
-        {title && <h5 className="font-semibold leading-tight mb-1 text-[hsl(var(--foreground))]">{title}</h5>}
+        {title && <h5 className="font-semibold leading-tight mb-1 text-foreground">{title}</h5>}
         <div className="text-sm opacity-90">{children}</div>
       </div>
     </div>

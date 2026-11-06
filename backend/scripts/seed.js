@@ -390,7 +390,9 @@ async function seed() {
 
     // A last pause on a remote target, so a mistake can still be interrupted.
     if (process.env.SEED_ALLOW_REMOTE === 'yes') {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5000);
+      });
     }
 
     console.log('Clearing existing data...');

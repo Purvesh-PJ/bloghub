@@ -6,8 +6,7 @@ import { AuthProvider, useAuth, authState } from '../context/AuthContext';
 
 // Test consumer for AuthContext
 const AuthConsumer = () => {
-  const { user, isAuthenticated, isLoggedIn, isAdmin, setAuth, setAccessToken, logout } =
-    useAuth();
+  const { user, isAuthenticated, isLoggedIn, isAdmin, setAuth, setAccessToken, logout } = useAuth();
 
   return (
     <div>
@@ -132,10 +131,13 @@ describe('AuthContext and authState', () => {
 
     await user.click(screen.getByRole('button', { name: 'Sign Out' }));
 
-    await waitFor(() => {
-      expect(screen.getByTestId('auth-status')).toHaveTextContent('guest');
-      expect(screen.getByTestId('username')).toHaveTextContent('none');
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('auth-status')).toHaveTextContent('guest');
+        expect(screen.getByTestId('username')).toHaveTextContent('none');
+      },
+      { timeout: 3000 }
+    );
 
     const stored = JSON.parse(localStorage.getItem('auth-storage'));
     expect(stored.isAuthenticated).toBe(false);

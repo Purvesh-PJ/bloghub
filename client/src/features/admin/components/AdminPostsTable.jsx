@@ -31,7 +31,7 @@ export function AdminPostsTable({
                 aria-label={
                   allVisibleSelected ? 'Clear this page' : 'Select every story on this page'
                 }
-                className="w-4 h-4 rounded accent-[hsl(var(--primary))] cursor-pointer"
+                className="w-4 h-4 rounded accent-primary cursor-pointer"
               />
             </th>
             <th>Title</th>
@@ -51,13 +51,13 @@ export function AdminPostsTable({
                   checked={selectedIds.includes(post._id)}
                   onChange={() => onToggleSelected(post._id)}
                   aria-label={`Select ${post.title}`}
-                  className="w-4 h-4 rounded accent-[hsl(var(--primary))] cursor-pointer"
+                  className="w-4 h-4 rounded accent-primary cursor-pointer"
                 />
               </td>
               <td>
                 <Link
                   to={`/post/${post._id}`}
-                  className="text-sm font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 max-w-[320px] no-underline block"
+                  className="text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-1 max-w-[320px] no-underline block"
                 >
                   {post.title}
                 </Link>
@@ -78,7 +78,7 @@ export function AdminPostsTable({
                     <button
                       type="button"
                       aria-label={`Actions for ${post.title}`}
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-full text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors cursor-pointer"
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
                     >
                       <MoreHorizontal className="w-4 h-4" />
                     </button>
@@ -113,4 +113,3 @@ export function AdminPostsTable({
     </Card>
   );
 }
-
