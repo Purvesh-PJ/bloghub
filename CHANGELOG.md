@@ -7,19 +7,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 
-### Added
-- **Design System Token Architecture**: Added Tailwind CSS v4 `@theme` block in `client/src/index.css` defining semantic color variables, border-radius scale (`rounded-xs` to `rounded-4xl`), and typography tokens (`text-2xs`, `text-caption`).
-- **ESLint Design System Token Enforcer**: Added custom `design-system/enforce-tokens` rule in `client/eslint.config.js` to block raw HSL brackets, arbitrary HEX values, arbitrary border-radii, and hardcoded font sizes.
-- **Strict Code Safety Rules**: Added `eqeqeq`, `no-var`, `prefer-const`, `no-duplicate-imports`, `no-unneeded-ternary`, and `no-empty` checks across both client and backend ESLint configurations.
-- **Backend & React Safety Rules**: Added `no-eval`, `no-implied-eval`, `no-async-promise-executor`, and `no-promise-executor-return` in backend ESLint; upgraded `react-hooks/exhaustive-deps` to error and enabled `react/jsx-key`, `react/no-danger`, and `react/self-closing-comp` in client ESLint.
-
-### Changed
-- **Component Styling Standardization**: Standardized styling across all 80 client components (primitives, layouts, and feature pages) to use semantic Tailwind utility classes instead of raw bracket values.
-
-### Fixed
-- **Legacy Border Hack Removal**: Removed the legacy `!important` border override hack from `client/src/index.css`.
-- **Lint & Syntax Corrections**: Fixed loose inequality check in `PostCard.jsx`, promise executor return values in `backend/scripts/seed.js` and `backend/tests/integration/profile.test.js`, and an arbitrary border radius in `PostDetailSkeleton.jsx`.
-
 ---
 
 ## [1.0.0] - Initial Release
@@ -35,14 +22,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **Auth**: Secure JWT authentication with HTTP-only cookies, refresh token rotation, and role-based access control.
 - **Backend**: Express API Gateway with Helmet, strict rate-limiting, MongoDB compound indexing, and input sanitization.
 - **Frontend**: React 19 SPA with Vite 7, TanStack Query v5 caching, and accessible Radix UI primitives.
-- **Design & Styling**: Unified design tokens with Tailwind CSS v4 and full dark mode support.
+- **Design System Tokens & Theme Architecture**: Built unified Tailwind CSS v4 `@theme` design tokens in `client/src/index.css` defining semantic colors, a standardized border-radius scale (`rounded-xs` through `rounded-4xl`), and micro-typography tokens (`text-2xs`, `text-caption`). Standardized all 80 client components and eliminated legacy `!important` CSS border overrides.
+- **Automated Code Quality & Security Enforcement**: Added a native ESLint Design System Token Enforcer (`design-system/enforce-tokens`) to block raw HSL brackets, arbitrary HEX colors, and arbitrary radii. Enforced strict JavaScript, React, and backend security rules (`eqeqeq`, `no-var`, `prefer-const`, `no-eval`, `no-implied-eval`, `no-async-promise-executor`, `react-hooks/exhaustive-deps: 'error'`, `react/jsx-key: 'error'`, `react/no-danger: 'error'`).
 - **System Architecture Specification**: Added comprehensive [ARCHITECTURE.md](ARCHITECTURE.md) documenting decoupled 3-tier topology (React 19 SPA -> Express 4 API -> MongoDB 6+), request execution pipeline separating public routes from auth-guarded flows, Mongoose ERD across 9 collections, dual-token authentication sequence flows, reading dwell-time algorithms, and security threat model.
 - **Architecture Decision Records (ADRs)**: Established `docs/adr/` with 7 foundational ADRs (ADR-0001 through ADR-0007) recording context, evaluated alternatives, decisions, and trade-offs for decoupling, live token revocation, concurrency indexes, trending algorithm, privacy-preserving HMAC telemetry, in-memory token storage, and ephemeral database testing.
 
 ### 🧪 Testing & Coverage
 - **Backend Test Architecture**: Restructured backend tests into clean `tests/unit/` (fast, database-free) and `tests/integration/` (in-memory MongoDB) hierarchies.
 - **Backend Unit & Integration Tests**: Added unit suites for validators, middlewares, and utils, plus integration suites for view deduplication and user settings (190 tests, 91.73% line coverage).
-- **Frontend Test Suite**: Built complete unit and integration test coverage across custom hooks, route guards, auth/theme context, and all core/secondary pages (138 tests, 15 suites).
+- **Frontend Test Suite**: Built complete unit and integration test coverage across custom hooks, route guards, auth/theme context, and all core/secondary pages (146 tests, 18 suites).
+- **Frontend `__tests__/` Organization**: Co-located all client test files into dedicated `__tests__/` subfolders across feature directories.
+- **Coverage Tooling**: Configured `@vitest/coverage-v8` for client test coverage reporting via `npm run test:coverage`.
 - **Frontend `__tests__/` Organization**: Co-located all client test files into dedicated `__tests__/` subfolders across feature directories.
 - **Coverage Tooling**: Configured `@vitest/coverage-v8` for client test coverage reporting via `npm run test:coverage`.
 
