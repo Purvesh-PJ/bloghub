@@ -32,3 +32,4 @@ export { ErrorState } from './ErrorState';
 export { Table } from './Table';
 export { StatTile } from './StatTile';
 export { Pagination } from './Pagination';
+export { Switch } from './Switch';
