@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ---
 
-## [1.0.0] - 2026-11-07
+## [1.0.0] - 2026-11-08
 
 ### Added
 - **Publishing Studio:** Markdown authoring workspace with live split-pane preview, auto-generated URL slugs, cover image support, and draft or public visibility controls.
@@ -14,9 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **Trending Algorithm:** Time-weighted discovery feed ranking stories published within a 14-day window by read engagement.
 - **Community & Discussions:** User profiles, threaded comments, article likes, and author follows with database-level duplicate prevention.
 - **Administration & Moderation:** Management dashboard for reviewing stories, managing tags, updating user roles, and viewing site-wide activity logs.
+- **3-Tier UI Architecture & Composed Patterns:** Standardized 9 canonical composed patterns (`PageHeader`, `DataTableCard`, `DataView`, `FilterToolbar`, `StatsGrid`, `SettingSection`, `ChoiceGrid`, `ConfirmDialog`, `BulkActionBar`) in `src/components/patterns/`, composed 100% of core primitives to eliminate UI duplication across all user and administrative screens.
 - **Design System & Theme Tokens:** Standardized semantic theme tokens, border-radius scales, and micro-typography across light and dark reading modes, alongside accessible Checkbox, SearchInput, and TableSkeleton primitives.
-- **Full-Stack Test Suite:** 339 automated tests spanning unit validations, in-memory database integration flows, and frontend interaction scenarios.
-- **Architecture Documentation:** System architecture specifications and 9 Architecture Decision Records (ADRs) under `docs/adr/`.
+- **Full-Stack Test Suite:** 349 automated tests (190 backend unit and in-memory integration tests + 159 client component and interaction tests).
+- **Architecture Documentation:** System architecture specifications and 10 Architecture Decision Records (ADRs) under `docs/adr/`.
 
 ### Security
 - Dual-token JWT authentication with HTTP-only cookies, automatic silent refresh rotation, and instant server-side session revocation.
@@ -28,3 +29,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Inconsistent container padding and corner radiuses across article reader views.
 - Color contrast and hardcoded color literals unified into the central design token scale.
 - Redundant workspace and admin shell layouts consolidated, eliminating duplicate code and fixing mobile drawer keyboard accessibility.
+- Ad-hoc HTML elements and duplicate async state ladders across screens replaced with canonical composed patterns, guaranteeing 100% primitive compliance and zero ESLint token violations.

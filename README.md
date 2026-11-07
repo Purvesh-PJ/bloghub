@@ -75,7 +75,7 @@ Run all scripts from the repository root:
 
 | Command | Action |
 |---|---|
-| `npm test` | Run full test suite (336 tests: 190 backend + 146 client) |
+| `npm test` | Run full test suite (349 tests: 190 backend + 159 client) |
 | `npm run test:backend` | Run backend Jest tests (unit and in-memory integration) |
 | `npm run test:client` | Run client Vitest tests |
 | `npm run test:coverage` | Generate coverage reports for both workspaces |
@@ -90,7 +90,7 @@ Run all scripts from the repository root:
 BlogHub is structured as a decoupled three-tier application: React 19 SPA, Express 4 REST API, and MongoDB 6+.
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md):** System topology, Mongoose ERD across 9 collections, authentication flow, and security boundaries.
-- **[docs/adr/](docs/adr/):** 9 Architecture Decision Records documenting structural choices, trending algorithms, and telemetry design.
+- **[docs/adr/](docs/adr/):** 10 Architecture Decision Records documenting structural choices, design system patterns, trending algorithms, and telemetry design.
 - **[CHANGELOG.md](CHANGELOG.md):** Version history following Keep a Changelog.
 - **[CONTRIBUTING.md](CONTRIBUTING.md):** Contribution workflow and conventions.
 

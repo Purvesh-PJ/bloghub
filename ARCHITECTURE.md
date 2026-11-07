@@ -102,7 +102,31 @@ Rather than a traditional horizontal layer structure (`components/`, `hooks/`, `
 - **`features/analytics/`** — Reader telemetry, dwell time tracking, read completion bars (`ReadRateBar`), and analytics services.
 - **`features/admin/`** — Moderation console, administrative dashboards, tag manager, user roles, and activity audits.
 
-Each feature folder is self-contained with its own `components/`, `hooks/`, `pages/`, `services/`, and colocated `__tests__/`. Cross-feature interactions are exposed through explicit public barrel interfaces (`index.js`). Shared building blocks (`components/ui/`, `components/layout/`, `config/queryKeys.js`, `styles/ThemeProvider.jsx`) remain global. See [ADR-0008](docs/adr/0008-feature-driven-frontend.md) for full context and trade-offs.
+Each feature folder is self-contained with its own `components/`, `hooks/`, `pages/`, `services/`, and colocated `__tests__/`. Cross-feature interactions are exposed through explicit public barrel interfaces (`index.js`). Shared building blocks (`components/ui/`, `components/patterns/`, `components/layout/`, `config/queryKeys.js`, `styles/ThemeProvider.jsx`) remain global. See [ADR-0008](docs/adr/0008-feature-driven-frontend.md) for full context and trade-offs.
+
+### 3-Tier UI Component Architecture
+
+BlogHub avoids both atomic fragmentation (hand-rolling raw elements on every page) and monolithic page bloat by separating UI concerns into 3 distinct tiers:
+
+1. **Tier 1 — Core Primitives (`client/src/components/ui/`):**
+   Atomic, domain-agnostic building blocks (`Button`, `IconButton`, `Input`, `Select`, `Card`, `Surface`, `Alert`, `Badge`, `Chip`, `Modal`, `Dialog`, `Table`, `Pagination`, `EmptyState`, `ErrorState`, `Skeleton`). Built with Radix UI and Tailwind CVA. Hand-rolling raw `<button>` or un-tokenized divs is strictly forbidden.
+
+2. **Tier 2 — Composed Patterns (`client/src/components/patterns/`):**
+   High-level generic compositions built 100% out of Tier 1 primitives, standardizing workflows across features:
+   - `PageHeader`: Standard heading, subtitle, badge, and action slots.
+   - `DataTableCard`: Standard table container wrapping `Card`, `Table`, and `Pagination`.
+   - `DataView`: Unified async lifecycle state machine (`isLoading`, `isError`, `isEmpty`, content).
+   - `FilterToolbar`: Unified chips, sort select, and search box toolbar.
+   - `StatsGrid`: Responsive telemetry metrics grid (2-5 columns) with skeletons.
+   - `SettingSection`: Structured settings card wrapper with title, description, `Alert` notice, and footer actions.
+   - `ChoiceGrid`: Accessible card-based visual radio selector using `Card as="button"`.
+   - `ConfirmDialog`: Standardized modal confirmation dialog with busy states and danger/confirm actions.
+   - `BulkActionBar`: Floating selection toolbar for batch actions ("X items selected").
+
+3. **Tier 3 — Domain Feature Components (`client/src/features/*/components/`):**
+   Domain-specific components carrying business logic and data schema awareness (e.g., `PostCard`, `AuthorByline`, `CommentItem`, `PublishSettingsSidebar`).
+
+See [ADR-0010](docs/adr/0010-composed-ui-patterns-and-3-tier-design-system.md) for full architectural context and trade-offs.
 
 ### Design Tokens and Styling Architecture
 
@@ -409,8 +433,8 @@ Tests are split into fast unit tests and slower integration tests that use a rea
 ```
 
 - **Backend:** 15 test suites with 190 tests. Unit tests live in `backend/tests/unit/` and run in milliseconds. Integration tests live in `backend/tests/integration/` and run against `mongodb-memory-server`, so no real database is needed.
-- **Frontend:** 18 test files with 146 tests, placed next to the code in feature `__tests__/` folders and run with Vitest in `jsdom`.
-- **Commands:** run everything from the repo root with `npm test`, `npm run test:coverage` and `npm run lint`. Total: 336 tests across the full stack.
+- **Frontend:** 20 test files with 159 tests, placed next to the code in feature `__tests__/` and pattern test folders, run with Vitest in `jsdom`.
+- **Commands:** run everything from the repo root with `npm test`, `npm run test:coverage` and `npm run lint`. Total: 349 tests across the full stack.
 
 *Test counts are accurate at the time of writing and will change as the project grows.*
 

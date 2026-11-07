@@ -15,6 +15,7 @@ This directory documents the key architectural decisions made in BlogHub. Each r
 | [ADR-0007](0007-in-memory-database-for-testing.md) | In-Memory Database for Testing | **Accepted** | 2026-11-05 |
 | [ADR-0008](0008-feature-driven-frontend.md) | Feature-Driven Frontend Architecture | **Accepted** | 2026-11-06 |
 | [ADR-0009](0009-performance-and-load-testing-plan.md) | Performance and Load Testing Plan | **Draft** | 2026-11-06 |
+| [ADR-0010](0010-composed-ui-patterns-and-3-tier-design-system.md) | 3-Tier UI Architecture and Composed Patterns | **Accepted** | 2026-11-08 |
 
 ---
 
