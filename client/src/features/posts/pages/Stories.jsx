@@ -5,19 +5,8 @@ import { useStoriesManagement } from '../hooks/useStoriesManagement';
 import { PageShell } from '../../../components/layout/PageShell';
 import { StoryRow } from '../components/StoryRow';
 import { ConfirmDialog, BulkActionBar } from '../../../components/shared';
-import {
-  Button,
-  Card,
-  Chip,
-  EmptyState,
-  ErrorState,
-  Spinner,
-  TableSkeleton,
-  Pagination,
-  Select,
-  SearchInput,
-  Checkbox,
-} from '../../../components/ui';
+import { FilterToolbar, DataView } from '../../../components/patterns';
+import { Button, Card, Spinner, TableSkeleton, Pagination, Checkbox } from '../../../components/ui';
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -81,60 +70,43 @@ export function Stories() {
       />
 
       {/* Toolbar: Filter chips, sort select, and title search */}
-      <div className="flex items-center gap-2.5 flex-wrap p-3 rounded-2xl bg-card border border-border/60 mb-4">
-        {FILTERS.map((option) => (
-          <Chip
-            key={option.id}
-            selected={filter === option.id}
-            onClick={() => resetToFirstPage(() => setFilter(option.id))}
-          >
-            {option.label}
-            {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
-          </Chip>
-        ))}
+      <FilterToolbar
+        filters={FILTERS.map((f) => ({ ...f, count: counts[f.id] }))}
+        activeFilter={filter}
+        onFilterChange={(next) => resetToFirstPage(() => setFilter(next))}
+        sortOptions={SORTS}
+        sortValue={sort}
+        onSortChange={(val) => resetToFirstPage(() => setSort(val))}
+        sortAriaLabel="Sort stories"
+        searchValue={query}
+        onSearchChange={(val) => resetToFirstPage(() => setQuery(val))}
+        onSearchClear={() => resetToFirstPage(() => setQuery(''))}
+        searchPlaceholder="Search by title…"
+      />
 
-        <div className="w-[180px] max-sm:w-full">
-          <Select
-            options={SORTS}
-            value={sort}
-            onValueChange={(val) => resetToFirstPage(() => setSort(val))}
-            aria-label="Sort stories"
-            density="compact"
-          />
-        </div>
-
-        <div className="flex-1 min-w-[200px] max-w-[320px] ml-auto max-sm:ml-0 max-sm:max-w-full">
-          <SearchInput
-            placeholder="Search by title…"
-            value={query}
-            onChange={(e) => resetToFirstPage(() => setQuery(e.target.value))}
-            onClear={() => resetToFirstPage(() => setQuery(''))}
-            density="compact"
-          />
-        </div>
-      </div>
-
-      {isError ? (
-        <ErrorState title="Your stories did not load" error={error} onRetry={() => refetch()} />
-      ) : isLoading ? (
-        <TableSkeleton rows={5} hasCheckbox hasBadge />
-      ) : posts.length === 0 ? (
-        <EmptyState
-          icon={SearchIcon}
-          title={counts.all === 0 ? 'Nothing written yet' : 'No matching stories'}
-          actions={
-            counts.all === 0 ? (
-              <Button as={Link} to="/write" size="sm">
-                <PenLine className="w-3.5 h-3.5 mr-1" /> Write your first story
-              </Button>
-            ) : undefined
-          }
-        >
-          {counts.all === 0
+      <DataView
+        isLoading={isLoading}
+        skeleton={<TableSkeleton rows={5} hasCheckbox hasBadge />}
+        isError={isError}
+        error={error}
+        errorTitle="Your stories did not load"
+        onRetry={() => refetch()}
+        isEmpty={posts.length === 0}
+        emptyIcon={SearchIcon}
+        emptyTitle={counts.all === 0 ? 'Nothing written yet' : 'No matching stories'}
+        emptyDescription={
+          counts.all === 0
             ? 'Drafts stay private until you publish them, so there is no risk in starting one.'
-            : 'No stories match that filter. Try another tab, or clear the search.'}
-        </EmptyState>
-      ) : (
+            : 'No stories match that filter. Try another tab, or clear the search.'
+        }
+        emptyAction={
+          counts.all === 0 ? (
+            <Button as={Link} to="/write" size="sm">
+              <PenLine className="w-3.5 h-3.5 mr-1" /> Write your first story
+            </Button>
+          ) : undefined
+        }
+      >
         <Card tone="low" radius="xl" padding="sm" className="relative p-2">
           {isFetching && (
             <div
@@ -191,7 +163,7 @@ export function Stories() {
             </div>
           )}
         </Card>
-      )}
+      </DataView>
 
       {/* Delete One Confirmation Dialog */}
       <ConfirmDialog

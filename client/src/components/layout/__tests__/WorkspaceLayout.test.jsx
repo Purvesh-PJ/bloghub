@@ -75,4 +75,3 @@ describe('WorkspaceLayout Component', () => {
     expect(screen.queryByLabelText(/close navigation menu/i)).not.toBeInTheDocument();
   });
 });
-

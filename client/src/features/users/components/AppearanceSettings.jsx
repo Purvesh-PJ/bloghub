@@ -1,6 +1,6 @@
-import { Sun, Moon, Monitor, Check } from 'lucide-react';
-import { Card } from '../../../components/ui';
-import { cn } from '../../../lib/utils';
+import React from 'react';
+import { Sun, Moon, Monitor } from 'lucide-react';
+import { SettingSection, ChoiceGrid } from '../../../components/patterns';
 
 const THEMES = [
   { id: 'light', label: 'Light', icon: Sun },
@@ -10,41 +10,16 @@ const THEMES = [
 
 export function AppearanceSettings({ preference, onThemeChange }) {
   return (
-    <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-xl font-bold tracking-tight text-foreground">Appearance</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          System follows whatever your device is set to, and changes with it.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {THEMES.map(({ id, label, icon: Icon }) => {
-          const isActive = preference === id;
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => onThemeChange(id)}
-              aria-pressed={isActive}
-              className={cn(
-                'relative flex flex-col items-center gap-3 p-6 rounded-2xl border transition-all cursor-pointer select-none',
-                isActive
-                  ? 'bg-primary/12 text-primary border-primary shadow-sm'
-                  : 'bg-muted text-muted-foreground border-transparent hover:bg-muted/80'
-              )}
-            >
-              {isActive && (
-                <span className="absolute top-3 right-3 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground">
-                  <Check className="w-3 h-3" />
-                </span>
-              )}
-              <Icon className="w-6 h-6" />
-              <span className="text-sm font-medium">{label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </Card>
+    <SettingSection
+      title="Appearance"
+      description="System follows whatever your device is set to, and changes with it."
+    >
+      <ChoiceGrid
+        options={THEMES}
+        value={preference}
+        onChange={onThemeChange}
+        ariaLabel="Theme preference"
+      />
+    </SettingSection>
   );
 }

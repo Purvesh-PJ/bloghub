@@ -7,16 +7,9 @@ import toast from 'react-hot-toast';
 import { postService } from '../../posts/services/postService';
 import { commentService } from '../services/commentService';
 import { PageShell } from '../../../components/layout/PageShell';
-import {
-  Button,
-  Card,
-  Select,
-  EmptyState,
-  ErrorState,
-  Skeleton,
-  SkeletonText,
-} from '../../../components/ui';
+import { Button, Card, Select, EmptyState, Skeleton, TableSkeleton } from '../../../components/ui';
 import { ConfirmDialog } from '../../../components/shared';
+import { DataView } from '../../../components/patterns';
 import { ResponseItem } from '../components/ResponseItem';
 import { queryKeys } from '../../../config/queryKeys';
 
@@ -64,17 +57,7 @@ export function Responses() {
       <PageShell>
         <div className="flex flex-col gap-4" aria-hidden="true">
           <Skeleton width="300px" height={40} className="rounded-xl" />
-          <Card tone="low" radius="xl" padding="md">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex gap-4 py-4 border-b border-border/40 last:border-b-0">
-                <Skeleton variant="circle" width={36} height={36} />
-                <div className="flex-1 flex flex-col gap-2">
-                  <Skeleton width="140px" height={14} className="rounded" />
-                  <SkeletonText lines={2} lineHeight="14px" lastLineWidth="80%" gap="xs" />
-                </div>
-              </div>
-            ))}
-          </Card>
+          <TableSkeleton rows={3} hasAvatar hasBadge={false} />
         </div>
       </PageShell>
     );
@@ -126,29 +109,18 @@ export function Responses() {
             </span>
           </div>
 
-          {commentsLoading ? (
-            <Card tone="low" radius="xl" padding="md" aria-hidden="true">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex gap-4 py-4 border-b border-border/40 last:border-b-0">
-                  <Skeleton variant="circle" width={36} height={36} />
-                  <div className="flex-1 flex flex-col gap-2">
-                    <Skeleton width="140px" height={14} className="rounded" />
-                    <SkeletonText lines={2} lineHeight="14px" lastLineWidth="80%" gap="xs" />
-                  </div>
-                </div>
-              ))}
-            </Card>
-          ) : commentsFailed ? (
-            <ErrorState
-              title="Responses did not load"
-              error={commentsError}
-              onRetry={() => refetchComments()}
-            />
-          ) : comments.length === 0 ? (
-            <EmptyState icon={MessageSquare} title="No responses on this story yet">
-              When somebody replies, it appears here.
-            </EmptyState>
-          ) : (
+          <DataView
+            isLoading={commentsLoading}
+            skeleton={<TableSkeleton rows={3} hasAvatar hasBadge={false} />}
+            isError={commentsFailed}
+            error={commentsError}
+            errorTitle="Responses did not load"
+            onRetry={refetchComments}
+            isEmpty={comments.length === 0}
+            emptyIcon={MessageSquare}
+            emptyTitle="No responses on this story yet"
+            emptyDescription="When somebody replies, it appears here."
+          >
             <Card tone="low" radius="xl" padding="sm">
               <div className="flex flex-col divide-y divide-border/40">
                 {comments.map((comment) => (
@@ -156,7 +128,7 @@ export function Responses() {
                 ))}
               </div>
             </Card>
-          )}
+          </DataView>
         </>
       )}
 

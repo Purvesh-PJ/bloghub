@@ -6,8 +6,9 @@ import toast from 'react-hot-toast';
 import { postService } from '../../posts/services/postService';
 import { useDebounced } from '../../posts/hooks/useDebounced';
 import { Section } from '../../../components/layout/PageShell';
-import { Card, Chip, EmptyState, TableSkeleton, SearchInput } from '../../../components/ui';
+import { TableSkeleton } from '../../../components/ui';
 import { ConfirmDialog, BulkActionBar } from '../../../components/shared';
+import { FilterToolbar, DataView } from '../../../components/patterns';
 import { AdminPostsTable } from '../components/AdminPostsTable';
 import { queryKeys } from '../../../config/queryKeys';
 
@@ -125,10 +126,6 @@ export function AdminPosts() {
     },
   ];
 
-  if (isLoading) {
-    return <TableSkeleton rows={6} hasCheckbox hasBadge />;
-  }
-
   return (
     <>
       <Section>
@@ -143,37 +140,29 @@ export function AdminPosts() {
         />
 
         {/* Toolbar with filter chips and search */}
-        <div className="flex items-center gap-2.5 flex-wrap p-3 rounded-2xl bg-card border border-border/60 mb-4">
-          {FILTERS.map((option) => (
-            <Chip
-              key={option.id}
-              selected={filter === option.id}
-              onClick={() => setFilter(option.id)}
-            >
-              {option.label}
-              {counts[option.id] > 0 ? ` (${counts[option.id]})` : ''}
-            </Chip>
-          ))}
+        <FilterToolbar
+          filters={FILTERS.map((option) => ({ ...option, count: counts[option.id] }))}
+          activeFilter={filter}
+          onFilterChange={setFilter}
+          searchValue={query}
+          onSearchChange={setQuery}
+          onSearchClear={() => setQuery('')}
+          searchPlaceholder="Search by title"
+          searchAriaLabel="Search posts by title"
+        />
 
-          <div className="flex-1 min-w-[200px] max-w-[320px] ml-auto max-sm:ml-0 max-sm:max-w-full">
-            <SearchInput
-              placeholder="Search by title"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onClear={() => setQuery('')}
-              ariaLabel="Search posts by title"
-              density="compact"
-            />
-          </div>
-        </div>
-
-        {visible.length === 0 ? (
-          <EmptyState icon={FileText} title="Nothing here">
-            {query || filter !== 'all'
+        <DataView
+          isLoading={isLoading}
+          skeleton={<TableSkeleton rows={6} hasCheckbox hasBadge />}
+          isEmpty={visible.length === 0}
+          emptyIcon={FileText}
+          emptyTitle="Nothing here"
+          emptyDescription={
+            query || filter !== 'all'
               ? 'No posts match that filter. Try another one, or clear the search.'
-              : 'Nobody has written anything yet.'}
-          </EmptyState>
-        ) : (
+              : 'Nobody has written anything yet.'
+          }
+        >
           <AdminPostsTable
             visible={visible}
             selectedIds={selectedIds}
@@ -193,7 +182,7 @@ export function AdminPosts() {
               setSelectedIds([]);
             }}
           />
-        )}
+        </DataView>
       </Section>
 
       <ConfirmDialog
