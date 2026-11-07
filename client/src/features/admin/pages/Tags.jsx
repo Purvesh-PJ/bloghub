@@ -8,7 +8,7 @@ import { useTags } from '../../posts/hooks/useTags';
 import { topicIcon } from '../../../utils/topicIcons';
 import { Section } from '../../../components/layout/PageShell';
 import { Button, Input, Modal, Table, TableSkeleton, IconButton } from '../../../components/ui';
-import { ConfirmDialog, DataView, DataTableCard } from '../../../components/patterns';
+import { PageHeader, ConfirmDialog, DataView, DataTableCard } from '../../../components/patterns';
 import { queryKeys } from '../../../config/queryKeys';
 
 export function AdminTags() {
@@ -55,6 +55,16 @@ export function AdminTags() {
 
   return (
     <>
+      <PageHeader
+        title="Topics & Tags"
+        description="Organize stories into discoverable topics and categories."
+        actions={
+          <Button size="sm" onClick={() => setOpen(true)}>
+            <Plus className="w-3.5 h-3.5 mr-1" /> New tag
+          </Button>
+        }
+      />
+
       <Section>
         <DataView
           isLoading={isLoading}
@@ -72,12 +82,6 @@ export function AdminTags() {
             ),
           }}
         >
-          <div className="flex items-center justify-end gap-2 mb-4">
-            <Button size="sm" onClick={() => setOpen(true)}>
-              <Plus className="w-3.5 h-3.5 mr-1" /> New tag
-            </Button>
-          </div>
-
           <DataTableCard>
             <Table>
               <Table.Head>

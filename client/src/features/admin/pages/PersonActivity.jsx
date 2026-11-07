@@ -6,7 +6,8 @@ import { ArrowLeft, FileText, MessageSquare, Heart, Eye, ExternalLink } from 'lu
 import { activityService } from '../../analytics/services/activityService';
 import { analyticsService } from '../../analytics/services/analyticsService';
 import { Section } from '../../../components/layout/PageShell';
-import { Card, EmptyState, ErrorState, Skeleton, StatTile, Button } from '../../../components/ui';
+import { Card, ErrorState, Skeleton, Button } from '../../../components/ui';
+import { StatsGrid, DataView } from '../../../components/patterns';
 import { ReadRateHeadline } from '../../analytics';
 import { queryKeys } from '../../../config/queryKeys';
 
@@ -50,11 +51,7 @@ export function AdminPersonActivity() {
   if (activityLoading) {
     return (
       <div aria-hidden="true" className="flex flex-col gap-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} width="100%" height={78} className="rounded-2xl" />
-          ))}
-        </div>
+        <StatsGrid isLoading columns={4} />
         <Card tone="low" radius="xl" padding="lg">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex gap-4 py-3 items-center">
@@ -96,7 +93,13 @@ export function AdminPersonActivity() {
   return (
     <>
       {/* Header Bar */}
-      <div className="flex items-center justify-between gap-4 flex-wrap p-4 px-6 rounded-2xl bg-card border border-border/60 mb-6">
+      <Card
+        tone="low"
+        radius="xl"
+        padding="lg"
+        bordered
+        className="flex items-center justify-between gap-4 flex-wrap mb-6"
+      >
         <div className="flex items-center gap-4">
           <Link
             to="/admin/users"
@@ -119,16 +122,21 @@ export function AdminPersonActivity() {
         <Button as={Link} to={`/user/${userId}`} variant="secondary" size="sm">
           <ExternalLink className="w-3.5 h-3.5 mr-1" /> View public page
         </Button>
-      </div>
+      </Card>
 
       <Section>
         {/* Metric stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <StatTile label="Stories" value={activity?.posts?.total ?? 0} icon={FileText} />
-          <StatTile label="Responses" value={activity?.comments?.total ?? 0} icon={MessageSquare} />
-          <StatTile label="Likes given" value={activity?.likes?.total ?? 0} icon={Heart} />
-          <StatTile label="Stories opened" value={activity?.views?.total ?? 0} icon={Eye} />
-        </div>
+        <StatsGrid
+          inCard={false}
+          columns={4}
+          items={[
+            { label: 'Stories', value: activity?.posts?.total ?? 0, icon: FileText },
+            { label: 'Responses', value: activity?.comments?.total ?? 0, icon: MessageSquare },
+            { label: 'Likes given', value: activity?.likes?.total ?? 0, icon: Heart },
+            { label: 'Stories opened', value: activity?.views?.total ?? 0, icon: Eye },
+          ]}
+          className="mb-6"
+        />
 
         {writing?.totalViews > 0 && (
           <div className="mb-6">
@@ -142,20 +150,23 @@ export function AdminPersonActivity() {
           </div>
         )}
 
-        {timelineLoading ? (
-          <Card tone="low" radius="xl" padding="lg" aria-hidden="true">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex gap-4 py-3 items-center">
-                <Skeleton variant="circle" width={30} height={30} />
-                <Skeleton width="60%" height={14} className="rounded" />
-              </div>
-            ))}
-          </Card>
-        ) : timeline.length === 0 ? (
-          <EmptyState icon={MessageSquare} title="Nothing yet">
-            This account has not written, replied to or liked anything.
-          </EmptyState>
-        ) : (
+        <DataView
+          isLoading={timelineLoading}
+          skeleton={
+            <Card tone="low" radius="xl" padding="lg" aria-hidden="true">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex gap-4 py-3 items-center">
+                  <Skeleton variant="circle" width={30} height={30} />
+                  <Skeleton width="60%" height={14} className="rounded" />
+                </div>
+              ))}
+            </Card>
+          }
+          isEmpty={timeline.length === 0}
+          emptyIcon={MessageSquare}
+          emptyTitle="Nothing yet"
+          emptyDescription="This account has not written, replied to or liked anything."
+        >
           <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
             <div className="flex flex-col divide-y divide-border/40">
               {timeline.map((event) => {
@@ -198,7 +209,7 @@ export function AdminPersonActivity() {
               })}
             </div>
           </Card>
-        )}
+        </DataView>
       </Section>
     </>
   );

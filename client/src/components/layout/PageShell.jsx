@@ -1,5 +1,8 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
+import { PageHeader } from '../patterns/PageHeader';
+
+export { PageHeader };
 
 /**
  * The frame every signed-in page sits in.
@@ -26,38 +29,6 @@ export function PageShell({ children, width = 'wide', className, ...props }) {
     >
       {children}
     </div>
-  );
-}
-
-/**
- * PageHeader
- * Distinct hero/header component that creates a clear visual boundary
- * between page intent and the data/components below it.
- */
-export function PageHeader({ badge, title, subtitle, actions, divider = true, className }) {
-  return (
-    <header
-      className={cn('flex flex-col gap-4', divider && 'pb-6 border-b border-border/40', className)}
-    >
-      <div className="flex flex-wrap items-end justify-between gap-6">
-        <div className="flex flex-col gap-1.5 min-w-0 flex-1">
-          {badge && (
-            <span className="inline-flex items-center gap-1 w-fit px-2 py-0.5 rounded-full bg-primary/10 text-primary text-caption font-bold tracking-wider uppercase mb-0.5 select-none">
-              {badge}
-            </span>
-          )}
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="text-sm sm:text-base text-muted-foreground max-w-[65ch] leading-relaxed">
-              {subtitle}
-            </p>
-          )}
-        </div>
-        {actions && <div className="flex items-center gap-2.5 shrink-0 flex-wrap">{actions}</div>}
-      </div>
-    </header>
   );
 }
 

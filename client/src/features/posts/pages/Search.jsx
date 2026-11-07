@@ -21,6 +21,7 @@ import { PostCard } from '../components/PostCard';
 import { PostCardSkeleton } from '../components/PostCardSkeleton';
 import { topicIcon } from '../../../utils/topicIcons';
 import { Button, Chip, EmptyState, SearchInput } from '../../../components/ui';
+import { PageHeader } from '../../../components/patterns';
 import { excerpt, readingTimeFromLength } from '../../../utils/text';
 import { queryKeys } from '../../../config/queryKeys';
 
@@ -110,32 +111,26 @@ export function Search() {
   return (
     <PageShell>
       {/* ── 1. Top Header: Icon, Title & Subtitle + Search Bar ─── */}
-      <div className="flex items-center justify-between gap-6 flex-wrap">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/12 text-primary shrink-0">
-            <Compass className="w-6 h-6" />
+      <PageHeader
+        title="Explore Stories"
+        description="Discover deep-dive breakdowns, engineering essays, and creative perspectives."
+        eyebrow={
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-primary/12 text-primary shrink-0 mb-1">
+            <Compass className="w-5 h-5" />
           </div>
-          <div className="flex flex-col gap-0.5 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
-              Explore Stories
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-[54ch]">
-              Discover deep-dive breakdowns, engineering essays, and creative perspectives.
-            </p>
+        }
+        actions={
+          <div className="w-full sm:w-[360px]">
+            <SearchInput
+              placeholder="Search titles, stories, tags and authors…"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onClear={clearSearch}
+              ariaLabel="Search stories"
+            />
           </div>
-        </div>
-
-        {/* Search input box */}
-        <div className="w-full sm:max-w-[360px]">
-          <SearchInput
-            placeholder="Search titles, stories, tags and authors…"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onClear={clearSearch}
-            ariaLabel="Search stories"
-          />
-        </div>
-      </div>
+        }
+      />
 
       {/* ── 2. Dynamic Topic & Tags Navigation Bar ───────────────────────── */}
       {!query && (
