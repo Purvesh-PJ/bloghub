@@ -111,7 +111,7 @@ export function AdminTags() {
                             aria-label={`Remove the tag ${tag.name}`}
                             onClick={() => setPendingDelete(tag)}
                           >
-                            <Trash2 className="w-4 h-4 text-red-500" />
+                            <Trash2 className="w-4 h-4 text-destructive" />
                           </IconButton>
                         </td>
                       </tr>

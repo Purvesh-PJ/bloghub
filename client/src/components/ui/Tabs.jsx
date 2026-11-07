@@ -29,7 +29,7 @@ const Trigger = React.forwardRef(({ className, ...props }, ref) => (
       'relative shrink-0 px-4 py-3 text-sm font-medium text-muted-foreground whitespace-nowrap cursor-pointer select-none transition-colors duration-150',
       'hover:text-foreground',
       'data-[state=active]:text-foreground data-[state=active]:font-semibold',
-      'after:content-[""] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent after:transition-colors',
+      'after:content-[""] after:absolute after:-bottom-px after:left-0 after:right-0 after:h-0.5 after:bg-transparent after:transition-colors',
       'data-[state=active]:after:bg-primary',
       'disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
       className

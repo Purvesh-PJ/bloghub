@@ -51,7 +51,7 @@ export function ProfileSettingsForm({
               )}
             </div>
             {avatarFile && (
-              <p className="text-xs text-amber-500 font-medium">
+              <p className="text-xs text-warning font-medium">
                 Not saved yet — press Save changes below.
               </p>
             )}

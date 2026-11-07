@@ -101,12 +101,12 @@ export function AdminUsersTable({
 
                       {user.suspended ? (
                         <DropdownMenu.Item onSelect={() => onSuspend(user._id, false)}>
-                          <CircleCheck className="w-3.5 h-3.5 mr-2 text-emerald-500" /> Restore
+                          <CircleCheck className="w-3.5 h-3.5 mr-2 text-success" /> Restore
                           access
                         </DropdownMenu.Item>
                       ) : (
                         <DropdownMenu.Item onSelect={() => onSuspend(user._id, true)}>
-                          <Ban className="w-3.5 h-3.5 mr-2 text-amber-500" /> Suspend account
+                          <Ban className="w-3.5 h-3.5 mr-2 text-warning" /> Suspend account
                         </DropdownMenu.Item>
                       )}
 
@@ -126,7 +126,7 @@ export function AdminUsersTable({
                       <DropdownMenu.Separator />
 
                       <DropdownMenu.Item tone="danger" onSelect={() => onDelete(user)}>
-                        <Trash2 className="w-3.5 h-3.5 mr-2 text-red-500" /> Delete account
+                        <Trash2 className="w-3.5 h-3.5 mr-2 text-destructive" /> Delete account
                       </DropdownMenu.Item>
                     </DropdownMenu>
                   )}

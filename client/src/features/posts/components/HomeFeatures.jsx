@@ -102,11 +102,11 @@ export function HomeFeatures({ startHref, startLabel }) {
 
       {/* ── Closing CTA Section ── */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
-        <div className="relative rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-primary to-sky-700 py-12 sm:py-16 px-6 sm:px-12 text-center text-white flex flex-col items-center gap-6 overflow-hidden shadow-[0_20px_40px_-15px_rgba(14,165,233,0.35)]">
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight max-w-xl text-white">
+        <div className="relative rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-primary to-primary-dark py-12 sm:py-16 px-6 sm:px-12 text-center text-primary-foreground flex flex-col items-center gap-6 overflow-hidden shadow-[0_20px_40px_-15px_rgba(14,165,233,0.35)]">
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight max-w-xl text-primary-foreground">
             Have an idea or story worth sharing?
           </h2>
-          <p className="text-sm sm:text-base text-white/90 max-w-lg leading-relaxed">
+          <p className="text-sm sm:text-base text-primary-foreground/90 max-w-lg leading-relaxed">
             Join a growing community of writers, creators, and curious thinkers. Start drafting in
             seconds with our distraction-free editor.
           </p>
@@ -114,19 +114,19 @@ export function HomeFeatures({ startHref, startLabel }) {
           <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
             <button
               onClick={() => navigate(startHref)}
-              className="inline-flex items-center gap-2 h-12 px-6 rounded-full text-base font-bold bg-white text-sky-700 hover:bg-slate-50 transition-transform active:scale-95 shadow-[0_4px_20px_rgba(0,0,0,0.15)] cursor-pointer"
+              className="inline-flex items-center gap-2 h-12 px-6 rounded-full text-base font-bold bg-primary-foreground text-primary hover:bg-primary-foreground/90 transition-transform active:scale-95 shadow-[0_4px_20px_rgba(0,0,0,0.15)] cursor-pointer"
             >
               <PenLine className="h-4 w-4" /> {startLabel} <ArrowRight className="h-4 w-4" />
             </button>
             <button
               onClick={() => navigate('/search')}
-              className="inline-flex items-center gap-2 h-12 px-6 rounded-full text-base font-semibold bg-white/15 text-white border-none backdrop-blur-md hover:bg-white/25 transition-transform active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 h-12 px-6 rounded-full text-base font-semibold bg-primary-foreground/15 text-primary-foreground border-none backdrop-blur-md hover:bg-primary-foreground/25 transition-transform active:scale-95 cursor-pointer"
             >
               <Compass className="h-4 w-4" /> Explore Stories
             </button>
           </div>
 
-          <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center pt-2 text-xs font-medium text-white/85">
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center pt-2 text-xs font-medium text-primary-foreground/85">
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" /> 100% Free to publish
             </span>

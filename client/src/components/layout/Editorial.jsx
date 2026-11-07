@@ -20,8 +20,8 @@ export function Inverted({ className, children, ...props }) {
   return (
     <FullBleed
       className={cn(
-        'bg-gradient-to-tr from-primary to-sky-700 text-white py-16 sm:py-24 shadow-inner',
-        '[&_h1]:text-white [&_h2]:text-white [&_h3]:text-white',
+        'bg-gradient-to-tr from-primary to-primary-dark text-primary-foreground py-16 sm:py-24 shadow-inner',
+        '[&_h1]:text-primary-foreground [&_h2]:text-primary-foreground [&_h3]:text-primary-foreground',
         className
       )}
       {...props}

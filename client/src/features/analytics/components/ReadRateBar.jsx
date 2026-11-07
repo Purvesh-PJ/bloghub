@@ -24,7 +24,7 @@ export function ReadRateBar({ views = 0, reads = 0, rate, size = 'sm', showLegen
       >
         <div
           style={{ width: `${clamped}%` }}
-          className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out min-w-[4px]"
+          className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out min-w-1"
         />
       </div>
 

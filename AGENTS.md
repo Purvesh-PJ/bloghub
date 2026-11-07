@@ -30,7 +30,32 @@ These rules define standard industry best practices for building and maintaining
 
 ---
 
-## 3. Accessibility (WCAG 2.2 AA)
+## 3. Design System & UI Consistency (Strict)
+
+- **Reuse Before Inventing (Zero Redundant Inventions):** Never write ad-hoc HTML elements with custom styles when a design system primitive already exists.
+  - Form & Actions: Use `Button`, `IconButton`, `Input`, `Select`, `Switch` from `src/components/ui/` — never hand-roll raw `<button>` or `<input>` with custom class chains.
+  - Feedback & Status: Use `Badge`, `Chip`, `Alert`, `EmptyState`, `ErrorState`, `Loading`, `Spinner`, `Skeleton` from `src/components/ui/`.
+  - Overlays & Popovers: Use `Dialog`, `Modal`, `DropdownMenu`, `Tabs`, `Table`, `Avatar` from `src/components/ui/`.
+  - Layout & Containers: Use `PageShell`, `Section`, `Column`, `Container`, `FullBleed`, `WorkspaceLayout` from `src/components/layout/`.
+- **Strict Semantic Tokens Only:** Never use raw Tailwind palette colors (`slate-*`, `sky-*`, `red-*`, `amber-*`, `emerald-*`, `blue-*`, etc.). Always use role-based tokens:
+  - Brand & Action: `bg-primary`, `text-primary`, `border-primary`, `text-primary-foreground`, `to-primary-dark`.
+  - Status & Roles: `destructive` (danger/delete), `warning` (caution/pending), `success` (valid/live/confirmed), `info` (guide/notice).
+  - Surfaces & Elevation: `bg-surface-page`, `bg-surface-container`, `bg-surface-container-low`, `bg-surface-container-high`, `bg-surface-elevated`.
+  - Lines & Borders: `border-line-subtle`, `border-line-default`, `border-line-strong`, `border-border`.
+- **No Raw White or Black:**
+  - Overlays, backdrops, and drawer scrims must use `bg-scrim` (never `bg-black/60` or `bg-black`).
+  - Text on colored or gradient fills must use the corresponding `text-*-foreground` token (e.g., `text-primary-foreground`, never `text-white`).
+- **No Arbitrary Color Syntaxes or CSS Variables:**
+  - Never use arbitrary color functions `[#hex]`, `[hsl(...)]`, `[rgb(...)]`, or arbitrary syntax `[var(--x)]`. Use registered Tailwind utilities.
+- **Strict Radius & Typography Scales:**
+  - Use the design system radius scale: `rounded-xs`, `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`, `rounded-2xl`, `rounded-3xl`, `rounded-4xl`, or `rounded-full`.
+  - Use the design system typography scale: `text-2xs` (10px), `text-caption` (11px), or Tailwind sizes (`text-xs`, `text-sm`, `text-base`, `text-lg`, etc.). Do not introduce arbitrary `text-[...px]`.
+- **Component Extension Over Duplication:** Never create a one-off duplicate of an existing component under a feature folder with slight style differences. If a legitimate new variant is required, extend the CVA variants in `src/components/ui/` while preserving backward compatibility.
+- **Zero Token Violations:** Every frontend task must pass `npm --prefix client run lint` with 0 `design-system/enforce-tokens` errors before completion.
+
+---
+
+## 4. Accessibility (WCAG 2.2 AA)
 
 - **Semantic HTML:** Use `nav`, `aside`, `main`, `header`, `button`, and `ul/li`. Never use `div` with `onClick` for actions.
 - **Labels:** Icon-only buttons require `aria-label`. Decorative icons get `aria-hidden="true"`. Repeated landmarks get distinct `aria-label`s.
@@ -41,7 +66,7 @@ These rules define standard industry best practices for building and maintaining
 
 ---
 
-## 4. Express & Node.js API Architecture
+## 5. Express & Node.js API Architecture
 
 - **Layering:** Follow routes -> controllers -> services -> models. Dependencies point one way only.
 - **Thin Controllers:** Controllers only extract request parameters, call the service layer, and return HTTP responses.
@@ -56,7 +81,7 @@ These rules define standard industry best practices for building and maintaining
 
 ---
 
-## 5. MongoDB & Mongoose Data Layer
+## 6. MongoDB & Mongoose Data Layer
 
 - **Strict Schema Definitions:** Always define explicit Mongoose schemas with strict types, required fields, and built-in validators. Enable `timestamps`.
 - **Database-Level Integrity:** Enforce data constraints (e.g., uniqueness, foreign references) at the database layer with indexes, not solely in application code.
@@ -68,7 +93,7 @@ These rules define standard industry best practices for building and maintaining
 
 ---
 
-## 6. Application & API Security
+## 7. Application & API Security
 
 - **Input Validation:** Validate and sanitize all incoming request bodies, query params, and route parameters with a schema validator (e.g., Zod or Joi) before any business logic executes. Reject unknown fields.
 - **Mass Assignment:** Never pass `req.body` directly to `create` or `update`. Pick allowed fields explicitly.
@@ -83,7 +108,7 @@ These rules define standard industry best practices for building and maintaining
 
 ---
 
-## 7. Testing & Code Quality
+## 8. Testing & Code Quality
 
 - **Hermetic Testing:** Integration tests must run against isolated, in-memory databases (e.g., `mongodb-memory-server`) to ensure tests never depend on or mutate external data.
 - **Test Placement:** Colocate tests next to the code they verify (e.g., `Component.test.jsx`, `user.service.test.js`).

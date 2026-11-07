@@ -20,7 +20,7 @@ export function WorkspaceSidebar({
       {mobileMenuOpen && (
         <div
           onClick={onCloseMobile}
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in-0 duration-200"
+          className="fixed inset-0 z-40 bg-scrim backdrop-blur-sm md:hidden animate-in fade-in-0 duration-200"
         />
       )}
 

@@ -19,7 +19,7 @@ export function HomeHero({ startHref, startLabel }) {
           {/* Hero Title */}
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.15] max-w-[800px]">
             Where ideas find their voice & stories find{' '}
-            <span className="bg-gradient-to-r from-primary to-sky-600 bg-clip-text text-transparent inline-block">
+            <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent inline-block">
               curious minds.
             </span>
           </h1>

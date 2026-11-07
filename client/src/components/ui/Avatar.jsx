@@ -8,7 +8,7 @@ import { cn } from '../../lib/utils';
  * Smooth image loading with graceful initial fallback and BlogHub gradient background.
  */
 const avatarVariants = cva(
-  'inline-flex shrink-0 items-center justify-center select-none overflow-hidden align-middle bg-gradient-to-tr from-primary to-sky-600 shadow-sm',
+  'inline-flex shrink-0 items-center justify-center select-none overflow-hidden align-middle bg-gradient-to-tr from-primary to-primary-dark shadow-sm',
   {
     variants: {
       size: {
@@ -63,7 +63,7 @@ export const Avatar = React.forwardRef(
         )}
         <RadixAvatar.Fallback
           delayMs={src ? delayMs : 0}
-          className="flex h-full w-full items-center justify-center font-bold text-white select-none leading-none tracking-wide"
+          className="flex h-full w-full items-center justify-center font-bold text-primary-foreground select-none leading-none tracking-wide"
         >
           {initialsFrom(name)}
         </RadixAvatar.Fallback>

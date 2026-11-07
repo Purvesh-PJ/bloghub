@@ -92,7 +92,7 @@ export function AdminPostsTable({
                   </DropdownMenu.Item>
                   <DropdownMenu.Separator />
                   <DropdownMenu.Item tone="danger" onSelect={() => onDelete(post)}>
-                    <Trash2 className="w-3.5 h-3.5 mr-2 text-red-500" /> Delete
+                    <Trash2 className="w-3.5 h-3.5 mr-2 text-destructive" /> Delete
                   </DropdownMenu.Item>
                 </DropdownMenu>
               </td>

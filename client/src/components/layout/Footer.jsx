@@ -17,7 +17,7 @@ export function Footer() {
   return (
     <footer className="relative overflow-hidden mt-20 pt-16 pb-8 bg-muted/25">
       {/* Background Ambient Watermark */}
-      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[clamp(70px,14vw,160px)] font-black tracking-tighter text-slate-900/[0.03] dark:text-white/[0.02] select-none pointer-events-none whitespace-nowrap z-0">
+      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[clamp(70px,14vw,160px)] font-black tracking-tighter text-foreground/[0.03] select-none pointer-events-none whitespace-nowrap z-0">
         bloghub
       </div>
 
@@ -29,7 +29,7 @@ export function Footer() {
               <BrandMark letter="B" />
               <span className="text-base font-bold tracking-tight text-foreground">BlogHub</span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold select-none">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
                 Open Source
               </span>
             </div>

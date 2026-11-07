@@ -80,7 +80,7 @@ export class ErrorBoundary extends Component {
                 Refresh Page
               </button>
               <button
-                style={{ ...styles.button, background: '#0284c7' }}
+                style={{ ...styles.button, background: 'var(--color-primary, #0284c7)' }}
                 onClick={() => (window.location.href = '/')}
               >
                 Go to Home

@@ -48,8 +48,8 @@ const AdminPersonActivity = lazyPage(() => import('./features/admin'), 'AdminPer
 
 // Top route suspense progress bar
 const TopProgressBar = () => (
-  <div className="fixed top-0 left-0 right-0 h-[3px] bg-sky-500/15 overflow-hidden z-[9999]">
-    <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-sky-400 to-sky-600 animate-top-progress" />
+  <div className="fixed top-0 left-0 right-0 h-[3px] bg-primary/15 overflow-hidden z-[9999]">
+    <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-info to-primary animate-top-progress" />
   </div>
 );
 
