@@ -14,8 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **Trending Algorithm:** Time-weighted discovery feed ranking stories published within a 14-day window by read engagement.
 - **Community & Discussions:** User profiles, threaded comments, article likes, and author follows with database-level duplicate prevention.
 - **Administration & Moderation:** Management dashboard for reviewing stories, managing tags, updating user roles, and viewing site-wide activity logs.
-- **Design System & Theme Tokens:** Standardized semantic theme tokens, border-radius scales, and micro-typography across light and dark reading modes.
-- **Full-Stack Test Suite:** 336 automated tests spanning unit validations, in-memory database integration flows, and frontend interaction scenarios.
+- **Design System & Theme Tokens:** Standardized semantic theme tokens, border-radius scales, and micro-typography across light and dark reading modes, alongside accessible Checkbox, SearchInput, and TableSkeleton primitives.
+- **Full-Stack Test Suite:** 339 automated tests spanning unit validations, in-memory database integration flows, and frontend interaction scenarios.
 - **Architecture Documentation:** System architecture specifications and 9 Architecture Decision Records (ADRs) under `docs/adr/`.
 
 ### Security
@@ -27,3 +27,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Fixed
 - Inconsistent container padding and corner radiuses across article reader views.
 - Color contrast and hardcoded color literals unified into the central design token scale.
+- Redundant workspace and admin shell layouts consolidated, eliminating duplicate code and fixing mobile drawer keyboard accessibility.
