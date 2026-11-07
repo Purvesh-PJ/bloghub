@@ -1,74 +1,97 @@
-# ADR-0009: Performance and Load Testing Plan
+# ADR-0009: Non-Functional Tooling and Performance Roadmap
 
 - **Status:** Draft
-- **Date:** 2026-11-06
+- **Date:** 2026-11-06 (Updated 2026-11-08)
 - **Deciders:** Purvesh
 
 ---
 
 ## 1. Context & Problem Statement
 
-Right now, BlogHub has **332 tests** (190 on backend, 142 on frontend). Every single one of them is a **functional test**:
-- Does login work? Yes.
-- Does a user get saved to the database? Yes.
-- Do route guards block unauthorized users? Yes.
+BlogHub currently has comprehensive functional tests (backend Jest unit and integration suites with in-memory MongoDB; client Vitest and React Testing Library suites) and static code checks (ESLint 9, custom design system token lint rules, Prettier).
 
-What we **do not** test right now is **how the app behaves under real-world pressure**:
-- How slow does the site get when 500 people read articles at the same time?
-- Does the editor load fast on a cheap mobile phone?
-- What happens if someone loses internet while writing a post?
-- Can people using screen readers use the site?
+However, functional tests only prove correctness under single-user, isolated test conditions. They do not address non-functional production requirements:
+- Asset bundle size and client loading latency.
+- Backend throughput and P95/P99 latency under concurrent traffic.
+- Automated CI quality gates on PRs.
+- Real browser end-to-end user journeys.
+- Structured logging and production error telemetry.
 
-We don't need all of these on day one of `v1.0.0`, but we need a clear list so we don't forget them when traffic picks up.
+Implementing all non-functional tools simultaneously is impractical. We need a single decision record listing evaluated tool options so we can adopt them incrementally, starting with client asset optimization.
 
 ---
 
-## 2. What Is Missing & What Tools We Should Use
+## 2. Evaluated Tooling Options
 
-Here are the 5 practical areas we need to cover eventually:
+### Option 1: Frontend Performance & Bundle Size (Implemented & Active)
+- **Problem:** Rich markdown editor (`@uiw/react-md-editor`), syntax highlighter (`rehype-prism-plus`), and Radix primitives can inflate client bundle size, slowing initial page load on mobile devices.
+- **Tools Implemented:**
+  - `rollup-plugin-visualizer`: Generates interactive HTML bundle treemaps via `npm run build:analyze` (`client/dist/stats.html`).
+  - `size-limit`: Enforces strict brotlied bundle budgets on every build via `npm run size` (`client/.size-limit.json`).
+  - `@lhci/cli` (Lighthouse CI): Runs automated audits on a preview server via `npm run lighthouse` (`client/lighthouserc.json`).
+- **Baseline Audit Results (2026-11-08):**
+  - Performance: **92%**
+  - Accessibility: **93%**
+  - Best Practices: **96%**
+  - SEO: **91%**
+- **Execution Target:** **Completed**. Integrated into root and client scripts.
 
-### 1. Load Testing (Can the server handle traffic?)
-- **The problem:** We don't know how many users our MongoDB queries and trending algorithm can handle before requests start timing out.
-- **Recommended tool:** **k6** (simple scripts written in JavaScript).
-- **Goal:** Keep response times under 200ms when 100–500 virtual users visit the trending feed.
+### Option 2: CI/CD Automated Quality Gates
+- **Problem:** Currently, tests and linters run only on developer machines. Pull requests have no automated verification.
+- **Candidate Tools:** GitHub Actions workflow (`.github/workflows/ci.yml`) running `lint`, `format:check`, `test`, and `build`.
+- **Execution Target:** Step 2.
 
-### 2. Page Speed & Web Vitals (Does the site feel fast?)
-- **The problem:** The Markdown editor and code syntax highlighting bundles are large. Users on slow mobile connections might see a blank screen for seconds.
-- **Recommended tool:** **Lighthouse CI**.
-- **Goal:** Good Core Web Vitals (page loads within 2.5 seconds on mobile).
+### Option 3: Backend Concurrency & Load Testing
+- **Problem:** MongoDB query latency and rate-limiter behaviors are unverified under concurrent load.
+- **Candidate Tools:**
+  - **k6:** Modular JavaScript scenarios testing RPS and response time percentiles on `/api/posts/trending` and `/api/search`.
+  - **Autocannon:** Fast Node-based HTTP benchmarking tool.
+- **Execution Target:** Step 3.
 
-### 3. Basic Security Testing (Is the API safe from abuse?)
-- **The problem:** We have rate limiters, but we haven't automatically tested if someone can bypass them or send bad payloads to crash the server.
-- **Recommended tool:** **OWASP ZAP** (automated scan).
-- **Goal:** Catch common API security holes before deploying updates.
+### Option 4: Pre-Commit & Pre-Push Local Git Hooks
+- **Problem:** Developers can accidentally commit unformatted files or broken tests.
+- **Candidate Tools:** `husky` + `lint-staged`.
+- **Execution Target:** Step 4.
 
-### 4. Accessibility / a11y (Can everyone use the site?)
-- **The problem:** We don't verify if contrast in dark mode is readable or if buttons work properly with keyboards and screen readers.
-- **Recommended tool:** **axe-core** (runs directly inside our existing Vitest tests).
-- **Goal:** Zero accessibility warnings on reading and writing pages.
+### Option 5: End-to-End (E2E) Browser Testing
+- **Problem:** RTL + JSDOM cannot test real browser layout rendering, cross-route browser cookies, or network interruption recovery.
+- **Candidate Tools:** **Playwright** (multi-browser headless automation).
+- **Execution Target:** Step 5.
 
-### 5. Network Drop / Offline Recovery (Is the user's draft safe?)
-- **The problem:** If a writer is typing and their Wi-Fi drops, does the app silently protect their draft, or does it crash with an ugly error?
-- **Goal:** Verify that localStorage draft recovery always restores 100% of the text after a dropped connection.
+### Option 6: Production Observability & Error Telemetry
+- **Problem:** Express currently uses Morgan for console output. Production deployments require structured JSON logs and real-time crash alerting.
+- **Candidate Tools:** **Pino** for structured JSON logging with request correlation IDs, **Sentry** for client/server error tracking.
+- **Execution Target:** Step 6.
+
+### Option 7: Automated Security & Dependency Scanning
+- **Problem:** Vulnerable packages or committed secrets could slip into release branches.
+- **Candidate Tools:** `npm audit` automated checks, GitHub Dependabot, and GitLeaks / Trivy.
+- **Execution Target:** Step 7.
+
+### Option 8: Database Query Profiling
+- **Problem:** Complex aggregations in post analytics and activity feeds lack automated slow-query detection.
+- **Candidate Tools:** MongoDB built-in profiler + automated query explain tests.
+- **Execution Target:** Step 8.
 
 ---
 
-## 3. Simple Roadmap (When to build what)
+## 3. Decision
 
-We will tackle these in 2 simple steps when needed:
-
-1. **Phase 1 (Most important):**
-   - Add a basic **k6** script to test `/api/posts/trending` and `/api/posts/:slug`.
-   - Run **Lighthouse** on the frontend build to keep track of page speed.
-
-2. **Phase 2 (Nice to have):**
-   - Add **axe-core** to Vitest for accessibility checks.
-   - Run a scheduled security scan on the API.
+1. Keep ADR-0009 in **Draft** status while remaining non-functional areas (Options 2 through 8) are implemented iteratively.
+2. **Option 1 (Frontend Performance & Bundle Size) is Completed**:
+   - `rollup-plugin-visualizer` configured for on-demand bundle inspection.
+   - `size-limit` configured with strict chunk limits.
+   - `@lhci/cli` configured for automated Lighthouse audits.
+3. Transition ADR-0009 to **Accepted** once baseline CI/CD (Option 2) and Load Testing (Option 3) are operational.
 
 ---
 
-## 4. Why this ADR is in "Draft"
+## 4. Consequences
 
-- For `v1.0.0`, our functional tests give us full confidence that features work correctly.
-- Setting up load testing servers and heavy browser scans right now would slow down development without immediate traffic.
-- Keeping this ADR in **Draft** ensures the requirements and chosen tools are already decided whenever we are ready to implement them.
+### Positive
+- Prevents over-engineering by tackling one non-functional concern at a time.
+- Gives the team a persistent reference for all planned production tools.
+- Immediate visibility into client bundle health before deploying production assets.
+
+### Negative / Trade-offs
+- Until all steps complete, certain gaps (such as lack of PR CI automation) remain temporarily manual.

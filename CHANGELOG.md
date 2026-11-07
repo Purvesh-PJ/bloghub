@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **3-Tier UI Architecture & Composed Patterns:** Standardized 9 canonical composed patterns (`PageHeader`, `DataTableCard`, `DataView`, `FilterToolbar`, `StatsGrid`, `SettingSection`, `ChoiceGrid`, `ConfirmDialog`, `BulkActionBar`) in `src/components/patterns/`, composed 100% of core primitives to eliminate UI duplication across all user and administrative screens.
 - **Design System & Theme Tokens:** Standardized semantic theme tokens, border-radius scales, and micro-typography across light and dark reading modes, alongside accessible Checkbox, SearchInput, and TableSkeleton primitives.
 - **Full-Stack Test Suite:** 349 automated tests (190 backend unit and in-memory integration tests + 159 client component and interaction tests).
+- **Frontend Performance & Bundle Budget Tooling:** Configured `rollup-plugin-visualizer` for interactive treemap analysis, `size-limit` for bundle size budget enforcement, and `@lhci/cli` (Lighthouse CI) scoring 90%+ across Performance, Accessibility, Best Practices, and SEO.
 - **Architecture Documentation:** System architecture specifications and 10 Architecture Decision Records (ADRs) under `docs/adr/`.
 
 ### Security

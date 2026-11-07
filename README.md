@@ -82,6 +82,9 @@ Run all scripts from the repository root:
 | `npm run lint` | Run ESLint with token enforcement across client and backend |
 | `npm run format:check` | Verify formatting with Prettier |
 | `npm run build` | Build the client production bundle |
+| `npm run build:analyze` | Build client and output visual bundle treemap (`client/dist/stats.html`) |
+| `npm run size` | Verify client bundle size budgets with `size-limit` |
+| `npm run lighthouse` | Run Google Lighthouse CI audit on preview server |
 
 ---
 
