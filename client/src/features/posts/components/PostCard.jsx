@@ -98,7 +98,8 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
               {rawTags.slice(0, 3).map((tag) => {
                 const clean = tag.toLowerCase().replace(/^[#_-]+/, '');
                 return (
-                  <span
+                  <button
+                    type="button"
                     key={clean}
                     onClick={(e) => {
                       e.preventDefault();
@@ -106,10 +107,10 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
                       navigate(`/search?topic=${encodeURIComponent(clean)}`);
                     }}
                     title={`Explore stories in #${clean}`}
-                    className="text-xs font-semibold text-primary tracking-wide cursor-pointer hover:underline hover:underline-offset-4 transition-colors"
+                    className="text-xs font-semibold text-primary tracking-wide cursor-pointer hover:underline hover:underline-offset-4 transition-colors bg-transparent border-0 p-0"
                   >
                     #{clean}
-                  </span>
+                  </button>
                 );
               })}
             </div>

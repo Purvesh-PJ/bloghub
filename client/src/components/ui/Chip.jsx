@@ -35,29 +35,22 @@ export const Chip = React.forwardRef(
       as,
       onClick,
       interactive = true,
-      $selected,
-      $size,
-      $interactive,
       ...props
     },
     ref
   ) => {
     const Comp = as || 'button';
-    const isSelected = selected || $selected || false;
-    const finalSize = size || $size || 'md';
-    const isInteractive = interactive && ($interactive !== undefined ? $interactive : true);
-
     const isClickable = interactive && (Boolean(onClick) || Boolean(as));
 
     return (
       <Comp
         ref={ref}
         onClick={onClick}
-        aria-pressed={onClick ? isSelected : undefined}
+        aria-pressed={onClick ? selected : undefined}
         className={cn(
-          chipVariants({ size: finalSize, selected: isSelected }),
-          (!isClickable || !isInteractive) && 'cursor-default pointer-events-none hover:bg-muted',
-          isClickable && isInteractive && 'cursor-pointer active:scale-95',
+          chipVariants({ size, selected }),
+          (!isClickable || !interactive) && 'cursor-default pointer-events-none hover:bg-muted',
+          isClickable && interactive && 'cursor-pointer active:scale-95',
           className
         )}
         {...props}

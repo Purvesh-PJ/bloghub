@@ -44,17 +44,11 @@ export const Surface = React.forwardRef(
   (
     {
       className,
-      $tone = 'low',
-      tone,
-      $radius = 'lg',
-      radius,
-      $padding = 'xl',
-      padding,
-      $variant,
+      tone = 'low',
+      radius = 'lg',
+      padding = 'xl',
       variant,
-      $bordered,
       bordered,
-      $interactive,
       interactive,
       children,
       as: Comp = 'div',
@@ -62,22 +56,15 @@ export const Surface = React.forwardRef(
     },
     ref
   ) => {
-    const finalTone = tone || $tone || 'low';
-    const finalRadius = radius || $radius || 'lg';
-    const finalPadding = padding || $padding || 'xl';
-    const finalVariant = variant || $variant;
-    const isBordered = bordered ?? $bordered;
-    const isInteractive = interactive ?? $interactive;
-
     return (
       <Comp
         ref={ref}
         className={cn(
-          finalVariant ? variantClasses[finalVariant] : toneClasses[finalTone],
-          radiusClasses[finalRadius],
-          paddingClasses[finalPadding],
-          isBordered && 'border border-border',
-          isInteractive &&
+          variant ? variantClasses[variant] : toneClasses[tone],
+          radiusClasses[radius],
+          paddingClasses[padding],
+          bordered && 'border border-border',
+          interactive &&
             'cursor-pointer transition-all duration-150 hover:bg-muted hover:-translate-y-0.5 hover:shadow-md',
           className
         )}

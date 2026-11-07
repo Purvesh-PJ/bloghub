@@ -12,9 +12,8 @@ const widthClasses = {
   full: 'max-w-full',
 };
 
-export function PageShell({ children, width = 'wide', $width, className, ...props }) {
-  const finalWidth = width !== 'wide' ? width : $width || 'wide';
-  const maxWidthClass = widthClasses[finalWidth] || 'max-w-[1200px]';
+export function PageShell({ children, width = 'wide', className, ...props }) {
+  const maxWidthClass = widthClasses[width] || 'max-w-[1200px]';
 
   return (
     <div

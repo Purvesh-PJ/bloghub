@@ -1,14 +1,9 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
 
-export function Container({ className, style, maxWidth, $maxWidth, children, ...props }) {
-  const maxW = maxWidth || $maxWidth || '1200px';
+export function Container({ className, style, maxWidth = '1200px', children, ...props }) {
   return (
-    <div
-      className={cn('w-full mx-auto px-4', className)}
-      style={{ maxWidth: maxW, ...style }}
-      {...props}
-    >
+    <div className={cn('w-full mx-auto px-4', className)} style={{ maxWidth, ...style }} {...props}>
       {children}
     </div>
   );

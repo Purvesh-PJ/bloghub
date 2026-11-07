@@ -41,17 +41,11 @@ const initialsFrom = (name) =>
     .toUpperCase() || '?';
 
 export const Avatar = React.forwardRef(
-  (
-    { className, src, name, size = 'md', shape = 'circle', delayMs = 300, $size, $shape, ...props },
-    ref
-  ) => {
-    const finalSize = size || $size || 'md';
-    const finalShape = shape || $shape || 'circle';
-
+  ({ className, src, name, size = 'md', shape = 'circle', delayMs = 300, ...props }, ref) => {
     return (
       <RadixAvatar.Root
         ref={ref}
-        className={cn(avatarVariants({ size: finalSize, shape: finalShape }), className)}
+        className={cn(avatarVariants({ size, shape }), className)}
         {...props}
       >
         {src && (

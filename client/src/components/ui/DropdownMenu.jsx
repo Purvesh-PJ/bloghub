@@ -28,9 +28,8 @@ const DropdownMenuContent = React.forwardRef(
 );
 DropdownMenuContent.displayName = 'DropdownMenuContent';
 
-const DropdownMenuItem = React.forwardRef(({ className, tone, $tone, ...props }, ref) => {
-  const finalTone = tone || $tone;
-  const isDanger = finalTone === 'danger';
+const DropdownMenuItem = React.forwardRef(({ className, tone, ...props }, ref) => {
+  const isDanger = tone === 'danger';
 
   return (
     <RadixDropdown.Item

@@ -152,7 +152,6 @@ export function AdminTags() {
             onChange={(event) => setName(event.target.value)}
             placeholder="e.g. react, design, ai"
             hint="Lowercase tag without hash; e.g. 'react', 'cloud', 'architecture'."
-            autoFocus
           />
           <div className="flex gap-2 justify-end mt-6">
             <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
