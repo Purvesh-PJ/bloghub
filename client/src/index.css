@@ -95,7 +95,6 @@
 }
 
 @layer base {
-
   *,
   ::before,
   ::after {
@@ -255,7 +254,7 @@
   color: var(--text-secondary);
 }
 
-.post-content>*+* {
+.post-content > * + * {
   margin-top: 1.4em;
 }
 
@@ -293,7 +292,7 @@
   padding-left: 1.4em;
 }
 
-.post-content li+li {
+.post-content li + li {
   margin-top: 0.4em;
 }
 
@@ -352,7 +351,7 @@
 }
 
 .w-md-editor-text-input,
-.w-md-editor-text-pre>code {
+.w-md-editor-text-pre > code {
   font-family: monospace !important;
   font-size: 1rem !important;
   line-height: 1.7 !important;
