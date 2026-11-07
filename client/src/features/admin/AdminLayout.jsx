@@ -1,44 +1,17 @@
-import { useState, useCallback } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import { AdminSidebar, AdminHeader, AdminSignOutModal } from './components';
+import { WorkspaceLayout } from '../../components/layout/WorkspaceLayout';
+import { ADMIN_NAV_SECTIONS, getAdminPageTitle } from './components/adminNavConfig';
 
 /**
  * Admin shell.
- * Professional administrative control plane matching the design rhythm of the studio.
- * Orchestrates sidebar navigation, responsive mobile drawer, sticky topbar, and child routes.
+ * Uses unified WorkspaceLayout with administrator configuration.
  */
 export function AdminLayout() {
-  const { pathname } = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [confirmSignOut, setConfirmSignOut] = useState(false);
-
-  const closeMobile = useCallback(() => setMobileMenuOpen(false), []);
-  const openMobile = useCallback(() => setMobileMenuOpen(true), []);
-  const openSignOut = useCallback(() => setConfirmSignOut(true), []);
-
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      {/* Admin Sidebar & Accessible Mobile Drawer */}
-      <AdminSidebar
-        pathname={pathname}
-        mobileMenuOpen={mobileMenuOpen}
-        onCloseMobile={closeMobile}
-        onOpenSignOut={openSignOut}
-      />
-
-      {/* Frame & Main Content Area */}
-      <div className="flex flex-1 min-w-0 flex-col">
-        <AdminHeader pathname={pathname} onOpenMobile={openMobile} />
-
-        <main className="flex-1 min-w-0 flex flex-col bg-background">
-          <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-16 sm:pb-24 flex flex-col gap-6 sm:gap-8">
-            <Outlet />
-          </div>
-        </main>
-      </div>
-
-      {/* Confirmation Sign Out Modal */}
-      <AdminSignOutModal open={confirmSignOut} onOpenChange={setConfirmSignOut} />
-    </div>
+    <WorkspaceLayout
+      variant="admin"
+      navSections={ADMIN_NAV_SECTIONS}
+      getPageTitle={getAdminPageTitle}
+      containerClassName="w-full max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-16 sm:pb-24 flex flex-col gap-6 sm:gap-8"
+    />
   );
 }
