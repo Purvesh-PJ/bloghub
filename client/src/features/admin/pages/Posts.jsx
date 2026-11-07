@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { postService } from '../../posts/services/postService';
 import { useDebounced } from '../../posts/hooks/useDebounced';
 import { Section } from '../../../components/layout/PageShell';
-import { Card, Input, Chip, EmptyState, Skeleton } from '../../../components/ui';
+import { Card, Chip, EmptyState, TableSkeleton, SearchInput } from '../../../components/ui';
 import { ConfirmDialog, BulkActionBar } from '../../../components/shared';
 import { AdminPostsTable } from '../components/AdminPostsTable';
 import { queryKeys } from '../../../config/queryKeys';
@@ -126,24 +126,7 @@ export function AdminPosts() {
   ];
 
   if (isLoading) {
-    return (
-      <div aria-hidden="true">
-        <Card tone="low" radius="xl" padding="lg">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between py-3 border-b border-border/40 last:border-b-0"
-            >
-              <div className="flex flex-col gap-1.5 flex-1">
-                <Skeleton width="55%" height={16} className="rounded" />
-                <Skeleton width="25%" height={12} className="rounded" />
-              </div>
-              <Skeleton width={60} height={22} className="rounded-full" />
-            </div>
-          ))}
-        </Card>
-      </div>
-    );
+    return <TableSkeleton rows={6} hasCheckbox hasBadge />;
   }
 
   return (
@@ -173,12 +156,13 @@ export function AdminPosts() {
           ))}
 
           <div className="flex-1 min-w-[200px] max-w-[320px] ml-auto max-sm:ml-0 max-sm:max-w-full">
-            <Input
-              icon={<SearchIcon />}
+            <SearchInput
               placeholder="Search by title"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              aria-label="Search posts by title"
+              onClear={() => setQuery('')}
+              ariaLabel="Search posts by title"
+              density="compact"
             />
           </div>
         </div>

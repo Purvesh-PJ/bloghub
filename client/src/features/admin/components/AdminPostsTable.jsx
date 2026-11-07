@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { MoreHorizontal, Eye, Pencil, Trash2 } from 'lucide-react';
-import { Card, Table, Badge, DropdownMenu, Pagination } from '../../../components/ui';
+import { Card, Table, Badge, DropdownMenu, Pagination, Checkbox } from '../../../components/ui';
 
 const TONE = { public: 'success', draft: 'warning', private: 'neutral' };
 const LABEL = { public: 'Published', draft: 'Draft', private: 'Private' };
@@ -24,14 +24,12 @@ export function AdminPostsTable({
         <Table.Head>
           <tr>
             <th className="w-10 pl-6">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={allVisibleSelected}
                 onChange={onToggleSelectAll}
                 aria-label={
                   allVisibleSelected ? 'Clear this page' : 'Select every story on this page'
                 }
-                className="w-4 h-4 rounded accent-primary cursor-pointer"
               />
             </th>
             <th>Title</th>
@@ -46,12 +44,10 @@ export function AdminPostsTable({
           {visible.map((post) => (
             <tr key={post._id}>
               <td className="pl-6">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selectedIds.includes(post._id)}
                   onChange={() => onToggleSelected(post._id)}
                   aria-label={`Select ${post.title}`}
-                  className="w-4 h-4 rounded accent-primary cursor-pointer"
                 />
               </td>
               <td>
