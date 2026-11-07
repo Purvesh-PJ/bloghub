@@ -1,6 +1,5 @@
 import React from 'react';
-import { Info } from 'lucide-react';
-import { Card } from '../ui';
+import { Card, Alert } from '../ui';
 import { cn } from '../../lib/utils';
 
 /**
@@ -42,12 +41,7 @@ export function SettingSection({
       )}
 
       {/* Optional Informational Notice */}
-      {info && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-muted text-sm text-muted-foreground">
-          <Info className="w-4 h-4 shrink-0 text-primary" aria-hidden="true" />
-          <span>{info}</span>
-        </div>
-      )}
+      {info && <Alert variant="info">{info}</Alert>}
 
       {/* Main Settings Body */}
       {children}

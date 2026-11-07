@@ -8,15 +8,8 @@ import {
   Trash2,
   Activity,
 } from 'lucide-react';
-import {
-  Button,
-  Card,
-  Badge,
-  Table,
-  DropdownMenu,
-  Avatar,
-  Pagination,
-} from '../../../components/ui';
+import { Button, Badge, Table, DropdownMenu, Avatar, Pagination } from '../../../components/ui';
+import { DataTableCard } from '../../../components/patterns';
 
 export function AdminUsersTable({
   users = [],
@@ -30,7 +23,19 @@ export function AdminUsersTable({
   const navigate = useNavigate();
 
   return (
-    <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
+    <DataTableCard
+      pagination={
+        pagination && (
+          <Pagination
+            page={pagination.page}
+            pages={pagination.pages}
+            total={pagination.total}
+            noun="accounts"
+            onChange={onPageChange}
+          />
+        )
+      }
+    >
       <Table>
         <Table.Head>
           <tr>
@@ -135,14 +140,6 @@ export function AdminUsersTable({
           })}
         </Table.Body>
       </Table>
-
-      <Pagination
-        page={pagination.page}
-        pages={pagination.pages}
-        total={pagination.total}
-        noun="accounts"
-        onChange={onPageChange}
-      />
-    </Card>
+    </DataTableCard>
   );
 }

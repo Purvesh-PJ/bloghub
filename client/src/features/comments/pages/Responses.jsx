@@ -81,7 +81,13 @@ export function Responses() {
       ) : (
         <>
           {/* Post picker toolbar */}
-          <div className="flex items-center gap-4 flex-wrap p-4 px-6 rounded-2xl bg-card border border-border/60 mb-6">
+          <Card
+            tone="low"
+            radius="xl"
+            padding="lg"
+            bordered
+            className="flex items-center gap-4 flex-wrap mb-6"
+          >
             <div className="min-w-[260px] flex-1 max-w-[440px] max-sm:max-w-full">
               <Select
                 label="Story"
@@ -107,7 +113,7 @@ export function Responses() {
               {commentsData?.pagination?.total ?? comments.length} response
               {(commentsData?.pagination?.total ?? comments.length) === 1 ? '' : 's'}
             </span>
-          </div>
+          </Card>
 
           <DataView
             isLoading={commentsLoading}

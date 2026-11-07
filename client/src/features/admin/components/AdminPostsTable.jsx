@@ -1,7 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { MoreHorizontal, Eye, Pencil, Trash2 } from 'lucide-react';
-import { Card, Table, Badge, DropdownMenu, Pagination, Checkbox } from '../../../components/ui';
+import {
+  Table,
+  Badge,
+  DropdownMenu,
+  Pagination,
+  Checkbox,
+  IconButton,
+} from '../../../components/ui';
+import { DataTableCard } from '../../../components/patterns';
 
 const TONE = { public: 'success', draft: 'warning', private: 'neutral' };
 const LABEL = { public: 'Published', draft: 'Draft', private: 'Private' };
@@ -19,7 +27,19 @@ export function AdminPostsTable({
   const navigate = useNavigate();
 
   return (
-    <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
+    <DataTableCard
+      pagination={
+        pagination && (
+          <Pagination
+            page={pagination.page}
+            pages={pagination.pages}
+            total={pagination.total}
+            noun="stories"
+            onChange={onPageChange}
+          />
+        )
+      }
+    >
       <Table>
         <Table.Head>
           <tr>
@@ -71,13 +91,9 @@ export function AdminPostsTable({
               <td className="text-right pr-6">
                 <DropdownMenu
                   trigger={
-                    <button
-                      type="button"
-                      aria-label={`Actions for ${post.title}`}
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-                    >
+                    <IconButton aria-label={`Actions for ${post.title}`} variant="ghost" size="sm">
                       <MoreHorizontal className="w-4 h-4" />
-                    </button>
+                    </IconButton>
                   }
                 >
                   <DropdownMenu.Item onSelect={() => navigate(`/post/${post._id}`)}>
@@ -96,16 +112,6 @@ export function AdminPostsTable({
           ))}
         </Table.Body>
       </Table>
-
-      {pagination && (
-        <Pagination
-          page={pagination.page}
-          pages={pagination.pages}
-          total={pagination.total}
-          noun="stories"
-          onChange={onPageChange}
-        />
-      )}
-    </Card>
+    </DataTableCard>
   );
 }

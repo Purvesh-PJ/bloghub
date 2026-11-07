@@ -1,5 +1,5 @@
 import React from 'react';
-import { Chip, Select, SearchInput } from '../ui';
+import { Card, Chip, Select, SearchInput } from '../ui';
 import { cn } from '../../lib/utils';
 
 /**
@@ -27,11 +27,12 @@ export function FilterToolbar({
   const hasSearch = typeof searchValue === 'string' && typeof onSearchChange === 'function';
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-2.5 flex-wrap p-3 rounded-2xl bg-card border border-border/60 mb-4',
-        className
-      )}
+    <Card
+      tone="low"
+      radius="xl"
+      padding="md"
+      bordered
+      className={cn('flex items-center gap-2.5 flex-wrap mb-4', className)}
     >
       {/* 1. Filter Chips */}
       {hasFilters &&
@@ -80,6 +81,6 @@ export function FilterToolbar({
 
       {/* 4. Slot for custom actions or trailing content */}
       {children}
-    </div>
+    </Card>
   );
 }

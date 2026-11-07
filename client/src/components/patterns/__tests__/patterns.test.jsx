@@ -2,7 +2,16 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { FilterToolbar, DataView, SettingSection, StatsGrid, ChoiceGrid } from '../';
+import { Button, Table } from '../../ui';
+import {
+  PageHeader,
+  DataTableCard,
+  FilterToolbar,
+  DataView,
+  SettingSection,
+  StatsGrid,
+  ChoiceGrid,
+} from '../';
 
 describe('Composed Patterns', () => {
   describe('FilterToolbar Component', () => {
@@ -112,7 +121,7 @@ describe('Composed Patterns', () => {
           title="Account Privacy"
           description="Control your profile visibility."
           info="Signed in as user@test.com"
-          footer={<button type="button">Save Changes</button>}
+          footer={<Button variant="primary">Save Changes</Button>}
         >
           <div data-testid="settings-form">Form Input Controls</div>
         </SettingSection>
@@ -163,6 +172,53 @@ describe('Composed Patterns', () => {
 
       await user.click(darkCard);
       expect(onChange).toHaveBeenCalledWith('dark');
+    });
+  });
+
+  describe('PageHeader Component', () => {
+    it('renders heading, description, badge, and action slots', () => {
+      render(
+        <PageHeader
+          title="Articles"
+          description="Manage published articles"
+          badge={<span data-testid="test-badge">Beta</span>}
+          actions={<Button>Create Article</Button>}
+        />
+      );
+
+      expect(screen.getByRole('heading', { level: 1, name: 'Articles' })).toBeInTheDocument();
+      expect(screen.getByText('Manage published articles')).toBeInTheDocument();
+      expect(screen.getByTestId('test-badge')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Create Article' })).toBeInTheDocument();
+    });
+  });
+
+  describe('DataTableCard Component', () => {
+    it('renders card containing table content, optional header, and pagination', () => {
+      render(
+        <DataTableCard
+          header={<div data-testid="table-header">Filter bar</div>}
+          pagination={<div data-testid="table-pagination">Page 1 of 5</div>}
+        >
+          <Table>
+            <Table.Head>
+              <tr>
+                <th>Item</th>
+              </tr>
+            </Table.Head>
+            <Table.Body>
+              <tr>
+                <td>Row 1</td>
+              </tr>
+            </Table.Body>
+          </Table>
+        </DataTableCard>
+      );
+
+      expect(screen.getByTestId('table-header')).toBeInTheDocument();
+      expect(screen.getByRole('table')).toBeInTheDocument();
+      expect(screen.getByText('Row 1')).toBeInTheDocument();
+      expect(screen.getByTestId('table-pagination')).toBeInTheDocument();
     });
   });
 });

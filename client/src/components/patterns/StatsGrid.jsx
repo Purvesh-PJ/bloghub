@@ -31,13 +31,10 @@ export function StatsGrid({
     return (
       <div className={cn(gridClass, className)} aria-hidden="true">
         {Array.from({ length: placeholderCount }).map((_, index) => (
-          <div
-            key={`stats-skeleton-${index + 1}`}
-            className="p-6 rounded-2xl bg-card border border-border/60"
-          >
+          <Card key={`stats-skeleton-${index + 1}`} tone={tone} radius="lg" padding={cardPadding}>
             <Skeleton width={48} height={28} className="rounded" />
             <Skeleton width="60%" height={14} className="rounded mt-2" />
-          </div>
+          </Card>
         ))}
       </div>
     );

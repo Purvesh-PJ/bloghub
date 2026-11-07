@@ -32,11 +32,24 @@ These rules define standard industry best practices for building and maintaining
 
 ## 3. Design System & UI Consistency (Strict)
 
-- **Reuse Before Inventing (Zero Redundant Inventions):** Never write ad-hoc HTML elements with custom styles when a design system primitive already exists.
-  - Form & Actions: Use `Button`, `IconButton`, `Input`, `Select`, `Switch` from `src/components/ui/` — never hand-roll raw `<button>` or `<input>` with custom class chains.
-  - Feedback & Status: Use `Badge`, `Chip`, `Alert`, `EmptyState`, `ErrorState`, `Loading`, `Spinner`, `Skeleton` from `src/components/ui/`.
-  - Overlays & Popovers: Use `Dialog`, `Modal`, `DropdownMenu`, `Tabs`, `Table`, `Avatar` from `src/components/ui/`.
-  - Layout & Containers: Use `PageShell`, `Section`, `Column`, `Container`, `FullBleed`, `WorkspaceLayout` from `src/components/layout/`.
+- **3-Tier UI Architecture:**
+  - **Tier 1 — Core Primitives (`src/components/ui/`):** Atomic building blocks (`Button`, `IconButton`, `Input`, `Select`, `Card`, `Surface`, `Alert`, `Badge`, `Chip`, `Modal`, `Dialog`, `Table`, `Pagination`, `EmptyState`, `ErrorState`, `Skeleton`). Never hand-roll raw `<button>`, `<input>`, or ad-hoc styled divs when a primitive exists.
+  - **Tier 2 — Composed Patterns (`src/components/patterns/`):** High-level, domain-agnostic UI compositions built 100% out of Tier 1 primitives:
+    - `PageHeader`: Standardized page heading (`h1`), subtitle description, badge, and action slots.
+    - `DataTableCard`: Standardized tabular container wrapping `Card`, `Table`, and optional `Pagination` footer.
+    - `DataView`: Unified async data lifecycle state machine (`isLoading` with skeleton, `isError` with retry, `isEmpty`, and content).
+    - `FilterToolbar`: Unified toolbar combining filter chips, sort dropdown, search box, and action slots.
+    - `StatsGrid`: Responsive telemetry metrics grid (2, 3, 4, 5 columns) with loading skeletons.
+    - `SettingSection`: Structured settings card wrapper with title, description, `Alert` notice, and footer actions.
+    - `ChoiceGrid`: Accessible card-based visual radio selector using `Card as="button"`.
+    - `ConfirmDialog`: Standardized modal confirmation dialog with busy states and danger/confirm actions.
+    - `BulkActionBar`: Floating selection toolbar for batch actions ("X items selected").
+  - **Tier 3 — Feature Components (`src/features/*/components/`):** Domain-specific components carrying business logic (e.g., `PostCard`, `AuthorByline`, `CommentItem`).
+- **Reuse Before Inventing (Zero Redundant Inventions):**
+  - Whenever a screen needs a page heading, data table wrapper, toolbar, async lifecycle, metrics row, settings card, visual selector, or confirmation modal, it **MUST** use the canonical pattern from `src/components/patterns/`.
+  - Never write custom state ladders (`isLoading ? <Skeleton> : isError ? ... : isEmpty ? ...`).
+  - Never write ad-hoc modal confirmation dialogs or floating selection banners.
+  - Patterns must be composed 100% of primitives; they must never bypass primitives by rendering raw `<button>`, un-tokenized alerts, or raw skeleton cards.
 - **Strict Semantic Tokens Only:** Never use raw Tailwind palette colors (`slate-*`, `sky-*`, `red-*`, `amber-*`, `emerald-*`, `blue-*`, etc.). Always use role-based tokens:
   - Brand & Action: `bg-primary`, `text-primary`, `border-primary`, `text-primary-foreground`, `to-primary-dark`.
   - Status & Roles: `destructive` (danger/delete), `warning` (caution/pending), `success` (valid/live/confirmed), `info` (guide/notice).

@@ -7,17 +7,8 @@ import { tagService } from '../../posts/services/tagService';
 import { useTags } from '../../posts/hooks/useTags';
 import { topicIcon } from '../../../utils/topicIcons';
 import { Section } from '../../../components/layout/PageShell';
-import {
-  Button,
-  Card,
-  Input,
-  Modal,
-  Table,
-  TableSkeleton,
-  IconButton,
-} from '../../../components/ui';
-import { ConfirmDialog } from '../../../components/shared';
-import { DataView } from '../../../components/patterns';
+import { Button, Input, Modal, Table, TableSkeleton, IconButton } from '../../../components/ui';
+import { ConfirmDialog, DataView, DataTableCard } from '../../../components/patterns';
 import { queryKeys } from '../../../config/queryKeys';
 
 export function AdminTags() {
@@ -87,7 +78,7 @@ export function AdminTags() {
             </Button>
           </div>
 
-          <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
+          <DataTableCard>
             <Table>
               <Table.Head>
                 <tr>
@@ -120,7 +111,7 @@ export function AdminTags() {
                 })}
               </Table.Body>
             </Table>
-          </Card>
+          </DataTableCard>
         </DataView>
       </Section>
 

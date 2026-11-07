@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check } from 'lucide-react';
+import { Card } from '../ui';
 import { cn } from '../../lib/utils';
 
 const GRID_COLS = {
@@ -10,7 +11,7 @@ const GRID_COLS = {
 
 /**
  * ChoiceGrid — Composed pattern for visual selection cards (Theme, Visibility, Modes).
- * Handles accessible keyboard selection, selection state, and checkmark indicators.
+ * Composed entirely of the Card primitive with interactive focus/click states.
  */
 export function ChoiceGrid({
   options = [],
@@ -28,17 +29,23 @@ export function ChoiceGrid({
         const isActive = value === id;
 
         return (
-          <button
+          <Card
             key={id}
+            as="button"
             type="button"
             role="radio"
             aria-checked={isActive}
             onClick={() => onChange?.(id)}
+            tone={isActive ? 'accent' : 'base'}
+            radius="xl"
+            padding="xl"
+            bordered
+            interactive
             className={cn(
-              'relative flex flex-col items-center gap-3 p-6 rounded-2xl border transition-all cursor-pointer select-none text-center',
+              'relative flex flex-col items-center gap-3 text-center select-none cursor-pointer transition-all',
               isActive
-                ? 'bg-primary/12 text-primary border-primary shadow-sm'
-                : 'bg-muted text-muted-foreground border-transparent hover:bg-muted/80'
+                ? 'border-primary ring-1 ring-primary text-primary shadow-sm'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             )}
           >
             {isActive && (
@@ -51,7 +58,7 @@ export function ChoiceGrid({
               <span className="text-sm font-semibold">{label}</span>
               {description && <span className="text-xs text-muted-foreground">{description}</span>}
             </div>
-          </button>
+          </Card>
         );
       })}
     </div>
