@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Vendor Core (React, React-DOM, Router)",
+    "path": "dist/assets/vendor-*.js",
+    "limit": "160 kB"
+  },
+  {
+    "name": "Radix UI Primitives",
+    "path": "dist/assets/radix-*.js",
+    "limit": "65 kB"
+  },
+  {
+    "name": "Markdown Preview",
+    "path": "dist/assets/markdown-preview-*.js",
+    "limit": "140 kB"
+  },
+  {
+    "name": "Editor Component",
+    "path": "dist/assets/editor-*.js",
+    "limit": "35 kB"
+  },
+  {
+    "name": "Syntax Highlighting",
+    "path": "dist/assets/syntax-highlight-*.js",
+    "limit": "240 kB"
+  }
+]
