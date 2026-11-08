@@ -1,15 +1,15 @@
 # Contributing to BlogHub
 
-Thank you for contributing to BlogHub. This document outlines the streamlined process for developing, testing, and submitting contributions.
+Guidelines for developing, testing, and submitting contributions to BlogHub.
 
 ---
 
-## 🚀 Quick Development Setup
+## Development Setup
 
 1. **Clone & Setup:**
    ```bash
-   git clone https://github.com/Purvesh-PJ/bloghub.git
-   cd bloghub
+   git clone https://github.com/Purvesh-PJ/blogging_platform.git
+   cd blogging_platform
    cp .env.example .env
    ```
 
@@ -25,39 +25,39 @@ Thank you for contributing to BlogHub. This document outlines the streamlined pr
    ```
 
 4. **Run Dev Servers:**
-   - Backend API (`http://localhost:5000`): `npm run dev --prefix backend`
+   - Backend API (`http://localhost:4000`): `npm run dev --prefix backend`
    - Client App (`http://localhost:3000`): `npm run dev --prefix client`
 
 ---
 
-## 🌿 Branching & Git Workflow
+## Branching & Git Workflow
 
 We follow standard GitHub flow:
 
 1. **Branch Naming:**
-   - `feat/<topic>` — For new features and enhancements.
-   - `fix/<topic>` — For bug fixes.
-   - `docs/<topic>` — For documentation improvements.
-   - `chore/<topic>` — For tooling and maintenance.
+   - `feat/<topic>` — New features and enhancements.
+   - `fix/<topic>` — Bug fixes.
+   - `docs/<topic>` — Documentation improvements.
+   - `chore/<topic>` — Tooling and maintenance.
 
 2. **Commit Convention:**
-   Use clear conventional commit messages:
-   - `feat(auth): add redis token blacklist`
+   Use Conventional Commits:
+   - `feat(auth): add refresh token rotation`
    - `fix(editor): fix split-pane scrolling desync`
-   - `docs: update setup steps in getting-started`
+   - `docs: update setup steps in readme`
 
-3. **Linting and Testing Before Commits:**
-   Ensure all linting checks and automated tests pass:
+3. **Pre-commit Verification:**
+   Before pushing, verify that all linting checks and automated tests pass:
    ```bash
    npm run lint               # Enforces code safety, React rules, and design tokens
-   npm test --prefix backend  # Runs 190 Jest tests (unit + integration)
-   npm test --prefix client   # Runs 146 Vitest client tests
+   npm run format:check       # Prettier code formatting check
+   npm test                   # Runs full test suite (336 tests: backend + client)
    ```
-   *Note: Client linting strictly blocks raw arbitrary brackets (`[hsl(...)`, `[#...]`, `rounded-[...px]`). Use design tokens from `client/src/index.css` instead.*
+   *Note: Client linting strictly blocks raw palette colors (`sky-*`, `red-*`) and arbitrary syntax (`[#hex]`, `rounded-[...px]`). Always use design tokens from `client/src/index.css`.*
 
 ---
 
-## 📬 Submitting a Pull Request (PR)
+## Submitting a Pull Request
 
 1. Push your branch to GitHub:
    ```bash
@@ -65,4 +65,4 @@ We follow standard GitHub flow:
    ```
 2. Open a Pull Request targeting `main`.
 3. Fill in the provided PR template (Context, Changes, Verification).
-4. Automated checks and code reviews will run against the PR.
+4. Ensure all CI automated checks pass before requesting review.

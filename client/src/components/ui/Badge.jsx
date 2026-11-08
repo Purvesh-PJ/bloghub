@@ -9,10 +9,10 @@ export const badgeVariants = cva(
       variant: {
         neutral: 'bg-secondary text-muted-foreground border border-transparent',
         primary: 'bg-accent text-accent-foreground border border-transparent',
-        success: 'bg-success/15 text-emerald-600 dark:text-emerald-400 border border-transparent',
-        warning: 'bg-warning/15 text-amber-600 dark:text-amber-400 border border-transparent',
+        success: 'bg-success/15 text-success border border-transparent',
+        warning: 'bg-warning/15 text-warning border border-transparent',
         danger: 'bg-destructive/15 text-destructive border border-transparent',
-        info: 'bg-info/15 text-sky-600 dark:text-sky-400 border border-transparent',
+        info: 'bg-info/15 text-info border border-transparent',
         outline: 'text-foreground border border-border bg-transparent',
       },
     },

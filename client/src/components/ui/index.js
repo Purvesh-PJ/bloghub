@@ -3,7 +3,8 @@
 
 export { Button, IconButton } from './Button';
 export { Surface, Card } from './Surface';
-export { Input, TextArea, Eyebrow } from './Input';
+export { Input, TextArea, Eyebrow, SearchInput } from './Input';
+export { Checkbox } from './Checkbox';
 export { Badge } from './Badge';
 export { Chip } from './Chip';
 export { Container, Box, Flex } from './Container';
@@ -26,7 +27,7 @@ export { Tabs } from './Tabs';
 export { DropdownMenu } from './DropdownMenu';
 export { Alert } from './Alert';
 export { Loading } from './Loading';
-export { Skeleton, SkeletonText } from './Skeleton';
+export { Skeleton, SkeletonText, TableSkeleton, ListSkeleton } from './Skeleton';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { Table } from './Table';

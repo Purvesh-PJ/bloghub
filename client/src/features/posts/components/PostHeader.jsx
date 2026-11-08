@@ -15,7 +15,7 @@ export function PostHeader({ post, isAuthor, postStats, onOpenDelete }) {
         <div className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-2xl sm:rounded-3xl overflow-hidden bg-muted border border-border/40">
           <img
             src={post.imageURL}
-            alt={`Cover image for ${post.title}`}
+            alt={post.title || 'Post cover'}
             fetchPriority="high"
             decoding="async"
             className="w-full h-full object-cover"

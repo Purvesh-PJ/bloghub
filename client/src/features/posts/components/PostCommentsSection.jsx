@@ -119,7 +119,6 @@ export function PostCommentsSection({
                           onChange={(event) => setReplyText(event.target.value)}
                           rows={2}
                           aria-label="Write a reply"
-                          autoFocus
                         />
                       </div>
                       <Button

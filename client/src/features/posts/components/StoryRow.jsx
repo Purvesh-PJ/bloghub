@@ -15,7 +15,7 @@ import {
 import toast from 'react-hot-toast';
 
 import { ReadRateBar } from '../../analytics/components/ReadRateBar';
-import { Button, Badge, DropdownMenu } from '../../../components/ui';
+import { Button, Badge, DropdownMenu, Checkbox } from '../../../components/ui';
 import { cn } from '../../../lib/utils';
 
 export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onToggleSelected }) {
@@ -52,12 +52,10 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
     >
       {/* Select Cell */}
       <div className="flex items-center">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selected}
           onChange={() => onToggleSelected(post._id)}
           aria-label={`Select ${post.title || 'Untitled'}`}
-          className="w-4 h-4 rounded accent-primary cursor-pointer"
         />
       </div>
 

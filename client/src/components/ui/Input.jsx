@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useId } from 'react';
+import { Search, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export function Input({
@@ -132,5 +133,68 @@ export function Eyebrow({ className, children, ...props }) {
     >
       {children}
     </span>
+  );
+}
+
+/**
+ * SearchInput — accessible, styled search field with built-in search icon and clear button.
+ */
+export function SearchInput({
+  className,
+  value,
+  onChange,
+  onClear,
+  placeholder = 'Search…',
+  ariaLabel = 'Search',
+  disabled = false,
+  fullWidth = true,
+  density = 'default',
+  type = 'text',
+  ...props
+}) {
+  const hasValue = Boolean(value && String(value).length > 0);
+
+  const handleClear = () => {
+    if (onClear) {
+      onClear();
+    } else if (onChange) {
+      onChange({ target: { value: '' } });
+    }
+  };
+
+  return (
+    <div className={cn('relative flex items-center', fullWidth ? 'w-full' : 'w-auto')}>
+      <div className="absolute left-3.5 flex items-center pointer-events-none text-muted-foreground [&_svg]:h-4 [&_svg]:w-4">
+        <Search className="h-4 w-4" aria-hidden="true" />
+      </div>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        placeholder={placeholder}
+        aria-label={ariaLabel}
+        className={cn(
+          'flex w-full rounded-full bg-secondary pl-10 pr-9 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-150',
+          'border border-border',
+          'hover:bg-muted focus-visible:outline-none focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary',
+          'disabled:cursor-not-allowed disabled:opacity-50',
+          '[&::-webkit-search-cancel-button]:hidden',
+          density === 'compact' ? 'h-9 text-xs' : 'h-10 text-sm',
+          className
+        )}
+        {...props}
+      />
+      {hasValue && !disabled && (
+        <button
+          type="button"
+          onClick={handleClear}
+          aria-label="Clear search"
+          className="absolute right-2.5 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+        >
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
+      )}
+    </div>
   );
 }

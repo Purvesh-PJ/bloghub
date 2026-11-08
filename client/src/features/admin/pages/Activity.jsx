@@ -5,15 +5,15 @@ import { Activity as ActivityIcon } from 'lucide-react';
 import { activityService } from '../../analytics/services/activityService';
 import { Section } from '../../../components/layout/PageShell';
 import {
-  Card,
   Tabs,
   Table,
   EmptyState,
   ErrorState,
   Skeleton,
-  StatTile,
+  TableSkeleton,
   Pagination,
 } from '../../../components/ui';
+import { StatsGrid, DataTableCard } from '../../../components/patterns';
 import { AuditLogRow } from '../components/AuditLogRow';
 import { queryKeys } from '../../../config/queryKeys';
 
@@ -28,20 +28,7 @@ const TABS = [
 ];
 
 function RowsSkeleton() {
-  return (
-    <Card tone="low" radius="xl" padding="lg" aria-hidden="true">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="flex items-center gap-4 py-3 border-b border-border/40 last:border-b-0"
-        >
-          <Skeleton width="20%" height={14} className="rounded" />
-          <Skeleton width="45%" height={14} className="rounded" />
-          <Skeleton width="15%" height={12} className="rounded" />
-        </div>
-      ))}
-    </Card>
-  );
+  return <TableSkeleton rows={6} hasBadge={false} />;
 }
 
 export function AdminActivity() {
@@ -101,12 +88,17 @@ export function AdminActivity() {
     <>
       <Section>
         {/* Metric stats row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <StatTile label="Active this month" value={activity?.activeUsers ?? '—'} />
-          <StatTile label="Responses" value={activity?.comments?.total ?? '—'} />
-          <StatTile label="Likes" value={activity?.likes?.total ?? '—'} />
-          <StatTile label="Opens" value={activity?.views?.total ?? '—'} />
-        </div>
+        <StatsGrid
+          inCard={false}
+          columns={4}
+          items={[
+            { label: 'Active this month', value: activity?.activeUsers ?? '—' },
+            { label: 'Responses', value: activity?.comments?.total ?? '—' },
+            { label: 'Likes', value: activity?.likes?.total ?? '—' },
+            { label: 'Opens', value: activity?.views?.total ?? '—' },
+          ]}
+          className="mb-6"
+        />
 
         {/* Tab selection */}
         <div className="mb-4">
@@ -136,7 +128,17 @@ export function AdminActivity() {
               : 'Activity will show up here as people read and respond.'}
           </EmptyState>
         ) : (
-          <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
+          <DataTableCard
+            pagination={
+              <Pagination
+                page={section.page}
+                pages={section.totalPages}
+                total={section.total}
+                noun="events"
+                onChange={setPage}
+              />
+            }
+          >
             <Table>
               <Table.Head>
                 <tr>
@@ -153,15 +155,7 @@ export function AdminActivity() {
                 ))}
               </Table.Body>
             </Table>
-
-            <Pagination
-              page={section.page}
-              pages={section.totalPages}
-              total={section.total}
-              noun="events"
-              onChange={setPage}
-            />
-          </Card>
+          </DataTableCard>
         )}
       </Section>
     </>

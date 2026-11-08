@@ -8,7 +8,7 @@ import { cn } from '../../lib/utils';
  * Smooth image loading with graceful initial fallback and BlogHub gradient background.
  */
 const avatarVariants = cva(
-  'inline-flex shrink-0 items-center justify-center select-none overflow-hidden align-middle bg-gradient-to-tr from-primary to-sky-600 shadow-sm',
+  'inline-flex shrink-0 items-center justify-center select-none overflow-hidden align-middle bg-gradient-to-tr from-primary to-primary-dark shadow-sm',
   {
     variants: {
       size: {
@@ -41,17 +41,11 @@ const initialsFrom = (name) =>
     .toUpperCase() || '?';
 
 export const Avatar = React.forwardRef(
-  (
-    { className, src, name, size = 'md', shape = 'circle', delayMs = 300, $size, $shape, ...props },
-    ref
-  ) => {
-    const finalSize = size || $size || 'md';
-    const finalShape = shape || $shape || 'circle';
-
+  ({ className, src, name, size = 'md', shape = 'circle', delayMs = 300, ...props }, ref) => {
     return (
       <RadixAvatar.Root
         ref={ref}
-        className={cn(avatarVariants({ size: finalSize, shape: finalShape }), className)}
+        className={cn(avatarVariants({ size, shape }), className)}
         {...props}
       >
         {src && (
@@ -63,7 +57,7 @@ export const Avatar = React.forwardRef(
         )}
         <RadixAvatar.Fallback
           delayMs={src ? delayMs : 0}
-          className="flex h-full w-full items-center justify-center font-bold text-white select-none leading-none tracking-wide"
+          className="flex h-full w-full items-center justify-center font-bold text-primary-foreground select-none leading-none tracking-wide"
         >
           {initialsFrom(name)}
         </RadixAvatar.Fallback>

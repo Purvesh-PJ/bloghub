@@ -9,7 +9,8 @@ import { useCurrentUser } from '../hooks/useCurrentUser';
 import { postService } from '../../posts/services/postService';
 import { analyticsService } from '../../analytics/services/analyticsService';
 import { PageShell, Section } from '../../../components/layout/PageShell';
-import { Button, Card, EmptyState, ErrorState, Skeleton, StatTile } from '../../../components/ui';
+import { Button, Card, EmptyState, ErrorState, Skeleton } from '../../../components/ui';
+import { StatsGrid } from '../../../components/patterns';
 import { DashboardBanner, TopStoriesSection, DraftsAndReadingSection } from '../components';
 import { queryKeys } from '../../../config/queryKeys';
 
@@ -66,6 +67,33 @@ export function Dashboard() {
     return `${value ?? 0}${suffix}`;
   };
 
+  const userStats = [
+    {
+      label: 'Total story views',
+      icon: Eye,
+      value: metric(analytics?.totalViews),
+      hint: analyticsFailed ? 'Could not load' : 'Across all published stories',
+    },
+    {
+      label: 'Reads finished',
+      icon: CheckCircle2,
+      value: metric(analytics?.totalReads),
+      hint: analyticsFailed ? 'Could not load' : 'Readers who reached the end',
+    },
+    {
+      label: 'Read-through',
+      icon: BarChart2,
+      value: metric(analytics?.readRate, '%'),
+      hint: analyticsFailed ? 'Could not load' : 'Finished as a share of opened',
+    },
+    {
+      label: 'Stories',
+      icon: FileText,
+      value: metric(analytics?.totalPosts),
+      hint: drafts.length > 0 ? `${drafts.length} unfinished` : 'All published',
+    },
+  ];
+
   return (
     <PageShell>
       {/* Creator Banner */}
@@ -92,32 +120,7 @@ export function Dashboard() {
             title="Performance Overview"
             note="Aggregated readership across all your stories"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              <StatTile
-                label="Total story views"
-                icon={Eye}
-                value={metric(analytics?.totalViews)}
-                hint={analyticsFailed ? 'Could not load' : 'Across all published stories'}
-              />
-              <StatTile
-                label="Reads finished"
-                icon={CheckCircle2}
-                value={metric(analytics?.totalReads)}
-                hint={analyticsFailed ? 'Could not load' : 'Readers who reached the end'}
-              />
-              <StatTile
-                label="Read-through"
-                icon={BarChart2}
-                value={metric(analytics?.readRate, '%')}
-                hint={analyticsFailed ? 'Could not load' : 'Finished as a share of opened'}
-              />
-              <StatTile
-                label="Stories"
-                icon={FileText}
-                value={metric(analytics?.totalPosts)}
-                hint={drafts.length > 0 ? `${drafts.length} unfinished` : 'All published'}
-              />
-            </div>
+            <StatsGrid items={userStats} columns={4} inCard={false} />
           </Section>
 
           {analyticsFailed && (

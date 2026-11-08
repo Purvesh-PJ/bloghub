@@ -8,6 +8,7 @@ import { analyticsService } from '../../analytics/services/analyticsService';
 import { Section } from '../../../components/layout/PageShell';
 import { ReadRateHeadline } from '../../analytics';
 import { Button, Card, Badge, EmptyState, Skeleton, StatTile } from '../../../components/ui';
+import { StatsGrid } from '../../../components/patterns';
 import { queryKeys } from '../../../config/queryKeys';
 
 const format = (n) => new Intl.NumberFormat().format(n ?? 0);
@@ -29,14 +30,7 @@ export function AdminDashboard() {
   if (isLoading) {
     return (
       <div aria-hidden="true" className="flex flex-col gap-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} tone="low" radius="lg" padding="lg">
-              <Skeleton width={48} height={32} className="rounded" />
-              <Skeleton width={60} height={14} className="rounded mt-2" />
-            </Card>
-          ))}
-        </div>
+        <StatsGrid columns={5} isLoading={true} />
         <Card tone="low" padding="2xl" radius="xl">
           <Skeleton width="40%" height={28} className="rounded" />
           <div className="mt-3">
@@ -64,13 +58,7 @@ export function AdminDashboard() {
   return (
     <div className="flex flex-col gap-6">
       {/* Top 5 Stat Tiles */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {stats.map((stat) => (
-          <Card key={stat.label} tone="low" radius="lg" padding="lg">
-            <StatTile label={stat.label} value={stat.value} icon={stat.icon} padded={false} />
-          </Card>
-        ))}
-      </div>
+      <StatsGrid items={stats} columns={5} />
 
       {/* Read-through Headline */}
       <Card tone="low" padding="2xl" radius="xl">

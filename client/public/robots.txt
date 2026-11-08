@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Private, workspace and administrative routes
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /write
+Disallow: /stories
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /api/
+

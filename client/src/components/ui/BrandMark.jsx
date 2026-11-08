@@ -14,7 +14,7 @@ export function BrandMark({ size = 'md', letter = 'B', className, ...rest }) {
     <span
       aria-hidden="true"
       className={cn(
-        'inline-flex items-center justify-center shrink-0 rounded-sm bg-gradient-to-br from-sky-400 to-blue-600 text-white font-extrabold leading-none shadow-sm select-none',
+        'inline-flex items-center justify-center shrink-0 rounded-sm bg-gradient-to-br from-info to-primary text-primary-foreground font-extrabold leading-none shadow-sm select-none',
         sizeMap[size] || sizeMap.md,
         className
       )}

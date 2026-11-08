@@ -22,7 +22,7 @@ export function HeroIllustration() {
 
       {/* Floating Top Badge */}
       <div className="absolute -top-4 -right-2.5 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-card shadow-lg text-xs font-semibold text-foreground motion-safe:animate-bounce [animation-duration:6s]">
-        <Sparkles className="w-4 h-4 text-amber-500" />
+        <Sparkles className="w-4 h-4 text-warning" />
         <span>#Ideas & Perspectives</span>
       </div>
 
@@ -31,9 +31,9 @@ export function HeroIllustration() {
         {/* Window Header */}
         <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-border">
           <div className="flex gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500 opacity-80" />
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 opacity-80" />
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 opacity-80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-destructive opacity-80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-warning opacity-80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-success opacity-80" />
           </div>
           <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
             <PenTool className="w-3.5 h-3.5" />
@@ -60,7 +60,7 @@ export function HeroIllustration() {
           </div>
 
           <div className="flex items-center gap-2.5 my-1.5">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-400 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-info to-primary flex items-center justify-center text-primary-foreground font-bold text-xs shadow-sm">
               BH
             </div>
             <div className="text-xs text-muted-foreground">
@@ -87,7 +87,7 @@ export function HeroIllustration() {
         </div>
         <div className="flex flex-col">
           <strong className="text-sm font-bold text-foreground flex items-center gap-1">
-            Deep Read Attention <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+            Deep Read Attention <CheckCircle2 className="w-3.5 h-3.5 text-success" />
           </strong>
           <span className="text-xs text-muted-foreground">Zero popups · 100% ad-free</span>
         </div>
@@ -96,13 +96,13 @@ export function HeroIllustration() {
       {/* Floating Interaction Pills */}
       <div className="absolute bottom-5 -right-3.5 z-20 flex items-center gap-3 py-2 px-3.5 rounded-full bg-card shadow-lg text-xs font-semibold text-muted-foreground">
         <span className="inline-flex items-center gap-1">
-          <Heart className="w-3.5 h-3.5 text-red-500 fill-current" /> 248
+          <Heart className="w-3.5 h-3.5 text-destructive fill-current" /> 248
         </span>
         <span className="inline-flex items-center gap-1">
           <MessageSquare className="w-3.5 h-3.5 text-primary" /> 42
         </span>
         <span className="inline-flex items-center gap-1">
-          <Bookmark className="w-3.5 h-3.5 text-indigo-500" /> 95
+          <Bookmark className="w-3.5 h-3.5 text-primary" /> 95
         </span>
       </div>
     </div>

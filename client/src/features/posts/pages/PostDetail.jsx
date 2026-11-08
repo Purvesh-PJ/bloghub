@@ -189,7 +189,7 @@ export function PostDetail() {
     <>
       {/* Reading Progress Indicator */}
       <div
-        className="fixed top-14 left-0 right-0 h-[2px] z-[200] bg-transparent pointer-events-none"
+        className="fixed top-14 left-0 right-0 h-0.5 z-[200] bg-transparent pointer-events-none"
         aria-hidden="true"
       >
         <div
@@ -209,7 +209,7 @@ export function PostDetail() {
         {/* Article Body */}
         <article
           ref={articleRef}
-          className="text-[17px] sm:text-lg leading-[1.8] text-foreground [&_.wmde-markdown]:bg-transparent [&_.wmde-markdown]:text-inherit [&_.wmde-markdown]:font-sans [&_.wmde-markdown_h1]:text-3xl [&_.wmde-markdown_h1]:font-bold [&_.wmde-markdown_h1]:mt-8 [&_.wmde-markdown_h1]:mb-3 [&_.wmde-markdown_h1]:border-b-0 [&_.wmde-markdown_h2]:text-2xl [&_.wmde-markdown_h2]:font-bold [&_.wmde-markdown_h2]:mt-7 [&_.wmde-markdown_h2]:mb-3 [&_.wmde-markdown_h2]:border-b-0 [&_.wmde-markdown_h3]:text-xl [&_.wmde-markdown_h3]:font-semibold [&_.wmde-markdown_h3]:mt-6 [&_.wmde-markdown_h3]:mb-2 [&_.wmde-markdown_p]:text-muted-foreground [&_.wmde-markdown_p]:mb-4 [&_.wmde-markdown_li]:text-muted-foreground [&_.wmde-markdown_a]:text-primary [&_.wmde-markdown_a]:underline [&_.wmde-markdown_blockquote]:border-l-4 [&_.wmde-markdown_blockquote]:border-primary [&_.wmde-markdown_blockquote]:bg-muted/50 [&_.wmde-markdown_blockquote]:rounded-r-xl [&_.wmde-markdown_blockquote]:p-4 [&_.wmde-markdown_blockquote]:my-4 [&_.wmde-markdown_pre]:rounded-xl [&_.wmde-markdown_pre]:border [&_.wmde-markdown_pre]:border-border/40 [&_.wmde-markdown_pre]:p-4 sm:[&_.wmde-markdown_pre]:p-5 [&_.wmde-markdown_pre]:bg-muted/60 [&_.wmde-markdown_pre]:overflow-x-auto [&_.wmde-markdown_img]:rounded-2xl [&_.wmde-markdown_table]:rounded-xl"
+          className="text-base sm:text-lg leading-[1.8] text-foreground [&_.wmde-markdown]:bg-transparent [&_.wmde-markdown]:text-inherit [&_.wmde-markdown]:font-sans [&_.wmde-markdown_h1]:text-3xl [&_.wmde-markdown_h1]:font-bold [&_.wmde-markdown_h1]:mt-8 [&_.wmde-markdown_h1]:mb-3 [&_.wmde-markdown_h1]:border-b-0 [&_.wmde-markdown_h2]:text-2xl [&_.wmde-markdown_h2]:font-bold [&_.wmde-markdown_h2]:mt-7 [&_.wmde-markdown_h2]:mb-3 [&_.wmde-markdown_h2]:border-b-0 [&_.wmde-markdown_h3]:text-xl [&_.wmde-markdown_h3]:font-semibold [&_.wmde-markdown_h3]:mt-6 [&_.wmde-markdown_h3]:mb-2 [&_.wmde-markdown_p]:text-muted-foreground [&_.wmde-markdown_p]:mb-4 [&_.wmde-markdown_li]:text-muted-foreground [&_.wmde-markdown_a]:text-primary [&_.wmde-markdown_a]:underline [&_.wmde-markdown_blockquote]:border-l-4 [&_.wmde-markdown_blockquote]:border-primary [&_.wmde-markdown_blockquote]:bg-muted/50 [&_.wmde-markdown_blockquote]:rounded-r-xl [&_.wmde-markdown_blockquote]:p-4 [&_.wmde-markdown_blockquote]:my-4 [&_.wmde-markdown_pre]:rounded-xl [&_.wmde-markdown_pre]:border [&_.wmde-markdown_pre]:border-border/40 [&_.wmde-markdown_pre]:p-4 sm:[&_.wmde-markdown_pre]:p-5 [&_.wmde-markdown_pre]:bg-muted/60 [&_.wmde-markdown_pre]:overflow-x-auto [&_.wmde-markdown_img]:rounded-2xl [&_.wmde-markdown_table]:rounded-xl"
         >
           <div data-color-mode={mode}>
             <Markdown source={post.content} rehypePlugins={rehypePlugins} />

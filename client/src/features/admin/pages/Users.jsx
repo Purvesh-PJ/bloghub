@@ -6,8 +6,9 @@ import toast from 'react-hot-toast';
 import { userService } from '../../users/services/userService';
 import { useAuth } from '../../../features/auth';
 import { Section } from '../../../components/layout/PageShell';
-import { Card, EmptyState, ErrorState, Input, Skeleton } from '../../../components/ui';
+import { Input, TableSkeleton } from '../../../components/ui';
 import { ConfirmDialog } from '../../../components/shared';
+import { DataView } from '../../../components/patterns';
 import { AdminUsersTable } from '../components/AdminUsersTable';
 import { queryKeys } from '../../../config/queryKeys';
 
@@ -54,36 +55,6 @@ export function AdminUsers() {
     onError: (err) => toast.error(err.response?.data?.message || 'Could not delete that account'),
   });
 
-  if (isLoading) {
-    return (
-      <div aria-hidden="true">
-        <Card tone="low" radius="xl" padding="lg">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between py-3 border-b border-border/40 last:border-b-0"
-            >
-              <div className="flex items-center gap-3 flex-1">
-                <Skeleton variant="circle" width={36} height={36} />
-                <div className="flex flex-col gap-1 flex-1">
-                  <Skeleton width="35%" height={15} className="rounded" />
-                  <Skeleton width="20%" height={12} className="rounded" />
-                </div>
-              </div>
-              <Skeleton width={60} height={24} className="rounded-full" />
-            </div>
-          ))}
-        </Card>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <ErrorState title="The directory did not load" error={error} onRetry={() => refetch()} />
-    );
-  }
-
   const users = data?.data || [];
   const pagination = data?.pagination || { page: 1, pages: 1, total: 0 };
   const myId = me?._id || me?.user_id;
@@ -91,11 +62,18 @@ export function AdminUsers() {
   return (
     <>
       <Section>
-        {users.length === 0 ? (
-          <EmptyState icon={UsersIcon} title="Nobody here yet">
-            Accounts appear here as people register.
-          </EmptyState>
-        ) : (
+        <DataView
+          isLoading={isLoading}
+          skeleton={<TableSkeleton rows={6} hasAvatar hasBadge />}
+          isError={isError}
+          error={error}
+          errorTitle="The directory did not load"
+          onRetry={refetch}
+          isEmpty={users.length === 0}
+          emptyIcon={UsersIcon}
+          emptyTitle="Nobody here yet"
+          emptyDescription="Accounts appear here as people register."
+        >
           <AdminUsersTable
             users={users}
             myId={myId}
@@ -105,7 +83,7 @@ export function AdminUsers() {
             pagination={pagination}
             onPageChange={setPage}
           />
-        )}
+        </DataView>
       </Section>
 
       <ConfirmDialog

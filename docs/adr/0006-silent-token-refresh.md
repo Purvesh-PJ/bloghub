@@ -12,7 +12,7 @@ In single-page React applications, storing authentication tokens securely is not
 - If you store JWTs in browser `localStorage` or `sessionStorage`, any Cross-Site Scripting (XSS) vulnerability or malicious npm dependency can run `localStorage.getItem('token')` and steal the user's account permanently.
 - If you store the access token only in JavaScript memory, the token is safe from XSS, but it disappears whenever the user refreshes the page, and it expires after 15 minutes mid-session.
 
-We needed a strategy that keeps the access token 100% immune to XSS theft while providing a seamless, zero-interruption user experience.
+We needed a strategy that keeps the access token 100% immune to XSS theft while providing a zero-interruption user experience.
 
 ## 2. Options Considered
 

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Info, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Card, Button, Input, Switch, Modal } from '../../../components/ui';
+import { Button, Input, Switch, Modal } from '../../../components/ui';
+import { SettingSection } from '../../../components/patterns';
 
 const MIN_PASSWORD_LENGTH = 10;
 
@@ -43,14 +44,7 @@ export function AccountSecuritySettings({
   return (
     <>
       {/* Privacy Settings */}
-      <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">Privacy</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            What other people can see on your public page.
-          </p>
-        </div>
-
+      <SettingSection title="Privacy" description="What other people can see on your public page.">
         <div className="flex flex-col">
           <Switch
             label="Show my email address"
@@ -65,26 +59,19 @@ export function AccountSecuritySettings({
             onChange={(val) => onPrivacyChange('showActivity', val)}
           />
         </div>
-      </Card>
+      </SettingSection>
 
       {/* Change Password */}
-      <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-6">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">Change password</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            You will be signed out everywhere once it changes, including here — that is what makes
-            changing it useful if the old one leaked.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-muted text-sm text-muted-foreground">
-          <Info className="w-4 h-4 shrink-0 text-primary" />
-          <span>
+      <SettingSection
+        title="Change password"
+        description="You will be signed out everywhere once it changes, including here — that is what makes changing it useful if the old one leaked."
+        info={
+          <>
             Signed in as <strong>{userEmail}</strong>. Sessions use a short-lived token that
             refreshes silently while you are active.
-          </span>
-        </div>
-
+          </>
+        }
+      >
         <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
           <Input
             label="Current password"
@@ -121,24 +108,20 @@ export function AccountSecuritySettings({
             </Button>
           </div>
         </form>
-      </Card>
+      </SettingSection>
 
       {/* Delete Account */}
-      <Card tone="low" radius="xl" padding="2xl" className="flex flex-col gap-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-destructive">Delete account</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Removes your account, your stories, and the comments and likes on them. This cannot be
-            undone.
-          </p>
-        </div>
-
+      <SettingSection
+        title="Delete account"
+        tone="danger"
+        description="Removes your account, your stories, and the comments and likes on them. This cannot be undone."
+      >
         <div>
           <Button variant="dangerTonal" onClick={() => setConfirmDelete(true)}>
             <Trash2 className="w-4 h-4 mr-1.5" /> Delete my account
           </Button>
         </div>
-      </Card>
+      </SettingSection>
 
       {/* Delete Account Modal */}
       <Modal

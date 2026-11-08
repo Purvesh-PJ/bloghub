@@ -20,7 +20,8 @@ import { PageShell } from '../../../components/layout/PageShell';
 import { PostCard } from '../components/PostCard';
 import { PostCardSkeleton } from '../components/PostCardSkeleton';
 import { topicIcon } from '../../../utils/topicIcons';
-import { Button, Chip, EmptyState } from '../../../components/ui';
+import { Button, Chip, EmptyState, SearchInput } from '../../../components/ui';
+import { PageHeader } from '../../../components/patterns';
 import { excerpt, readingTimeFromLength } from '../../../utils/text';
 import { queryKeys } from '../../../config/queryKeys';
 
@@ -110,45 +111,26 @@ export function Search() {
   return (
     <PageShell>
       {/* ── 1. Top Header: Icon, Title & Subtitle + Search Bar ─── */}
-      <div className="flex items-center justify-between gap-6 flex-wrap">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/12 text-primary shrink-0">
-            <Compass className="w-6 h-6" />
+      <PageHeader
+        title="Explore Stories"
+        description="Discover deep-dive breakdowns, engineering essays, and creative perspectives."
+        eyebrow={
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-primary/12 text-primary shrink-0 mb-1">
+            <Compass className="w-5 h-5" />
           </div>
-          <div className="flex flex-col gap-0.5 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
-              Explore Stories
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-[54ch]">
-              Discover deep-dive breakdowns, engineering essays, and creative perspectives.
-            </p>
+        }
+        actions={
+          <div className="w-full sm:w-[360px]">
+            <SearchInput
+              placeholder="Search titles, stories, tags and authors…"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onClear={clearSearch}
+              ariaLabel="Search stories"
+            />
           </div>
-        </div>
-
-        {/* Search input box */}
-        <div className="relative w-full sm:max-w-[360px]">
-          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search titles, stories, tags and authors…"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            aria-label="Search stories"
-            autoFocus={Boolean(query)}
-            className="w-full h-10 pl-10 pr-9 rounded-full bg-muted text-foreground placeholder:text-muted-foreground text-sm border-none focus:outline-none focus:bg-card focus:ring-2 focus:ring-primary/30 transition-all"
-          />
-          {draft && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              title="Clear search"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       {/* ── 2. Dynamic Topic & Tags Navigation Bar ───────────────────────── */}
       {!query && (
@@ -200,7 +182,7 @@ export function Search() {
         searching ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <PostCardSkeleton key={i} layout="stacked" />
+              <PostCardSkeleton key={`search-skel-${i + 1}`} layout="stacked" />
             ))}
           </div>
         ) : results.length === 0 ? (
@@ -249,7 +231,7 @@ export function Search() {
       loadingPosts ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <PostCardSkeleton key={i} layout="stacked" />
+            <PostCardSkeleton key={`browse-skel-${i + 1}`} layout="stacked" />
           ))}
         </div>
       ) : !hasPosts ? (

@@ -7,16 +7,8 @@ import { tagService } from '../../posts/services/tagService';
 import { useTags } from '../../posts/hooks/useTags';
 import { topicIcon } from '../../../utils/topicIcons';
 import { Section } from '../../../components/layout/PageShell';
-import {
-  Button,
-  Card,
-  Input,
-  Modal,
-  Table,
-  Loading,
-  EmptyState,
-  IconButton,
-} from '../../../components/ui';
+import { Button, Input, Modal, Table, TableSkeleton, IconButton } from '../../../components/ui';
+import { PageHeader, ConfirmDialog, DataView, DataTableCard } from '../../../components/patterns';
 import { queryKeys } from '../../../config/queryKeys';
 
 export function AdminTags() {
@@ -61,88 +53,82 @@ export function AdminTags() {
     createMutation.mutate(clean);
   };
 
-  if (isLoading) return <Loading text="Loading tags…" />;
-
   return (
     <>
+      <PageHeader
+        title="Topics & Tags"
+        description="Organize stories into discoverable topics and categories."
+        actions={
+          <Button size="sm" onClick={() => setOpen(true)}>
+            <Plus className="w-3.5 h-3.5 mr-1" /> New tag
+          </Button>
+        }
+      />
+
       <Section>
-        {tags.length === 0 ? (
-          <EmptyState
-            icon={Hash}
-            title="No tags yet"
-            actions={
+        <DataView
+          isLoading={isLoading}
+          skeleton={<TableSkeleton rows={5} hasAvatar={false} hasBadge={false} />}
+          isEmpty={!tags || tags.length === 0}
+          emptyState={{
+            icon: Hash,
+            title: 'No tags yet',
+            description:
+              'Tags help writers categorize stories and help readers discover relevant topics.',
+            action: (
               <Button onClick={() => setOpen(true)}>
                 <Plus className="w-4 h-4 mr-1.5" /> Create the first one
               </Button>
-            }
-          >
-            Tags help writers categorize stories and help readers discover relevant topics.
-          </EmptyState>
-        ) : (
-          <>
-            <div className="flex items-center justify-end gap-2 mb-4">
-              <Button size="sm" onClick={() => setOpen(true)}>
-                <Plus className="w-3.5 h-3.5 mr-1" /> New tag
-              </Button>
-            </div>
-
-            <Card tone="low" radius="xl" padding="none" className="overflow-hidden">
-              <Table>
-                <Table.Head>
-                  <tr>
-                    <th className="pl-6">Topic / Tag</th>
-                    <th>Published Stories</th>
-                    <th aria-label="Actions" className="pr-6" />
-                  </tr>
-                </Table.Head>
-                <Table.Body>
-                  {tags.map((tag) => {
-                    const Icon = topicIcon(tag.name);
-                    return (
-                      <tr key={tag._id || tag.name}>
-                        <td className="pl-6">
-                          <span className="inline-flex items-center gap-2.5 text-sm font-semibold text-foreground">
-                            <Icon className="w-4 h-4 text-primary" />#{tag.name}
-                          </span>
-                        </td>
-                        <td>{tag.postCount ?? tag.posts?.length ?? 0}</td>
-                        <td className="text-right pr-6">
-                          <IconButton
-                            aria-label={`Remove the tag ${tag.name}`}
-                            onClick={() => setPendingDelete(tag)}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </IconButton>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </Table.Body>
-              </Table>
-            </Card>
-          </>
-        )}
+            ),
+          }}
+        >
+          <DataTableCard>
+            <Table>
+              <Table.Head>
+                <tr>
+                  <th className="pl-6">Topic / Tag</th>
+                  <th>Published Stories</th>
+                  <th aria-label="Actions" className="pr-6" />
+                </tr>
+              </Table.Head>
+              <Table.Body>
+                {tags?.map((tag) => {
+                  const Icon = topicIcon(tag.name);
+                  return (
+                    <tr key={tag._id || tag.name}>
+                      <td className="pl-6">
+                        <span className="inline-flex items-center gap-2.5 text-sm font-semibold text-foreground">
+                          <Icon className="w-4 h-4 text-primary" />#{tag.name}
+                        </span>
+                      </td>
+                      <td>{tag.postCount ?? tag.posts?.length ?? 0}</td>
+                      <td className="text-right pr-6">
+                        <IconButton
+                          aria-label={`Remove the tag ${tag.name}`}
+                          onClick={() => setPendingDelete(tag)}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </IconButton>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </Table.Body>
+            </Table>
+          </DataTableCard>
+        </DataView>
       </Section>
 
-      <Modal
+      <ConfirmDialog
         open={Boolean(pendingDelete)}
         onOpenChange={(next) => !next && setPendingDelete(null)}
         title={`Remove #${pendingDelete?.name ?? ''}?`}
         description="Writers can create the tag again by using it on a story."
-      >
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setPendingDelete(null)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => deleteMutation.mutate(pendingDelete._id)}
-            disabled={deleteMutation.isPending}
-          >
-            {deleteMutation.isPending ? 'Removing…' : 'Remove'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        confirmText="Remove"
+        confirmVariant="danger"
+        isLoading={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate(pendingDelete._id)}
+      />
 
       <Modal open={open} onOpenChange={setOpen} title="New tag / topic">
         <form onSubmit={handleCreate}>
@@ -152,7 +138,6 @@ export function AdminTags() {
             onChange={(event) => setName(event.target.value)}
             placeholder="e.g. react, design, ai"
             hint="Lowercase tag without hash; e.g. 'react', 'cloud', 'architecture'."
-            autoFocus
           />
           <div className="flex gap-2 justify-end mt-6">
             <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
