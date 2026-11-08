@@ -52,7 +52,7 @@ export function Header() {
           {/* Search Button (Pill shaped with ⌘K) */}
           <button
             onClick={() => navigate('/search')}
-            aria-label="Search stories (⌘K)"
+            aria-label="Search stories ⌘K"
             className={cn(
               'inline-flex items-center gap-2 h-[34px] px-2.5 sm:px-3 rounded-full text-xs font-medium cursor-pointer transition-all duration-150 select-none',
               'bg-muted text-muted-foreground border-none shadow-none',
@@ -60,7 +60,7 @@ export function Header() {
             )}
           >
             <Search className="h-3.5 w-3.5 shrink-0" />
-            <span className="hidden sm:inline opacity-80">Search...</span>
+            <span className="hidden sm:inline">Search stories</span>
             <kbd className="hidden sm:inline-flex items-center font-sans text-2xs px-1.5 py-0.5 rounded bg-card text-muted-foreground border-none">
               ⌘K
             </kbd>
