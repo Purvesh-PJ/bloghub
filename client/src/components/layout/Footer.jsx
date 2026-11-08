@@ -42,9 +42,9 @@ export function Footer() {
 
           {/* Quick Discover Pathways */}
           <div className="flex flex-col gap-3">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Explore
-            </h4>
+            </h3>
             <div className="flex flex-col gap-2.5">
               <Link
                 to="/search"
@@ -75,9 +75,9 @@ export function Footer() {
           {/* Popular Community Topics */}
           {topics.length > 0 && (
             <div className="flex flex-col gap-3 sm:col-span-2 lg:col-span-1">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Popular Topics
-              </h4>
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {topics.map((topic) => (
                   <Link
