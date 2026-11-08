@@ -31,3 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Color contrast and hardcoded color literals unified into the central design token scale.
 - Redundant workspace and admin shell layouts consolidated, eliminating duplicate code and fixing mobile drawer keyboard accessibility.
 - Ad-hoc HTML elements and duplicate async state ladders across screens replaced with canonical composed patterns, guaranteeing 100% primitive compliance and zero ESLint token violations.
+- **Lighthouse CI Audits (#13, #14, #15):**
+  - Generated valid `robots.txt` directives for crawler indexing, raising SEO score to 100% (#13).
+  - Corrected primary token contrast (4.88:1 light, 9.4:1 dark), aligned search label names, and normalized sequential heading hierarchy (`h1 -> h2 -> h3`), raising Accessibility to 100% (#14).
+  - Code-split route pages and decoupled layout shells from feature barrels, eliminating ~1.1 MB of unused JavaScript on initial load and raising Performance score to 97% (#15).
