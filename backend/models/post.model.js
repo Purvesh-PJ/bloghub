@@ -92,6 +92,14 @@ PostSchema.index({ visibility: 1, createdAt: -1 });
 PostSchema.index({ user: 1, createdAt: -1 });
 // The moderation log: edited stories, most recently edited first.
 PostSchema.index({ editedAt: -1 });
+// Fast lookup of posts by tag (for tag feeds and search).
+PostSchema.index({ tags: 1 });
+// Full-text search across titles and article bodies.
+// Weighted so matches in the title rank higher than matches in the body.
+PostSchema.index(
+  { title: 'text', content: 'text' },
+  { weights: { title: 10, content: 2 }, name: 'PostTextIndex' },
+);
 // Slug lookups. Unique, because a slug that can repeat cannot identify a post — the field
 // was previously generated and stored but never constrained, so duplicates accumulated
 // silently. `createPost` resolves collisions before insert.
