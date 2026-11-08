@@ -1,9 +1,10 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
-import { ProtectedRoute, AdminRoute } from './features/auth';
+import { ProtectedRoute } from './features/auth/guards/ProtectedRoute';
+import { AdminRoute } from './features/auth/guards/AdminRoute';
 
-import { Home } from './features/posts';
+import { Home } from './features/posts/pages/Home';
 
 // Helper for lazy loading named exports
 const lazyPage = (importFn, name) =>
@@ -21,30 +22,33 @@ const WorkspaceLayout = lazyPage(
   () => import('./components/layout/WorkspaceLayout'),
   'WorkspaceLayout'
 );
-const AdminLayout = lazyPage(() => import('./features/admin'), 'AdminLayout');
+const AdminLayout = lazyPage(() => import('./features/admin/AdminLayout'), 'AdminLayout');
 
 // Public Pages (Home loaded eagerly for instant landing)
-const Login = lazyPage(() => import('./features/auth'), 'Login');
-const Register = lazyPage(() => import('./features/auth'), 'Register');
-const PostDetail = lazyPage(() => import('./features/posts'), 'PostDetail');
-const Search = lazyPage(() => import('./features/posts'), 'Search');
+const Login = lazyPage(() => import('./features/auth/pages/Login'), 'Login');
+const Register = lazyPage(() => import('./features/auth/pages/Register'), 'Register');
+const PostDetail = lazyPage(() => import('./features/posts/pages/PostDetail'), 'PostDetail');
+const Search = lazyPage(() => import('./features/posts/pages/Search'), 'Search');
 const NotFound = lazyPage(() => import('./components/layout/NotFound'), 'NotFound');
-const UserProfile = lazyPage(() => import('./features/users'), 'UserProfile');
+const UserProfile = lazyPage(() => import('./features/users/pages/UserProfile'), 'UserProfile');
 
 // User Pages (Protected)
-const WritePost = lazyPage(() => import('./features/posts'), 'WritePost');
-const Dashboard = lazyPage(() => import('./features/users'), 'Dashboard');
-const Stories = lazyPage(() => import('./features/posts'), 'Stories');
-const Responses = lazyPage(() => import('./features/comments'), 'Responses');
-const Settings = lazyPage(() => import('./features/users'), 'Settings');
+const WritePost = lazyPage(() => import('./features/posts/pages/WritePost'), 'WritePost');
+const Dashboard = lazyPage(() => import('./features/users/pages/Dashboard'), 'Dashboard');
+const Stories = lazyPage(() => import('./features/posts/pages/Stories'), 'Stories');
+const Responses = lazyPage(() => import('./features/comments/pages/Responses'), 'Responses');
+const Settings = lazyPage(() => import('./features/users/pages/Settings'), 'Settings');
 
 // Admin Pages
-const AdminDashboard = lazyPage(() => import('./features/admin'), 'AdminDashboard');
-const AdminPosts = lazyPage(() => import('./features/admin'), 'AdminPosts');
-const AdminTags = lazyPage(() => import('./features/admin'), 'AdminTags');
-const AdminUsers = lazyPage(() => import('./features/admin'), 'AdminUsers');
-const AdminActivity = lazyPage(() => import('./features/admin'), 'AdminActivity');
-const AdminPersonActivity = lazyPage(() => import('./features/admin'), 'AdminPersonActivity');
+const AdminDashboard = lazyPage(() => import('./features/admin/pages/Dashboard'), 'AdminDashboard');
+const AdminPosts = lazyPage(() => import('./features/admin/pages/Posts'), 'AdminPosts');
+const AdminTags = lazyPage(() => import('./features/admin/pages/Tags'), 'AdminTags');
+const AdminUsers = lazyPage(() => import('./features/admin/pages/Users'), 'AdminUsers');
+const AdminActivity = lazyPage(() => import('./features/admin/pages/Activity'), 'AdminActivity');
+const AdminPersonActivity = lazyPage(
+  () => import('./features/admin/pages/PersonActivity'),
+  'AdminPersonActivity'
+);
 
 // Top route suspense progress bar
 const TopProgressBar = () => (

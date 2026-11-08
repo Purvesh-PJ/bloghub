@@ -10,7 +10,7 @@ import { Toaster } from 'react-hot-toast';
 import App from './App';
 import { ErrorBoundary } from './components/layout/ErrorBoundary';
 import { ThemeProvider } from './styles/ThemeProvider';
-import { AuthProvider } from './features/auth';
+import { AuthProvider } from './features/auth/context/AuthContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
