@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Github, PenLine, Compass, Heart } from 'lucide-react';
-import { useTags } from '../../features/posts';
+import { useTags } from '../../features/posts/hooks/useTags';
 import { BrandMark } from '../ui';
 import { cn } from '../../lib/utils';
 
