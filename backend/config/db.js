@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
+const logger = require('../utils/logger');
 
 async function connectDB() {
   const uri = process.env.MONGODB_URI || process.env.MONGO_DB_URI || process.env.DB_URI;
   if (!uri) {
-    console.error('[DB] Missing MONGODB_URI / DB_URI environment variable');
+    logger.error('[DB] Missing MONGODB_URI / DB_URI environment variable');
     process.exit(1);
   }
 
@@ -11,24 +12,24 @@ async function connectDB() {
     // `useNewUrlParser` and `useUnifiedTopology` were no-ops from Mongoose 6 and were removed
     // in 8; the underlying driver now always behaves the way they used to request.
     await mongoose.connect(uri);
-    console.log('[DB] Connection successful');
+    logger.info('[DB] Connection successful');
 
     mongoose.connection.on('error', (err) => {
-      console.error('[DB] Connection error:', err);
+      logger.error({ err }, '[DB] Connection error');
     });
 
     mongoose.connection.on('disconnected', () => {
-      console.warn('[DB] Disconnected');
+      logger.warn('[DB] Disconnected');
     });
 
     // Optional: graceful shutdown
     process.on('SIGINT', async () => {
       await mongoose.connection.close();
-      console.log('[DB] Connection closed due to app termination');
+      logger.info('[DB] Connection closed due to app termination');
       process.exit(0);
     });
   } catch (err) {
-    console.error('[DB] Failed to connect:', err);
+    logger.error({ err }, '[DB] Failed to connect');
     process.exit(1);
   }
 }

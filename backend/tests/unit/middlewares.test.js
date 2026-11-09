@@ -2,12 +2,13 @@ const multer = require('multer');
 const errorHandler = require('../../middlewares/errorHandler');
 const authorizeSelfOrAdmin = require('../../middlewares/authorizeSelfOrAdmin');
 const { AppError } = require('../../utils/AppError');
+const logger = require('../../utils/logger');
 
 describe('middlewares/errorHandler', () => {
   let req;
   let res;
   let next;
-  let consoleErrorSpy;
+  let loggerErrorSpy;
 
   beforeEach(() => {
     req = {};
@@ -16,11 +17,11 @@ describe('middlewares/errorHandler', () => {
       json: jest.fn().mockReturnThis(),
     };
     next = jest.fn();
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    loggerErrorSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    consoleErrorSpy.mockRestore();
+    loggerErrorSpy.mockRestore();
   });
 
   it('handles AppError with expected = true', () => {
@@ -33,7 +34,7 @@ describe('middlewares/errorHandler', () => {
       message: 'Post not found',
       error: 'NotFound',
     });
-    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    expect(loggerErrorSpy).not.toHaveBeenCalled();
   });
 
   it('masks unexpected 500 errors with generic message in production', () => {
@@ -45,7 +46,7 @@ describe('middlewares/errorHandler', () => {
       success: false,
       message: 'An internal server error occurred',
     });
-    expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(loggerErrorSpy).toHaveBeenCalled();
   });
 
   it('translates Mongoose CastError to 400 InvalidValue', () => {

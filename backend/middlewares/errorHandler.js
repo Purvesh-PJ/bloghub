@@ -1,4 +1,5 @@
 const multer = require('multer');
+const logger = require('../utils/logger');
 
 /**
  * Terminal error middleware.
@@ -36,9 +37,13 @@ const errorHandler = (err, req, res, _next) => {
     code = err.code;
   }
 
-  // Only genuine faults are worth a log line; anticipated 4xx would just be noise.
+  // Only genuine faults are worth an error log line; anticipated 4xx are standard client errors.
   if (status >= 500) {
-    console.error('[Error]', err.stack || err.message);
+    if (req.log) {
+      req.log.error({ err, status }, err.message);
+    } else {
+      logger.error({ err, status }, err.message);
+    }
   }
 
   return res.status(status).json({

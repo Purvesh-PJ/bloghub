@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Added
 - **Backend Concurrency & Load Testing Harness:** Configured `autocannon` benchmarks (`npm run test:load`) testing health, trending, and search endpoints with an isolated, hermetic ephemeral in-memory MongoDB runner.
+- **Production Structured Logging & Request Tracing (Pino):** Configured `pino` and `pino-http` for non-blocking asynchronous JSON logging, automated `x-request-id` correlation ID assignment on every response, automatic PII masking (passwords, tokens, authorization headers), and contextual error logging linking 5xx stack traces to request IDs.
 
 ### Performance
 - **Trending Posts In-Memory TTL Cache:** Added a 60-second in-memory TTL cache to `trendingService.js` with automatic test isolation (0ms TTL in Jest), boosting throughput from 35 req/sec to 3,713 req/sec and reducing p95 latency from 1,866ms to 17ms.
