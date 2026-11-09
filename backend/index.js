@@ -38,12 +38,16 @@ const pageViewRoutes = require('./routes/page-view.routes');
 const userActivityRoutes = require('./routes/user-activity.routes');
 const settingsRoutes = require('./routes/settings.routes');
 
+const requestLogger = require('./middlewares/requestLogger');
+const logger = require('./utils/logger');
+
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 const clientUrl = process.env.CLIENT_URL;
 
+app.use(requestLogger);
 app.use(helmet()); // Baseline security headers
 
 // Credentialed CORS cannot use a wildcard origin. Authentication is bearer-token based, so
@@ -126,7 +130,7 @@ const PORT = process.env.PORT || 4000;
 const shouldListen = process.env.NODE_ENV !== 'test' && !process.env.VERCEL;
 if (shouldListen) {
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
   });
 }
 

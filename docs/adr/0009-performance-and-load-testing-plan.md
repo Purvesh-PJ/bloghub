@@ -56,10 +56,15 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
 - **Candidate Tools:** **Playwright** (multi-browser headless automation).
 - **Execution Target:** Step 4.
 
-### Option 5: Production Observability & Error Telemetry
-- **Problem:** Express currently lacks structured logging and error observability. Production deployments require structured JSON logs, request correlation IDs, and real-time crash alerting.
-- **Candidate Tools:** **Pino** for structured JSON logging with request correlation IDs, **Sentry** for client/server error tracking.
-- **Execution Target:** Step 5.
+### Option 5: Production Observability & Error Telemetry (Implemented & Active)
+- **Problem:** Express previously relied on synchronous `console.log` and lacked machine-readable logs, request tracing, and automated PII redaction.
+- **Tools Implemented:**
+  - `pino` & `pino-http`: High-throughput asynchronous JSON logging (`backend/utils/logger.js`, `backend/middlewares/requestLogger.js`).
+  - Automated `x-request-id` header assignment on every response for distributed request tracing.
+  - Automatic PII redaction for passwords, JWT tokens, cookies, and authorization headers.
+  - Structured error logging in `errorHandler.js` attaching error stack traces to `reqId`.
+  - Silent logging in Jest test mode to prevent test report pollution.
+- **Execution Target:** **Completed**. Integrated across backend middlewares, errors, and configuration.
 
 ### Option 6: Automated Security & Dependency Scanning
 - **Problem:** Vulnerable packages or committed secrets could slip into release branches.
@@ -89,7 +94,11 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
    - `autocannon` benchmark harness configured via `npm run test:load`.
    - Trending query aggregation cached with 60-second TTL (35 -> 3,713 RPS).
    - Post search indexed with compound full-text and tag indexes (p95: 97ms).
-4. Transition ADR-0009 to **Accepted** once baseline local git hooks (Option 3) and core telemetry are operational.
+4. **Option 5 (Production Observability & Error Telemetry) is Completed**:
+   - `pino` and `pino-http` configured for asynchronous structured JSON logging.
+   - Request correlation IDs (`x-request-id`) attached to all HTTP responses.
+   - PII redaction and centralized error logging active across backend.
+5. Transition ADR-0009 to **Accepted** once baseline local git hooks (Option 3) and remaining non-functional tools are operational.
 
 ---
 
