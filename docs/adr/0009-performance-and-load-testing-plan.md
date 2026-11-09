@@ -57,7 +57,7 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
 - **Execution Target:** Step 4.
 
 ### Option 5: Production Observability & Error Telemetry
-- **Problem:** Express currently uses Morgan for console output. Production deployments require structured JSON logs and real-time crash alerting.
+- **Problem:** Express currently lacks structured logging and error observability. Production deployments require structured JSON logs, request correlation IDs, and real-time crash alerting.
 - **Candidate Tools:** **Pino** for structured JSON logging with request correlation IDs, **Sentry** for client/server error tracking.
 - **Execution Target:** Step 5.
 

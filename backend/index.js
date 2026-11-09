@@ -38,15 +38,12 @@ const pageViewRoutes = require('./routes/page-view.routes');
 const userActivityRoutes = require('./routes/user-activity.routes');
 const settingsRoutes = require('./routes/settings.routes');
 
-const logger = require('./middlewares/logger'); // Import logging middleware
-
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 const clientUrl = process.env.CLIENT_URL;
 
-app.use(logger); // Use the logging middleware
 app.use(helmet()); // Baseline security headers
 
 // Credentialed CORS cannot use a wildcard origin. Authentication is bearer-token based, so
