@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **Backend Concurrency & Load Testing Harness:** Configured `autocannon` benchmarks (`npm run test:load`) testing health, trending, and search endpoints with an isolated, hermetic ephemeral in-memory MongoDB runner.
 - **Production Structured Logging & Request Tracing (Pino):** Configured `pino` and `pino-http` for non-blocking asynchronous JSON logging, automated `x-request-id` correlation ID assignment on every response, automatic PII masking (passwords, tokens, authorization headers), and contextual error logging linking 5xx stack traces to request IDs.
 
+### Security
+- **Automated Security & Vulnerability Scanning:** Configured root and workspace audit scripts alongside GitHub Dependabot for automated weekly security scanning of client and backend dependencies.
+
 ### Performance
 - **Trending Posts In-Memory TTL Cache:** Added a 60-second in-memory TTL cache to `trendingService.js` with automatic test isolation (0ms TTL in Jest), boosting throughput from 35 req/sec to 3,713 req/sec and reducing p95 latency from 1,866ms to 17ms.
 - **Full-Text & Tag Indexing on Stories:** Added compound text index on `{ title: 'text', content: 'text' }` (weights 10 and 2) and `{ tags: 1 }` in `post.model.js`, paired with indexed `$text` search in `search.controllers.js` and regex fallback, reducing search p95 latency to 97ms under 50 concurrent connections.

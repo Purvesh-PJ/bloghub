@@ -19,6 +19,7 @@
     "build:analyze": "npm --prefix client run build:analyze",
     "size": "npm --prefix client run size",
     "lighthouse": "npm --prefix client run lighthouse",
+    "audit": "npm --prefix backend audit && npm --prefix client audit",
     "bump": "node scripts/bump-version.js",
     "bump:patch": "node scripts/bump-version.js patch",
     "bump:minor": "node scripts/bump-version.js minor",

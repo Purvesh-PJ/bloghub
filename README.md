@@ -86,6 +86,7 @@ Run all scripts from the repository root:
 | `npm run build:analyze` | Build client and output visual bundle treemap (`client/dist/stats.html`) |
 | `npm run size` | Verify client bundle size budgets with `size-limit` |
 | `npm run lighthouse` | Run Google Lighthouse CI audit on preview server |
+| `npm run audit` | Run automated security dependency vulnerability scanning |
 
 ---
 

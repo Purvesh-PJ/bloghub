@@ -66,10 +66,12 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
   - Silent logging in Jest test mode to prevent test report pollution.
 - **Execution Target:** **Completed**. Integrated across backend middlewares, errors, and configuration.
 
-### Option 6: Automated Security & Dependency Scanning
-- **Problem:** Vulnerable packages or committed secrets could slip into release branches.
-- **Candidate Tools:** `npm audit` automated checks, GitHub Dependabot, and GitLeaks / Trivy.
-- **Execution Target:** Step 6.
+### Option 6: Automated Security & Dependency Scanning (Implemented & Active)
+- **Problem:** Vulnerable packages or outdated dependencies could introduce security exploits into release branches.
+- **Tools Implemented:**
+  - `npm run audit`: Root and workspace security vulnerability scanning across backend and client.
+  - GitHub Dependabot (`.github/dependabot.yml`): Automated weekly dependency scanning and security patch PRs for backend and client ecosystems.
+- **Execution Target:** **Completed**. Integrated into root scripts and GitHub configuration.
 
 ### Option 7: Database Query Profiling
 - **Problem:** Complex aggregations in post analytics and activity feeds lack automated slow-query detection.
@@ -98,7 +100,10 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
    - `pino` and `pino-http` configured for asynchronous structured JSON logging.
    - Request correlation IDs (`x-request-id`) attached to all HTTP responses.
    - PII redaction and centralized error logging active across backend.
-5. Transition ADR-0009 to **Accepted** once baseline local git hooks (Option 3) and remaining non-functional tools are operational.
+5. **Option 6 (Automated Security & Dependency Scanning) is Completed**:
+   - `npm run audit` configured for vulnerability audits.
+   - GitHub Dependabot enabled for weekly automated security dependency updates.
+6. Transition ADR-0009 to **Accepted** once baseline local git hooks (Option 3) and remaining non-functional tools are operational.
 
 ---
 
