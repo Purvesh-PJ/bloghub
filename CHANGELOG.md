@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **Production Structured Logging & Request Tracing (Pino):** Configured `pino` and `pino-http` for non-blocking asynchronous JSON logging, automated `x-request-id` correlation ID assignment on every response, automatic PII masking (passwords, tokens, authorization headers), and contextual error logging linking 5xx stack traces to request IDs.
 
 ### Security
-- **Automated Security & Vulnerability Scanning:** Configured root and workspace audit scripts alongside GitHub Dependabot for automated weekly security scanning of client and backend dependencies.
+- **Automated Security & Vulnerability Scanning:** Configured root and workspace audit scripts (`npm run audit`) for hermetic security scanning across client and backend dependencies.
 
 ### Performance
 - **Trending Posts In-Memory TTL Cache:** Added a 60-second in-memory TTL cache to `trendingService.js` with automatic test isolation (0ms TTL in Jest), boosting throughput from 35 req/sec to 3,713 req/sec and reducing p95 latency from 1,866ms to 17ms.
