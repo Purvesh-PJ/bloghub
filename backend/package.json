@@ -12,6 +12,7 @@
     "test:unit": "jest tests/unit --runInBand",
     "test:watch": "jest --watch --runInBand",
     "test:coverage": "jest --coverage --runInBand",
+    "test:load": "node scripts/load-test.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -36,6 +37,7 @@
     "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
+    "autocannon": "^9.0.0",
     "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",

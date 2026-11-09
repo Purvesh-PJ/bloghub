@@ -36,6 +36,22 @@ const MIN_VIEWS = 3;
 
 const WEIGHTS = { view: 1, like: 3, comment: 5, read: 5 };
 
+// In-memory cache for trending posts with a configurable TTL (default: 60 seconds).
+// In Jest test environments, caching defaults to 0ms so isolated test cases
+// that seed distinct post engagement scenarios do not leak state across runs.
+const isTestEnv = process.env.NODE_ENV === 'test' && process.env.ENABLE_TRENDING_CACHE !== 'true';
+const DEFAULT_CACHE_TTL_MS = isTestEnv ? 0 : 60 * 1000;
+
+let trendingCache = {
+  key: null,
+  data: null,
+  expiry: 0,
+};
+
+const clearTrendingCache = () => {
+  trendingCache = { key: null, data: null, expiry: 0 };
+};
+
 /** Counts documents in `collection` that point at each post and fall inside the window. */
 const countsInWindow = (collection, since, as) => ({
   $lookup: {
@@ -57,9 +73,23 @@ const firstOrZero = (field) => ({ $ifNull: [{ $arrayElemAt: [`$${field}.n`, 0] }
  * @param {object} [options]
  * @param {number} [options.limit] how many to return
  * @param {number} [options.windowDays]
+ * @param {boolean} [options.forceRefresh] whether to bypass and refresh cache
+ * @param {number} [options.ttlMs] cache retention in milliseconds
  * @returns {Promise<{posts: object[], window: number}>} empty posts when nothing qualifies
  */
-exports.getTrendingPosts = async ({ limit = 10, windowDays = WINDOW_DAYS } = {}) => {
+exports.getTrendingPosts = async ({
+  limit = 10,
+  windowDays = WINDOW_DAYS,
+  forceRefresh = false,
+  ttlMs = DEFAULT_CACHE_TTL_MS,
+} = {}) => {
+  const cacheKey = `${limit}:${windowDays}`;
+  const now = Date.now();
+
+  if (!forceRefresh && ttlMs > 0 && trendingCache.key === cacheKey && now < trendingCache.expiry) {
+    return trendingCache.data;
+  }
+
   const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000);
 
   const ranked = await Post.aggregate([
@@ -109,24 +139,38 @@ exports.getTrendingPosts = async ({ limit = 10, windowDays = WINDOW_DAYS } = {})
     { $project: { _id: 1, score: 1, readRate: 1, views: 1, reads: 1 } },
   ]);
 
-  if (ranked.length === 0) return { posts: [], window: windowDays };
+  let result;
+  if (ranked.length === 0) {
+    result = { posts: [], window: windowDays };
+  } else {
+    // Hydrated through the model rather than rebuilt in the pipeline, so the shape matches
+    // every other post response and the populate config lives in one place.
+    const byId = new Map(ranked.map((row) => [String(row._id), row]));
 
-  // Hydrated through the model rather than rebuilt in the pipeline, so the shape matches
-  // every other post response and the populate config lives in one place.
-  const byId = new Map(ranked.map((row) => [String(row._id), row]));
+    const posts = await Post.find({ _id: { $in: ranked.map((row) => row._id) } })
+      .populate('user', 'username')
+      .populate('tags', 'name')
+      .lean();
 
-  const posts = await Post.find({ _id: { $in: ranked.map((row) => row._id) } })
-    .populate('user', 'username')
-    .populate('tags', 'name')
-    .lean();
+    // $in does not preserve order, so restore the ranking and attach the figures behind it.
+    const ordered = posts
+      .map((post) => ({ ...post, trending: byId.get(String(post._id)) }))
+      .sort((a, b) => b.trending.score - a.trending.score);
 
-  // $in does not preserve order, so restore the ranking and attach the figures behind it.
-  const ordered = posts
-    .map((post) => ({ ...post, trending: byId.get(String(post._id)) }))
-    .sort((a, b) => b.trending.score - a.trending.score);
+    result = { posts: ordered, window: windowDays };
+  }
 
-  return { posts: ordered, window: windowDays };
+  if (ttlMs > 0) {
+    trendingCache = {
+      key: cacheKey,
+      data: result,
+      expiry: now + ttlMs,
+    };
+  }
+
+  return result;
 };
 
 exports.TRENDING_WEIGHTS = WEIGHTS;
 exports.TRENDING_MIN_VIEWS = MIN_VIEWS;
+exports.clearTrendingCache = clearTrendingCache;

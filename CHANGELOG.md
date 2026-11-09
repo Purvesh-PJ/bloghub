@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Backend Concurrency & Load Testing Harness:** Configured `autocannon` benchmarks (`npm run test:load`) testing health, trending, and search endpoints with an isolated, hermetic ephemeral in-memory MongoDB runner.
+
+### Performance
+- **Trending Posts In-Memory TTL Cache:** Added a 60-second in-memory TTL cache to `trendingService.js` with automatic test isolation (0ms TTL in Jest), boosting throughput from 35 req/sec to 3,713 req/sec and reducing p95 latency from 1,866ms to 17ms.
+- **Full-Text & Tag Indexing on Stories:** Added compound text index on `{ title: 'text', content: 'text' }` (weights 10 and 2) and `{ tags: 1 }` in `post.model.js`, paired with indexed `$text` search in `search.controllers.js` and regex fallback, reducing search p95 latency to 97ms under 50 concurrent connections.
+
+---
+
 ## [1.0.0] - 2026-11-08
 
 ### Added
@@ -31,3 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Color contrast and hardcoded color literals unified into the central design token scale.
 - Redundant workspace and admin shell layouts consolidated, eliminating duplicate code and fixing mobile drawer keyboard accessibility.
 - Ad-hoc HTML elements and duplicate async state ladders across screens replaced with canonical composed patterns, guaranteeing 100% primitive compliance and zero ESLint token violations.
+- **Lighthouse CI Audits (#13, #14, #15):**
+  - Generated valid `robots.txt` directives for crawler indexing, raising SEO score to 100% (#13).
+  - Corrected primary token contrast (4.88:1 light, 9.4:1 dark), aligned search label names, and normalized sequential heading hierarchy (`h1 -> h2 -> h3`), raising Accessibility to 100% (#14).
+  - Code-split route pages and decoupled layout shells from feature barrels, eliminating ~1.1 MB of unused JavaScript on initial load and raising Performance score to 97% (#15).

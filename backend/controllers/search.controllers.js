@@ -43,22 +43,49 @@ exports.getSearchQueries = asyncHandler(async (req, res) => {
     User.find({ username: rx }).select('_id').lean(),
   ]);
 
-  const results = await Post.find({
-    visibility: 'public',
-    $or: [
-      { title: rx },
-      { content: rx },
-      ...(tags.length ? [{ tags: { $in: tags.map((tag) => tag._id) } }] : []),
-      ...(authors.length ? [{ user: { $in: authors.map((author) => author._id) } }] : []),
-    ],
-  })
-    // A title match is what somebody usually means; recency breaks the tie among the rest.
-    .select('title content imageURL createdAt user tags')
-    .populate('user', 'username')
-    .populate('tags', 'name')
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .lean();
+  // Attempt fast text-indexed search when the query consists of words or phrases
+  let results = [];
+  const isWordQuery = /^[\w\s-]+$/.test(pattern);
+
+  if (isWordQuery) {
+    try {
+      results = await Post.find({
+        visibility: 'public',
+        $or: [
+          { $text: { $search: query.trim() } },
+          ...(tags.length ? [{ tags: { $in: tags.map((tag) => tag._id) } }] : []),
+          ...(authors.length ? [{ user: { $in: authors.map((author) => author._id) } }] : []),
+        ],
+      })
+        .select('title content imageURL createdAt user tags')
+        .populate('user', 'username')
+        .populate('tags', 'name')
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean();
+    } catch {
+      results = [];
+    }
+  }
+
+  // Fallback to substring regex when text index returns 0 matches (e.g. partial substrings or punctuation)
+  if (!results.length) {
+    results = await Post.find({
+      visibility: 'public',
+      $or: [
+        { title: rx },
+        { content: rx },
+        ...(tags.length ? [{ tags: { $in: tags.map((tag) => tag._id) } }] : []),
+        ...(authors.length ? [{ user: { $in: authors.map((author) => author._id) } }] : []),
+      ],
+    })
+      .select('title content imageURL createdAt user tags')
+      .populate('user', 'username')
+      .populate('tags', 'name')
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+  }
 
   const titleMatches = new RegExp(pattern, 'i');
 

@@ -79,6 +79,7 @@ Run all scripts from the repository root:
 | `npm run test:backend` | Run backend Jest tests (unit and in-memory integration) |
 | `npm run test:client` | Run client Vitest tests |
 | `npm run test:coverage` | Generate coverage reports for both workspaces |
+| `npm run test:load` | Run backend concurrency load test benchmarks with `autocannon` |
 | `npm run lint` | Run ESLint with token enforcement across client and backend |
 | `npm run format:check` | Verify formatting with Prettier |
 | `npm run build` | Build the client production bundle |
