@@ -36,17 +36,20 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
   - Best Practices: **96%**.
 - **Execution Target:** **Completed**. Integrated into root and client scripts.
 
-### Option 2: Backend Concurrency & Load Testing (Next Target)
-- **Problem:** MongoDB query latency and rate-limiter behaviors are unverified under concurrent load.
-- **Candidate Tools:**
-  - **k6:** Modular JavaScript scenarios testing RPS and response time percentiles on `/api/posts/trending` and `/api/search`.
-  - **Autocannon:** Fast Node-based HTTP benchmarking tool.
-- **Execution Target:** **Step 2 (Immediate)**.
+### Option 2: Backend Concurrency & Load Testing (Implemented & Active)
+- **Problem:** MongoDB query latency, aggregation bottlenecks, and rate-limiter behaviors are unverified under concurrent load.
+- **Tools Implemented:**
+  - `autocannon`: Fast Node-based HTTP benchmarking tool integrated with an isolated, hermetic ephemeral server runner (`backend/scripts/load-test.js`) executed via `npm run test:load`.
+- **Post-Benchmark Optimizations (2026-11-09):**
+  - **Health Baseline (`/api/health`):** 6,851 req/sec | p95 latency: 12 ms | 0 errors.
+  - **Trending Posts Query (`/api/posts/trending`):** Discovered severe aggregation bottleneck (35 req/sec, p95: 1,866ms). Optimized with 60-second in-memory TTL caching with automatic 0ms bypass in Jest test mode. Result: **3,713 req/sec** (~100x speedup), p95 latency **17 ms**, 0 errors.
+  - **Search Query (`/api/search/:query`):** Discovered unindexed full-collection regex scans. Optimized with MongoDB compound text index on `{ title: 'text', content: 'text' }` (weights 10 and 2) and `{ tags: 1 }`, paired with indexed `$text` search and regex fallback. Result: **686 req/sec**, p95 latency **97 ms** (under 100ms budget), 0 errors.
+- **Execution Target:** **Completed**. Integrated into root and backend scripts.
 
-### Option 3: Pre-Commit & Pre-Push Local Git Hooks
+### Option 3: Pre-Commit & Pre-Push Local Git Hooks (Next Target)
 - **Problem:** Developers can accidentally commit unformatted files or broken tests.
 - **Candidate Tools:** `husky` + `lint-staged`.
-- **Execution Target:** Step 3.
+- **Execution Target:** Step 3 (Immediate).
 
 ### Option 4: End-to-End (E2E) Browser Testing
 - **Problem:** RTL + JSDOM cannot test real browser layout rendering, cross-route browser cookies, or network interruption recovery.
@@ -77,12 +80,16 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
 
 ## 3. Decision
 
-1. Keep ADR-0009 in **Draft** status while remaining non-functional areas (Options 2 through 8) are implemented iteratively.
+1. Keep ADR-0009 in **Draft** status while remaining non-functional areas (Options 3 through 8) are implemented iteratively.
 2. **Option 1 (Frontend Performance & Bundle Size) is Completed**:
    - `rollup-plugin-visualizer` configured for on-demand bundle inspection.
    - `size-limit` configured with strict chunk limits.
    - `@lhci/cli` configured for automated Lighthouse audits.
-3. Transition ADR-0009 to **Accepted** once baseline Load Testing (Option 2) and core telemetry are operational.
+3. **Option 2 (Backend Concurrency & Load Testing) is Completed**:
+   - `autocannon` benchmark harness configured via `npm run test:load`.
+   - Trending query aggregation cached with 60-second TTL (35 -> 3,713 RPS).
+   - Post search indexed with compound full-text and tag indexes (p95: 97ms).
+4. Transition ADR-0009 to **Accepted** once baseline local git hooks (Option 3) and core telemetry are operational.
 
 ---
 
