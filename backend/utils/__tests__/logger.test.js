@@ -1,4 +1,4 @@
-const logger = require('../../utils/logger');
+const logger = require('../logger');
 
 describe('Logger Utility', () => {
   it('exports a valid pino logger instance', () => {
