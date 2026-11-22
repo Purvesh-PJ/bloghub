@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../features/users/user.model');
+const User = require('../features/users/models/user.model');
 
 /**
  * Reads and verifies a bearer token, then confirms it against the account behind it.

@@ -1,12 +1,12 @@
-const userRoutes = require('./user.routes');
-const settingsRoutes = require('./settings.routes');
-const UserController = require('./user.controllers');
-const SettingsController = require('./settings.controllers');
-const UserService = require('./user.service');
-const User = require('./user.model');
-const UserProfile = require('./user-profile.model');
-const UserSettings = require('./user-settings.model');
-const userValidators = require('./user.validators');
+const userRoutes = require('./routes/user.routes');
+const settingsRoutes = require('./routes/settings.routes');
+const UserController = require('./controllers/user.controllers');
+const SettingsController = require('./controllers/settings.controllers');
+const UserService = require('./services/user.service');
+const User = require('./models/user.model');
+const UserProfile = require('./models/user-profile.model');
+const UserSettings = require('./models/user-settings.model');
+const userValidators = require('./validators/user.validators');
 
 module.exports = {
   userRoutes,

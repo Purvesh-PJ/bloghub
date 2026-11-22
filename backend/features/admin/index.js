@@ -1,4 +1,4 @@
-const AdminController = require('./admin.controllers');
+const AdminController = require('./controllers/admin.controllers');
 
 module.exports = {
   AdminController,

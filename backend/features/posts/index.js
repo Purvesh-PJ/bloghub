@@ -1,16 +1,16 @@
-const postRoutes = require('./post.routes');
-const likeRoutes = require('./like.routes');
-const tagRoutes = require('./tag.routes');
-const searchRoutes = require('./search.routes');
-const PostController = require('./post.controllers');
-const LikeController = require('./like.controllers');
-const TagController = require('./tag.controllers');
-const SearchController = require('./search.controllers');
-const PostService = require('./post.service');
-const Post = require('./post.model');
-const Like = require('./like.model');
-const Tag = require('./tag.model');
-const postValidators = require('./post.validators');
+const postRoutes = require('./routes/post.routes');
+const likeRoutes = require('./routes/like.routes');
+const tagRoutes = require('./routes/tag.routes');
+const searchRoutes = require('./routes/search.routes');
+const PostController = require('./controllers/post.controllers');
+const LikeController = require('./controllers/like.controllers');
+const TagController = require('./controllers/tag.controllers');
+const SearchController = require('./controllers/search.controllers');
+const PostService = require('./services/post.service');
+const Post = require('./models/post.model');
+const Like = require('./models/like.model');
+const Tag = require('./models/tag.model');
+const postValidators = require('./validators/post.validators');
 
 module.exports = {
   postRoutes,

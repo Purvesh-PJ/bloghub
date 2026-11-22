@@ -1,6 +1,6 @@
-const authRoutes = require('./auth.routes');
-const AuthController = require('./auth.controllers');
-const authValidators = require('./auth.validators');
+const authRoutes = require('./routes/auth.routes');
+const AuthController = require('./controllers/auth.controllers');
+const authValidators = require('./validators/auth.validators');
 
 module.exports = {
   authRoutes,

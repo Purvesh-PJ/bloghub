@@ -5,19 +5,19 @@ const {
   refreshRules,
   changePasswordRules,
   deleteAccountRules,
-} = require('../../features/auth/auth.validators');
+} = require('../../features/auth/validators/auth.validators');
 const {
   createPostRules,
   updatePostRules,
   commentRules,
   feedRules,
-} = require('../../features/posts/post.validators');
+} = require('../../features/posts/validators/post.validators');
 const {
   updateAccountRules,
   suspendRules,
   roleRules,
   adminDeleteRules,
-} = require('../../features/users/user.validators');
+} = require('../../features/users/validators/user.validators');
 const { validateObjectId } = require('../../middlewares/validate');
 
 // Helper to run express-validator chains against a dummy request
