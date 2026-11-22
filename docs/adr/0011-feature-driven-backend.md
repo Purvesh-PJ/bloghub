@@ -54,12 +54,41 @@ backend/
 ├── utils/                      # Shared utility helpers (AppError, logger, visitor)
 │
 ├── features/
-│   ├── auth/                   # Authentication routes, controllers, and validators
-│   ├── posts/                  # Posts, likes, tags, search, and post services
-│   ├── comments/               # Comments, replies, threaded discussions
-│   ├── users/                  # User accounts, profiles, settings, and services
-│   ├── analytics/              # Telemetry, page views, and trending score calculations
-│   └── admin/                  # Administrative moderation actions
+│   ├── auth/
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   ├── validators/
+│   │   └── index.js
+│   ├── posts/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── validators/
+│   │   └── index.js
+│   ├── comments/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── validators/
+│   │   └── index.js
+│   ├── users/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── validators/
+│   │   └── index.js
+│   ├── analytics/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── index.js
+│   └── admin/
+│       ├── controllers/
+│       └── index.js
 │
 └── index.js                    # Express app mounting feature routes
 ```
