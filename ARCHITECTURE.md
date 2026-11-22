@@ -89,7 +89,7 @@ flowchart TD
 2. **Edge of the server (`backend/index.js`).** Every request first passes through Helmet (security headers), CORS (only our frontend origin is allowed) and rate limiters (300 requests per 15 minutes for the general API, 10 per 15 minutes for login attempts). We also set `trust proxy: 1`, so the server sees the real client IP when it runs behind a load balancer or CDN such as Vercel or Nginx.
 3. **Routing and validation.** Routes are split into public (feed, trending, reading posts) and protected (writing, liking, settings). Incoming data is checked with `express-validator` before any business logic runs.
 4. **Authentication (`backend/middlewares/authenticateUser.js`).** Most JWT setups only check the token signature. We go one step further and load `roles`, `tokenVersion` and `suspended` from MongoDB on every protected request. The extra database read is a deliberate trade-off: when an admin suspends someone or a user changes their password, the old tokens stop working immediately instead of living until they expire.
-5. **Persistence (`backend/models/`).** Nine Mongoose schemas define the data. The important rules, like "one like per user per post", are enforced by the database itself through unique indexes, not only by application code.
+5. **Persistence (`backend/features/<domain>/`).** Nine Mongoose schemas define the data, colocated within their respective feature modules (e.g. `features/posts/post.model.js`, `features/users/user.model.js`). The important rules, like "one like per user per post", are enforced by the database itself through unique indexes, not only by application code.
 
 ### Client Architecture: Feature-Driven Domain Colocation
 
@@ -142,7 +142,7 @@ BlogHub uses Tailwind CSS v4 with a CSS-first token architecture declared in `cl
 
 Here is how the collections relate to each other. A few design choices are worth knowing before you read the diagram:
 
-- **Follows have no table of their own.** Followers and followings are stored as arrays of user IDs on `UserProfile` (`backend/models/user-profile.model.js`). This keeps profile lookups to a single query.
+- **Follows have no table of their own.** Followers and followings are stored as arrays of user IDs on `UserProfile` (`backend/features/users/user-profile.model.js`). This keeps profile lookups to a single query.
 - **Likes cannot be duplicated.** `Like` has a unique index on `{ post, user }`. Even if someone double-clicks or two requests arrive at the same moment, the database rejects the second one.
 - **`editedAt` is separate from `updatedAt`.** Mongoose bumps `updatedAt` whenever anything changes, including a new like or comment. `editedAt` only changes when the author actually edits the post, so the UI can show a truthful "edited" label.
 
