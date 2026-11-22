@@ -1,10 +1,10 @@
-const Post = require('../models/post.model');
-const Comment = require('../models/comment.model');
-const Like = require('../models/like.model');
-const View = require('../models/view.model');
-const User = require('../models/user.model');
-const asyncHandler = require('../middlewares/asyncHandler');
-const { notFound } = require('../utils/AppError');
+const Post = require('../../models/post.model');
+const Comment = require('../../models/comment.model');
+const Like = require('../../models/like.model');
+const View = require('./view.model');
+const User = require('../../models/user.model');
+const asyncHandler = require('../../middlewares/asyncHandler');
+const { notFound } = require('../../utils/AppError');
 
 /*
   Activity feeds for the administration console.

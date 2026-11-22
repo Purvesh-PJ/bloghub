@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const UserActivityController = require('../controllers/user-activity.controllers');
-const AuthUser = require('../middlewares/authenticateUser');
-const authorizeSelfOrAdmin = require('../middlewares/authorizeSelfOrAdmin');
-const { validate, validateObjectId } = require('../middlewares/validate');
-const { paginationRules } = require('../validators/content.validators');
+const UserActivityController = require('./user-activity.controllers');
+const AuthUser = require('../../middlewares/authenticateUser');
+const authorizeSelfOrAdmin = require('../../middlewares/authorizeSelfOrAdmin');
+const { validate, validateObjectId } = require('../../middlewares/validate');
+const { paginationRules } = require('../../validators/content.validators');
 
 // Get all user activity (admin only)
 router.get(

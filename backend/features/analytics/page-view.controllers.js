@@ -1,7 +1,7 @@
-const View = require('../models/view.model');
-const Post = require('../models/post.model');
-const asyncHandler = require('../middlewares/asyncHandler');
-const { notFound, forbidden } = require('../utils/AppError');
+const View = require('./view.model');
+const Post = require('../../models/post.model');
+const asyncHandler = require('../../middlewares/asyncHandler');
+const { notFound, forbidden } = require('../../utils/AppError');
 
 /*
   Recording a view lives in analytics.controllers.js. What remains here is the read side:

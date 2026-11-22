@@ -30,9 +30,7 @@ const { authRoutes } = require('./features/auth');
 const { userRoutes, settingsRoutes } = require('./features/users');
 const { postRoutes, likeRoutes, tagRoutes, searchRoutes } = require('./features/posts');
 const { commentRoutes } = require('./features/comments');
-const analyticsRoutes = require('./routes/analytics.routes');
-const pageViewRoutes = require('./routes/page-view.routes');
-const userActivityRoutes = require('./routes/user-activity.routes');
+const { analyticsRoutes, pageViewRoutes, userActivityRoutes } = require('./features/analytics');
 
 const requestLogger = require('./middlewares/requestLogger');
 const logger = require('./utils/logger');

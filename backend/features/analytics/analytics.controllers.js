@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
-const Post = require('../models/post.model');
-const User = require('../models/user.model');
-const View = require('../models/view.model');
-const Read = require('../models/read.model');
-const Like = require('../models/like.model');
-const Comment = require('../models/comment.model');
-const asyncHandler = require('../middlewares/asyncHandler');
-const { notFound, forbidden } = require('../utils/AppError');
-const { visitorKey, DEDUPE_WINDOW_MS } = require('../utils/visitor');
+const Post = require('../../models/post.model');
+const User = require('../../models/user.model');
+const View = require('./view.model');
+const Read = require('./read.model');
+const Like = require('../../models/like.model');
+const Comment = require('../../models/comment.model');
+const asyncHandler = require('../../middlewares/asyncHandler');
+const { notFound, forbidden } = require('../../utils/AppError');
+const { visitorKey, DEDUPE_WINDOW_MS } = require('../../utils/visitor');
 
 // Counts documents per post in one grouped query. The alternative — countDocuments()
 // inside a map over the posts — costs two round trips per post, so a writer with fifty

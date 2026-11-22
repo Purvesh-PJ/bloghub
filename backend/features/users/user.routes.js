@@ -5,7 +5,7 @@ const AuthUser = require('../../middlewares/authenticateUser');
 const { uploadAvatar } = require('../../middlewares/upload');
 const { validate, validateObjectId } = require('../../middlewares/validate');
 const { paginationRules, myPostsRules } = require('../../validators/content.validators');
-const AdminController = require('../../controllers/admin.controllers');
+const { AdminController } = require('../admin');
 const {
   updateAccountRules,
   suspendRules,

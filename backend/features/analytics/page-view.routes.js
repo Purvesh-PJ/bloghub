@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const PageViewController = require('../controllers/page-view.controllers');
-const AuthUser = require('../middlewares/authenticateUser');
-const { validateObjectId } = require('../middlewares/validate');
+const PageViewController = require('./page-view.controllers');
+const AuthUser = require('../../middlewares/authenticateUser');
+const { validateObjectId } = require('../../middlewares/validate');
 
 /*
   Read-only. Recording a view lives at POST /analytics/view/:postId, which is the path the
