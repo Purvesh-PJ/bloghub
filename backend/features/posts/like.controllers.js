@@ -1,7 +1,7 @@
-const Like = require('../models/like.model');
-const Post = require('../models/post.model');
-const asyncHandler = require('../middlewares/asyncHandler');
-const { notFound, conflict } = require('../utils/AppError');
+const Like = require('./like.model');
+const Post = require('./post.model');
+const asyncHandler = require('../../middlewares/asyncHandler');
+const { notFound, conflict } = require('../../utils/AppError');
 
 /*
   Every handler here used to catch its own errors and answer with a bare `{ error: '…' }`,

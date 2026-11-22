@@ -1,9 +1,9 @@
-const Post = require('../models/post.model');
-const Tag = require('../models/tag.model');
-const User = require('../models/user.model');
-const asyncHandler = require('../middlewares/asyncHandler');
-const { badRequest } = require('../utils/AppError');
-const { escapeRegex } = require('../utils/regex');
+const Post = require('./post.model');
+const Tag = require('./tag.model');
+const User = require('../../models/user.model');
+const asyncHandler = require('../../middlewares/asyncHandler');
+const { badRequest } = require('../../utils/AppError');
+const { escapeRegex } = require('../../utils/regex');
 
 const MAX_RESULTS = 50;
 const EXCERPT_LENGTH = 200;

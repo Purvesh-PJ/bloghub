@@ -26,14 +26,11 @@ if (process.env.NODE_ENV !== 'test') {
 const errorHandler = require('./middlewares/errorHandler'); // Import error handling middleware
 
 // IMPORT ROUTES
-const postRoutes = require('./routes/post.routes');
-const { userRoutes, settingsRoutes } = require('./features/users');
-const tagRoutes = require('./routes/tag.routes');
-const { commentRoutes } = require('./features/comments');
-const searchRoutes = require('./routes/search.routes');
 const { authRoutes } = require('./features/auth');
+const { userRoutes, settingsRoutes } = require('./features/users');
+const { postRoutes, likeRoutes, tagRoutes, searchRoutes } = require('./features/posts');
+const { commentRoutes } = require('./features/comments');
 const analyticsRoutes = require('./routes/analytics.routes');
-const likeRoutes = require('./routes/like.routes');
 const pageViewRoutes = require('./routes/page-view.routes');
 const userActivityRoutes = require('./routes/user-activity.routes');
 

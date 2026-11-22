@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const PostControllers = require('../controllers/post.controllers');
-const AuthUser = require('../middlewares/authenticateUser');
-const { validate, validateObjectId } = require('../middlewares/validate');
+const PostControllers = require('./post.controllers');
+const AuthUser = require('../../middlewares/authenticateUser');
+const { validate, validateObjectId } = require('../../middlewares/validate');
 const {
   createPostRules,
   updatePostRules,
   bulkPostRules,
   paginationRules,
   feedRules,
-} = require('../validators/content.validators');
+} = require('./post.validators');
 
 // Optional auth on both reads: an author (or admin) may see their own unpublished posts.
 router.get('/', feedRules, validate, AuthUser.attachUserIfPresent, PostControllers.getBlogs);

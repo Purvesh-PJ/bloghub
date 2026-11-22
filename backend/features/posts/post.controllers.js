@@ -1,13 +1,13 @@
-const Post = require('../models/post.model');
-const Tag = require('../models/tag.model');
-const Comment = require('../models/comment.model');
-const User = require('../models/user.model');
-const Profile = require('../models/user-profile.model');
-const asyncHandler = require('../middlewares/asyncHandler');
-const { createPost, updatePost } = require('../services/postService');
-const { getTrendingPosts } = require('../services/trendingService');
-const { notFound, forbidden } = require('../utils/AppError');
-const { containsIgnoreCase } = require('../utils/regex');
+const Post = require('./post.model');
+const Tag = require('./tag.model');
+const Comment = require('../../models/comment.model');
+const User = require('../../models/user.model');
+const Profile = require('../../models/user-profile.model');
+const asyncHandler = require('../../middlewares/asyncHandler');
+const { createPost, updatePost } = require('./post.service');
+const { getTrendingPosts } = require('../../services/trendingService');
+const { notFound, forbidden } = require('../../utils/AppError');
+const { containsIgnoreCase } = require('../../utils/regex');
 
 const MAX_PAGE_SIZE = 50;
 
