@@ -1,8 +1,8 @@
-const Comment = require('../models/comment.model');
-const Post = require('../models/post.model');
-const asyncHandler = require('../middlewares/asyncHandler');
-const { createComment } = require('../services/commentService');
-const { notFound, forbidden } = require('../utils/AppError');
+const Comment = require('./comment.model');
+const Post = require('../../models/post.model');
+const asyncHandler = require('../../middlewares/asyncHandler');
+const { createComment } = require('./comment.service');
+const { notFound, forbidden } = require('../../utils/AppError');
 
 const MAX_PAGE_SIZE = 50;
 
