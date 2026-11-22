@@ -27,7 +27,7 @@ const errorHandler = require('./middlewares/errorHandler'); // Import error hand
 
 // IMPORT ROUTES
 const postRoutes = require('./routes/post.routes');
-const userRoutes = require('./routes/user.routes');
+const { userRoutes, settingsRoutes } = require('./features/users');
 const tagRoutes = require('./routes/tag.routes');
 const { commentRoutes } = require('./features/comments');
 const searchRoutes = require('./routes/search.routes');
@@ -36,7 +36,6 @@ const analyticsRoutes = require('./routes/analytics.routes');
 const likeRoutes = require('./routes/like.routes');
 const pageViewRoutes = require('./routes/page-view.routes');
 const userActivityRoutes = require('./routes/user-activity.routes');
-const settingsRoutes = require('./routes/settings.routes');
 
 const requestLogger = require('./middlewares/requestLogger');
 const logger = require('./utils/logger');

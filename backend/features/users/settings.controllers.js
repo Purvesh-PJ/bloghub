@@ -1,7 +1,7 @@
-const UserSettings = require('../models/user-settings.model');
-const UserProfile = require('../models/user-profile.model');
-const asyncHandler = require('../middlewares/asyncHandler');
-const { notFound } = require('../utils/AppError');
+const UserSettings = require('./user-settings.model');
+const UserProfile = require('./user-profile.model');
+const asyncHandler = require('../../middlewares/asyncHandler');
+const { notFound } = require('../../utils/AppError');
 
 /*
   This was the last module still catching in every handler and answering a hand-written 500.

@@ -1,20 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const UserController = require('../controllers/user.controllers');
-const AuthUser = require('../middlewares/authenticateUser');
-const { uploadAvatar } = require('../middlewares/upload');
-const { validate, validateObjectId } = require('../middlewares/validate');
-const { paginationRules, myPostsRules } = require('../validators/content.validators');
-const AdminController = require('../controllers/admin.controllers');
+const UserController = require('./user.controllers');
+const AuthUser = require('../../middlewares/authenticateUser');
+const { uploadAvatar } = require('../../middlewares/upload');
+const { validate, validateObjectId } = require('../../middlewares/validate');
+const { paginationRules, myPostsRules } = require('../../validators/content.validators');
+const AdminController = require('../../controllers/admin.controllers');
 const {
   updateAccountRules,
   suspendRules,
   roleRules,
   adminDeleteRules,
-} = require('../validators/user.validators');
+} = require('./user.validators');
 const {
   authValidators: { deleteAccountRules },
-} = require('../features/auth');
+} = require('../auth');
 
 router.get(
   '/',

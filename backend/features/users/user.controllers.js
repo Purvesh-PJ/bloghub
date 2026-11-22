@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const User = require('../models/user.model');
-const Post = require('../models/post.model');
-const Profile = require('../models/user-profile.model');
-const UserSettings = require('../models/user-settings.model');
-const asyncHandler = require('../middlewares/asyncHandler');
-const { purgeAccount } = require('../services/accountService');
-const { containsIgnoreCase } = require('../utils/regex');
-const { notFound, conflict, badRequest, unauthorized, forbidden } = require('../utils/AppError');
+const User = require('./user.model');
+const Post = require('../../models/post.model');
+const Profile = require('./user-profile.model');
+const UserSettings = require('./user-settings.model');
+const asyncHandler = require('../../middlewares/asyncHandler');
+const { purgeAccount } = require('./user.service');
+const { containsIgnoreCase } = require('../../utils/regex');
+const { notFound, conflict, badRequest, unauthorized, forbidden } = require('../../utils/AppError');
 
 /**
  * Serves a stored avatar as an image.
