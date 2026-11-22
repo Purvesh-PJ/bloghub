@@ -3,8 +3,8 @@ const router = express.Router();
 const UserController = require('./user.controllers');
 const AuthUser = require('../../middlewares/authenticateUser');
 const { uploadAvatar } = require('../../middlewares/upload');
-const { validate, validateObjectId } = require('../../middlewares/validate');
-const { paginationRules, myPostsRules } = require('../../validators/content.validators');
+const { validate, validateObjectId, paginationRules } = require('../../middlewares/validate');
+const { myPostsRules } = require('../posts/post.validators');
 const { AdminController } = require('../admin');
 const {
   updateAccountRules,
@@ -12,9 +12,7 @@ const {
   roleRules,
   adminDeleteRules,
 } = require('./user.validators');
-const {
-  authValidators: { deleteAccountRules },
-} = require('../auth');
+const { deleteAccountRules } = require('../auth/auth.validators');
 
 router.get(
   '/',

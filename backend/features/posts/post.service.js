@@ -1,5 +1,5 @@
 const Post = require('./post.model');
-const User = require('../../models/user.model');
+const User = require('../users/user.model');
 const Tag = require('./tag.model');
 const { badRequest, notFound } = require('../../utils/AppError');
 

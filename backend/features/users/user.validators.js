@@ -44,4 +44,26 @@ const adminDeleteRules = [
   body('password').isString().withMessage('Your password is required').notEmpty(),
 ];
 
-module.exports = { updateAccountRules, suspendRules, roleRules, adminDeleteRules };
+const MAX_BIO = 500;
+
+const optionalUrl = (field, message) =>
+  body(field)
+    .optional({ values: 'falsy' })
+    .isString()
+    .trim()
+    .isLength({ max: 2048 })
+    .withMessage(`${message} is too long`)
+    .matches(/^https?:\/\//i)
+    .withMessage(`${message} must start with http:// or https://`);
+
+const profileRules = [
+  body('fullName').optional().isString().trim().isLength({ max: 100 }),
+  body('bio').optional().isString().trim().isLength({ max: MAX_BIO }),
+  body('location').optional().isString().trim().isLength({ max: 100 }),
+  optionalUrl('website', 'Website'),
+  body('socialLinks.twitter').optional().isString().trim().isLength({ max: 100 }),
+  body('socialLinks.github').optional().isString().trim().isLength({ max: 100 }),
+  body('socialLinks.linkedin').optional().isString().trim().isLength({ max: 100 }),
+];
+
+module.exports = { updateAccountRules, suspendRules, roleRules, adminDeleteRules, profileRules };

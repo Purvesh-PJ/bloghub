@@ -1,6 +1,6 @@
 const Post = require('./post.model');
 const Tag = require('./tag.model');
-const User = require('../../models/user.model');
+const User = require('../users/user.model');
 const asyncHandler = require('../../middlewares/asyncHandler');
 const { badRequest } = require('../../utils/AppError');
 const { escapeRegex } = require('../../utils/regex');

@@ -4,7 +4,7 @@ const SettingsController = require('./settings.controllers');
 const AuthUser = require('../../middlewares/authenticateUser');
 const authorizeSelfOrAdmin = require('../../middlewares/authorizeSelfOrAdmin');
 const { validate } = require('../../middlewares/validate');
-const { profileRules } = require('../../validators/content.validators');
+const { profileRules } = require('./user.validators');
 
 // All routes require authentication
 router.use(AuthUser.authenticateUser);

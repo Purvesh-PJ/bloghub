@@ -11,13 +11,13 @@ const {
   updatePostRules,
   commentRules,
   feedRules,
-} = require('../../validators/content.validators');
+} = require('../../features/posts/post.validators');
 const {
   updateAccountRules,
   suspendRules,
   roleRules,
   adminDeleteRules,
-} = require('../../validators/user.validators');
+} = require('../../features/users/user.validators');
 const { validateObjectId } = require('../../middlewares/validate');
 
 // Helper to run express-validator chains against a dummy request

@@ -1,5 +1,5 @@
 const View = require('./view.model');
-const Post = require('../../models/post.model');
+const Post = require('../posts/post.model');
 const asyncHandler = require('../../middlewares/asyncHandler');
 const { notFound, forbidden } = require('../../utils/AppError');
 

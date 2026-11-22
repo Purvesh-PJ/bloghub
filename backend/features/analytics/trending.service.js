@@ -1,4 +1,4 @@
-const Post = require('../../models/post.model');
+const Post = require('../posts/post.model');
 
 /*
   Trending — what people are actually engaging with lately.

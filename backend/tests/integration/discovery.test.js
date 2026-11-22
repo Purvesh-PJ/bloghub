@@ -1,8 +1,7 @@
 const request = require('supertest');
 const app = require('../../index');
-const User = require('../../models/user.model');
-const View = require('../../models/view.model');
-const Read = require('../../models/read.model');
+const { User } = require('../../features/users');
+const { View, Read } = require('../../features/analytics');
 
 /*
   Search, tracking and the analytics endpoints.

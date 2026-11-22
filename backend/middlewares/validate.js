@@ -1,5 +1,15 @@
-const { validationResult } = require('express-validator');
+const { validationResult, query } = require('express-validator');
 const { badRequest } = require('../utils/AppError');
+
+// Shared by every paginated listing, so one endpoint cannot be asked for the whole table.
+const paginationRules = [
+  query('page').optional().isInt({ min: 1 }).withMessage('page must be 1 or greater').toInt(),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 50 })
+    .withMessage('limit must be between 1 and 50')
+    .toInt(),
+];
 
 // `mongoose.Types.ObjectId.isValid` also accepts any 12-character string, so a value like
 // 'aaaaaaaaaaaa' passes it and then casts to an unrelated id. Match the wire format instead.
@@ -45,4 +55,4 @@ const validateObjectId =
     return next();
   };
 
-module.exports = { validate, validateObjectId };
+module.exports = { validate, validateObjectId, paginationRules };

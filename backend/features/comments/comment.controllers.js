@@ -1,5 +1,5 @@
 const Comment = require('./comment.model');
-const Post = require('../../models/post.model');
+const Post = require('../posts/post.model');
 const asyncHandler = require('../../middlewares/asyncHandler');
 const { createComment } = require('./comment.service');
 const { notFound, forbidden } = require('../../utils/AppError');

@@ -4,7 +4,7 @@ const { body, query } = require('express-validator');
 // Mongoose validation error surfacing further in.
 const MAX_TITLE = 200;
 const MAX_CONTENT = 100_000;
-const MAX_COMMENT = 5_000;
+const { commentRules, MAX_COMMENT } = require('../comments/comment.validators');
 const MAX_BIO = 500;
 
 const optionalUrl = (field, message) =>
@@ -81,24 +81,8 @@ const postRules = (partial) => {
 const createPostRules = postRules(false);
 const updatePostRules = postRules(true);
 
-const commentRules = [
-  body('message')
-    .isString()
-    .withMessage('Comment is required')
-    .trim()
-    .isLength({ min: 1, max: MAX_COMMENT })
-    .withMessage(`Comment must be between 1 and ${MAX_COMMENT} characters`),
-];
-
-const profileRules = [
-  body('fullName').optional().isString().trim().isLength({ max: 100 }),
-  body('bio').optional().isString().trim().isLength({ max: MAX_BIO }),
-  body('location').optional().isString().trim().isLength({ max: 100 }),
-  optionalUrl('website', 'Website'),
-  body('socialLinks.twitter').optional().isString().trim().isLength({ max: 100 }),
-  body('socialLinks.github').optional().isString().trim().isLength({ max: 100 }),
-  body('socialLinks.linkedin').optional().isString().trim().isLength({ max: 100 }),
-];
+const { paginationRules } = require('../../middlewares/validate');
+const { profileRules } = require('../users/user.validators');
 
 // Bounded so one request cannot be used to sweep the collection, and so the action can only
 // be one of the four the handler knows about.
@@ -111,16 +95,6 @@ const bulkPostRules = [
   body('action')
     .isIn(['delete', 'public', 'draft', 'private'])
     .withMessage('Action must be delete, public, draft or private'),
-];
-
-// Shared by every paginated listing, so one endpoint cannot be asked for the whole table.
-const paginationRules = [
-  query('page').optional().isInt({ min: 1 }).withMessage('page must be 1 or greater').toInt(),
-  query('limit')
-    .optional()
-    .isInt({ min: 1, max: 50 })
-    .withMessage('limit must be between 1 and 50')
-    .toInt(),
 ];
 
 // Public feed listing: pagination, an optional tag/topic name, and an optional author.

@@ -1,8 +1,8 @@
-const Post = require('../../models/post.model');
-const Comment = require('../../models/comment.model');
-const Like = require('../../models/like.model');
 const View = require('./view.model');
-const User = require('../../models/user.model');
+const Post = require('../posts/post.model');
+const Like = require('../posts/like.model');
+const Comment = require('../comments/comment.model');
+const User = require('../users/user.model');
 const asyncHandler = require('../../middlewares/asyncHandler');
 const { notFound } = require('../../utils/AppError');
 

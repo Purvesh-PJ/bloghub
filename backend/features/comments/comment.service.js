@@ -1,5 +1,5 @@
 const Comment = require('./comment.model');
-const Post = require('../../models/post.model');
+const Post = require('../posts/post.model');
 const { badRequest, notFound } = require('../../utils/AppError');
 
 /**

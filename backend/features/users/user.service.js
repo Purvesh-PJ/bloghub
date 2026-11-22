@@ -1,12 +1,12 @@
 const User = require('./user.model');
-const Post = require('../../models/post.model');
 const Profile = require('./user-profile.model');
-const Comment = require('../../models/comment.model');
-const Like = require('../../models/like.model');
-const View = require('../../models/view.model');
-const Read = require('../../models/read.model');
-const Tag = require('../../models/tag.model');
 const UserSettings = require('./user-settings.model');
+const Post = require('../posts/post.model');
+const Like = require('../posts/like.model');
+const Tag = require('../posts/tag.model');
+const Comment = require('../comments/comment.model');
+const View = require('../analytics/view.model');
+const Read = require('../analytics/read.model');
 
 /**
  * Removes an account and everything belonging to it.

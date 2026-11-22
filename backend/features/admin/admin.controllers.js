@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
-const User = require('../../models/user.model');
+const User = require('../users/user.model');
+const { purgeAccount } = require('../users/user.service');
 const asyncHandler = require('../../middlewares/asyncHandler');
-const { purgeAccount } = require('../../services/accountService');
 const { notFound, badRequest, unauthorized } = require('../../utils/AppError');
 
 /*

@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../../index');
-const UserProfile = require('../../models/user-profile.model');
+const { UserProfile } = require('../../features/users');
 
 const userAccount = {
   username: 'settings_user',

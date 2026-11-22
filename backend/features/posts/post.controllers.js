@@ -1,11 +1,11 @@
 const Post = require('./post.model');
 const Tag = require('./tag.model');
-const Comment = require('../../models/comment.model');
-const User = require('../../models/user.model');
-const Profile = require('../../models/user-profile.model');
+const Comment = require('../comments/comment.model');
+const User = require('../users/user.model');
+const Profile = require('../users/user-profile.model');
+const { getTrendingPosts } = require('../analytics/trending.service');
 const asyncHandler = require('../../middlewares/asyncHandler');
 const { createPost, updatePost } = require('./post.service');
-const { getTrendingPosts } = require('../../services/trendingService');
 const { notFound, forbidden } = require('../../utils/AppError');
 const { containsIgnoreCase } = require('../../utils/regex');
 

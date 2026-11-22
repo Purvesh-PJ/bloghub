@@ -2,14 +2,10 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-const User = require('../models/user.model');
-const Post = require('../models/post.model');
-const Tag = require('../models/tag.model');
-const Comment = require('../models/comment.model');
-const Like = require('../models/like.model');
-const Profile = require('../models/user-profile.model');
-const View = require('../models/view.model');
-const Read = require('../models/read.model');
+const { User, UserProfile: Profile } = require('../features/users');
+const { Post, Tag, Like } = require('../features/posts');
+const { Comment } = require('../features/comments');
+const { View, Read } = require('../features/analytics');
 
 const { connectDB } = require('../config/db');
 
