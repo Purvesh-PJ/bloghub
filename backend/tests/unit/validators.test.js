@@ -5,7 +5,7 @@ const {
   refreshRules,
   changePasswordRules,
   deleteAccountRules,
-} = require('../../validators/auth.validators');
+} = require('../../features/auth/auth.validators');
 const {
   createPostRules,
   updatePostRules,

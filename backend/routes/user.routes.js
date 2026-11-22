@@ -12,7 +12,9 @@ const {
   roleRules,
   adminDeleteRules,
 } = require('../validators/user.validators');
-const { deleteAccountRules } = require('../validators/auth.validators');
+const {
+  authValidators: { deleteAccountRules },
+} = require('../features/auth');
 
 router.get(
   '/',

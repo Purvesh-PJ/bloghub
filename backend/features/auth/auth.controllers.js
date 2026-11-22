@@ -1,9 +1,9 @@
-const User = require('../models/user.model');
-const Profile = require('../models/user-profile.model');
+const User = require('../../models/user.model');
+const Profile = require('../../models/user-profile.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const asyncHandler = require('../middlewares/asyncHandler');
-const { conflict, unauthorized, badRequest, forbidden } = require('../utils/AppError');
+const asyncHandler = require('../../middlewares/asyncHandler');
+const { conflict, unauthorized, badRequest, forbidden } = require('../../utils/AppError');
 
 // Refresh tokens are signed with their own secret so that a refresh token can never be
 // presented as an access token. The `type` claim makes the same intent explicit in the

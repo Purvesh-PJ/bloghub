@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const AuthController = require('../controllers/auth.controllers');
-const AuthUser = require('../middlewares/authenticateUser');
-const { validate } = require('../middlewares/validate');
+const AuthController = require('./auth.controllers');
+const AuthUser = require('../../middlewares/authenticateUser');
+const { validate } = require('../../middlewares/validate');
 const {
   signUpRules,
   signInRules,
   refreshRules,
   changePasswordRules,
-} = require('../validators/auth.validators');
+} = require('./auth.validators');
 
 router.post('/signin', signInRules, validate, AuthController.signIn);
 router.post('/signup', signUpRules, validate, AuthController.signUp);
