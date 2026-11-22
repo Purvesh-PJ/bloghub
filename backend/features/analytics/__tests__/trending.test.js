@@ -1,8 +1,9 @@
 const request = require('supertest');
-const app = require('../../index');
-const { User } = require('../../features/users');
-const { Post, Like, Tag } = require('../../features/posts');
-const { View, Read } = require('../../features/analytics');
+const app = require('../../../index');
+const { User } = require('../../users');
+const { Post, Like, Tag } = require('../../posts');
+const View = require('../models/view.model');
+const Read = require('../models/read.model');
 
 const author = {
   username: 'trend_author',

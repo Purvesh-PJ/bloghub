@@ -1,7 +1,7 @@
 const request = require('supertest');
-const app = require('../../index');
-const { View } = require('../../features/analytics');
-const { User } = require('../../features/users');
+const app = require('../../../index');
+const View = require('../models/view.model');
+const { User } = require('../../users');
 
 const authorAccount = {
   username: 'pageview_author',

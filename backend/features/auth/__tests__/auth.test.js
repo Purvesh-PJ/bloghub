@@ -1,7 +1,7 @@
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
-const app = require('../../index');
-const { User } = require('../../features/users');
+const app = require('../../../index');
+const { User } = require('../../users');
 
 const credentials = {
   username: 'ada_lovelace',

@@ -1,7 +1,8 @@
 const request = require('supertest');
-const app = require('../../index');
-const { Post, Tag } = require('../../features/posts');
-const { User } = require('../../features/users');
+const app = require('../../../index');
+const Post = require('../models/post.model');
+const Tag = require('../models/tag.model');
+const { User } = require('../../users');
 
 const owner = {
   username: 'workspace_owner',
