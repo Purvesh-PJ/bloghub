@@ -13,8 +13,7 @@ All diagrams are written in [Mermaid](https://mermaid.js.org/), so they render d
 3. [Authentication and session revocation](#3-authentication-and-session-revocation)
 4. [Read tracking and trending](#4-read-tracking-and-trending)
 5. [Security](#5-security)
-6. [Testing](#6-testing)
-7. [Architecture Decision Records (ADRs)](#7-architecture-decision-records-adrs)
+6. [Architecture Decision Records (ADRs)](#6-architecture-decision-records-adrs)
 
 ---
 
@@ -425,33 +424,10 @@ Each row below is one protection, how it works, and what attack it is meant to s
 
 ---
 
-## 6. Testing
-
-Tests are split into fast unit tests and slower integration tests that use a real (in-memory) database.
-
-```
-          / \
-         /   \
-        / E2E \       Manual browser QA & Preview deployments
-       /-------\
-      / Integration \ Full API lifecycles (mongodb-memory-server) &
-     /   (55%)       \ RTL Page flows (Mocked Service Boundaries)
-    /-----------------\
-   /    Unit Tests     \ Pure functions, express-validators, middlewares,
-  /       (45%)         \ custom business hooks (useDraftRecovery, useReading)
- /-----------------------\
-```
-
-- **Backend:** 15 test suites with 190 tests. Unit tests live in `backend/tests/unit/` and run in milliseconds. Integration tests live in `backend/tests/integration/` and run against `mongodb-memory-server`, so no real database is needed.
-- **Frontend:** 20 test files with 159 tests, placed next to the code in feature `__tests__/` and pattern test folders, run with Vitest in `jsdom`.
-- **Commands:** run everything from the repo root with `npm test`, `npm run test:coverage` and `npm run lint`. Total: 349 tests across the full stack.
-
-*Test counts are accurate at the time of writing and will change as the project grows.*
-
----
-
-## 7. Architecture Decision Records (ADRs)
+## 6. Architecture Decision Records (ADRs)
 
 For deep dives into specific engineering trade-offs (e.g., why we chose an in-memory token refresh mechanism, how we prevent duplicate likes under concurrency, or why we use an ephemeral in-memory MongoDB for testing), consult the project ADR directory:
 
 👉 **[Browse Architecture Decision Records (docs/adr/)](docs/adr/README.md)**
+
+For test strategy, test suites, and test execution commands, consult 👉 **[Testing Guide (docs/TESTING.md)](docs/TESTING.md)**.

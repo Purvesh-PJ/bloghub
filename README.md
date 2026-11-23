@@ -4,21 +4,21 @@ An open-source publishing platform focused on read-through engagement analytics,
 
 [![CI](https://github.com/Purvesh-PJ/blogging_platform/actions/workflows/ci.yml/badge.svg)](https://github.com/Purvesh-PJ/blogging_platform/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-6.0+-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 
-**[Live Demo](https://bloghub-gold.vercel.app/)** · [Architecture](ARCHITECTURE.md) · [Changelog](CHANGELOG.md) · [ADRs](docs/adr/) · [Contributing](CONTRIBUTING.md)
+**[Live Demo](https://bloghub-gold.vercel.app/)** · [Architecture](ARCHITECTURE.md) · [API Reference](docs/API.md) · [Development](docs/DEVELOPMENT.md) · [Design System](docs/DESIGN_SYSTEM.md) · [Testing](docs/TESTING.md)
 
 ---
 
 ## What it does
 
-Most publishing tools report clicks. BlogHub tracks **read-through rate**: viewport scroll depth and dwell time to measure how many visitors finish an article.
+Most publishing tools only report clicks. BlogHub measures **read-through rate**: tracking viewport scroll depth and active dwell time to determine when a reader actually finishes an article.
 
-- **Readers:** 720px focused reading column, light and dark themes, 14-day trending feed, threaded comments, and likes.
-- **Authors:** Split-pane live Markdown editor, auto-slugs, image cover support, draft/public visibility, and read completion analytics.
-- **Moderators:** Story visibility control, user management, instant session revocation, and audit logs.
+- **Readers:** Focused 720px reading typography, light/dark themes, 14-day engagement trending feed, threaded discussions, and unique likes.
+- **Authors:** Split-pane live Markdown studio, automatic slug generation, draft recovery, cover image support, and story read-completion telemetry.
+- **Moderators:** Administrative dashboard, story visibility control, instant multi-session revocation, and activity audit logs.
 
 ![BlogHub preview](./client/public/screenshots/landing.png)
 
@@ -26,11 +26,7 @@ Most publishing tools report clicks. BlogHub tracks **read-through rate**: viewp
 
 ## Quick Start
 
-### Prerequisites
-- Node.js 18.0.0 or later
-- MongoDB 6.0+ (local instance or MongoDB Atlas)
-
-### 1. Clone and install
+### 1. Clone and install dependencies
 ```bash
 git clone https://github.com/Purvesh-PJ/blogging_platform.git
 cd blogging_platform
@@ -39,65 +35,64 @@ npm install --prefix backend && npm install --prefix client
 ```
 
 ### 2. Configure environment
-Edit `.env` at the repository root. Generate secure signing secrets:
+Edit `.env` at the repository root and add your MongoDB connection string and signing secrets. Generate random keys with:
 ```bash
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
-
-Required variables:
-- `MONGO_DB_URI`: MongoDB connection string (e.g. `mongodb://127.0.0.1:27017/bloghub`).
-- `JWT_SECRET` and `JWT_REFRESH_SECRET`: Distinct secrets for access (15m) and refresh (7d) tokens.
-- `CLIENT_URL` (`http://localhost:3000`) and `VITE_API_URL` (`http://localhost:4000`).
 
 ### 3. Seed demo accounts (optional)
 ```bash
 npm --prefix backend run seed
 ```
-Seeds test stories and two local accounts:
+Creates pre-populated stories and demo credentials:
 - **Author:** `john@example.com` / `password123`
 - **Admin:** `admin@bloghub.com` / `admin123`
 
-### 4. Run development servers
+### 4. Start development
 ```bash
-# Terminal 1: API (port 4000)
+# Terminal 1: Backend API (port 4000)
 cd backend && npm run dev
 
-# Terminal 2: Web client (port 3000)
+# Terminal 2: Web Client (port 3000)
 cd client && npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Commands and Testing
+## Documentation Directory
 
-Run all scripts from the repository root:
+Deep dive guides are organized by single responsibility:
 
-| Command | Action |
+| Document | Focus |
 |---|---|
-| `npm test` | Run full test suite (349 tests: 190 backend + 159 client) |
-| `npm run test:backend` | Run backend Jest tests (unit and in-memory integration) |
-| `npm run test:client` | Run client Vitest tests |
-| `npm run test:coverage` | Generate coverage reports for both workspaces |
-| `npm run test:load` | Run backend concurrency load test benchmarks with `autocannon` |
-| `npm run lint` | Run ESLint with token enforcement across client and backend |
-| `npm run format:check` | Verify formatting with Prettier |
-| `npm run build` | Build the client production bundle |
-| `npm run build:analyze` | Build client and output visual bundle treemap (`client/dist/stats.html`) |
-| `npm run size` | Verify client bundle size budgets with `size-limit` |
-| `npm run lighthouse` | Run Google Lighthouse CI audit on preview server |
-| `npm run audit` | Run automated security dependency vulnerability scanning |
+| 💻 **[Development Guide](docs/DEVELOPMENT.md)** | Step-by-step local setup, environment variables, seeding, and Git workflow |
+| 📡 **[API Reference](docs/API.md)** | REST endpoints, response envelopes, authentication headers, and error shapes |
+| 🧪 **[Testing Guide](docs/TESTING.md)** | In-memory hermetic database testing, Vitest/Jest suites, and verification commands |
+| 🎨 **[Design System](docs/DESIGN_SYSTEM.md)** | 3-tier UI architecture, role-based tokens, CVA primitives, and automated lint rules |
+| 🚀 **[Deployment Guide](docs/DEPLOYMENT.md)** | Production builds, Vercel/Node hosting, reverse proxy configuration, and health probes |
+| 🏛️ **[System Architecture](ARCHITECTURE.md)** | System topology, Mongoose ERD across 9 collections, token refresh, and algorithms |
+| 📜 **[Architecture Decision Records](docs/adr/README.md)** | Historical engineering trade-offs and rationale behind key architectural choices |
 
 ---
 
-## Architecture & Documentation
+## Primary Verification Commands
 
-BlogHub is structured as a decoupled three-tier application: React 19 SPA, Express 4 REST API, and MongoDB 6+.
+Run these scripts from the repository root:
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md):** System topology, Mongoose ERD across 9 collections, authentication flow, and security boundaries.
-- **[docs/adr/](docs/adr/):** 10 Architecture Decision Records documenting structural choices, design system patterns, trending algorithms, and telemetry design.
-- **[CHANGELOG.md](CHANGELOG.md):** Version history following Keep a Changelog.
-- **[CONTRIBUTING.md](CONTRIBUTING.md):** Contribution workflow and conventions.
+```bash
+# Run full automated test suite (340+ tests across client and backend)
+npm test
+
+# Run ESLint with strict design token enforcement
+npm run lint
+
+# Check formatting with Prettier
+npm run format:check
+
+# Build frontend production bundle
+npm run build
+```
 
 ---
 
