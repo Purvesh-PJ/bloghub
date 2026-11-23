@@ -47,27 +47,47 @@ flowchart TD
     %% ===================================================
     %% TIER 2: SERVER APPLICATION TIER (Express 4)
     %% ===================================================
-    subgraph Tier2["⚙️ Tier 2: Backend Application Server (Node.js 18+ • Express 4)"]
-        Ingress["Edge Middleware<br/>(Helmet • CORS • Rate Limiters)"]
-        Router["API Gateway Router & Input Validation<br/>(express-validator)"]
+    subgraph Tier2["⚙️ Tier 2: Backend Application Server (Node.js 20+ • Express 4 • backend/src/)"]
+        direction TB
 
-        subgraph Pipeline["Request Execution Flow"]
-            direction LR
-            PublicPath["Public Route Path<br/>(Feed, Trending, Public Reads)"]
-            AuthGuard["Protected Route Path<br/>(JWT + Live tokenVersion Guard)"]
+        subgraph IngressLayer["Edge Ingress & Global Middleware Pipeline (core/)"]
+            Ingress["Security Headers & CORS<br/>(Helmet • CORS strict origin)"]
+            RateLimit["Rate Limiting & Proxy<br/>(trust proxy • IP burst throttles)"]
+            Logging["HTTP Traffic Logger<br/>(Pino HTTP requestLogger)"]
+            Ingress --> RateLimit --> Logging
         end
 
-        Controllers["Domain Business Controllers<br/>• Content: Posts, Slugs, Tags<br/>• Discovery: 14d Trending, 6h HMAC Dedup<br/>• Social: Threaded Comments, Likes"]
+        subgraph CoreInfra["Cross-Cutting Technical Infrastructure (backend/src/core/)"]
+            direction LR
+            Errors["errors/<br/>AppError • errorHandler"]
+            Storage["storage/<br/>upload (Multer memory)"]
+            Validation["validation/<br/>validate • validateObjectId"]
+            Async["async/<br/>asyncHandler"]
+            Utils["utils/<br/>regex • visitorKey"]
+        end
 
-        Ingress --> Router
-        Router -->|"Public Request"| PublicPath
-        Router -->|"Protected Request"| AuthGuard
-        PublicPath --> Controllers
-        AuthGuard --> Controllers
+        subgraph ModulesLayer["Domain-Driven Functional Modules (backend/src/modules/)"]
+            direction TB
+            AuthMod["auth/<br/>Session & Token Rotation<br/>middlewares/authenticateUser"]
+            PostMod["posts/<br/>Post CRUD, Slugs, Tags<br/>models/ • services/"]
+            CommentMod["comments/<br/>Threaded Discussions<br/>models/ • services/"]
+            UserMod["users/<br/>Profiles & Settings<br/>models/ • services/"]
+            AnalyticsMod["analytics/<br/>Dwell Time & Telemetry<br/>models/ • services/"]
+            AdminMod["admin/<br/>Moderation & Audits<br/>controllers/"]
+        end
+
+        Logging ==>|"HTTP Request"| AuthMod
+        AuthMod -.->|"Auth Guards & Token Verification"| PostMod
+        AuthMod -.->|"Auth Guards & Token Verification"| CommentMod
+        AuthMod -.->|"Auth Guards & Token Verification"| UserMod
+        AuthMod -.->|"Auth Guards & Token Verification"| AnalyticsMod
+        AuthMod -.->|"Admin Role Guard"| AdminMod
+
+        CoreInfra -.->|"Shared Technical Services"| ModulesLayer
     end
 
     %% Database Transport Boundary
-    Controllers ==>|"Mongoose 8 Wire Protocol (TCP)"| ODM
+    ModulesLayer ==>|"Mongoose 8 Wire Protocol (TCP)"| ODM
 
     %% ===================================================
     %% TIER 3: DATABASE TIER (MongoDB 6+)
@@ -86,10 +106,10 @@ flowchart TD
 ### How a request moves through the system
 
 1. **Client (`client/src/`).** Built with React 19, Tailwind CSS v4, and Radix UI. Organized following a **Feature-Driven Architecture** (`src/features/`), where each domain (auth, posts, users, comments, analytics, admin) encapsulates its own components, custom hooks, pages, services, and colocated tests behind a clear `index.js` public boundary. Server state is fetched and cached with TanStack Query v5 using centralized `config/queryKeys.js`. When an access token expires, Axios catches the 401, asks the server for a new token pair via `POST /api/auth/refresh`, and replays the failed requests without user interruption.
-2. **Edge of the server (`backend/index.js`).** Every request first passes through Helmet (security headers), CORS (only our frontend origin is allowed) and rate limiters (300 requests per 15 minutes for the general API, 10 per 15 minutes for login attempts). We also set `trust proxy: 1`, so the server sees the real client IP when it runs behind a load balancer or CDN such as Vercel or Nginx.
-3. **Routing and validation.** Routes are split into public (feed, trending, reading posts) and protected (writing, liking, settings). Incoming data is checked with `express-validator` before any business logic runs.
-4. **Authentication (`backend/middlewares/authenticateUser.js`).** Most JWT setups only check the token signature. We go one step further and load `roles`, `tokenVersion` and `suspended` from MongoDB on every protected request. The extra database read is a deliberate trade-off: when an admin suspends someone or a user changes their password, the old tokens stop working immediately instead of living until they expire.
-5. **Persistence (`backend/modules/<domain>/`).** Nine Mongoose schemas define the data, colocated within their respective feature modules (e.g. `modules/posts/models/post.model.js`, `modules/users/models/user.model.js`). The important rules, like "one like per user per post", are enforced by the database itself through unique indexes, not only by application code.
+2. **Edge of the server (`backend/src/index.js`).** Every request first passes through Helmet (security headers), CORS (only our frontend origin is allowed) and rate limiters (300 requests per 15 minutes for the general API, 10 per 15 minutes for login attempts). We also set `trust proxy: 1`, so the server sees the real client IP when it runs behind a load balancer or CDN such as Vercel or Nginx.
+3. **Core Infrastructure (`backend/src/core/`).** Generic technical concerns are organized by role into dedicated units: `core/errors` (AppError, errorHandler), `core/logging` (logger, requestLogger), `core/storage` (Multer avatar upload), `core/validation` (validate, validateObjectId, paginationRules), and `core/async` (asyncHandler).
+4. **Authentication & Route Guards (`backend/src/modules/auth/middlewares/`).** Most JWT setups only check the token signature. We go one step further and load `roles`, `tokenVersion` and `suspended` from MongoDB on every protected request via `authenticateUser`. The extra database read is a deliberate trade-off: when an admin suspends someone or a user changes their password, the old tokens stop working immediately instead of living until they expire.
+5. **Persistence (`backend/src/modules/<domain>/`).** Nine Mongoose schemas define the data, colocated within their respective domain modules (e.g. `modules/posts/models/post.model.js`, `modules/users/models/user.model.js`). The important rules, like "one like per user per post", are enforced by the database itself through unique indexes, not only by application code.
 
 ### Client Architecture: Feature-Driven Domain Colocation
 
