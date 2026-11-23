@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Activity as ActivityIcon } from 'lucide-react';
 
-import { activityService } from '../../analytics/services/activityService';
+import { activityService } from '../../analytics';
 import { Section } from '../../../components/layout/PageShell';
 import {
   Tabs,

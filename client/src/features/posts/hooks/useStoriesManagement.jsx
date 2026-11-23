@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 import { useDebounced } from './useDebounced';
 import { postService } from '../services/postService';
-import { analyticsService } from '../../analytics/services/analyticsService';
+import { analyticsService } from '../../analytics';
 import { queryKeys } from '../../../config/queryKeys';
 
 const PAGE_SIZE = 10;

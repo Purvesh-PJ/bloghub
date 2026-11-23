@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import { postService } from '../../posts/services/postService';
+import { postService } from '../../posts';
 import { commentService } from '../services/commentService';
 import { PageShell } from '../../../components/layout/PageShell';
 import { Button, Card, Select, EmptyState, Skeleton, TableSkeleton } from '../../../components/ui';

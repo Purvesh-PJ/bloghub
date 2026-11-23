@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Hash, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import { tagService } from '../../posts/services/tagService';
+import { tagService } from '../../posts';
 import { useTags } from '../../posts/hooks/useTags';
 import { topicIcon } from '../../../utils/topicIcons';
 import { Section } from '../../../components/layout/PageShell';

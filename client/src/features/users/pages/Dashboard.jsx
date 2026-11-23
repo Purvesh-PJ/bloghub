@@ -6,8 +6,8 @@ import { PenLine, BookOpen, Eye, CheckCircle2, BarChart2, FileText } from 'lucid
 
 import { useAuth } from '../../../features/auth';
 import { useCurrentUser } from '../hooks/useCurrentUser';
-import { postService } from '../../posts/services/postService';
-import { analyticsService } from '../../analytics/services/analyticsService';
+import { postService } from '../../posts';
+import { analyticsService } from '../../analytics';
 import { PageShell, Section } from '../../../components/layout/PageShell';
 import { Button, Card, EmptyState, ErrorState, Skeleton } from '../../../components/ui';
 import { StatsGrid } from '../../../components/patterns';

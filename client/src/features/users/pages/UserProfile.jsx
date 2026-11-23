@@ -6,9 +6,8 @@ import toast from 'react-hot-toast';
 
 import { userService } from '../services/userService';
 import { avatarUrl } from '../../../config/api';
-import { postService } from '../../posts/services/postService';
 import { useAuth } from '../../../features/auth';
-import { PostCard, PostCardSkeleton } from '../../posts';
+import { postService, PostCard, PostCardSkeleton } from '../../posts';
 import { PageShell, Section } from '../../../components/layout/PageShell';
 import { Button, EmptyState, ErrorState, Pagination } from '../../../components/ui';
 import { ProfileHeader, ProfileSkeleton } from '../components';

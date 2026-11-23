@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users as UsersIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import { userService } from '../../users/services/userService';
+import { userService } from '../../users';
 import { useAuth } from '../../../features/auth';
 import { Section } from '../../../components/layout/PageShell';
 import { Input, TableSkeleton } from '../../../components/ui';

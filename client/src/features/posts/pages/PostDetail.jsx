@@ -6,9 +6,9 @@ import { FileQuestion } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { postService } from '../services/postService';
-import { commentService } from '../../comments/services/commentService';
+import { commentService } from '../../comments';
 import { likeService } from '../services/likeService';
-import { analyticsService } from '../../analytics/services/analyticsService';
+import { analyticsService } from '../../analytics';
 import { useAuth } from '../../../features/auth';
 import { useTheme } from '../../../styles/ThemeProvider';
 import { useReadTracking, useReadingProgress } from '../../analytics/hooks/useReading';

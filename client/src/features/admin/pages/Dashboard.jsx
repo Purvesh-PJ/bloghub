@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { FileText, Users, Hash, PenLine, ArrowRight } from 'lucide-react';
 
-import { postService } from '../../posts/services/postService';
-import { analyticsService } from '../../analytics/services/analyticsService';
+import { postService } from '../../posts';
+import { analyticsService, ReadRateHeadline } from '../../analytics';
 import { Section } from '../../../components/layout/PageShell';
-import { ReadRateHeadline } from '../../analytics';
 import { Button, Card, Badge, EmptyState, Skeleton, StatTile } from '../../../components/ui';
 import { StatsGrid } from '../../../components/patterns';
 import { queryKeys } from '../../../config/queryKeys';

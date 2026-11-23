@@ -3,12 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { ArrowLeft, FileText, MessageSquare, Heart, Eye, ExternalLink } from 'lucide-react';
 
-import { activityService } from '../../analytics/services/activityService';
-import { analyticsService } from '../../analytics/services/analyticsService';
+import { activityService, analyticsService, ReadRateHeadline } from '../../analytics';
 import { Section } from '../../../components/layout/PageShell';
 import { Card, ErrorState, Skeleton, Button } from '../../../components/ui';
 import { StatsGrid, DataView } from '../../../components/patterns';
-import { ReadRateHeadline } from '../../analytics';
 import { queryKeys } from '../../../config/queryKeys';
 
 const ICONS = { post: FileText, comment: MessageSquare, reply: MessageSquare, like: Heart };

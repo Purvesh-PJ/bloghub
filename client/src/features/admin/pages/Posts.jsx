@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search as SearchIcon, Trash2, FileText, Globe, Lock, FileEdit } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import { postService } from '../../posts/services/postService';
+import { postService } from '../../posts';
 import { useDebounced } from '../../posts/hooks/useDebounced';
 import { Section } from '../../../components/layout/PageShell';
 import { TableSkeleton } from '../../../components/ui';
