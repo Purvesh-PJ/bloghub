@@ -1,6 +1,6 @@
 const authorizeSelfOrAdmin = require('../middlewares/authorizeSelfOrAdmin');
 
-describe('features/auth/middlewares/authorizeSelfOrAdmin', () => {
+describe('modules/auth/middlewares/authorizeSelfOrAdmin', () => {
   let req;
   let res;
   let next;

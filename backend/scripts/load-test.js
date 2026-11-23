@@ -19,9 +19,9 @@ async function startEphemeralServer(port = 4001) {
   await mongoose.connect(mongoUri);
 
   // Seed sample post data for query realistic benchmarking
-  const { Post } = require('../features/posts');
-  const { User } = require('../features/users');
-  const { View, Read } = require('../features/analytics');
+  const { Post } = require('../modules/posts');
+  const { User } = require('../modules/users');
+  const { View, Read } = require('../modules/analytics');
 
   const testUser = await User.create({
     username: 'loadtester',

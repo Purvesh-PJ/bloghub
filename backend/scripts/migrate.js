@@ -21,8 +21,8 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 const mongoose = require('mongoose');
-const { Post, Tag } = require('../features/posts');
-const { Comment } = require('../features/comments');
+const { Post, Tag } = require('../modules/posts');
+const { Comment } = require('../modules/comments');
 
 const DRY = process.argv.includes('--dry');
 

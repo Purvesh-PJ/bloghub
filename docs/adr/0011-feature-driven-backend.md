@@ -1,4 +1,4 @@
-# ADR-0011: Feature-Driven Modular Backend Architecture
+# ADR-0011: Modular Backend Architecture with Dedicated Core Infrastructure
 
 - **Status:** Accepted
 - **Date:** 2026-11-23
@@ -19,81 +19,44 @@ backend/
 ```
 
 As the application grew, this horizontal layering introduced friction:
-1. **"Folder Jumping" Cognitive Overhead:** Making changes to a single domain (such as Posts or User Settings) required context-switching across 5–6 different root folders (`routes/`, `controllers/`, `services/`, `models/`, `validators/`).
+1. **"Folder Jumping" Cognitive Overhead:** Making changes to a single domain required context-switching across 5–6 different root folders.
 2. **Scattered Domain Colocation:** Tests, validation schemas, and database models were separated from the business logic and route definitions they serve.
-3. **Full-Stack Architectural Disconnect:** The client application was previously reorganized into a Feature-Driven Architecture ([ADR-0008](0008-feature-driven-frontend.md)). The backend's horizontal layering caused unnecessary mental overhead when switching between frontend and backend.
+3. **Leaky Middlewares:** Domain authentication and role guards were lumped together with generic HTTP transport middlewares.
 
 ---
 
-## 2. Options Considered
+## 2. Decision Outcome
 
-### Option 1: Maintain Technical Layered Architecture
-- *Pros:* Standard boilerplate for beginner Express applications.
-- *Cons:* High cognitive overhead; low domain cohesion; difficult to isolate or refactor features.
-
-### Option 2: Full Microservices Split
-- *Pros:* Complete physical separation of deployables.
-- *Cons:* Extreme operational complexity, network latency, distributed transactions, and overhead unwarranted for a medium-sized application.
-
-### Option 3: Feature-Driven Modular Architecture (Chosen)
-- *Pros:* High cohesion with vertical slices (`backend/features/<domain>/`). Each domain colocates its routes, controllers, services, models, and validators behind a clean public barrel export (`index.js`). Cross-feature dependencies are explicit and controlled.
-- *Cons:* Requires discipline to avoid circular barrel imports by requiring models directly or decoupling shared validation primitives into shared middleware.
-
----
-
-## 3. Decision Outcome
-
-We decided on **Option 3: Feature-Driven Modular Architecture**.
-
-All domain-specific backend code is organized under `backend/features/`:
+We restructured `backend/` into **Node.js Modular Architecture with Dedicated Core Infrastructure**:
 
 ```text
 backend/
-├── config/                     # Global db and env configuration
-├── middlewares/                # Shared Express middlewares (auth, upload, validate)
-├── utils/                      # Shared utility helpers (AppError, logger, visitor)
+├── core/                         # Cross-cutting HTTP & technical infrastructure
+│   ├── errors/                   # AppError, errorHandler
+│   ├── logging/                  # logger, requestLogger
+│   ├── storage/                  # Multer memory storage & validation
+│   ├── validation/               # express-validator runner & ObjectId validation
+│   ├── async/                    # asyncHandler wrapper
+│   └── utils/                    # regex, visitorKey algorithms
 │
-├── features/
-│   ├── auth/
-│   │   ├── controllers/
-│   │   ├── routes/
-│   │   ├── validators/
-│   │   └── index.js
-│   ├── posts/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── validators/
-│   │   └── index.js
-│   ├── comments/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── validators/
-│   │   └── index.js
-│   ├── users/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── validators/
-│   │   └── index.js
-│   ├── analytics/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   └── index.js
-│   └── admin/
-│       ├── controllers/
-│       └── index.js
-│
-└── index.js                    # Express app mounting feature routes
+└── modules/                      # Domain functional modules
+    ├── auth/                     # Authentication, refresh rotation, guards
+    │   ├── controllers/
+    │   ├── routes/
+    │   ├── validators/
+    │   ├── middlewares/          # authenticateUser, authorizeSelfOrAdmin
+    │   ├── __tests__/
+    │   └── index.js
+    ├── posts/                    # Posts, slugs, tags, likes, search
+    ├── comments/                 # Comment threads and responses
+    ├── users/                    # Profiles, settings, followers
+    ├── analytics/                # Telemetry, views, reads, trending
+    └── admin/                    # Moderation and administrative operations
 ```
 
-### Key Rules
-1. **Barrel Exports:** Every feature exposes a public interface via its `index.js`.
-2. **Circular Dependency Prevention:** Data models (`*.model.js`) remain pure Mongoose schemas and are imported directly across features to prevent circular route/controller execution during module bootstrap.
-3. **Shared Validation Primitives:** Cross-cutting rules (like `paginationRules`) are housed in shared middlewares (`backend/middlewares/validate.js`).
+### Key Principles
+1. **Modules Encapsulate Domains:** Each module in `modules/` encapsulates its routes, controllers, services, models, validators, and tests behind a public `index.js`.
+2. **Infrastructure Colocation:** Technical concerns under `core/` group both utilities and middlewares together (e.g., `core/errors/` contains both `AppError` and `errorHandler`).
+3. **Domain Ownership of Guards:** Security policy middlewares (`authenticateUser`, `authorizeSelfOrAdmin`) are owned and exported by `modules/auth`.
+4. **Colocated Tests:** Integration and unit tests are colocated inside `__tests__/` alongside the code they test.
+5. **Zero Breaking Changes:** REST contracts, routes, and response formats remain identical.

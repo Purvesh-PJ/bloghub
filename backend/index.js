@@ -26,11 +26,11 @@ if (process.env.NODE_ENV !== 'test') {
 const { errorHandler } = require('./core/errors');
 
 // IMPORT ROUTES
-const { authRoutes } = require('./features/auth');
-const { userRoutes, settingsRoutes } = require('./features/users');
-const { postRoutes, likeRoutes, tagRoutes, searchRoutes } = require('./features/posts');
-const { commentRoutes } = require('./features/comments');
-const { analyticsRoutes, pageViewRoutes, userActivityRoutes } = require('./features/analytics');
+const { authRoutes } = require('./modules/auth');
+const { userRoutes, settingsRoutes } = require('./modules/users');
+const { postRoutes, likeRoutes, tagRoutes, searchRoutes } = require('./modules/posts');
+const { commentRoutes } = require('./modules/comments');
+const { analyticsRoutes, pageViewRoutes, userActivityRoutes } = require('./modules/analytics');
 
 const { requestLogger, logger } = require('./core/logging');
 
