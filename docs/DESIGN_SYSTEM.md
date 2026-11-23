@@ -1,107 +1,67 @@
-# Design System Guide
+# Design System
 
-BlogHub enforces a strict 3-tier design system to keep the user interface consistent, accessible, and maintainable.
+BlogHub keeps its interface consistent with three component tiers, role-based theme tokens, and lint rules that fail the build when the rules are broken.
 
----
+## Contents
 
-## 3-Tier UI Architecture
-
-All frontend components strictly belong to one of three tiers. Never mix layout, business logic, and atomic rendering in a single file.
-
-```
-Tier 1: Core Primitives (client/src/components/ui/)
-   │    Button, IconButton, Input, Card, Modal, Badge, Dialog, Table, Skeleton
-   ▼
-Tier 2: Composed Patterns (client/src/components/patterns/)
-   │    PageHeader, DataTableCard, DataView, FilterToolbar, StatsGrid, ConfirmDialog
-   ▼
-Tier 3: Domain Feature Components (client/src/features/*/components/)
-        PostCard, AuthorByline, CommentItem, ProfileHeader, TagManager
-```
-
-### Tier 1 — Core Primitives (`client/src/components/ui/`)
-Atomic, domain-agnostic building blocks constructed with Radix UI and Tailwind CVA (Class Variance Authority):
-- `Button`, `IconButton`, `Input`, `Select`, `Card`, `Surface`, `Alert`, `Badge`, `Chip`, `Modal`, `Dialog`, `Table`, `Pagination`, `EmptyState`, `ErrorState`, `Skeleton`.
-- **Rule:** Never hand-roll raw `<button>`, `<input>`, or styled `div` wrappers when a Tier 1 primitive exists.
-
-### Tier 2 — Composed Patterns (`client/src/components/patterns/`)
-Reusable UI compositions built 100% out of Tier 1 primitives:
-- `PageHeader`: Standard heading (`h1`), subtitle description, badge, and action slots.
-- `DataTableCard`: Standard table container wrapping `Card`, `Table`, and `Pagination`.
-- `DataView`: Unified async lifecycle state machine (`isLoading`, `isError`, `isEmpty`, and content).
-- `FilterToolbar`: Unified filter chips, sort dropdown, search box, and action slots.
-- `StatsGrid`: Responsive telemetry metrics grid with loading skeletons.
-- `ConfirmDialog`: Standard confirmation modal with busy states and danger/confirm actions.
-- `SettingSection`: Structured settings card wrapper with title, description, and footer actions.
-- `ChoiceGrid`: Accessible visual radio selector using `Card as="button"`.
-- `BulkActionBar`: Floating selection toolbar for batch actions ("X items selected").
-- **Rule:** Never invent custom state ladders (`isLoading ? <Skeleton> : isError ? ...`) or ad-hoc modals. Always reuse canonical patterns.
-
-### Tier 3 — Domain Feature Components (`client/src/features/*/components/`)
-Domain-specific components carrying business logic and data schema awareness:
-- Examples: `PostCard`, `AuthorByline`, `CommentItem`, `ProfileHeader`.
+1. [Component tiers](#1-component-tiers)
+2. [Theme tokens](#2-theme-tokens)
+3. [Radius and typography](#3-radius-and-typography)
+4. [Lint enforcement](#4-lint-enforcement)
 
 ---
 
-## Semantic Token System
+## 1. Component tiers
 
-Never use raw Tailwind palette colors (such as `blue-500`, `slate-900`, `emerald-600`, or `amber-400`). Always use role-based semantic tokens that adapt automatically across light and dark themes.
+Every frontend component belongs to exactly one tier. Layout, business logic, and basic rendering are never mixed in a single file.
 
-### 1. Brand and Action Tokens
-- `bg-primary`, `text-primary`, `border-primary`
-- `text-primary-foreground` (text on primary fill)
-- `to-primary-dark`
+| Tier | Location | What it is | Examples |
+| :-- | :-- | :-- | :-- |
+| **1. Primitives** | `client/src/components/ui/` | Basic, domain-free building blocks made with Radix UI and Tailwind CVA | `Button`, `IconButton`, `Input`, `Select`, `Card`, `Badge`, `Modal`, `Dialog`, `Table`, `Skeleton` |
+| **2. Patterns** | `client/src/components/patterns/` | Reusable compositions built only from Tier 1 | `PageHeader`, `DataTableCard`, `DataView`, `FilterToolbar`, `StatsGrid`, `ConfirmDialog`, `SettingSection`, `ChoiceGrid`, `BulkActionBar` |
+| **3. Domain components** | `client/src/features/*/components/` | Components that know about BlogHub data | `PostCard`, `AuthorByline`, `CommentItem`, `ProfileHeader`, `TagManager` |
 
-### 2. Status Tokens
-- **Destructive (danger/delete):** `bg-destructive`, `text-destructive`, `text-destructive-foreground`
-- **Warning (caution/pending):** `bg-warning`, `text-warning`, `text-warning-foreground`
-- **Success (valid/live):** `bg-success`, `text-success`, `text-success-foreground`
-- **Info (guide/notice):** `bg-info`, `text-info`, `text-info-foreground`
+Rules:
 
-### 3. Surfaces and Elevation
-- `bg-surface-page`: Main background
-- `bg-surface-container`: Base card and container surface
-- `bg-surface-container-low`: Lower elevation recessed surface
-- `bg-surface-container-high`: Higher elevation popover/modal surface
-- `bg-surface-elevated`: Floating menus and dropdowns
-
-### 4. Lines and Borders
-- `border-line-subtle`: Dividers and subtle separators
-- `border-line-default`: Standard card and input borders
-- `border-line-strong`: High-contrast borders
-- `border-border`: General container border
-
-### 5. Overlays
-- Use `bg-scrim` for drawer backdrops and modal scrims. Never use `bg-black/60` or raw black.
+- Do not hand-write a raw `<button>`, `<input>`, or styled `div` when a Tier 1 primitive exists.
+- Do not write your own loading, error, and empty-state logic or ad-hoc modals. Use `DataView` and `ConfirmDialog`.
 
 ---
 
-## Typography and Radius Scales
+## 2. Theme tokens
 
-### Radius Scale
-Only use registered radius utilities:
-- `rounded-xs`, `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`, `rounded-2xl`, `rounded-3xl`, `rounded-4xl`, `rounded-full`.
-- **Forbidden:** Arbitrary `rounded-[...px]`.
+Never use raw Tailwind palette colors such as `blue-500` or `slate-900`. Use role-based tokens, which adapt to the light and dark themes automatically.
 
-### Typography Scale
-Use semantic typography tokens:
-- Micro-copy: `text-2xs` (10px), `text-caption` (11px).
-- Standard scale: `text-xs`, `text-sm`, `text-base`, `text-lg`, `text-xl`, etc.
-- **Forbidden:** Arbitrary font sizes like `text-[13px]`.
+| Group | Tokens |
+| :-- | :-- |
+| **Brand** | `bg-primary`, `text-primary`, `border-primary`, `text-primary-foreground` |
+| **Danger** | `bg-destructive`, `text-destructive`, `text-destructive-foreground` |
+| **Warning** | `bg-warning`, `text-warning`, `text-warning-foreground` |
+| **Success** | `bg-success`, `text-success`, `text-success-foreground` |
+| **Info** | `bg-info`, `text-info`, `text-info-foreground` |
+| **Surfaces** | `bg-surface-page` (page), `bg-surface-container` (cards), `bg-surface-container-low` (recessed), `bg-surface-container-high` (popovers, modals), `bg-surface-elevated` (menus) |
+| **Lines** | `border-line-subtle`, `border-line-default`, `border-line-strong`, `border-border` |
+| **Overlay** | `bg-scrim` for drawer and modal backdrops, never `bg-black/60` |
 
 ---
 
-## Automated Lint Enforcement
+## 3. Radius and typography
 
-We enforce these design rules through a custom ESLint plugin (`design-system/enforce-tokens`) in `client/eslint.config.js`.
+- **Radius:** use only `rounded-xs` to `rounded-4xl` and `rounded-full`. Arbitrary values like `rounded-[8px]` are not allowed.
+- **Typography:** use `text-2xs` (10px) and `text-caption` (11px) for small text, and the standard `text-xs` to `text-xl` scale otherwise. Arbitrary sizes like `text-[13px]` are not allowed.
 
-The rule automatically detects and fails the build on:
-- Raw palette colors (e.g. `bg-blue-600`, `text-slate-500`).
-- Arbitrary CSS bracket syntax (e.g. `[#1a202c]`, `[hsl(...)]`).
-- Arbitrary sizes and radii (e.g. `rounded-[8px]`, `text-[14px]`).
+---
 
-Verify compliance:
+## 4. Lint enforcement
+
+A custom ESLint rule (`design-system/enforce-tokens`, configured in `client/eslint.config.js`) fails the build on:
+
+- raw palette colors, such as `bg-blue-600` or `text-slate-500`;
+- arbitrary bracket values, such as `[#1a202c]` or `[hsl(...)]`;
+- arbitrary sizes and radii, such as `rounded-[8px]` or `text-[14px]`.
+
+To check:
+
 ```bash
 npm --prefix client run lint
 ```
-Every frontend pull request must pass with 0 errors.

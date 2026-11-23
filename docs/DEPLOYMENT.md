@@ -1,93 +1,58 @@
-# Deployment Guide
+# Deployment
 
-This guide describes how to build, configure, and operate BlogHub in production.
+How to build and run BlogHub in production. For running it locally instead, see [Development](DEVELOPMENT.md).
 
----
+## Production setup
 
-## Production Architecture
+BlogHub is deployed as three separate parts:
 
-BlogHub is deployed as a decoupled system:
+| Part | What it is | Where it can run |
+| :-- | :-- | :-- |
+| **Web client** | Static React app built by Vite | Vercel, Netlify, Cloudflare Pages, or Nginx |
+| **API server** | Node.js 20+ Express app | Vercel Functions, Docker, or a VM with PM2 |
+| **Database** | MongoDB 6.0+ (Atlas recommended) | MongoDB Atlas or your own server |
 
-- **Web Client:** Static React 19 Single Page Application built by Vite. Deployable on Vercel, Netlify, Cloudflare Pages, or an Nginx web server.
-- **API Server:** Node.js 20+ Express application running on a serverless platform (Vercel Functions), container (Docker), or dedicated VM (PM2).
-- **Database:** MongoDB 6.0+ replica set (MongoDB Atlas recommended).
-
----
-
-## Environment Variables Checklist
-
-Configure the following variables in your hosting environment:
+## Environment variables
 
 | Variable | Required | Description | Example |
-|---|---|---|---|
-| `PORT` | Optional | API listening port (default: 4000) | `4000` |
-| `NODE_ENV` | Required | Set to production | `production` |
-| `CLIENT_URL` | Required | Production frontend URL (strict CORS) | `https://bloghub.example.com` |
-| `VITE_API_URL` | Required | Production API base URL | `https://api.bloghub.example.com` |
-| `MONGO_DB_URI` | Required | MongoDB production connection string | `mongodb+srv://...` |
-| `JWT_SECRET` | Required | High-entropy secret for 15-min access tokens | Minimum 64 hex characters |
-| `JWT_REFRESH_SECRET` | Required | Distinct high-entropy secret for refresh tokens | Minimum 64 hex characters |
+| :-- | :-: | :-- | :-- |
+| `PORT` | No | API port (default 4000) | `4000` |
+| `NODE_ENV` | Yes | Set to `production` | `production` |
+| `CLIENT_URL` | Yes | Production frontend URL, used for strict CORS | `https://bloghub.example.com` |
+| `VITE_API_URL` | Yes | Production API base URL | `https://api.bloghub.example.com` |
+| `MONGO_DB_URI` | Yes | MongoDB connection string | `mongodb+srv://...` |
+| `JWT_SECRET` | Yes | Secret for 15-minute access tokens (64+ hex characters) | |
+| `JWT_REFRESH_SECRET` | Yes | A different secret for refresh tokens (64+ hex characters) | |
 
----
-
-## Building the Client
-
-Compile the optimized client production bundle:
+## Building the client
 
 ```bash
 npm run build
 ```
 
-The output artifacts are written to `client/dist/`:
-- Minified, gzip-optimized chunks with content hashing.
-- Route-level lazy-loaded bundles (`Login`, `PostDetail`, `AdminLayout`).
+The output goes to `client/dist/`: minified chunks with content hashes, and lazy-loaded route bundles.
 
-Verify bundle budgets and treemap:
+To check the bundle:
+
 ```bash
-# Visual bundle composition
-npm run build:analyze
-
-# Verify size-limit thresholds
-npm run size
+npm run build:analyze   # visual treemap of the bundle
+npm run size            # checks the size-limit budgets
 ```
 
----
+## Running behind a proxy
 
-## Server Ingress and Proxy Configuration
+The API trusts one proxy hop. When it runs behind a reverse proxy or CDN (Vercel, Cloudflare, Nginx, AWS ALB), the proxy must forward:
 
-### 1. Reverse Proxy Hop
-The backend relies on `app.set('trust proxy', 1)`. When deploying behind a reverse proxy (e.g., Vercel, Cloudflare, Nginx, AWS ALB), ensure the proxy forwards:
-- `X-Forwarded-For`: Preserves client IP for rate limiters.
-- `X-Forwarded-Proto`: Enforces HTTPS detection.
+- `X-Forwarded-For`, so rate limiting sees the real client IP;
+- `X-Forwarded-Proto`, so HTTPS is detected correctly.
 
-### 2. Security Headers
-Helmet is enabled by default to set strict security headers:
-- `Content-Security-Policy`
-- `X-Content-Type-Options: nosniff`
-- `X-Frame-Options: SAMEORIGIN`
-- `Strict-Transport-Security`
+Security headers and rate limits are described in [Security](SECURITY.md).
 
-### 3. Rate Limiting Configuration
-Production rate limits run across two tiers:
-- **Global limiter:** 300 requests per 15 minutes per IP.
-- **Auth limiter:** 10 failed login attempts per 15 minutes per IP.
+## Health checks
 
----
+Use these endpoints for load balancer checks and uptime monitoring.
 
-## Health and Readiness Probes
-
-Use these endpoints for load balancer health checks and uptime monitoring:
-
-### 1. Liveness Probe (`GET /health` or `GET /api/health`)
-Returns process uptime without exposing internal system state:
-```json
-{
-  "status": "ok",
-  "uptime": 1428.5
-}
-```
-
-### 2. Readiness Probe (`GET /ready` or `GET /api/ready`)
-Pings the MongoDB connection to verify database availability:
-- **Status 200 OK:** Database connected and responding to pings.
-- **Status 503 Service Unavailable:** Database disconnected or ping timed out.
+| Endpoint | Purpose | Response |
+| :-- | :-- | :-- |
+| `GET /health` or `GET /api/health` | Liveness: is the process up | `200` with `{ "status": "ok", "uptime": 1428.5 }` |
+| `GET /ready` or `GET /api/ready` | Readiness: can it reach the database | `200` if MongoDB answers a ping, `503` if it does not |

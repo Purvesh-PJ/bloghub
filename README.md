@@ -1,6 +1,12 @@
+<div align="center">
+
 # BlogHub
 
-An open-source publishing platform focused on read-through engagement analytics, live Markdown authoring, and platform moderation.
+**A blogging platform that measures whether readers actually finish an article, not just whether they click.**
+
+Live Markdown studio · Read-through analytics · Trending feed · Admin moderation
+
+[**Live Demo**](https://bloghub-gold.vercel.app/) · [Architecture](docs/ARCHITECTURE.md) · [API Reference](docs/API.md) · [Development](docs/DEVELOPMENT.md)
 
 [![CI](https://github.com/Purvesh-PJ/blogging_platform/actions/workflows/ci.yml/badge.svg)](https://github.com/Purvesh-PJ/blogging_platform/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -8,94 +14,53 @@ An open-source publishing platform focused on read-through engagement analytics,
 [![React](https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-6.0+-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 
-**[Live Demo](https://bloghub-gold.vercel.app/)** · [Architecture](ARCHITECTURE.md) · [API Reference](docs/API.md) · [Development](docs/DEVELOPMENT.md) · [Design System](docs/DESIGN_SYSTEM.md) · [Testing](docs/TESTING.md)
+<br />
+
+<img src="client/public/screenshots/landing.png" alt="BlogHub preview" width="860" />
+
+</div>
 
 ---
 
 ## What it does
 
-Most publishing tools only report clicks. BlogHub measures **read-through rate**: tracking viewport scroll depth and active dwell time to determine when a reader actually finishes an article.
+Most publishing tools only report clicks. BlogHub tracks scroll depth and time on the page to tell when a reader has actually finished an article.
 
-- **Readers:** Focused 720px reading typography, light/dark themes, 14-day engagement trending feed, threaded discussions, and unique likes.
-- **Authors:** Split-pane live Markdown studio, automatic slug generation, draft recovery, cover image support, and story read-completion telemetry.
-- **Moderators:** Administrative dashboard, story visibility control, instant multi-session revocation, and activity audit logs.
+- **Readers** get a focused reading layout, light and dark themes, a trending feed, threaded comments, and likes.
+- **Authors** write in a live Markdown editor with automatic slugs, draft recovery, cover images, and read-completion stats for each story.
+- **Moderators** get an admin dashboard to manage stories, tags, and users, and can end a user's sessions instantly.
 
-![BlogHub preview](./client/public/screenshots/landing.png)
+## How it works
 
----
-
-## Quick Start
-
-### 1. Clone and install dependencies
-```bash
-git clone https://github.com/Purvesh-PJ/blogging_platform.git
-cd blogging_platform
-cp .env.example .env
-npm install --prefix backend && npm install --prefix client
+```mermaid
+flowchart LR
+    A["React app<br/>readers, authors, admins"] -->|"HTTPS, JSON"| B["Express API<br/>auth, validation, rate limits"]
+    B --> C[("MongoDB<br/>via Mongoose")]
+    A -. "scroll depth + time on page" .-> B
 ```
 
-### 2. Configure environment
-Edit `.env` at the repository root and add your MongoDB connection string and signing secrets. Generate random keys with:
-```bash
-node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
-```
+The client and the API are separate and talk only through a JSON REST API. The detailed diagram and the request flow are in [Architecture](docs/ARCHITECTURE.md).
 
-### 3. Seed demo accounts (optional)
-```bash
-npm --prefix backend run seed
-```
-Creates pre-populated stories and demo credentials:
-- **Author:** `john@example.com` / `password123`
-- **Admin:** `admin@bloghub.com` / `admin123`
+## Tech stack
 
-### 4. Start development
-```bash
-# Terminal 1: Backend API (port 4000)
-cd backend && npm run dev
+React 19, Vite, Tailwind CSS v4, Radix UI, TanStack Query, Node.js, Express, MongoDB with Mongoose, Jest, Vitest.
 
-# Terminal 2: Web Client (port 3000)
-cd client && npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000).
+## Documentation
 
----
-
-## Documentation Directory
-
-Deep dive guides are organized by single responsibility:
-
-| Document | Focus |
-|---|---|
-| 💻 **[Development Guide](docs/DEVELOPMENT.md)** | Step-by-step local setup, environment variables, seeding, and Git workflow |
-| 📡 **[API Reference](docs/API.md)** | REST endpoints, response envelopes, authentication headers, and error shapes |
-| 🧪 **[Testing Guide](docs/TESTING.md)** | In-memory hermetic database testing, Vitest/Jest suites, and verification commands |
-| 🎨 **[Design System](docs/DESIGN_SYSTEM.md)** | 3-tier UI architecture, role-based tokens, CVA primitives, and automated lint rules |
-| 🚀 **[Deployment Guide](docs/DEPLOYMENT.md)** | Production builds, Vercel/Node hosting, reverse proxy configuration, and health probes |
-| 🏛️ **[System Architecture](ARCHITECTURE.md)** | System topology, Mongoose ERD across 9 collections, token refresh, and algorithms |
-| 📜 **[Architecture Decision Records](docs/adr/README.md)** | Historical engineering trade-offs and rationale behind key architectural choices |
-
----
-
-## Primary Verification Commands
-
-Run these scripts from the repository root:
-
-```bash
-# Run full automated test suite (340+ tests across client and backend)
-npm test
-
-# Run ESLint with strict design token enforcement
-npm run lint
-
-# Check formatting with Prettier
-npm run format:check
-
-# Build frontend production bundle
-npm run build
-```
-
----
+| Doc | What it covers |
+| :-- | :------------- |
+| [Architecture](docs/ARCHITECTURE.md) | System structure and how a request flows through it |
+| [Data Model](docs/DATA_MODEL.md) | Collections and how they relate |
+| [Authentication](docs/AUTHENTICATION.md) | Login, token refresh, and session revocation |
+| [Analytics](docs/ANALYTICS.md) | Read tracking and the trending score |
+| [Security](docs/SECURITY.md) | Protections in place and known trade-offs |
+| [API Reference](docs/API.md) | REST endpoints and response shapes |
+| [Design System](docs/DESIGN_SYSTEM.md) | UI tiers, theme tokens, and lint rules |
+| [Development](docs/DEVELOPMENT.md) | Running the project locally |
+| [Testing](docs/TESTING.md) | Test suites and commands |
+| [Deployment](docs/DEPLOYMENT.md) | Production setup and health checks |
+| [Decision Records](docs/adr/README.md) | Why key technical choices were made |
 
 ## License
 
-Released under the [MIT License](LICENSE).
+[MIT](LICENSE)
