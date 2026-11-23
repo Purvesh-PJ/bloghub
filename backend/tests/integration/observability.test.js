@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../../index');
+const app = require('../../src/index');
 
 describe('Production Observability & Request Tracing', () => {
   it('assigns a unique x-request-id header to every response', async () => {

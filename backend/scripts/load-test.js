@@ -19,9 +19,9 @@ async function startEphemeralServer(port = 4001) {
   await mongoose.connect(mongoUri);
 
   // Seed sample post data for query realistic benchmarking
-  const { Post } = require('../modules/posts');
-  const { User } = require('../modules/users');
-  const { View, Read } = require('../modules/analytics');
+  const { Post } = require('../src/modules/posts');
+  const { User } = require('../src/modules/users');
+  const { View, Read } = require('../src/modules/analytics');
 
   const testUser = await User.create({
     username: 'loadtester',
@@ -52,7 +52,7 @@ async function startEphemeralServer(port = 4001) {
   await View.insertMany(viewDocs);
   await Read.insertMany(readDocs);
 
-  const app = require('../index');
+  const app = require('../src/index');
   return new Promise((resolve) => {
     serverInstance = app.listen(port, () => {
       resolve(`http://localhost:${port}`);

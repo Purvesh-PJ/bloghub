@@ -27,31 +27,34 @@ As the application grew, this horizontal layering introduced friction:
 
 ## 2. Decision Outcome
 
-We restructured `backend/` into **Node.js Modular Architecture with Dedicated Core Infrastructure**:
+We restructured `backend/` into **Node.js Modular Architecture under `backend/src/` with Dedicated Core Infrastructure**:
 
 ```text
 backend/
-├── core/                         # Cross-cutting HTTP & technical infrastructure
-│   ├── errors/                   # AppError, errorHandler
-│   ├── logging/                  # logger, requestLogger
-│   ├── storage/                  # Multer memory storage & validation
-│   ├── validation/               # express-validator runner & ObjectId validation
-│   ├── async/                    # asyncHandler wrapper
-│   └── utils/                    # regex, visitorKey algorithms
+├── package.json                  # Tooling & dependencies
+├── jest.config.js                # Test runner configuration
+├── scripts/                      # Seed, migration, and benchmark scripts
+├── tests/                        # Global test harness (setup/env.js, observability)
 │
-└── modules/                      # Domain functional modules
-    ├── auth/                     # Authentication, refresh rotation, guards
-    │   ├── controllers/
-    │   ├── routes/
-    │   ├── validators/
-    │   ├── middlewares/          # authenticateUser, authorizeSelfOrAdmin
-    │   ├── __tests__/
-    │   └── index.js
-    ├── posts/                    # Posts, slugs, tags, likes, search
-    ├── comments/                 # Comment threads and responses
-    ├── users/                    # Profiles, settings, followers
-    ├── analytics/                # Telemetry, views, reads, trending
-    └── admin/                    # Moderation and administrative operations
+└── src/                          # 100% Application Runtime Source Code
+    ├── core/                     # Cross-cutting HTTP & technical infrastructure
+    │   ├── errors/               # AppError, errorHandler
+    │   ├── logging/              # logger, requestLogger
+    │   ├── storage/              # Multer memory storage & validation
+    │   ├── validation/           # express-validator runner & ObjectId validation
+    │   ├── async/                # asyncHandler wrapper
+    │   └── utils/                # regex, visitorKey algorithms
+    │
+    ├── modules/                  # Domain functional modules
+    │   ├── auth/                 # Authentication, refresh rotation, guards
+    │   ├── posts/                # Posts, slugs, tags, likes, search
+    │   ├── comments/             # Comment threads and responses
+    │   ├── users/                # Profiles, settings, followers
+    │   ├── analytics/            # Telemetry, views, reads, trending
+    │   └── admin/                # Moderation and administrative operations
+    │
+    ├── config/                   # db.js, env.js
+    └── index.js                  # Application entry point
 ```
 
 ### Key Principles
