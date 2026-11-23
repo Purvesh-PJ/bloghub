@@ -35,7 +35,7 @@ flowchart TD
     %% ===================================================
     subgraph Tier1["🌐 Tier 1: Client Application (React 19 SPA • Vite 7)"]
         direction LR
-        UI["UI & Feature Pages<br/>(Markdown Studio, Feed, Profile)"]
+        UI["React 19 UI & Pages<br/>(Studio, Feeds, Profile, Admin)"]
         Cache["Server State Cache<br/>(TanStack Query v5)"]
         Http["API Client Instance<br/>(Axios + Auto-Refresh)"]
         UI --> Cache --> Http
@@ -47,47 +47,40 @@ flowchart TD
     %% ===================================================
     %% TIER 2: SERVER APPLICATION TIER (Express 4)
     %% ===================================================
-    subgraph Tier2["⚙️ Tier 2: Backend Application Server (Node.js 20+ • Express 4 • backend/src/)"]
+    subgraph Tier2["⚙️ Tier 2: Backend Application Server (Node.js 20+ • Express 4)"]
         direction TB
 
-        subgraph IngressLayer["Edge Ingress & Global Middleware Pipeline (core/)"]
-            Ingress["Security Headers & CORS<br/>(Helmet • CORS strict origin)"]
-            RateLimit["Rate Limiting & Proxy<br/>(trust proxy • IP burst throttles)"]
+        subgraph IngressPipeline["Edge Ingress & Global Middleware Pipeline"]
+            direction LR
+            Ingress["Security Headers & CORS<br/>(Helmet • Strict CORS Origin)"]
+            RateLimit["Rate Limiting & Proxy<br/>(trust proxy • IP Burst Throttles)"]
             Logging["HTTP Traffic Logger<br/>(Pino HTTP requestLogger)"]
             Ingress --> RateLimit --> Logging
         end
 
-        subgraph CoreInfra["Cross-Cutting Technical Infrastructure (backend/src/core/)"]
+        subgraph RoutingGuards["API Routing & Security Middleware Layer (/api/*)"]
             direction LR
-            Errors["errors/<br/>AppError • errorHandler"]
-            Storage["storage/<br/>upload (Multer memory)"]
-            Validation["validation/<br/>validate • validateObjectId"]
-            Async["async/<br/>asyncHandler"]
-            Utils["utils/<br/>regex • visitorKey"]
+            Router["Express API Router<br/>(Path Route Dispatching)"]
+            AuthGuard["Auth & Session Guard<br/>(JWT Verify • Instant Revocation)"]
+            Validation["Request Validator<br/>(Schema Rules • Sanitization)"]
+            Router --> AuthGuard --> Validation
         end
 
-        subgraph ModulesLayer["Domain-Driven Functional Modules (backend/src/modules/)"]
-            direction TB
-            AuthMod["auth/<br/>Session & Token Rotation<br/>middlewares/authenticateUser"]
-            PostMod["posts/<br/>Post CRUD, Slugs, Tags<br/>models/ • services/"]
-            CommentMod["comments/<br/>Threaded Discussions<br/>models/ • services/"]
-            UserMod["users/<br/>Profiles & Settings<br/>models/ • services/"]
-            AnalyticsMod["analytics/<br/>Dwell Time & Telemetry<br/>models/ • services/"]
-            AdminMod["admin/<br/>Moderation & Audits<br/>controllers/"]
+        subgraph DomainServices["Domain Business Services"]
+            direction LR
+            AuthSvc["Auth & Sessions"]
+            PostSvc["Posts, Slugs & Tags"]
+            UserSvc["Users & Profiles"]
+            CommentSvc["Threaded Comments"]
+            AnalyticsSvc["Reading & Trending Telemetry"]
         end
 
-        Logging ==>|"HTTP Request"| AuthMod
-        AuthMod -.->|"Auth Guards & Token Verification"| PostMod
-        AuthMod -.->|"Auth Guards & Token Verification"| CommentMod
-        AuthMod -.->|"Auth Guards & Token Verification"| UserMod
-        AuthMod -.->|"Auth Guards & Token Verification"| AnalyticsMod
-        AuthMod -.->|"Admin Role Guard"| AdminMod
-
-        CoreInfra -.->|"Shared Technical Services"| ModulesLayer
+        Logging ==>|"HTTP Request"| Router
+        Validation ==>|"Dispatched Request"| DomainServices
     end
 
     %% Database Transport Boundary
-    ModulesLayer ==>|"Mongoose 8 Wire Protocol (TCP)"| ODM
+    DomainServices ==>|"Mongoose 8 Wire Protocol (TCP)"| ODM
 
     %% ===================================================
     %% TIER 3: DATABASE TIER (MongoDB 6+)
@@ -96,10 +89,7 @@ flowchart TD
         direction LR
         ODM["Mongoose 8 ODM Layer<br/>(Strict Schemas & Compound Indexes)"]
         DB[("MongoDB 6+ Document Store<br/>users, posts, comments, likes, views, reads")]
-        Redis[("Redis Cache / Queue<br/>(Planned Future Scale)")]
-
         ODM --> DB
-        ODM -.->|"Future Scale"| Redis
     end
 ```
 
