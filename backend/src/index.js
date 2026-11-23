@@ -1,5 +1,7 @@
 const express = require('express');
 const path = require('path');
+// Load from root repo .env or backend/.env
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 // Validate configuration before anything else, so a misconfigured deployment fails at
