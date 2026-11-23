@@ -1,6 +1,6 @@
 # Architecture
 
-This document explains how the main pieces of BlogHub fit together and how a request moves through them. For the database see [Data Model](DATA_MODEL.md), for login and sessions see [Authentication](AUTHENTICATION.md), for read tracking see [Analytics](ANALYTICS.md), and for protections see [Security](SECURITY.md).
+This document explains how the main pieces of BlogHub fit together and how a request moves through them. For the database see [Data Model](DATA_MODEL.md), for login and sessions see [Authentication](AUTHENTICATION.md), for read tracking see [Analytics](ANALYTICS.md), and for protections see [Security Model](SECURITY_MODEL.md).
 
 ## Contents
 

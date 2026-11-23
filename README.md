@@ -53,7 +53,8 @@ React 19, Vite, Tailwind CSS v4, Radix UI, TanStack Query, Node.js, Express, Mon
 | [Data Model](docs/DATA_MODEL.md) | Collections and how they relate |
 | [Authentication](docs/AUTHENTICATION.md) | Login, token refresh, and session revocation |
 | [Analytics](docs/ANALYTICS.md) | Read tracking and the trending score |
-| [Security](docs/SECURITY.md) | Protections in place and known trade-offs |
+| [Security Model](docs/SECURITY_MODEL.md) | Protections in place and known trade-offs |
+| [Security Policy](SECURITY.md) | Supported versions and how to report a vulnerability |
 | [API Reference](docs/API.md) | REST endpoints and response shapes |
 | [Design System](docs/DESIGN_SYSTEM.md) | UI tiers, theme tokens, and lint rules |
 | [Development](docs/DEVELOPMENT.md) | Running the project locally |

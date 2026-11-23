@@ -46,7 +46,7 @@ The API trusts one proxy hop. When it runs behind a reverse proxy or CDN (Vercel
 - `X-Forwarded-For`, so rate limiting sees the real client IP;
 - `X-Forwarded-Proto`, so HTTPS is detected correctly.
 
-Security headers and rate limits are described in [Security](SECURITY.md).
+Security headers and rate limits are described in [Security Model](SECURITY_MODEL.md).
 
 ## Health checks
 

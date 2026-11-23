@@ -1,6 +1,6 @@
 # Authentication
 
-This document explains how login works, how expired tokens are refreshed, and how a user's sessions can be ended instantly. For the other protections in the app see [Security](SECURITY.md).
+This document explains how login works, how expired tokens are refreshed, and how a user's sessions can be ended instantly. For the other protections in the app see [Security Model](SECURITY_MODEL.md).
 
 ## How it works
 
