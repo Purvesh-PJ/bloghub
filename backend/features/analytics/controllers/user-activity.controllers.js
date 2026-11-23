@@ -3,8 +3,8 @@ const Post = require('../../posts/models/post.model');
 const Like = require('../../posts/models/like.model');
 const Comment = require('../../comments/models/comment.model');
 const User = require('../../users/models/user.model');
-const asyncHandler = require('../../../middlewares/asyncHandler');
-const { notFound } = require('../../../utils/AppError');
+const { asyncHandler } = require('../../../core/async');
+const { notFound } = require('../../../core/errors');
 
 /*
   Activity feeds for the administration console.

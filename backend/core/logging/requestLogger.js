@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const pinoHttp = require('pino-http');
-const logger = require('../utils/logger');
+const logger = require('./logger');
 
 const httpLogger = pinoHttp({
   logger,

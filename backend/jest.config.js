@@ -10,7 +10,7 @@ module.exports = {
   // Starting the in-memory server on a cold cache is slow the first time it downloads a
   // binary; the default 5s is not enough.
   testTimeout: 30000,
-  collectCoverageFrom: ['features/**/*.js', 'middlewares/**/*.js', 'utils/**/*.js'],
+  collectCoverageFrom: ['features/**/*.js', 'core/**/*.js'],
   // Surfaces a handle left open by a test rather than letting the run hang.
   detectOpenHandles: true,
   forceExit: true,

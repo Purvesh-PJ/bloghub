@@ -1,5 +1,5 @@
 const { validationResult, query } = require('express-validator');
-const { badRequest } = require('../utils/AppError');
+const { badRequest } = require('../errors');
 
 // Shared by every paginated listing, so one endpoint cannot be asked for the whole table.
 const paginationRules = [

@@ -4,10 +4,10 @@ const Comment = require('../../comments/models/comment.model');
 const User = require('../../users/models/user.model');
 const Profile = require('../../users/models/user-profile.model');
 const { getTrendingPosts } = require('../../analytics/services/trending.service');
-const asyncHandler = require('../../../middlewares/asyncHandler');
+const { asyncHandler } = require('../../../core/async');
 const { createPost, updatePost } = require('../services/post.service');
-const { notFound, forbidden } = require('../../../utils/AppError');
-const { containsIgnoreCase } = require('../../../utils/regex');
+const { notFound, forbidden } = require('../../../core/errors');
+const { containsIgnoreCase } = require('../../../core/utils');
 
 const MAX_PAGE_SIZE = 50;
 

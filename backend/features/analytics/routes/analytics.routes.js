@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const AnalyticsController = require('../controllers/analytics.controllers');
-const AuthUser = require('../../../middlewares/authenticateUser');
-const authorizeSelfOrAdmin = require('../../../middlewares/authorizeSelfOrAdmin');
-const { validateObjectId } = require('../../../middlewares/validate');
+const AuthUser = require('../../auth/middlewares/authenticateUser');
+const authorizeSelfOrAdmin = require('../../auth/middlewares/authorizeSelfOrAdmin');
+const { validateObjectId } = require('../../../core/validation');
 
 // Figures for one post. Requires a session: the handler restricts them to the post's author
 // and to administrators, so there is nobody else for whom an anonymous call could succeed.

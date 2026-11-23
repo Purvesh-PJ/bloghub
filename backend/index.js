@@ -23,7 +23,7 @@ if (process.env.NODE_ENV !== 'test') {
   connectDB();
 }
 
-const errorHandler = require('./middlewares/errorHandler'); // Import error handling middleware
+const { errorHandler } = require('./core/errors');
 
 // IMPORT ROUTES
 const { authRoutes } = require('./features/auth');
@@ -32,8 +32,7 @@ const { postRoutes, likeRoutes, tagRoutes, searchRoutes } = require('./features/
 const { commentRoutes } = require('./features/comments');
 const { analyticsRoutes, pageViewRoutes, userActivityRoutes } = require('./features/analytics');
 
-const requestLogger = require('./middlewares/requestLogger');
-const logger = require('./utils/logger');
+const { requestLogger, logger } = require('./core/logging');
 
 const cors = require('cors');
 const helmet = require('helmet');

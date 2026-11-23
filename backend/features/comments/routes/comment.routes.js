@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const CommentController = require('../controllers/comment.controllers');
 
-const AuthUser = require('../../../middlewares/authenticateUser');
-const { validate, validateObjectId, paginationRules } = require('../../../middlewares/validate');
+const AuthUser = require('../../auth/middlewares/authenticateUser');
+const { validate, validateObjectId, paginationRules } = require('../../../core/validation');
 const { commentRules } = require('../validators/comment.validators');
 
 // Scoped to a single post. This used to be a bare `GET /comments` that returned every comment

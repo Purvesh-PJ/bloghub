@@ -1,8 +1,8 @@
 const bcrypt = require('bcryptjs');
 const User = require('../../users/models/user.model');
 const { purgeAccount } = require('../../users/services/user.service');
-const asyncHandler = require('../../../middlewares/asyncHandler');
-const { notFound, badRequest, unauthorized } = require('../../../utils/AppError');
+const { asyncHandler } = require('../../../core/async');
+const { notFound, badRequest, unauthorized } = require('../../../core/errors');
 
 /*
   Administrator actions on other people's accounts.

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const tagController = require('../controllers/tag.controllers');
-const AuthUser = require('../../../middlewares/authenticateUser');
-const { validateObjectId } = require('../../../middlewares/validate');
+const AuthUser = require('../../auth/middlewares/authenticateUser');
+const { validateObjectId } = require('../../../core/validation');
 
 // Public read
 router.get('/', tagController.getTags);

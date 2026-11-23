@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/auth.controllers');
-const AuthUser = require('../../../middlewares/authenticateUser');
-const { validate } = require('../../../middlewares/validate');
+const AuthUser = require('../middlewares/authenticateUser');
+const { validate } = require('../../../core/validation');
 const {
   signUpRules,
   signInRules,

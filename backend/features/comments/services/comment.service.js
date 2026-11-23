@@ -1,6 +1,6 @@
 const Comment = require('../models/comment.model');
 const Post = require('../../posts/models/post.model');
-const { badRequest, notFound } = require('../../../utils/AppError');
+const { badRequest, notFound } = require('../../../core/errors');
 
 /**
  * Stores a comment and links it to its post.

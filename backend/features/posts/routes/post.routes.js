@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const PostControllers = require('../controllers/post.controllers');
-const AuthUser = require('../../../middlewares/authenticateUser');
-const { validate, validateObjectId } = require('../../../middlewares/validate');
+const AuthUser = require('../../auth/middlewares/authenticateUser');
+const { validate, validateObjectId } = require('../../../core/validation');
 const {
   createPostRules,
   updatePostRules,

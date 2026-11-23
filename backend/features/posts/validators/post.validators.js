@@ -81,7 +81,7 @@ const postRules = (partial) => {
 const createPostRules = postRules(false);
 const updatePostRules = postRules(true);
 
-const { paginationRules } = require('../../../middlewares/validate');
+const { paginationRules } = require('../../../core/validation');
 const { profileRules } = require('../../users/validators/user.validators');
 
 // Bounded so one request cannot be used to sweep the collection, and so the action can only

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const logger = require('../utils/logger');
+const { logger } = require('../core/logging');
 
 async function connectDB() {
   const uri = process.env.MONGODB_URI || process.env.MONGO_DB_URI || process.env.DB_URI;

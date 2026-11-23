@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/user.controllers');
-const AuthUser = require('../../../middlewares/authenticateUser');
-const { uploadAvatar } = require('../../../middlewares/upload');
-const { validate, validateObjectId, paginationRules } = require('../../../middlewares/validate');
+const AuthUser = require('../../auth/middlewares/authenticateUser');
+const { uploadAvatar } = require('../../../core/storage');
+const { validate, validateObjectId, paginationRules } = require('../../../core/validation');
 const { myPostsRules } = require('../../posts/validators/post.validators');
 const { AdminController } = require('../../admin');
 const {

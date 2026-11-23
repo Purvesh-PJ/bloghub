@@ -5,9 +5,9 @@ const Post = require('../../posts/models/post.model');
 const Like = require('../../posts/models/like.model');
 const User = require('../../users/models/user.model');
 const Comment = require('../../comments/models/comment.model');
-const asyncHandler = require('../../../middlewares/asyncHandler');
-const { notFound, forbidden } = require('../../../utils/AppError');
-const { visitorKey, DEDUPE_WINDOW_MS } = require('../../../utils/visitor');
+const { asyncHandler } = require('../../../core/async');
+const { notFound, forbidden } = require('../../../core/errors');
+const { visitorKey, DEDUPE_WINDOW_MS } = require('../../../core/utils');
 
 // Counts documents per post in one grouped query. The alternative — countDocuments()
 // inside a map over the posts — costs two round trips per post, so a writer with fifty

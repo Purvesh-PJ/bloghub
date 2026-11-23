@@ -1,7 +1,7 @@
 const Post = require('../models/post.model');
 const User = require('../../users/models/user.model');
 const Tag = require('../models/tag.model');
-const { badRequest, notFound } = require('../../../utils/AppError');
+const { badRequest, notFound } = require('../../../core/errors');
 
 const MAX_TAGS_PER_POST = 5;
 

@@ -4,16 +4,10 @@ const User = require('../models/user.model');
 const Post = require('../../posts/models/post.model');
 const Profile = require('../models/user-profile.model');
 const UserSettings = require('../models/user-settings.model');
-const asyncHandler = require('../../../middlewares/asyncHandler');
+const { asyncHandler } = require('../../../core/async');
 const { purgeAccount } = require('../services/user.service');
-const { containsIgnoreCase } = require('../../../utils/regex');
-const {
-  notFound,
-  conflict,
-  badRequest,
-  unauthorized,
-  forbidden,
-} = require('../../../utils/AppError');
+const { containsIgnoreCase } = require('../../../core/utils');
+const { notFound, conflict, badRequest, unauthorized, forbidden } = require('../../../core/errors');
 
 /**
  * Serves a stored avatar as an image.

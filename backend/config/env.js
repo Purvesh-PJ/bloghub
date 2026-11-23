@@ -5,7 +5,7 @@
  * as a 500 on the first sign-in — in production, to a user.
  */
 
-const logger = require('../utils/logger');
+const { logger } = require('../core/logging');
 
 const REQUIRED = ['JWT_SECRET'];
 const REQUIRED_IN_PRODUCTION = ['CLIENT_URL'];

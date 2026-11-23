@@ -1,5 +1,5 @@
 const multer = require('multer');
-const logger = require('../utils/logger');
+const { logger } = require('../logging');
 
 /**
  * Terminal error middleware.

@@ -1,5 +1,5 @@
 const multer = require('multer');
-const { badRequest } = require('../utils/AppError');
+const { badRequest } = require('../errors');
 
 // 2 MB. Large enough for a reasonable avatar, small enough that the encoded copy returned in
 // JSON stays manageable.

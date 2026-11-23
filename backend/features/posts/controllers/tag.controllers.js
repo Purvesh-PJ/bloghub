@@ -1,7 +1,7 @@
 const Tag = require('../models/tag.model');
 const Post = require('../models/post.model');
-const asyncHandler = require('../../../middlewares/asyncHandler');
-const { badRequest, notFound, conflict } = require('../../../utils/AppError');
+const { asyncHandler } = require('../../../core/async');
+const { badRequest, notFound, conflict } = require('../../../core/errors');
 
 const MAX_TAG_LENGTH = 30;
 
