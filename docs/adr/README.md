@@ -16,6 +16,7 @@ This directory documents the key architectural decisions made in BlogHub. Each r
 | [ADR-0008](0008-feature-driven-frontend.md) | Feature-Driven Frontend Architecture | **Accepted** | 2026-11-06 |
 | [ADR-0009](0009-performance-and-load-testing-plan.md) | Non-Functional Tooling and Performance Roadmap | **Draft** | 2026-11-06 |
 | [ADR-0010](0010-composed-ui-patterns-and-3-tier-design-system.md) | 3-Tier UI Architecture and Composed Patterns | **Accepted** | 2026-11-08 |
+| [ADR-0011](0011-feature-driven-backend.md) | Feature-Driven Modular Backend Architecture | **Accepted** | 2026-11-23 |
 
 ---
 

@@ -1,0 +1,50 @@
+const express = require('express');
+const router = express.Router();
+const UserActivityController = require('../controllers/user-activity.controllers');
+const AuthUser = require('../../auth/middlewares/authenticateUser');
+const authorizeSelfOrAdmin = require('../../auth/middlewares/authorizeSelfOrAdmin');
+const { validate, validateObjectId, paginationRules } = require('../../../core/validation');
+
+// Get all user activity (admin only)
+router.get(
+  '/all',
+  AuthUser.authenticateUser,
+  AuthUser.authorizeAdmin,
+  paginationRules,
+  validate,
+  UserActivityController.getAllUserActivity,
+);
+
+// Get activity for a specific user — readable only by that user or an administrator
+router.get(
+  '/user/:userId',
+  AuthUser.authenticateUser,
+  validateObjectId('userId'),
+  authorizeSelfOrAdmin('userId'),
+  paginationRules,
+  validate,
+  UserActivityController.getUserActivity,
+);
+
+// Get timeline for a specific user — same scoping
+router.get(
+  '/timeline/:userId',
+  AuthUser.authenticateUser,
+  validateObjectId('userId'),
+  authorizeSelfOrAdmin('userId'),
+  paginationRules,
+  validate,
+  UserActivityController.getUserTimeline,
+);
+
+// Get moderation log (admin only)
+router.get(
+  '/moderation-log',
+  AuthUser.authenticateUser,
+  AuthUser.authorizeAdmin,
+  paginationRules,
+  validate,
+  UserActivityController.getModerationLog,
+);
+
+module.exports = router;
