@@ -113,37 +113,11 @@ Rather than a traditional horizontal layer structure (`components/`, `hooks/`, `
 
 Each feature folder is self-contained with its own `components/`, `hooks/`, `pages/`, `services/`, and colocated `__tests__/`. Cross-feature interactions are exposed through explicit public barrel interfaces (`index.js`). Shared building blocks (`components/ui/`, `components/patterns/`, `components/layout/`, `config/queryKeys.js`, `styles/ThemeProvider.jsx`) remain global. See [ADR-0008](docs/adr/0008-feature-driven-frontend.md) for full context and trade-offs.
 
-### 3-Tier UI Component Architecture
+### UI Architecture and Design System
 
-BlogHub avoids both atomic fragmentation (hand-rolling raw elements on every page) and monolithic page bloat by separating UI concerns into 3 distinct tiers:
+The frontend separates user interface presentation into a strict 3-tier component hierarchy (Primitives → Composed Patterns → Domain Feature Components), styled with semantic role-based tokens and validated at build time by a custom ESLint enforcement rule.
 
-1. **Tier 1 — Core Primitives (`client/src/components/ui/`):**
-   Atomic, domain-agnostic building blocks (`Button`, `IconButton`, `Input`, `Select`, `Card`, `Surface`, `Alert`, `Badge`, `Chip`, `Modal`, `Dialog`, `Table`, `Pagination`, `EmptyState`, `ErrorState`, `Skeleton`). Built with Radix UI and Tailwind CVA. Hand-rolling raw `<button>` or un-tokenized divs is strictly forbidden.
-
-2. **Tier 2 — Composed Patterns (`client/src/components/patterns/`):**
-   High-level generic compositions built 100% out of Tier 1 primitives, standardizing workflows across features:
-   - `PageHeader`: Standard heading, subtitle, badge, and action slots.
-   - `DataTableCard`: Standard table container wrapping `Card`, `Table`, and `Pagination`.
-   - `DataView`: Unified async lifecycle state machine (`isLoading`, `isError`, `isEmpty`, content).
-   - `FilterToolbar`: Unified chips, sort select, and search box toolbar.
-   - `StatsGrid`: Responsive telemetry metrics grid (2-5 columns) with skeletons.
-   - `SettingSection`: Structured settings card wrapper with title, description, `Alert` notice, and footer actions.
-   - `ChoiceGrid`: Accessible card-based visual radio selector using `Card as="button"`.
-   - `ConfirmDialog`: Standardized modal confirmation dialog with busy states and danger/confirm actions.
-   - `BulkActionBar`: Floating selection toolbar for batch actions ("X items selected").
-
-3. **Tier 3 — Domain Feature Components (`client/src/features/*/components/`):**
-   Domain-specific components carrying business logic and data schema awareness (e.g., `PostCard`, `AuthorByline`, `CommentItem`, `PublishSettingsSidebar`).
-
-See [ADR-0010](docs/adr/0010-composed-ui-patterns-and-3-tier-design-system.md) for full architectural context and trade-offs.
-
-### Design Tokens and Styling Architecture
-
-BlogHub uses Tailwind CSS v4 with a CSS-first token architecture declared in `client/src/index.css` via `@theme`:
-
-- **Semantic Color Tokens:** All surfaces, typography, and borders map to CSS variables (`--color-background`, `--color-foreground`, `--color-card`, `--color-primary`, `--color-border`, `--color-muted-foreground`, etc.). Utility classes like `bg-card`, `text-foreground`, and `border-border/40` adapt across light and dark themes without conditional code.
-- **Radius and Typography Scales:** Explicit tokens standardize geometry (`--radius-xs` through `--radius-4xl`) and micro-typography (`--text-2xs`, `--text-caption`).
-- **Automated Enforcement:** A custom ESLint rule (`design-system/enforce-tokens`) in `client/eslint.config.js` blocks raw bracket values (`[hsl(...)]`, `[#...]`), arbitrary border radii (`rounded-[...px]`), and arbitrary font sizes. Violations fail the build at lint time.
+For the complete component specifications, token scales, and enforcement rules, consult 👉 **[Design System Guide (docs/DESIGN_SYSTEM.md)](docs/DESIGN_SYSTEM.md)** and **[ADR-0010](docs/adr/0010-composed-ui-patterns-and-3-tier-design-system.md)**.
 
 ---
 

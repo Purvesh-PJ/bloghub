@@ -6,27 +6,7 @@ Guidelines for developing, testing, and submitting contributions to BlogHub.
 
 ## Development Setup
 
-1. **Clone & Setup:**
-   ```bash
-   git clone https://github.com/Purvesh-PJ/blogging_platform.git
-   cd blogging_platform
-   cp .env.example .env
-   ```
-
-2. **Install Dependencies:**
-   ```bash
-   npm install --prefix backend
-   npm install --prefix client
-   ```
-
-3. **Seed Database (Local MongoDB required):**
-   ```bash
-   npm run seed --prefix backend
-   ```
-
-4. **Run Dev Servers:**
-   - Backend API (`http://localhost:4000`): `npm run dev --prefix backend`
-   - Client App (`http://localhost:3000`): `npm run dev --prefix client`
+Before making changes, set up your local environment, install dependencies, and seed test data by following the step-by-step **[Development Guide](docs/DEVELOPMENT.md)**.
 
 ---
 
@@ -35,13 +15,14 @@ Guidelines for developing, testing, and submitting contributions to BlogHub.
 We follow standard GitHub flow:
 
 1. **Branch Naming:**
-   - `feat/<topic>` — New features and enhancements.
-   - `fix/<topic>` — Bug fixes.
-   - `docs/<topic>` — Documentation improvements.
-   - `chore/<topic>` — Tooling and maintenance.
+   - `feat/<topic>` — New features and enhancements
+   - `fix/<topic>` — Bug fixes
+   - `refactor/<topic>` — Code refactoring without behavior changes
+   - `docs/<topic>` — Documentation improvements
+   - `test/<topic>` — Testing harness and test suite additions
 
 2. **Commit Convention:**
-   Use Conventional Commits:
+   Use Conventional Commits (`type(scope): description`):
    - `feat(auth): add refresh token rotation`
    - `fix(editor): fix split-pane scrolling desync`
    - `docs: update setup steps in readme`
@@ -51,9 +32,9 @@ We follow standard GitHub flow:
    ```bash
    npm run lint               # Enforces code safety, React rules, and design tokens
    npm run format:check       # Prettier code formatting check
-   npm test                   # Runs full test suite (336 tests: backend + client)
+   npm test                   # Runs full test suite (340+ tests: backend + client)
    ```
-   *Note: Client linting strictly blocks raw palette colors (`sky-*`, `red-*`) and arbitrary syntax (`[#hex]`, `rounded-[...px]`). Always use design tokens from `client/src/index.css`.*
+   *For design system and UI token guidelines, consult the **[Design System Guide](docs/DESIGN_SYSTEM.md)**.*
 
 ---
 
