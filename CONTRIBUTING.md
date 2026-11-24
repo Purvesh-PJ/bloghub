@@ -2,6 +2,8 @@
 
 Guidelines for developing, testing, and submitting contributions to BlogHub.
 
+> **Licensing Note:** This repository is **All Rights Reserved** ([LICENSE](LICENSE)) for portfolio and showcase purposes. Local evaluation, bug reports, and pull requests are welcome. By submitting a pull request, you agree that your contribution is licensed to the repository owner.
+
 ---
 
 ## Development Setup
@@ -46,4 +48,4 @@ We follow standard GitHub flow:
    ```
 2. Open a Pull Request targeting `main`.
 3. Fill in the provided PR template (Context, Changes, Verification).
-4. Ensure all CI automated checks pass before requesting review.
+4. Ensure all local tests and linting checks pass before requesting review.
