@@ -8,7 +8,7 @@ Write in a live Markdown studio, explore a trending feed powered by genuine read
 
 [**Live Demo**](https://bloghub-gold.vercel.app/) · [Architecture](ARCHITECTURE.md) · [API Reference](docs/API.md) · [Development](docs/DEVELOPMENT.md)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: All Rights Reserved](https://img.shields.io/badge/License-All_Rights_Reserved-lightgrey.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -71,4 +71,4 @@ The client and the API are separate and talk only through a JSON REST API. The d
 
 ## License
 
-[MIT](LICENSE)
+Copyright © 2024–2026 Purvesh-PJ. All Rights Reserved. See [LICENSE](LICENSE) for details.

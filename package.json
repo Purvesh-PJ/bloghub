@@ -2,7 +2,7 @@
   "name": "bloghub",
   "version": "1.0.0",
   "private": true,
-  "description": "An open-source, full-stack publishing platform engineered for deep reading, live Markdown authoring, read-through engagement analytics, and complete platform governance.",
+  "description": "A full-stack blogging and publishing platform engineered for deep reading, live Markdown authoring, read-through engagement analytics, and platform moderation.",
   "scripts": {
     "test": "npm --prefix backend test && npm --prefix client test",
     "test:backend": "npm --prefix backend test",
@@ -34,5 +34,5 @@
     "express",
     "mongodb"
   ],
-  "license": "MIT"
+  "license": "UNLICENSED"
 }
