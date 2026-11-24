@@ -24,8 +24,6 @@ Live Markdown studio · Read-through analytics · Trending feed · Admin moderat
 
 ## What it does
 
-Most publishing tools only report clicks. BlogHub tracks scroll depth and time on the page to tell when a reader has actually finished an article.
-
 - **Readers** get a focused reading layout, light and dark themes, a trending feed, threaded comments, and likes.
 - **Authors** write in a live Markdown editor with automatic slugs, draft recovery, cover images, and read-completion stats for each story.
 - **Moderators** get an admin dashboard to manage stories, tags, and users, and can end a user's sessions instantly.
@@ -42,29 +40,33 @@ flowchart LR
     API -->|"TCP"| DB
 ```
 
-The client and the API are separate and talk only through a JSON REST API. The detailed diagram and the request flow are in [Architecture](ARCHITECTURE.md).
+The client and the API are separate and talk only through a JSON REST API. The detailed diagram and request flow are in [Architecture](ARCHITECTURE.md).
 
 ## Tech stack
 
-React 19, Vite, Tailwind CSS v4, Radix UI, TanStack Query, Node.js, Express, MongoDB with Mongoose, Jest, Vitest.
+- **Frontend:** React 19, Vite 7, Tailwind CSS v4, Radix UI, TanStack Query v5
+- **Backend:** Node.js 20+, Express 4
+- **Data & Testing:** MongoDB 6+ (Mongoose 8), Jest, Vitest
 
 ## Documentation
 
 | Doc | What it covers |
 | :-- | :------------- |
+| [Development](docs/DEVELOPMENT.md) | Prerequisites, local setup, environment variables, and running dev servers |
+| [API Reference](docs/API.md) | REST endpoints, auth headers, and response shapes |
+| [Testing](docs/TESTING.md) | Test suites, in-memory DB setup, and commands |
+| [Deployment](docs/DEPLOYMENT.md) | Production build, proxy setup, and health checks |
 | [Architecture](ARCHITECTURE.md) | System structure and how a request flows through it |
 | [Database](docs/DATABASE.md) | Connection, migrations, seeding, and health checks |
-| [Data Model](docs/DATA_MODEL.md) | Collections and how they relate |
+| [Data Model](docs/DATA_MODEL.md) | Collections, relationships, and indexes |
 | [Authentication](docs/AUTHENTICATION.md) | Login, token refresh, and session revocation |
 | [Analytics](docs/ANALYTICS.md) | Read tracking and the trending score |
+| [Design System](docs/DESIGN_SYSTEM.md) | UI tiers, theme tokens, and lint rules |
 | [Security Model](docs/SECURITY_MODEL.md) | Protections in place and known trade-offs |
 | [Security Policy](SECURITY.md) | Supported versions and how to report a vulnerability |
-| [API Reference](docs/API.md) | REST endpoints and response shapes |
-| [Design System](docs/DESIGN_SYSTEM.md) | UI tiers, theme tokens, and lint rules |
-| [Development](docs/DEVELOPMENT.md) | Running the project locally |
-| [Testing](docs/TESTING.md) | Test suites and commands |
-| [Deployment](docs/DEPLOYMENT.md) | Production setup and health checks |
 | [Decision Records](docs/adr/README.md) | Why key technical choices were made |
+| [Contributing](CONTRIBUTING.md) | Branching, commit conventions, and PR workflow |
+| [Changelog](CHANGELOG.md) | Version history and release notes |
 
 ## License
 
