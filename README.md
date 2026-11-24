@@ -2,16 +2,17 @@
 
 # BlogHub
 
-**A blogging platform that measures whether readers actually finish an article, not just whether they click.**
+**A full-stack blogging platform for writing, reading, and measuring real reader engagement.**
 
-Live Markdown studio · Read-through analytics · Trending feed · Admin moderation
+Write in a live Markdown studio, explore a trending feed powered by genuine read-through signals, and manage content with built-in moderation tools.
 
 [**Live Demo**](https://bloghub-gold.vercel.app/) · [Architecture](ARCHITECTURE.md) · [API Reference](docs/API.md) · [Development](docs/DEVELOPMENT.md)
 
-[![CI](https://github.com/Purvesh-PJ/blogging_platform/actions/workflows/ci.yml/badge.svg)](https://github.com/Purvesh-PJ/blogging_platform/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-6.0+-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 
 <br />
@@ -22,11 +23,11 @@ Live Markdown studio · Read-through analytics · Trending feed · Admin moderat
 
 ---
 
-## What it does
+## Key Features
 
-- **Readers** get a focused reading layout, light and dark themes, a trending feed, threaded comments, and likes.
-- **Authors** write in a live Markdown editor with automatic slugs, draft recovery, cover images, and read-completion stats for each story.
-- **Moderators** get an admin dashboard to manage stories, tags, and users, and can end a user's sessions instantly.
+- **Readers:** Focused reading layout, light and dark themes, a trending feed, threaded comments, and likes.
+- **Authors:** Live split-pane Markdown editor with automatic slugs, draft recovery, cover images, and read-completion stats for each story.
+- **Moderators:** Admin dashboard to manage stories, tags, and users, with instant session revocation.
 
 ## How it works
 

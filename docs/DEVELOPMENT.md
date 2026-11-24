@@ -14,8 +14,8 @@ How to run BlogHub on your own machine. A [hosted demo](https://bloghub-gold.ver
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/Purvesh-PJ/blogging_platform.git
-cd blogging_platform
+git clone https://github.com/Purvesh-PJ/bloghub.git
+cd bloghub
 npm install --prefix backend
 npm install --prefix client
 ```
