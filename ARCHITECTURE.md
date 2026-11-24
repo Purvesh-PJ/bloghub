@@ -21,57 +21,52 @@ BlogHub is a classic three-tier web app:
 The client and server are fully separate. They only talk over HTTPS using a JSON REST API, so either side can be deployed or replaced on its own.
 
 ```mermaid
-flowchart TD
-    subgraph Tier1["Tier 1: Client (React 19 SPA, Vite 7)"]
+%%{init: {'flowchart': {'nodeSpacing': 25, 'rankSpacing': 55, 'subGraphTitleMargin': {'top': 10, 'bottom': 15}}}}%%
+flowchart TB
+    subgraph T1 ["Tier 1: Client (React 19 · Vite 7)"]
         direction LR
-        UI["React UI and pages<br/>(Studio, Feeds, Profile, Admin)"]
-        Cache["Server state cache<br/>(TanStack Query v5)"]
-        Http["API client<br/>(Axios + auto refresh)"]
+        UI["React UI<br/>Studio, Feeds, Profile, Admin"]
+        Cache["TanStack Query v5<br/>Server State Cache"]
+        Http["Axios Client<br/>Auto Token Refresh"]
         UI --> Cache --> Http
     end
 
-    Http ==>|"HTTPS REST API / JSON"| Ingress
-
-    subgraph Tier2["Tier 2: API server (Node.js 20+, Express 4)"]
-        direction TB
-
-        subgraph IngressPipeline["Edge and global middleware"]
-            direction LR
-            Ingress["Security headers and CORS<br/>(Helmet, strict origin)"]
-            RateLimit["Rate limiting and proxy<br/>(trust proxy, IP throttles)"]
-            Logging["Request logging<br/>(Pino HTTP)"]
-            Ingress --> RateLimit --> Logging
-        end
-
-        subgraph RoutingGuards["Routing and guards (/api/*)"]
-            direction LR
-            Router["Express router"]
-            AuthGuard["Auth and session guard<br/>(JWT verify, instant revocation)"]
-            Validation["Request validation<br/>(schema rules, sanitization)"]
-            Router --> AuthGuard --> Validation
-        end
-
-        subgraph DomainServices["Domain services"]
-            direction LR
-            AuthSvc["Auth and sessions"]
-            PostSvc["Posts, slugs and tags"]
-            UserSvc["Users and profiles"]
-            CommentSvc["Threaded comments"]
-            AnalyticsSvc["Reading and trending"]
-        end
-
-        Logging ==>|"HTTP request"| Router
-        Validation ==>|"Validated request"| DomainServices
+    subgraph Edge ["Tier 2A: Edge & Global Middleware (Node 20+ · Express 4)"]
+        direction LR
+        Ingress["Helmet & CORS<br/>Security Headers"]
+        Rate["Rate Limiter<br/>Trust Proxy, IP Throttles"]
+        Log["Pino HTTP<br/>Request Logging"]
+        Ingress --> Rate --> Log
     end
 
-    DomainServices ==>|"Mongoose 8 (TCP)"| ODM
-
-    subgraph Tier3["Tier 3: Database (MongoDB 6+)"]
+    subgraph Guards ["Tier 2B: Routing & Guards (/api/*)"]
         direction LR
-        ODM["Mongoose 8 ODM<br/>(strict schemas, compound indexes)"]
-        DB[("MongoDB document store<br/>users, posts, comments, likes, views, reads")]
+        Router["Express Router"]
+        Auth["Auth Guard<br/>JWT & Revocation"]
+        Val["Validator<br/>Schema & Sanitization"]
+        Router --> Auth --> Val
+    end
+
+    subgraph Services ["Tier 2C: Domain Services"]
+        direction LR
+        S1["Auth &<br/>Sessions"]
+        S2["Posts, Slugs<br/>& Tags"]
+        S3["Users &<br/>Profiles"]
+        S4["Threaded<br/>Comments"]
+        S5["Analytics &<br/>Trending"]
+    end
+
+    subgraph T3 ["Tier 3: Data Layer (MongoDB 6+)"]
+        direction LR
+        ODM["Mongoose 8 ODM<br/>Strict Schemas & Indexes"]
+        DB[("MongoDB Store<br/>users · posts · comments<br/>likes · views · reads")]
         ODM --> DB
     end
+
+    T1 ==>|"HTTPS REST / JSON"| Edge
+    Edge ==>|"HTTP Request"| Guards
+    Guards ==>|"Validated Payload"| Services
+    Services ==>|"TCP (Mongoose)"| T3
 ```
 
 ---

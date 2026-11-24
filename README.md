@@ -34,12 +34,15 @@ Most publishing tools only report clicks. BlogHub tracks scroll depth and time o
 
 ```mermaid
 flowchart LR
-    A["React app<br/>readers, authors, admins"] -->|"HTTPS, JSON"| B["Express API<br/>auth, validation, rate limits"]
-    B --> C[("MongoDB<br/>via Mongoose")]
-    A -. "scroll depth + time on page" .-> B
+    Client["React 19 SPA<br/>(TanStack Query + Axios)"]
+    API["Express 4 API<br/>(Node.js 20+)"]
+    DB[("MongoDB 6+<br/>(Mongoose 8)")]
+
+    Client -->|"HTTPS REST / JSON"| API
+    API -->|"TCP"| DB
 ```
 
-The client and the API are separate and talk only through a JSON REST API. The detailed diagram and the request flow are in [Architecture](docs/ARCHITECTURE.md).
+The client and the API are separate and talk only through a JSON REST API. The detailed diagram and the request flow are in [Architecture](ARCHITECTURE.md).
 
 ## Tech stack
 
@@ -49,7 +52,8 @@ React 19, Vite, Tailwind CSS v4, Radix UI, TanStack Query, Node.js, Express, Mon
 
 | Doc | What it covers |
 | :-- | :------------- |
-| [Architecture](docs/ARCHITECTURE.md) | System structure and how a request flows through it |
+| [Architecture](ARCHITECTURE.md) | System structure and how a request flows through it |
+| [Database](docs/DATABASE.md) | Connection, migrations, seeding, and health checks |
 | [Data Model](docs/DATA_MODEL.md) | Collections and how they relate |
 | [Authentication](docs/AUTHENTICATION.md) | Login, token refresh, and session revocation |
 | [Analytics](docs/ANALYTICS.md) | Read tracking and the trending score |
