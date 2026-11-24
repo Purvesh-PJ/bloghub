@@ -47,16 +47,13 @@ JWT_REFRESH_SECRET=<generated_refresh_secret>
 
 ### 3. Seed demo data (optional)
 
+If you want sample posts, tags, and pre-configured test accounts to try out the app locally:
+
 ```bash
 npm --prefix backend run seed
 ```
 
-This adds sample tags and posts, and two accounts:
-
-| Role | Email | Password |
-| :-- | :-- | :-- |
-| Author | `john@example.com` | `password123` |
-| Admin | `admin@bloghub.com` | `admin123` |
+For pre-seeded account credentials and database reset details, see **[Database Guide](DATABASE.md#seeding--local-reset)**.
 
 ### 4. Start the app
 

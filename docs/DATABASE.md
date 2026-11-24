@@ -68,8 +68,4 @@ Use the `/ready` probe to verify database connectivity from load balancers or up
 
 ## Index Guarantees
 
-Critical business rules are enforced at the database index level:
-- `{ post: 1, user: 1 }` (unique on `Like`): Prevents duplicate likes from concurrent requests.
-- `{ post: 1, visitorKey: 1, createdAt: -1 }` (index on `View` and `Read`): Enforces 6-hour event deduplication.
-- `{ slug: 1 }` (unique on `Post`): Ensures collision-free clean URLs.
-- `{ username: 1 }` and `{ email: 1 }` (unique on `User`): Prevents duplicate account registration.
+Critical integrity constraints (such as unique likes, slug collision prevention, and 6-hour read deduplication) are enforced directly by MongoDB compound indexes. For complete schema index definitions and entity relationships, see **[Data Model](DATA_MODEL.md)**.
