@@ -21,7 +21,7 @@ export const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => 
     className={cn(
       'fixed inset-0 z-50 bg-scrim backdrop-blur-sm',
       'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200',
-      className
+      className,
     )}
     {...props}
   />
@@ -39,7 +39,7 @@ export const DialogContent = React.forwardRef(
           'rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-2xl duration-200',
           'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
           'focus:outline-none',
-          className
+          className,
         )}
         {...props}
       >
@@ -52,7 +52,7 @@ export const DialogContent = React.forwardRef(
         )}
       </DialogPrimitive.Content>
     </DialogPortal>
-  )
+  ),
 );
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 

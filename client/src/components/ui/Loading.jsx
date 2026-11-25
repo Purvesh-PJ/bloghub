@@ -6,7 +6,7 @@ export function Loading({ text = 'Loading...', className }) {
     <div
       className={cn(
         'flex flex-col items-center justify-center gap-3 py-16 min-h-[300px]',
-        className
+        className,
       )}
     >
       <Spinner size="32px" className="text-primary" />

@@ -54,7 +54,7 @@ export const Surface = React.forwardRef(
       as: Comp = 'div',
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <Comp
@@ -66,14 +66,14 @@ export const Surface = React.forwardRef(
           bordered && 'border border-border',
           interactive &&
             'cursor-pointer transition-all duration-150 hover:bg-muted hover:-translate-y-0.5 hover:shadow-md',
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </Comp>
     );
-  }
+  },
 );
 
 Surface.displayName = 'Surface';

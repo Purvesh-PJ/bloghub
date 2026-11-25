@@ -60,7 +60,7 @@ export function PostDetail() {
 
   const likedByServer = Boolean(
     user?.user_id &&
-    post?.likes?.some((like) => String(like?.user ?? like) === String(user.user_id))
+    post?.likes?.some((like) => String(like?.user ?? like) === String(user.user_id)),
   );
 
   if (syncedLike !== likedByServer) {
@@ -105,7 +105,7 @@ export function PostDetail() {
 
   const rehypePlugins = useMemo(
     () => (highlightPlugin ? [highlightPlugin, ...markdownRehypePlugins] : markdownRehypePlugins),
-    [highlightPlugin]
+    [highlightPlugin],
   );
 
   const deleteMutation = useMutation({

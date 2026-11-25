@@ -64,7 +64,7 @@ export function WorkspaceSidebar({
         className={cn(
           'w-[260px] md:w-[260px] shrink-0 flex flex-col p-5 bg-card sticky top-0 h-screen z-50 transition-transform duration-200 ease-out',
           'max-md:fixed max-md:left-0 max-md:top-0 max-md:bottom-0 max-md:w-[280px] max-md:shadow-2xl',
-          mobileMenuOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'
+          mobileMenuOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full',
         )}
       >
         {/* Brand Header */}
@@ -81,7 +81,7 @@ export function WorkspaceSidebar({
                 'px-2 py-0.5 rounded-full text-2xs font-extrabold uppercase tracking-wider select-none',
                 brandBadgeVariant === 'destructive'
                   ? 'bg-destructive/12 text-destructive'
-                  : 'bg-primary/12 text-primary'
+                  : 'bg-primary/12 text-primary',
               )}
             >
               {brandBadge}

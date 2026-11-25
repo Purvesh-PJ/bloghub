@@ -16,7 +16,7 @@ export function PostCardSkeleton({ layout = 'row', hasThumb = true, variant = 'e
         variantClasses[variant] || variantClasses.elevated,
         layout === 'stacked' || !hasThumb
           ? 'grid-cols-1 items-start'
-          : 'grid-cols-1 sm:grid-cols-[180px_1fr] md:grid-cols-[230px_1fr] items-stretch'
+          : 'grid-cols-1 sm:grid-cols-[180px_1fr] md:grid-cols-[230px_1fr] items-stretch',
       )}
       aria-hidden="true"
     >
@@ -24,7 +24,7 @@ export function PostCardSkeleton({ layout = 'row', hasThumb = true, variant = 'e
         <Skeleton
           className={cn(
             'w-full rounded-lg',
-            layout === 'stacked' ? 'aspect-video h-auto' : 'h-full min-h-[155px] aspect-[16/10]'
+            layout === 'stacked' ? 'aspect-video h-auto' : 'h-full min-h-[155px] aspect-[16/10]',
           )}
         />
       )}

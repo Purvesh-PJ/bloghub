@@ -15,11 +15,11 @@ BlogHub keeps its interface consistent with three component tiers, role-based th
 
 Every frontend component belongs to exactly one tier. Layout, business logic, and basic rendering are never mixed in a single file.
 
-| Tier | Location | What it is | Examples |
-| :-- | :-- | :-- | :-- |
-| **1. Primitives** | `client/src/components/ui/` | Basic, domain-free building blocks made with Radix UI and Tailwind CVA | `Button`, `IconButton`, `Input`, `Select`, `Card`, `Badge`, `Modal`, `Dialog`, `Table`, `Skeleton` |
-| **2. Patterns** | `client/src/components/patterns/` | Reusable compositions built only from Tier 1 | `PageHeader`, `DataTableCard`, `DataView`, `FilterToolbar`, `StatsGrid`, `ConfirmDialog`, `SettingSection`, `ChoiceGrid`, `BulkActionBar` |
-| **3. Domain components** | `client/src/features/*/components/` | Components that know about BlogHub data | `PostCard`, `AuthorByline`, `CommentItem`, `ProfileHeader`, `TagManager` |
+| Tier                     | Location                            | What it is                                                             | Examples                                                                                                                                  |
+| :----------------------- | :---------------------------------- | :--------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Primitives**        | `client/src/components/ui/`         | Basic, domain-free building blocks made with Radix UI and Tailwind CVA | `Button`, `IconButton`, `Input`, `Select`, `Card`, `Badge`, `Modal`, `Dialog`, `Table`, `Skeleton`                                        |
+| **2. Patterns**          | `client/src/components/patterns/`   | Reusable compositions built only from Tier 1                           | `PageHeader`, `DataTableCard`, `DataView`, `FilterToolbar`, `StatsGrid`, `ConfirmDialog`, `SettingSection`, `ChoiceGrid`, `BulkActionBar` |
+| **3. Domain components** | `client/src/features/*/components/` | Components that know about BlogHub data                                | `PostCard`, `AuthorByline`, `CommentItem`, `ProfileHeader`, `TagManager`                                                                  |
 
 Rules:
 
@@ -32,16 +32,16 @@ Rules:
 
 Never use raw Tailwind palette colors such as `blue-500` or `slate-900`. Use role-based tokens, which adapt to the light and dark themes automatically.
 
-| Group | Tokens |
-| :-- | :-- |
-| **Brand** | `bg-primary`, `text-primary`, `border-primary`, `text-primary-foreground` |
-| **Danger** | `bg-destructive`, `text-destructive`, `text-destructive-foreground` |
-| **Warning** | `bg-warning`, `text-warning`, `text-warning-foreground` |
-| **Success** | `bg-success`, `text-success`, `text-success-foreground` |
-| **Info** | `bg-info`, `text-info`, `text-info-foreground` |
+| Group        | Tokens                                                                                                                                                                         |
+| :----------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Brand**    | `bg-primary`, `text-primary`, `border-primary`, `text-primary-foreground`                                                                                                      |
+| **Danger**   | `bg-destructive`, `text-destructive`, `text-destructive-foreground`                                                                                                            |
+| **Warning**  | `bg-warning`, `text-warning`, `text-warning-foreground`                                                                                                                        |
+| **Success**  | `bg-success`, `text-success`, `text-success-foreground`                                                                                                                        |
+| **Info**     | `bg-info`, `text-info`, `text-info-foreground`                                                                                                                                 |
 | **Surfaces** | `bg-surface-page` (page), `bg-surface-container` (cards), `bg-surface-container-low` (recessed), `bg-surface-container-high` (popovers, modals), `bg-surface-elevated` (menus) |
-| **Lines** | `border-line-subtle`, `border-line-default`, `border-line-strong`, `border-border` |
-| **Overlay** | `bg-scrim` for drawer and modal backdrops, never `bg-black/60` |
+| **Lines**    | `border-line-subtle`, `border-line-default`, `border-line-strong`, `border-border`                                                                                             |
+| **Overlay**  | `bg-scrim` for drawer and modal backdrops, never `bg-black/60`                                                                                                                 |
 
 ---
 

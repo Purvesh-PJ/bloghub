@@ -16,7 +16,7 @@ export function BrandMark({ size = 'md', letter = 'B', className, ...rest }) {
       className={cn(
         'inline-flex items-center justify-center shrink-0 rounded-sm bg-gradient-to-br from-info to-primary text-primary-foreground font-extrabold leading-none shadow-sm select-none',
         sizeMap[size] || sizeMap.md,
-        className
+        className,
       )}
       {...rest}
     >

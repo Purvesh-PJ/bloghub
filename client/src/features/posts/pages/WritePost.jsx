@@ -69,7 +69,7 @@ export function WritePost() {
 
   const editorValues = useMemo(
     () => ({ title, content, slug, visibility, imageURL, tags }),
-    [title, content, slug, visibility, imageURL, tags]
+    [title, content, slug, visibility, imageURL, tags],
   );
 
   const {
@@ -108,7 +108,7 @@ export function WritePost() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
       toast.success(submitted?.visibility === 'public' ? 'Story published 🎉' : 'Story saved');
       navigate(
-        submitted?.visibility === 'public' && data.postId ? `/post/${data.postId}` : '/stories'
+        submitted?.visibility === 'public' && data.postId ? `/post/${data.postId}` : '/stories',
       );
     },
     onError: (error) => toast.error(error.response?.data?.message || 'Could not create the post'),

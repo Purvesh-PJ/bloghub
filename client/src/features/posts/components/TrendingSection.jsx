@@ -62,7 +62,7 @@ export function TrendingSection({
             className={cn(
               'inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold select-none transition-all duration-150',
               'bg-card text-primary border border-border shadow-sm',
-              'hover:bg-primary/10 hover:-translate-y-0.5 hover:shadow'
+              'hover:bg-primary/10 hover:-translate-y-0.5 hover:shadow',
             )}
           >
             Explore all stories{' '}

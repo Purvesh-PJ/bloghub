@@ -15,7 +15,7 @@ describe('Shared Components & Primitives', () => {
           note="Receive weekly summaries"
           checked={false}
           onChange={handleChange}
-        />
+        />,
       );
 
       expect(screen.getByText('Email Alerts')).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe('Shared Components & Primitives', () => {
           cancelText="No, keep"
           onConfirm={handleConfirm}
           onClose={handleClose}
-        />
+        />,
       );
 
       expect(screen.getByText('Delete Story')).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe('Shared Components & Primitives', () => {
           selectedCount={3}
           onClear={handleClear}
           actions={[{ label: 'Publish', onClick: handlePublish }]}
-        />
+        />,
       );
 
       expect(screen.getByText('3 selected')).toBeInTheDocument();
@@ -81,7 +81,7 @@ describe('Shared Components & Primitives', () => {
 
     it('renders null when selected count is 0', () => {
       const { container } = renderWithProviders(
-        <BulkActionBar selectedCount={0} onClear={() => {}} />
+        <BulkActionBar selectedCount={0} onClear={() => {}} />,
       );
       expect(container.firstChild).toBeNull();
     });

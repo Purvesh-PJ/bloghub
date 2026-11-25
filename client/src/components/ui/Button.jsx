@@ -38,7 +38,7 @@ export const buttonVariants = cva(
       variant: 'primary',
       size: 'md',
     },
-  }
+  },
 );
 
 export const Button = React.forwardRef(
@@ -58,7 +58,7 @@ export const Button = React.forwardRef(
       as,
       ...props
     },
-    ref
+    ref,
   ) => {
     const isBusy = loading || isLoading;
     const Comp = asChild ? Slot : as || 'button';
@@ -78,7 +78,7 @@ export const Button = React.forwardRef(
         {!loading && rightIcon && <span className="inline-flex shrink-0">{rightIcon}</span>}
       </Comp>
     );
-  }
+  },
 );
 
 Button.displayName = 'Button';
@@ -94,7 +94,7 @@ export const IconButton = React.forwardRef(
         {...props}
       />
     );
-  }
+  },
 );
 
 IconButton.displayName = 'IconButton';

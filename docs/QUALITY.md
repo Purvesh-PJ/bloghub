@@ -18,12 +18,12 @@ npm run format           # Format all files with Prettier
 
 `size-limit` (`client/.size-limit.json`) checks production chunk sizes after `npm run build`:
 
-| Chunk | Budget | Contents |
-| :--- | :--- | :--- |
-| Vendor Core | `160 kB` | React, React DOM, Router (`vendor-*.js`) |
-| Radix UI Primitives | `65 kB` | Dialog, Select, Dropdown, Avatar, Tabs (`radix-*.js`) |
-| Markdown Preview | `140 kB` | Post rendering & sanitization (`markdown-preview-*.js`) |
-| Editor Component | `35 kB` | Live Markdown editor (`editor-*.js`) |
+| Chunk               | Budget   | Contents                                                |
+| :------------------ | :------- | :------------------------------------------------------ |
+| Vendor Core         | `160 kB` | React, React DOM, Router (`vendor-*.js`)                |
+| Radix UI Primitives | `65 kB`  | Dialog, Select, Dropdown, Avatar, Tabs (`radix-*.js`)   |
+| Markdown Preview    | `140 kB` | Post rendering & sanitization (`markdown-preview-*.js`) |
+| Editor Component    | `35 kB`  | Live Markdown editor (`editor-*.js`)                    |
 | Syntax Highlighting | `240 kB` | Prism code block highlighting (`syntax-highlight-*.js`) |
 
 ```bash
@@ -36,12 +36,12 @@ npm run build:analyze    # Generate visual bundle treemap (rollup-plugin-visuali
 
 Lighthouse CI (`client/lighthouserc.json`) starts `vite preview` at `http://localhost:4173/` and audits the built client with a desktop preset. Reports are saved to `client/.lighthouseci/`.
 
-| Category | Minimum Score |
-| :--- | :--- |
-| Performance | `0.70` |
-| Accessibility | `0.85` |
-| Best Practices | `0.85` |
-| SEO | `0.80` |
+| Category       | Minimum Score |
+| :------------- | :------------ |
+| Performance    | `0.70`        |
+| Accessibility  | `0.85`        |
+| Best Practices | `0.85`        |
+| SEO            | `0.80`        |
 
 ```bash
 npm run build && npm run lighthouse

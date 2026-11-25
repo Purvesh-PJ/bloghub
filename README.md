@@ -51,24 +51,24 @@ The client and the API are separate and talk only through a JSON REST API. The d
 
 ## Documentation
 
-| Doc | What it covers |
-| :-- | :------------- |
-| [Development](docs/DEVELOPMENT.md) | Prerequisites, local setup, environment variables, and running dev servers |
-| [API Reference](docs/API.md) | REST endpoints, auth headers, and response shapes |
-| [Testing](docs/TESTING.md) | Test suites, in-memory DB setup, and commands |
-| [Quality & Audits](docs/QUALITY.md) | Linting, formatting, bundle budgets, and Lighthouse checks |
-| [Deployment](docs/DEPLOYMENT.md) | Production build, proxy setup, and health checks |
-| [Architecture](ARCHITECTURE.md) | System structure and how a request flows through it |
-| [Database](docs/DATABASE.md) | Connection, migrations, seeding, and health checks |
-| [Data Model](docs/DATA_MODEL.md) | Collections, relationships, and indexes |
-| [Authentication](docs/AUTHENTICATION.md) | Login, token refresh, and session revocation |
-| [Analytics](docs/ANALYTICS.md) | Read tracking and the trending score |
-| [Design System](docs/DESIGN_SYSTEM.md) | UI tiers, theme tokens, and lint rules |
-| [Security Model](docs/SECURITY_MODEL.md) | Protections in place and known trade-offs |
-| [Security Policy](SECURITY.md) | Supported versions and how to report a vulnerability |
-| [Decision Records](docs/adr/README.md) | Why key technical choices were made |
-| [Contributing](CONTRIBUTING.md) | Branching, commit conventions, and PR workflow |
-| [Changelog](CHANGELOG.md) | Version history and release notes |
+| Doc                                      | What it covers                                                             |
+| :--------------------------------------- | :------------------------------------------------------------------------- |
+| [Development](docs/DEVELOPMENT.md)       | Prerequisites, local setup, environment variables, and running dev servers |
+| [API Reference](docs/API.md)             | REST endpoints, auth headers, and response shapes                          |
+| [Testing](docs/TESTING.md)               | Test suites, in-memory DB setup, and commands                              |
+| [Quality & Audits](docs/QUALITY.md)      | Linting, formatting, bundle budgets, and Lighthouse checks                 |
+| [Deployment](docs/DEPLOYMENT.md)         | Production build, proxy setup, and health checks                           |
+| [Architecture](ARCHITECTURE.md)          | System structure and how a request flows through it                        |
+| [Database](docs/DATABASE.md)             | Connection, migrations, seeding, and health checks                         |
+| [Data Model](docs/DATA_MODEL.md)         | Collections, relationships, and indexes                                    |
+| [Authentication](docs/AUTHENTICATION.md) | Login, token refresh, and session revocation                               |
+| [Analytics](docs/ANALYTICS.md)           | Read tracking and the trending score                                       |
+| [Design System](docs/DESIGN_SYSTEM.md)   | UI tiers, theme tokens, and lint rules                                     |
+| [Security Model](docs/SECURITY_MODEL.md) | Protections in place and known trade-offs                                  |
+| [Security Policy](SECURITY.md)           | Supported versions and how to report a vulnerability                       |
+| [Decision Records](docs/adr/README.md)   | Why key technical choices were made                                        |
+| [Contributing](CONTRIBUTING.md)          | Branching, commit conventions, and PR workflow                             |
+| [Changelog](CHANGELOG.md)                | Version history and release notes                                          |
 
 ## License
 

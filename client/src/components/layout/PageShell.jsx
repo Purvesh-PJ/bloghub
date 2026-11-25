@@ -23,7 +23,7 @@ export function PageShell({ children, width = 'wide', className, ...props }) {
       className={cn(
         'w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-16 sm:pb-24 flex flex-col gap-6 sm:gap-8',
         maxWidthClass,
-        className
+        className,
       )}
       {...props}
     >

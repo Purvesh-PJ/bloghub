@@ -13,7 +13,7 @@ export const ThemeToggle = ({ className }) => {
         'border-none bg-card text-muted-foreground shadow-none',
         'hover:bg-muted hover:text-foreground',
         'active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        className
+        className,
       )}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}

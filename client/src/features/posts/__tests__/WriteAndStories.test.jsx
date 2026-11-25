@@ -122,7 +122,7 @@ describe('WritePost Page', () => {
         title: 'Mastering React 19 Testing',
         content: 'Comprehensive testing guide with Vitest...',
         visibility: 'draft',
-      })
+      }),
     );
   });
 });

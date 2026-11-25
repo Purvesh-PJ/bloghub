@@ -24,7 +24,7 @@ export function stripMarkdown(input = '') {
   const str = typeof input === 'string' ? input : String(input || '');
   return MARKDOWN_PATTERNS.reduce(
     (acc, [pattern, replacement]) => acc.replace(pattern, replacement),
-    str
+    str,
   )
     .replace(/\s+/g, ' ')
     .trim();

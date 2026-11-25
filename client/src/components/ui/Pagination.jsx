@@ -13,7 +13,7 @@ export function Pagination({ page, pages, total, noun = 'items', onChange, class
       aria-label="Pagination"
       className={cn(
         'flex flex-col sm:flex-row items-center justify-between gap-3 p-4 px-5 border-t border-border/40',
-        className
+        className,
       )}
     >
       <span role="status" aria-live="polite" className="text-xs text-muted-foreground tabular-nums">

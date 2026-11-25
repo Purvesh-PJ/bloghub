@@ -38,7 +38,7 @@ export function AdminPosts() {
       ...(filter !== 'all' && { visibility: filter }),
       ...(debouncedQuery.trim() && { q: debouncedQuery.trim() }),
     }),
-    [page, filter, debouncedQuery]
+    [page, filter, debouncedQuery],
   );
 
   const filterKey = `${filter}|${debouncedQuery.trim()}`;
@@ -92,7 +92,7 @@ export function AdminPosts() {
 
   const toggleSelected = (id) =>
     setSelectedIds((current) =>
-      current.includes(id) ? current.filter((entry) => entry !== id) : [...current, id]
+      current.includes(id) ? current.filter((entry) => entry !== id) : [...current, id],
     );
 
   const bulkActions = [
@@ -172,7 +172,7 @@ export function AdminPosts() {
               setSelectedIds(
                 allVisibleSelected
                   ? selectedIds.filter((id) => !visibleIds.includes(id))
-                  : [...new Set([...selectedIds, ...visibleIds])]
+                  : [...new Set([...selectedIds, ...visibleIds])],
               )
             }
             onDelete={setPendingDelete}

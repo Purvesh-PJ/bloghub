@@ -27,7 +27,7 @@ export function PostActionBar({ post, liked, commentsCount, viewCount, isAuthent
           'inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-medium transition-colors select-none cursor-pointer',
           liked
             ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
-            : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
+            : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80',
         )}
       >
         <Heart

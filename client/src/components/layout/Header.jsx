@@ -56,7 +56,7 @@ export function Header() {
             className={cn(
               'inline-flex items-center gap-2 h-[34px] px-2.5 sm:px-3 rounded-full text-xs font-medium cursor-pointer transition-all duration-150 select-none',
               'bg-muted text-muted-foreground border-none shadow-none',
-              'hover:bg-muted/80 hover:text-foreground'
+              'hover:bg-muted/80 hover:text-foreground',
             )}
           >
             <Search className="h-3.5 w-3.5 shrink-0" />

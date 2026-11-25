@@ -41,7 +41,7 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
         variantClasses[variant] || variantClasses.elevated,
         layout === 'stacked' || !showThumb
           ? 'grid-cols-1 items-start'
-          : 'grid-cols-1 sm:grid-cols-[180px_1fr] md:grid-cols-[230px_1fr] items-stretch'
+          : 'grid-cols-1 sm:grid-cols-[180px_1fr] md:grid-cols-[230px_1fr] items-stretch',
       )}
     >
       {/* Thumbnail */}
@@ -49,7 +49,7 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
         <div
           className={cn(
             'relative rounded-lg overflow-hidden bg-muted w-full shrink-0',
-            layout === 'stacked' ? 'aspect-video h-auto' : 'h-full min-h-[155px] aspect-[16/10]'
+            layout === 'stacked' ? 'aspect-video h-auto' : 'h-full min-h-[155px] aspect-[16/10]',
           )}
         >
           <img
@@ -69,7 +69,7 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
           <h3
             className={cn(
               'font-bold leading-snug tracking-tight text-foreground line-clamp-2 transition-colors duration-150 group-hover:text-primary',
-              variant === 'featured' ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl'
+              variant === 'featured' ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl',
             )}
           >
             {post.title}
@@ -86,7 +86,7 @@ export function PostCard({ post, layout = 'row', variant = 'elevated' }) {
           <p
             className={cn(
               'text-sm leading-relaxed text-muted-foreground',
-              showThumb ? 'line-clamp-2' : 'line-clamp-3'
+              showThumb ? 'line-clamp-2' : 'line-clamp-3',
             )}
           >
             {excerpt(post.content)}

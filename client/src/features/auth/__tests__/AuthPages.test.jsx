@@ -11,7 +11,7 @@ const renderWithAuth = (ui, { route = '/' } = {}) => {
   return render(
     <AuthProvider>
       <MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>
-    </AuthProvider>
+    </AuthProvider>,
   );
 };
 
@@ -75,7 +75,7 @@ describe('Login Page', () => {
             <Route path="/" element={<div>Dashboard Home</div>} />
           </Routes>
         </MemoryRouter>
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await user.type(screen.getByLabelText('Email or username'), 'alice@example.com');
@@ -148,7 +148,7 @@ describe('Register Page', () => {
             <Route path="/login" element={<div>Login Page Target</div>} />
           </Routes>
         </MemoryRouter>
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await user.type(screen.getByLabelText('Username'), 'validuser');

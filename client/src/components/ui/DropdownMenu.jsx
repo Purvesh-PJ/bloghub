@@ -17,14 +17,14 @@ const DropdownMenuContent = React.forwardRef(
         className={cn(
           'z-50 min-w-[200px] overflow-hidden rounded-xl border border-border bg-card p-1 text-card-foreground shadow-lg backdrop-blur-md',
           'animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2',
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </RadixDropdown.Content>
     </RadixDropdown.Portal>
-  )
+  ),
 );
 DropdownMenuContent.displayName = 'DropdownMenuContent';
 
@@ -42,7 +42,7 @@ const DropdownMenuItem = React.forwardRef(({ className, tone, ...props }, ref) =
         isDanger
           ? 'text-destructive focus:bg-destructive/10 focus:text-destructive [&_svg]:text-destructive'
           : 'text-foreground',
-        className
+        className,
       )}
       {...props}
     />
@@ -55,7 +55,7 @@ const DropdownMenuLabel = React.forwardRef(({ className, ...props }, ref) => (
     ref={ref}
     className={cn(
       'px-2.5 pt-2 pb-1 text-caption font-semibold tracking-wider uppercase text-muted-foreground select-none',
-      className
+      className,
     )}
     {...props}
   />

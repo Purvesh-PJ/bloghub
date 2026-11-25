@@ -79,9 +79,9 @@ Open http://localhost:3000.
 
 Run from the repository root:
 
-| Command | What it does |
-| :-- | :-- |
-| `npm test` | Runs all backend and client tests (see [Testing](TESTING.md)) |
-| `npm run lint` | Runs ESLint, including the design-token rules |
-| `npm run format:check` | Checks formatting with Prettier |
-| `npm run build` | Builds the client for production |
+| Command                | What it does                                                  |
+| :--------------------- | :------------------------------------------------------------ |
+| `npm test`             | Runs all backend and client tests (see [Testing](TESTING.md)) |
+| `npm run lint`         | Runs ESLint, including the design-token rules                 |
+| `npm run format:check` | Checks formatting with Prettier                               |
+| `npm run build`        | Builds the client for production                              |

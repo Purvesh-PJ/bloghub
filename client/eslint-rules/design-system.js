@@ -170,11 +170,11 @@ export default {
     'enforce-tokens': createRule(
       'Forbid hardcoded colors, arbitrary radius/type sizes, and arbitrary var() usage; require design tokens.',
       TOKEN_CHECKS,
-      { checkInlineStyles: true }
+      { checkInlineStyles: true },
     ),
     'no-arbitrary-sizing': createRule(
       'Discourage arbitrary spacing, sizing, and z-index values.',
-      SIZING_CHECKS
+      SIZING_CHECKS,
     ),
   },
 };

@@ -62,7 +62,7 @@ export function StatsGrid({
             hint={stat.hint}
             padded={true}
           />
-        )
+        ),
       )}
     </div>
   );

@@ -22,7 +22,7 @@ export function Inverted({ className, children, ...props }) {
       className={cn(
         'bg-gradient-to-tr from-primary to-primary-dark text-primary-foreground py-16 sm:py-24 shadow-inner',
         '[&_h1]:text-primary-foreground [&_h2]:text-primary-foreground [&_h3]:text-primary-foreground',
-        className
+        className,
       )}
       {...props}
     >
@@ -79,7 +79,7 @@ export function Headline({ className, children, ...props }) {
     <h2
       className={cn(
         'text-2xl sm:text-3xl font-bold tracking-tight text-foreground max-w-[18ch]',
-        className
+        className,
       )}
       {...props}
     >
@@ -93,7 +93,7 @@ export function Body({ className, children, ...props }) {
     <p
       className={cn(
         'text-base sm:text-lg text-muted-foreground max-w-[56ch] leading-relaxed',
-        className
+        className,
       )}
       {...props}
     >
@@ -108,7 +108,7 @@ export function Split({ flip = false, className, children, ...props }) {
       className={cn(
         'grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-center',
         flip && '[&>*:first-child]:order-2 [&>*:last-child]:order-1',
-        className
+        className,
       )}
       {...props}
     >

@@ -41,7 +41,7 @@ describe('Composed Patterns', () => {
           searchValue="test"
           onSearchChange={onSearchChange}
           searchPlaceholder="Search items…"
-        />
+        />,
       );
 
       // Verify filter chips
@@ -61,7 +61,7 @@ describe('Composed Patterns', () => {
       render(
         <DataView isLoading={true} skeleton={<div data-testid="custom-skeleton">Loading…</div>}>
           <div>Ready Data</div>
-        </DataView>
+        </DataView>,
       );
       expect(screen.getByTestId('custom-skeleton')).toBeInTheDocument();
       expect(screen.queryByText('Ready Data')).not.toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('Composed Patterns', () => {
           onRetry={onRetry}
         >
           <div>Ready Data</div>
-        </DataView>
+        </DataView>,
       );
 
       expect(screen.getByText('Could not load items')).toBeInTheDocument();
@@ -96,7 +96,7 @@ describe('Composed Patterns', () => {
           emptyDescription="Drafts stay private until published."
         >
           <div>Ready Data</div>
-        </DataView>
+        </DataView>,
       );
 
       expect(screen.getByText('No stories written yet')).toBeInTheDocument();
@@ -108,7 +108,7 @@ describe('Composed Patterns', () => {
       render(
         <DataView isLoading={false} isError={false} isEmpty={false}>
           <div data-testid="content">Actual Table Content</div>
-        </DataView>
+        </DataView>,
       );
       expect(screen.getByTestId('content')).toBeInTheDocument();
     });
@@ -124,7 +124,7 @@ describe('Composed Patterns', () => {
           footer={<Button variant="primary">Save Changes</Button>}
         >
           <div data-testid="settings-form">Form Input Controls</div>
-        </SettingSection>
+        </SettingSection>,
       );
 
       expect(screen.getByText('Account Privacy')).toBeInTheDocument();
@@ -161,7 +161,7 @@ describe('Composed Patterns', () => {
       ];
 
       render(
-        <ChoiceGrid options={options} value="light" onChange={onChange} ariaLabel="Theme Mode" />
+        <ChoiceGrid options={options} value="light" onChange={onChange} ariaLabel="Theme Mode" />,
       );
 
       const lightCard = screen.getByRole('radio', { name: 'Light' });
@@ -183,7 +183,7 @@ describe('Composed Patterns', () => {
           description="Manage published articles"
           badge={<span data-testid="test-badge">Beta</span>}
           actions={<Button>Create Article</Button>}
-        />
+        />,
       );
 
       expect(screen.getByRole('heading', { level: 1, name: 'Articles' })).toBeInTheDocument();
@@ -212,7 +212,7 @@ describe('Composed Patterns', () => {
               </tr>
             </Table.Body>
           </Table>
-        </DataTableCard>
+        </DataTableCard>,
       );
 
       expect(screen.getByTestId('table-header')).toBeInTheDocument();

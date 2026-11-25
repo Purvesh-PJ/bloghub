@@ -23,7 +23,7 @@ export function PageHeader({
       className={cn(
         'flex items-center justify-between gap-4 flex-wrap mb-6',
         divider && 'pb-6 border-b border-border/40',
-        className
+        className,
       )}
       {...props}
     >

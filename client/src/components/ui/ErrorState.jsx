@@ -13,7 +13,7 @@ export function ErrorState({ title = 'That did not load', error, onRetry, childr
       radius="xl"
       className={cn(
         'flex flex-col items-center text-center gap-4 py-10 px-6 sm:py-12 sm:px-8 border border-destructive/30',
-        className
+        className,
       )}
     >
       <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-destructive/10 text-destructive">

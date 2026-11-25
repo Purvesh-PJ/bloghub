@@ -15,7 +15,7 @@ const Band = ({ items, reverse, duration = 38 }) => (
       className={cn(
         'flex gap-3 w-max select-none',
         reverse ? 'animate-marquee-reverse' : 'animate-marquee',
-        'motion-reduce:animate-none'
+        'motion-reduce:animate-none',
       )}
     >
       {[...items, ...items].map((name, index) => {

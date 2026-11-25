@@ -79,7 +79,7 @@ export const authState = {
           accessToken: this.accessToken,
           refreshToken: this.refreshToken,
           isAuthenticated: this.isAuthenticated,
-        })
+        }),
       );
     } catch (e) {
       console.error('Failed to persist auth state:', e);

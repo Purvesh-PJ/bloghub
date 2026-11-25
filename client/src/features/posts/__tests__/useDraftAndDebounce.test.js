@@ -77,7 +77,7 @@ describe('useDraftRecovery hook', () => {
         id: 'post-1',
         values: { title: '', content: '' },
         dirty: false,
-      })
+      }),
     );
 
     expect(result.current.recovered).toBeNull();
@@ -95,7 +95,7 @@ describe('useDraftRecovery hook', () => {
       useDraftRecovery({
         values: { title: '', content: '' },
         dirty: false,
-      })
+      }),
     );
 
     expect(result.current.recovered).toEqual(savedDraft);
@@ -113,7 +113,7 @@ describe('useDraftRecovery hook', () => {
       useDraftRecovery({
         values: { title: '', content: '' },
         dirty: false,
-      })
+      }),
     );
 
     expect(result.current.recovered).toBeNull();
@@ -127,7 +127,7 @@ describe('useDraftRecovery hook', () => {
       useDraftRecovery({
         values: { title: '', content: '' },
         dirty: false,
-      })
+      }),
     );
 
     expect(result.current.recovered).toBeNull();
@@ -146,7 +146,7 @@ describe('useDraftRecovery hook', () => {
         }),
       {
         initialProps: { dirty: true, values },
-      }
+      },
     );
 
     expect(localStorage.getItem('bloghub:draft:post-42')).toBeNull();
@@ -170,7 +170,7 @@ describe('useDraftRecovery hook', () => {
         values,
         dirty: false,
         enabled: true,
-      })
+      }),
     );
 
     act(() => {
@@ -188,7 +188,7 @@ describe('useDraftRecovery hook', () => {
         id: 'test',
         values: { title: 'A' },
         dirty: false,
-      })
+      }),
     );
 
     act(() => {

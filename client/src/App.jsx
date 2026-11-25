@@ -20,7 +20,7 @@ const lazyPage = (importFn, name) =>
 */
 const WorkspaceLayout = lazyPage(
   () => import('./components/layout/WorkspaceLayout'),
-  'WorkspaceLayout'
+  'WorkspaceLayout',
 );
 const AdminLayout = lazyPage(() => import('./features/admin/AdminLayout'), 'AdminLayout');
 
@@ -47,7 +47,7 @@ const AdminUsers = lazyPage(() => import('./features/admin/pages/Users'), 'Admin
 const AdminActivity = lazyPage(() => import('./features/admin/pages/Activity'), 'AdminActivity');
 const AdminPersonActivity = lazyPage(
   () => import('./features/admin/pages/PersonActivity'),
-  'AdminPersonActivity'
+  'AdminPersonActivity',
 );
 
 // Top route suspense progress bar

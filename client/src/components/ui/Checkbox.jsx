@@ -8,7 +8,7 @@ import { cn } from '../../lib/utils';
  */
 export const Checkbox = forwardRef(function Checkbox(
   { className, label, error, hint, disabled = false, indeterminate = false, id, ...props },
-  forwardedRef
+  forwardedRef,
 ) {
   const generatedId = useId();
   const checkboxId = id ?? props.name ?? generatedId;
@@ -32,7 +32,7 @@ export const Checkbox = forwardRef(function Checkbox(
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary',
         'disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer transition-colors',
         error && 'border-destructive focus-visible:ring-destructive/20',
-        className
+        className,
       )}
       {...props}
     />
@@ -48,7 +48,7 @@ export const Checkbox = forwardRef(function Checkbox(
         htmlFor={checkboxId}
         className={cn(
           'inline-flex items-center gap-2 select-none text-sm text-foreground',
-          disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+          disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
         )}
       >
         {inputElement}
@@ -58,7 +58,7 @@ export const Checkbox = forwardRef(function Checkbox(
         <p
           className={cn(
             'text-xs pl-6 font-normal',
-            error ? 'text-destructive font-medium' : 'text-muted-foreground'
+            error ? 'text-destructive font-medium' : 'text-muted-foreground',
           )}
         >
           {error || hint}

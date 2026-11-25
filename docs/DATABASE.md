@@ -15,6 +15,7 @@ MONGO_DB_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/bloghub?retryWr
 ```
 
 The connection module (`backend/src/config/db.js`) manages the Mongoose lifecycle:
+
 - Logs connection success, errors, and unexpected disconnections.
 - Handles graceful shutdown on `SIGINT` by closing the database connection cleanly.
 
@@ -30,10 +31,10 @@ npm --prefix backend run seed
 
 Pre-seeded accounts:
 
-| Role | Email | Password |
-| :-- | :-- | :-- |
-| Author | `john@example.com` | `password123` |
-| Admin | `admin@bloghub.com` | `admin123` |
+| Role   | Email               | Password      |
+| :----- | :------------------ | :------------ |
+| Author | `john@example.com`  | `password123` |
+| Admin  | `admin@bloghub.com` | `admin123`    |
 
 ## Migrations & Schema Repairs
 
@@ -48,6 +49,7 @@ npm --prefix backend run migrate
 ```
 
 What the migration script checks and repairs (`backend/scripts/migrate.js`):
+
 1. **Comment back-references:** Ensures every comment has a valid `post` ID reference so post-scoped queries include all responses.
 2. **Comment parent links:** Ensures top-level comments and replies are structured correctly (`parent: null` for top-level).
 3. **Duplicate slugs:** Normalizes and resolves duplicate post slugs before building the unique index.

@@ -20,7 +20,7 @@ const alertVariants = cva(
     defaultVariants: {
       variant: 'info',
     },
-  }
+  },
 );
 
 const icons = {

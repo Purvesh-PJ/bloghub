@@ -28,7 +28,7 @@ export function ProfileHeader({
   onFollowToggle,
 }) {
   const socials = SOCIALS.filter(
-    ({ key }) => author.socialLinks && Boolean(author.socialLinks[key])
+    ({ key }) => author.socialLinks && Boolean(author.socialLinks[key]),
   );
 
   return (

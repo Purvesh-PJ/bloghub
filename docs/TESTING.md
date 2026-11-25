@@ -10,10 +10,10 @@ BlogHub has 340+ automated tests across the backend and the client. All commands
 
 ## Suites
 
-| Suite | Tool | What it covers |
-| :-- | :-- | :-- |
-| **Backend** (22 suites) | Jest | Authentication, post discovery, tag handling, moderation, read tracking, logging |
-| **Client** (20 files) | Vitest + jsdom | UI primitives, composed patterns, route guards, Markdown editor drafts, state management |
+| Suite                   | Tool           | What it covers                                                                           |
+| :---------------------- | :------------- | :--------------------------------------------------------------------------------------- |
+| **Backend** (22 suites) | Jest           | Authentication, post discovery, tag handling, moderation, read tracking, logging         |
+| **Client** (20 files)   | Vitest + jsdom | UI primitives, composed patterns, route guards, Markdown editor drafts, state management |
 
 ## Commands
 

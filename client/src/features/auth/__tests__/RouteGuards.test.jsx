@@ -41,7 +41,7 @@ describe('ProtectedRoute', () => {
             }
           />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText('Login Page')).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe('ProtectedRoute', () => {
             }
           />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText('Protected Secret Content')).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe('AdminRoute', () => {
             }
           />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText('Login Page')).toBeInTheDocument();
@@ -125,7 +125,7 @@ describe('AdminRoute', () => {
             }
           />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText('Home Landing Page')).toBeInTheDocument();
@@ -152,7 +152,7 @@ describe('AdminRoute', () => {
             }
           />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText('Admin Dashboard Content')).toBeInTheDocument();

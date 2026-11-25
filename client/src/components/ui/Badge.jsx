@@ -19,7 +19,7 @@ export const badgeVariants = cva(
     defaultVariants: {
       variant: 'neutral',
     },
-  }
+  },
 );
 
 export function Badge({ className, variant, children, ...props }) {

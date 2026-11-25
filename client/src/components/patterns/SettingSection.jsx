@@ -28,7 +28,7 @@ export function SettingSection({
               <h2
                 className={cn(
                   'text-xl font-bold tracking-tight',
-                  isDanger ? 'text-destructive' : 'text-foreground'
+                  isDanger ? 'text-destructive' : 'text-foreground',
                 )}
               >
                 {title}

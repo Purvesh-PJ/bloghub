@@ -129,7 +129,7 @@ describe('UserProfile', () => {
     renderProfile(null);
 
     await waitFor(() =>
-      expect(getPostsByAuthor).toHaveBeenCalledWith(AUTHOR_ID, { page: 1, limit: 12 })
+      expect(getPostsByAuthor).toHaveBeenCalledWith(AUTHOR_ID, { page: 1, limit: 12 }),
     );
     // The unfiltered feed would only ever contain this author's posts by coincidence.
     expect(getPosts).not.toHaveBeenCalled();

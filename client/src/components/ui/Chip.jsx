@@ -22,7 +22,7 @@ const chipVariants = cva(
       size: 'md',
       selected: false,
     },
-  }
+  },
 );
 
 export const Chip = React.forwardRef(
@@ -37,7 +37,7 @@ export const Chip = React.forwardRef(
       interactive = true,
       ...props
     },
-    ref
+    ref,
   ) => {
     const Comp = as || 'button';
     const isClickable = interactive && (Boolean(onClick) || Boolean(as));
@@ -51,14 +51,14 @@ export const Chip = React.forwardRef(
           chipVariants({ size, selected }),
           (!isClickable || !interactive) && 'cursor-default pointer-events-none hover:bg-muted',
           isClickable && interactive && 'cursor-pointer active:scale-95',
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </Comp>
     );
-  }
+  },
 );
 
 Chip.displayName = 'Chip';

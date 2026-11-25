@@ -121,11 +121,11 @@ export function useBeforeUnload(when) {
  */
 export function useNavigationGuard(
   when,
-  message = 'You have unsaved changes. Leave this page and discard them?'
+  message = 'You have unsaved changes. Leave this page and discard them?',
 ) {
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      when && currentLocation.pathname !== nextLocation.pathname
+      when && currentLocation.pathname !== nextLocation.pathname,
   );
 
   useEffect(() => {

@@ -47,7 +47,7 @@ export function StoryRow({ post, stats, onDelete, onSetVisibility, selected, onT
     <div
       className={cn(
         'grid grid-cols-[28px_minmax(0,1fr)_44px] sm:grid-cols-[28px_minmax(0,1fr)_170px_96px] lg:grid-cols-[28px_minmax(0,1fr)_170px_110px_96px] items-center gap-4 sm:gap-6 p-4 rounded-xl transition-colors border-b border-border/40 last:border-b-0',
-        selected ? 'bg-primary/12' : 'hover:bg-muted/50'
+        selected ? 'bg-primary/12' : 'hover:bg-muted/50',
       )}
     >
       {/* Select Cell */}

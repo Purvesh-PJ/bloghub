@@ -17,7 +17,7 @@ describe('stripMarkdown', () => {
 
   it('keeps a link’s text and drops its target', () => {
     expect(stripMarkdown('See [the docs](https://example.com) for more.')).toBe(
-      'See the docs for more.'
+      'See the docs for more.',
     );
   });
 

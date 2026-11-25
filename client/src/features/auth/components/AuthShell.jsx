@@ -14,7 +14,7 @@ export function AuthHeading({ className, children, ...props }) {
     <h1
       className={cn(
         'text-3xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight',
-        className
+        className,
       )}
       {...props}
     >
@@ -44,7 +44,7 @@ export function AuthFooter({ className, children, ...props }) {
     <p
       className={cn(
         'text-sm text-muted-foreground [&_a]:text-primary [&_a]:font-medium hover:[&_a]:underline hover:[&_a]:underline-offset-4',
-        className
+        className,
       )}
       {...props}
     >

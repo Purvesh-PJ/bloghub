@@ -47,7 +47,7 @@ export function Input({
             icon && 'pl-10',
             error &&
               'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20',
-            className
+            className,
           )}
           {...props}
         />
@@ -57,7 +57,7 @@ export function Input({
           id={messageId}
           className={cn(
             'text-xs pl-1 font-normal',
-            error ? 'text-destructive font-medium' : 'text-muted-foreground'
+            error ? 'text-destructive font-medium' : 'text-muted-foreground',
           )}
         >
           {error || hint}
@@ -103,7 +103,7 @@ export function TextArea({
           'disabled:cursor-not-allowed disabled:opacity-50',
           error &&
             'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20',
-          className
+          className,
         )}
         {...props}
       />
@@ -112,7 +112,7 @@ export function TextArea({
           id={messageId}
           className={cn(
             'text-xs pl-1 font-normal',
-            error ? 'text-destructive font-medium' : 'text-muted-foreground'
+            error ? 'text-destructive font-medium' : 'text-muted-foreground',
           )}
         >
           {error || hint}
@@ -127,7 +127,7 @@ export function Eyebrow({ className, children, ...props }) {
     <span
       className={cn(
         'text-xs font-semibold tracking-wider uppercase text-muted-foreground select-none',
-        className
+        className,
       )}
       {...props}
     >
@@ -181,7 +181,7 @@ export function SearchInput({
           'disabled:cursor-not-allowed disabled:opacity-50',
           '[&::-webkit-search-cancel-button]:hidden',
           density === 'compact' ? 'h-9 text-xs' : 'h-10 text-sm',
-          className
+          className,
         )}
         {...props}
       />

@@ -36,7 +36,7 @@ describe('ThemeProvider', () => {
     render(
       <ThemeProvider>
         <ThemeConsumer />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     expect(screen.getByTestId('theme-preference')).toHaveTextContent('system');
@@ -47,7 +47,7 @@ describe('ThemeProvider', () => {
     render(
       <ThemeProvider>
         <ThemeConsumer />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     await user.click(screen.getByRole('button', { name: 'Set Dark' }));
@@ -64,7 +64,7 @@ describe('ThemeProvider', () => {
     render(
       <ThemeProvider>
         <ThemeConsumer />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     await user.click(screen.getByRole('button', { name: 'Set Dark' }));

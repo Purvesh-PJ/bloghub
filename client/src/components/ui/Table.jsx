@@ -19,7 +19,7 @@ function TableHead({ children, className, ...props }) {
     <thead
       className={cn(
         '[&_th]:px-6 [&_th]:py-3.5 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-muted-foreground [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border/40',
-        className
+        className,
       )}
       {...props}
     >
@@ -33,7 +33,7 @@ function TableBody({ children, className, ...props }) {
     <tbody
       className={cn(
         '[&_tr]:transition-colors [&_tr:hover]:bg-muted/50 [&_tr+tr_td]:border-t [&_tr+tr_td]:border-border/30 [&_td]:px-6 [&_td]:py-4 [&_td]:text-sm [&_td]:text-muted-foreground [&_td]:align-middle [&_td:first-child]:font-medium [&_td:first-child]:text-foreground',
-        className
+        className,
       )}
       {...props}
     >

@@ -48,7 +48,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Sends the session to the login screen on protected routes. Called from a single place so that every way a
@@ -118,7 +118,7 @@ api.interceptors.response.use(
       endSession();
       return Promise.reject(refreshError);
     }
-  }
+  },
 );
 
 export default api;

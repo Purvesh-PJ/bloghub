@@ -183,7 +183,7 @@ export function Settings() {
                   'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors text-left whitespace-nowrap cursor-pointer select-none',
                   isActive
                     ? 'bg-primary/12 text-primary font-semibold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted',
                 )}
               >
                 <item.icon className="w-4 h-4 shrink-0" />

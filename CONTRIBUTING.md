@@ -36,7 +36,7 @@ We follow standard GitHub flow:
    npm run format:check       # Prettier code formatting check
    npm test                   # Runs full test suite (340+ tests: backend + client)
    ```
-   *For design system and UI token guidelines, consult the **[Design System Guide](docs/DESIGN_SYSTEM.md)**.*
+   _For design system and UI token guidelines, consult the **[Design System Guide](docs/DESIGN_SYSTEM.md)**._
 
 ---
 

@@ -4,10 +4,10 @@
 
 Security updates are maintained on the `main` branch.
 
-| Version | Supported |
-| :-- | :-- |
-| `main` / `v1.0.x` | Yes |
-| Older commits | No |
+| Version           | Supported |
+| :---------------- | :-------- |
+| `main` / `v1.0.x` | Yes       |
+| Older commits     | No        |
 
 ## Reporting a vulnerability
 

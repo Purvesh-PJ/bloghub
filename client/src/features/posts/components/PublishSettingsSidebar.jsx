@@ -69,7 +69,7 @@ export function PublishSettingsSidebar({
                   'flex items-start gap-3 p-3 rounded-xl text-left transition-colors cursor-pointer select-none',
                   isActive
                     ? 'bg-primary/12 text-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                 )}
               >
                 <option.icon className="w-4 h-4 shrink-0 mt-0.5" />

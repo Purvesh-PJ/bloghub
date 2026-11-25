@@ -44,17 +44,17 @@ We adopted a **3-Tier UI Architecture** and established a canonical **Composed P
 
 ### The 9 Canonical Composed Patterns
 
-| Pattern | Responsibility | Base Primitives Used |
-| :--- | :--- | :--- |
-| **`PageHeader`** | Standardized page heading (`h1`), description, badge, and action button slots. | Typography, `Button`, `Badge` |
-| **`DataTableCard`** | Tabular container encapsulating surface, overflow handling, table body, and pagination footer. | `Card`, `Table`, `Pagination` |
-| **`DataView`** | Unified async data lifecycle state machine (loading skeleton, error retry, empty, content). | `EmptyState`, `ErrorState`, `TableSkeleton` |
-| **`FilterToolbar`** | Responsive toolbar integrating filter chips, sort select, and search input. | `Card`, `Chip`, `Select`, `SearchInput` |
-| **`StatsGrid`** | Telemetry metrics grid (2, 3, 4, 5 columns) with skeleton placeholders. | `Card`, `StatTile`, `Skeleton` |
-| **`SettingSection`** | Settings card wrapper with title, description, `Alert` notice, and action footer. | `Card`, `Alert`, `Button` |
-| **`ChoiceGrid`** | Accessible visual radio selector for modes and choices using card primitives. | `Card (as="button")`, `Check` |
-| **`ConfirmDialog`** | Standardized modal confirmation dialog with danger/confirm busy states. | `Modal`, `Button` |
-| **`BulkActionBar`** | Floating selection toolbar for multi-select batch operations. | `Surface`, `Button` |
+| Pattern              | Responsibility                                                                                 | Base Primitives Used                        |
+| :------------------- | :--------------------------------------------------------------------------------------------- | :------------------------------------------ |
+| **`PageHeader`**     | Standardized page heading (`h1`), description, badge, and action button slots.                 | Typography, `Button`, `Badge`               |
+| **`DataTableCard`**  | Tabular container encapsulating surface, overflow handling, table body, and pagination footer. | `Card`, `Table`, `Pagination`               |
+| **`DataView`**       | Unified async data lifecycle state machine (loading skeleton, error retry, empty, content).    | `EmptyState`, `ErrorState`, `TableSkeleton` |
+| **`FilterToolbar`**  | Responsive toolbar integrating filter chips, sort select, and search input.                    | `Card`, `Chip`, `Select`, `SearchInput`     |
+| **`StatsGrid`**      | Telemetry metrics grid (2, 3, 4, 5 columns) with skeleton placeholders.                        | `Card`, `StatTile`, `Skeleton`              |
+| **`SettingSection`** | Settings card wrapper with title, description, `Alert` notice, and action footer.              | `Card`, `Alert`, `Button`                   |
+| **`ChoiceGrid`**     | Accessible visual radio selector for modes and choices using card primitives.                  | `Card (as="button")`, `Check`               |
+| **`ConfirmDialog`**  | Standardized modal confirmation dialog with danger/confirm busy states.                        | `Modal`, `Button`                           |
+| **`BulkActionBar`**  | Floating selection toolbar for multi-select batch operations.                                  | `Surface`, `Button`                         |
 
 ---
 
@@ -69,10 +69,12 @@ We adopted a **3-Tier UI Architecture** and established a canonical **Composed P
 ## 4. Consequences
 
 ### Positive
+
 - **Drastic Boilerplate Reduction:** Screens like `Stories.jsx` and `Tags.jsx` shrank by 30-40% while gaining consistent accessibility.
 - **Single Source of Truth:** A change to loading skeleton styles or error recovery propagates across the entire application instantly.
 - **Enforced via `AGENTS.md`:** Future agentic coding and human contributors are bound by strict design system composition rules.
 
 ### Trade-offs / Neutral
+
 - Developers must check `src/components/patterns/` before implementing new views rather than inventing ad-hoc layouts.
 - Slight learning curve for understanding the boundary between generic patterns (Tier 2) and domain feature components (Tier 3).

@@ -23,7 +23,7 @@ vi.mock('axios', () => {
   // callable as well as carry the interceptor registry.
   const callable = Object.assign(
     vi.fn(() => Promise.resolve({ replayed: true })),
-    instance
+    instance,
   );
 
   return {
@@ -151,7 +151,7 @@ describe('response interceptor', () => {
     postMock.mockRejectedValue(refreshFailure);
 
     await expect(onRejected(unauthorized({ headers: {}, url: '/posts' }))).rejects.toBe(
-      refreshFailure
+      refreshFailure,
     );
     expect(authState.isAuthenticated).toBe(false);
   });

@@ -86,7 +86,7 @@ export const ThemeProvider = ({ children }) => {
       toggleTheme,
       setTheme,
     }),
-    [mode, preference, toggleTheme, setTheme]
+    [mode, preference, toggleTheme, setTheme],
   );
 
   return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;

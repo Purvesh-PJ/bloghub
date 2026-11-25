@@ -45,7 +45,7 @@ export function ChoiceGrid({
               'relative flex flex-col items-center gap-3 text-center select-none cursor-pointer transition-all',
               isActive
                 ? 'border-primary ring-1 ring-primary text-primary shadow-sm'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground',
             )}
           >
             {isActive && (

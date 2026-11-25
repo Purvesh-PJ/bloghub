@@ -26,14 +26,14 @@ export function BulkActionBar({
         isBanner
           ? 'flex items-center gap-2 flex-wrap p-3 px-5 mb-4 rounded-2xl bg-primary/12 border border-primary/20'
           : 'fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-card border border-border shadow-2xl backdrop-blur-xl animate-in fade-in-0 slide-in-from-bottom-4 duration-200 flex-wrap justify-center',
-        className
+        className,
       )}
     >
       <span
         className={cn(
           isBanner
             ? 'text-sm font-semibold text-primary mr-auto'
-            : 'text-xs font-semibold text-foreground whitespace-nowrap'
+            : 'text-xs font-semibold text-foreground whitespace-nowrap',
         )}
       >
         {label || `${selectedCount} selected`}

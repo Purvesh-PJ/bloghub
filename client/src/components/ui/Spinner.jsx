@@ -9,7 +9,7 @@ export function Spinner({ size = '20px', color, className, ...props }) {
       aria-label="Loading"
       className={cn(
         'inline-block rounded-full border-2 border-current border-r-transparent animate-spin opacity-90',
-        className
+        className,
       )}
       style={{
         width: pixelSize,

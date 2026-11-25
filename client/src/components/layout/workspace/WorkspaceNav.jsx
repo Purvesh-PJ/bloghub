@@ -9,7 +9,7 @@ const navItemClass = (active) =>
       ? 'bg-primary/12 text-primary font-semibold before:content-[""] before:absolute before:-left-2 before:top-1/4 before:bottom-1/4 before:w-1 before:rounded-full before:bg-primary'
       : 'text-muted-foreground hover:text-foreground hover:bg-muted',
     '[&>svg]:shrink-0 [&>svg]:h-4 [&>svg]:w-4',
-    active ? '[&>svg]:text-primary' : '[&>svg]:text-muted-foreground'
+    active ? '[&>svg]:text-primary' : '[&>svg]:text-muted-foreground',
   );
 
 /**
@@ -42,7 +42,7 @@ export function WorkspaceNav({
             <span
               className={cn(
                 'text-caption font-bold uppercase tracking-wider text-muted-foreground px-3 pb-1 select-none',
-                idx === 0 ? 'pt-2' : 'pt-4'
+                idx === 0 ? 'pt-2' : 'pt-4',
               )}
             >
               {section.title}

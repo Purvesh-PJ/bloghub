@@ -242,8 +242,8 @@ describe('Admin posts', () => {
 
     await waitFor(() =>
       expect(postService.getAllPosts).toHaveBeenCalledWith(
-        expect.objectContaining({ visibility: 'draft', page: 1 })
-      )
+        expect.objectContaining({ visibility: 'draft', page: 1 }),
+      ),
     );
   });
 
@@ -264,9 +264,9 @@ describe('Admin posts', () => {
     await waitFor(
       () =>
         expect(postService.getAllPosts).toHaveBeenCalledWith(
-          expect.objectContaining({ q: 'hydro' })
+          expect.objectContaining({ q: 'hydro' }),
         ),
-      { timeout: 2000 }
+      { timeout: 2000 },
     );
   });
 

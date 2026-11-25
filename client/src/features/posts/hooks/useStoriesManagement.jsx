@@ -103,7 +103,7 @@ export function useStoriesManagement() {
   const statsByPost = useMemo(() => {
     const map = new Map();
     (analyticsData?.data?.postsAnalytics ?? []).forEach((entry) =>
-      map.set(String(entry.postId), entry)
+      map.set(String(entry.postId), entry),
     );
     return map;
   }, [analyticsData]);
@@ -114,7 +114,7 @@ export function useStoriesManagement() {
 
   const toggleSelected = (id) =>
     setSelectedIds((current) =>
-      current.includes(id) ? current.filter((value) => value !== id) : [...current, id]
+      current.includes(id) ? current.filter((value) => value !== id) : [...current, id],
     );
 
   const resetToFirstPage = (apply) => {

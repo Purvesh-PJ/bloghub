@@ -20,7 +20,7 @@ export function EmptyState({
       radius="xl"
       className={cn(
         'flex flex-col items-center text-center gap-4 py-12 px-6 sm:py-16 sm:px-8',
-        className
+        className,
       )}
     >
       {IconComponent && (

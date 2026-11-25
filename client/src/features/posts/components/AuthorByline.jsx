@@ -54,7 +54,7 @@ export function AuthorByline({
     <div
       className={cn(
         'flex items-center gap-2 text-xs text-muted-foreground min-w-0 select-none flex-wrap',
-        className
+        className,
       )}
     >
       <Avatar src={avatarUrl} name={displayName} size={size ?? 'xs'} />

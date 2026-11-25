@@ -19,7 +19,7 @@ export function ReadRateBar({ views = 0, reads = 0, rate, size = 'sm', showLegen
       <div
         className={cn(
           'relative w-full rounded-full bg-muted overflow-hidden',
-          size === 'sm' ? 'h-1.5' : 'h-2.5'
+          size === 'sm' ? 'h-1.5' : 'h-2.5',
         )}
       >
         <div

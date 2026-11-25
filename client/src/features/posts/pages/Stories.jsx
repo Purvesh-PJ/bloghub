@@ -126,7 +126,7 @@ export function Stories() {
                 setSelectedIds(
                   allOnPageSelected
                     ? selectedIds.filter((id) => !visibleIds.includes(id))
-                    : [...new Set([...selectedIds, ...visibleIds])]
+                    : [...new Set([...selectedIds, ...visibleIds])],
                 )
               }
               aria-label="Select every story on this page"

@@ -57,7 +57,7 @@ describe('AuthContext and authState', () => {
     render(
       <AuthProvider>
         <AuthConsumer />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     expect(screen.getByTestId('auth-status')).toHaveTextContent('guest');
@@ -75,7 +75,7 @@ describe('AuthContext and authState', () => {
     render(
       <AuthProvider>
         <AuthConsumer />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     expect(screen.getByTestId('auth-status')).toHaveTextContent('authenticated');
@@ -88,7 +88,7 @@ describe('AuthContext and authState', () => {
     render(
       <AuthProvider>
         <AuthConsumer />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await user.click(screen.getByRole('button', { name: 'Sign In Admin' }));
@@ -108,7 +108,7 @@ describe('AuthContext and authState', () => {
     render(
       <AuthProvider>
         <AuthConsumer />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await user.click(screen.getByRole('button', { name: 'Sign In Regular' }));
@@ -123,7 +123,7 @@ describe('AuthContext and authState', () => {
     render(
       <AuthProvider>
         <AuthConsumer />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await user.click(screen.getByRole('button', { name: 'Sign In Admin' }));
@@ -136,7 +136,7 @@ describe('AuthContext and authState', () => {
         expect(screen.getByTestId('auth-status')).toHaveTextContent('guest');
         expect(screen.getByTestId('username')).toHaveTextContent('none');
       },
-      { timeout: 3000 }
+      { timeout: 3000 },
     );
 
     const stored = JSON.parse(localStorage.getItem('auth-storage'));

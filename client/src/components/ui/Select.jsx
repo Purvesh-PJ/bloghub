@@ -38,7 +38,7 @@ export function Select({
             'data-[placeholder]:text-muted-foreground',
             density === 'compact' ? 'h-9' : 'h-10',
             error ? 'border-destructive focus-visible:ring-destructive' : 'border-border',
-            className
+            className,
           )}
         >
           <RadixSelect.Value placeholder={placeholder} />
@@ -62,7 +62,7 @@ export function Select({
                   className={cn(
                     'relative flex h-8.5 items-center gap-2 rounded-lg px-2.5 pr-8 text-sm cursor-pointer select-none outline-none transition-colors duration-100',
                     'focus:bg-primary/10 focus:text-primary',
-                    'data-[disabled]:pointer-events-none data-[disabled]:opacity-50'
+                    'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
                   )}
                 >
                   <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>

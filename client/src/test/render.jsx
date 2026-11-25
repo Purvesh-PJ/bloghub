@@ -44,7 +44,7 @@ export function renderWithProviders(ui, { route = '/', path = '*', user = null }
           </MemoryRouter>
         </ThemeProvider>
       </AuthProvider>
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
 
   return { ...result, queryClient };

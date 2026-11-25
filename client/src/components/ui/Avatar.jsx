@@ -28,7 +28,7 @@ const avatarVariants = cva(
       size: 'md',
       shape: 'circle',
     },
-  }
+  },
 );
 
 const initialsFrom = (name) =>
@@ -63,7 +63,7 @@ export const Avatar = React.forwardRef(
         </RadixAvatar.Fallback>
       </RadixAvatar.Root>
     );
-  }
+  },
 );
 
 Avatar.displayName = 'Avatar';

@@ -15,7 +15,7 @@ const List = React.forwardRef(({ className, ...props }, ref) => (
     ref={ref}
     className={cn(
       'flex items-center gap-1 border-b border-border overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-      className
+      className,
     )}
     {...props}
   />
@@ -32,7 +32,7 @@ const Trigger = React.forwardRef(({ className, ...props }, ref) => (
       'after:content-[""] after:absolute after:-bottom-px after:left-0 after:right-0 after:h-0.5 after:bg-transparent after:transition-colors',
       'data-[state=active]:after:bg-primary',
       'disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-      className
+      className,
     )}
     {...props}
   />
@@ -44,7 +44,7 @@ const Content = React.forwardRef(({ className, ...props }, ref) => (
     ref={ref}
     className={cn(
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-      className
+      className,
     )}
     {...props}
   />

@@ -11,6 +11,7 @@
 BlogHub currently has comprehensive functional tests (backend Jest unit and integration suites with in-memory MongoDB; client Vitest and React Testing Library suites) and static code checks (ESLint 9, custom design system token lint rules, Prettier).
 
 However, functional tests only prove correctness under single-user, isolated test conditions. They do not address non-functional production requirements:
+
 - Asset bundle size and client loading latency.
 - Backend throughput and P95/P99 latency under concurrent traffic.
 - Automated CI quality gates on PRs.
@@ -24,6 +25,7 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
 ## 2. Evaluated Tooling Options
 
 ### Option 1: Frontend Performance & Bundle Size (Implemented & Active)
+
 - **Problem:** Rich markdown editor (`@uiw/react-md-editor`), syntax highlighter (`rehype-prism-plus`), and Radix primitives can inflate client bundle size, slowing initial page load on mobile devices.
 - **Tools Implemented:**
   - `rollup-plugin-visualizer`: Generates interactive HTML bundle treemaps via `npm run build:analyze` (`client/dist/stats.html`).
@@ -37,6 +39,7 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
 - **Execution Target:** **Completed**. Integrated into root and client scripts.
 
 ### Option 2: Backend Concurrency & Load Testing (Implemented & Active)
+
 - **Problem:** MongoDB query latency, aggregation bottlenecks, and rate-limiter behaviors are unverified under concurrent load.
 - **Tools Implemented:**
   - `autocannon`: Fast Node-based HTTP benchmarking tool integrated with an isolated, hermetic ephemeral server runner (`backend/scripts/load-test.js`) executed via `npm run test:load`.
@@ -47,16 +50,19 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
 - **Execution Target:** **Completed**. Integrated into root and backend scripts.
 
 ### Option 3: Pre-Commit & Pre-Push Local Git Hooks (Next Target)
+
 - **Problem:** Developers can accidentally commit unformatted files or broken tests.
 - **Candidate Tools:** `husky` + `lint-staged`.
 - **Execution Target:** Step 3 (Immediate).
 
 ### Option 4: End-to-End (E2E) Browser Testing
+
 - **Problem:** RTL + JSDOM cannot test real browser layout rendering, cross-route browser cookies, or network interruption recovery.
 - **Candidate Tools:** **Playwright** (multi-browser headless automation).
 - **Execution Target:** Step 4.
 
 ### Option 5: Production Observability & Error Telemetry (Implemented & Active)
+
 - **Problem:** Express previously relied on synchronous `console.log` and lacked machine-readable logs, request tracing, and automated PII redaction.
 - **Tools Implemented:**
   - `pino` & `pino-http`: High-throughput asynchronous JSON logging (`backend/utils/logger.js`, `backend/middlewares/requestLogger.js`).
@@ -67,6 +73,7 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
 - **Execution Target:** **Completed**. Integrated across backend middlewares, errors, and configuration.
 
 ### Option 6: Automated Security & Dependency Scanning (Implemented & Active)
+
 - **Problem:** Vulnerable packages or outdated dependencies could introduce security exploits into release branches.
 - **Tools Implemented:**
   - `npm run audit`: Root and workspace security vulnerability scanning across backend and client.
@@ -74,11 +81,13 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
 - **Execution Target:** **Completed**. Integrated into root scripts and package management.
 
 ### Option 7: Database Query Profiling
+
 - **Problem:** Complex aggregations in post analytics and activity feeds lack automated slow-query detection.
 - **Candidate Tools:** MongoDB built-in profiler + automated query explain tests.
 - **Execution Target:** Step 7.
 
 ### Option 8: CI/CD Automated Quality Gates (Final Integration)
+
 - **Problem:** Pull requests have no automated verification until pipeline is deployed.
 - **Candidate Tools:** GitHub Actions workflow (`.github/workflows/ci.yml`) running `lint`, `format:check`, `test`, `size`, and `build`.
 - **Execution Target:** Step 8 (Final step, integrating all preceding tools).
@@ -110,9 +119,11 @@ Implementing all non-functional tools simultaneously is impractical. We need a s
 ## 4. Consequences
 
 ### Positive
+
 - Prevents over-engineering by tackling one non-functional concern at a time.
 - Gives the team a persistent reference for all planned production tools.
 - Immediate visibility into client bundle health before deploying production assets.
 
 ### Negative / Trade-offs
+
 - Until all steps complete, certain gaps (such as lack of PR CI automation) remain temporarily manual.

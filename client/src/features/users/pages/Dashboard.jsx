@@ -55,7 +55,7 @@ export function Dashboard() {
         .filter((entry) => (entry.views || 0) > 0)
         .sort((a, b) => (b.readRate || 0) - (a.readRate || 0))
         .slice(0, 4),
-    [analytics]
+    [analytics],
   );
 
   const firstName = user?.username?.split(' ')[0] || user?.username || 'Creator';

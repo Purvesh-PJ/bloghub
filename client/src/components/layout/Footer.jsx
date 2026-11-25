@@ -86,7 +86,7 @@ export function Footer() {
                     className={cn(
                       'text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-150 select-none',
                       'bg-card text-muted-foreground border-none shadow-none',
-                      'hover:bg-primary/10 hover:text-primary hover:-translate-y-0.5'
+                      'hover:bg-primary/10 hover:text-primary hover:-translate-y-0.5',
                     )}
                   >
                     #{topic.name}
