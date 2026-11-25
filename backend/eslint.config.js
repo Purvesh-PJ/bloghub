@@ -1,5 +1,3 @@
-const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
-
 module.exports = [
   // =========================================================================
   // 1. Global Ignores
@@ -9,12 +7,7 @@ module.exports = [
   },
 
   // =========================================================================
-  // 2. Prebuilt Presets (Prettier Integration)
-  // =========================================================================
-  eslintPluginPrettierRecommended,
-
-  // =========================================================================
-  // 3. Node.js & CommonJS Environment
+  // 2. Node.js & CommonJS Environment
   // =========================================================================
   {
     languageOptions: {
@@ -35,7 +28,7 @@ module.exports = [
   },
 
   // =========================================================================
-  // 4. Project Rules (JS Safety, Backend Security, Formatting)
+  // 3. Project Rules (JS Safety, Backend Security & Async Guarantees)
   // =========================================================================
   {
     rules: {
@@ -54,9 +47,6 @@ module.exports = [
       'no-implied-eval': 'error',
       'no-async-promise-executor': 'error',
       'no-promise-executor-return': 'error',
-
-      // Formatting
-      'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
 ];
