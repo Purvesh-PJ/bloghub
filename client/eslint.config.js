@@ -96,11 +96,24 @@ export default [
             },
             {
               element: 'input',
-              message: 'Use <Input> from components/ui/ instead of raw <input>.',
+              message:
+                'Use <Input>, <SearchInput>, or <Checkbox> from components/ui/ instead of raw <input>.',
             },
             {
               element: 'select',
               message: 'Use <Select> from components/ui/ instead of raw <select>.',
+            },
+            {
+              element: 'textarea',
+              message: 'Use <TextArea> from components/ui/ instead of raw <textarea>.',
+            },
+            {
+              element: 'table',
+              message: 'Use <Table> from components/ui/ instead of raw <table>.',
+            },
+            {
+              element: 'dialog',
+              message: 'Use <Dialog> or <Modal> from components/ui/ instead of raw <dialog>.',
             },
           ],
         },

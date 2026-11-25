@@ -60,7 +60,7 @@ A custom ESLint plugin (`design-system/enforce-tokens`, configured in `client/es
 - arbitrary bracket values, such as `[#1a202c]` or `[hsl(...)]`;
 - arbitrary sizes and radii, such as `rounded-[8px]` or `text-[14px]`.
 
-Outside `client/src/components/ui/`, `react/forbid-elements` warns on raw `<button>`, `<input>`, and `<select>` elements so Tier 1 primitives are used instead.
+Outside `client/src/components/ui/`, `react/forbid-elements` warns on raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<table>`, and `<dialog>` elements so Tier 1 primitives are used instead.
 
 To check:
 
