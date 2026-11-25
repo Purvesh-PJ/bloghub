@@ -59,6 +59,7 @@ The client and the API are separate and talk only through a JSON REST API. The d
 | [Testing](docs/TESTING.md)               | Test suites, in-memory DB setup, and commands                              |
 | [Quality & Audits](docs/QUALITY.md)      | Linting, formatting, bundle budgets, and Lighthouse checks                 |
 | [Deployment](docs/DEPLOYMENT.md)         | Production build, proxy setup, and health checks                           |
+| [Releasing](docs/RELEASING.md)           | Step-by-step checklist for versioning and releases                         |
 | [Architecture](ARCHITECTURE.md)          | System structure and how a request flows through it                        |
 | [Database](docs/DATABASE.md)             | Connection, migrations, seeding, and health checks                         |
 | [Data Model](docs/DATA_MODEL.md)         | Collections, relationships, and indexes                                    |
