@@ -8,6 +8,7 @@ Write in a live Markdown studio, explore a trending feed powered by genuine read
 
 [**Live Demo**](https://bloghub-gold.vercel.app/) · [Architecture](ARCHITECTURE.md) · [API Reference](docs/API.md) · [Development](docs/DEVELOPMENT.md)
 
+[![CI](https://github.com/Purvesh-PJ/bloghub/actions/workflows/ci.yml/badge.svg)](https://github.com/Purvesh-PJ/bloghub/actions/workflows/ci.yml)
 [![License: All Rights Reserved](https://img.shields.io/badge/License-All_Rights_Reserved-lightgrey.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
