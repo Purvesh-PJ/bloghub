@@ -5,11 +5,17 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 import globals from 'globals';
 import designSystem from './eslint-rules/design-system.js';
 
-export default [
-  { ignores: ['dist/**', 'node_modules/**'] },
-  js.configs.recommended,
+const APP_FILES = ['src/**/*.{js,jsx}'];
 
-  // Config and tooling files run in Node, not the browser.
+export default [
+  // =========================================================================
+  // 1. Global Ignores
+  // =========================================================================
+  { ignores: ['dist/**', 'node_modules/**'] },
+
+  // =========================================================================
+  // 2. Node Tooling & Config Environment
+  // =========================================================================
   {
     files: ['*.config.{js,cjs,mjs}', 'eslint-rules/**/*.js'],
     languageOptions: {
@@ -19,9 +25,12 @@ export default [
     },
   },
 
-  // Application source.
+  // =========================================================================
+  // 3. Prebuilt Presets (Core JS, React, Hooks, Accessibility)
+  // =========================================================================
+  js.configs.recommended,
   {
-    files: ['src/**/*.{js,jsx}'],
+    files: APP_FILES,
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -44,7 +53,15 @@ export default [
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react/no-unescaped-entities': 'off',
+    },
+  },
 
+  // =========================================================================
+  // 4. Project Rules (JS Safety, React Guarantees, Size & Complexity)
+  // =========================================================================
+  {
+    files: APP_FILES,
+    rules: {
       // React safety & state guarantees
       'react-hooks/exhaustive-deps': 'error',
       'react-hooks/set-state-in-effect': 'error',
@@ -70,16 +87,21 @@ export default [
         { max: 150, skipBlankLines: true, skipComments: true, IIFEs: false },
       ],
       complexity: ['warn', 15],
+    },
+  },
 
-      // Design system & UI consistency
+  // =========================================================================
+  // 5. Custom Design System Rules (Tokens, Sizing, Tier-1 Primitives)
+  // =========================================================================
+  {
+    files: APP_FILES,
+    rules: {
       'design-system/enforce-tokens': 'error',
       'design-system/no-arbitrary-sizing': 'warn',
     },
   },
-
-  // Enforce Tier-1 UI primitives outside src/components/ui/ and tests
   {
-    files: ['src/**/*.{js,jsx}'],
+    files: APP_FILES,
     ignores: [
       'src/components/ui/**',
       'src/components/layout/ErrorBoundary.jsx',
