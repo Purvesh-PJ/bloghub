@@ -54,11 +54,13 @@ Never use raw Tailwind palette colors such as `blue-500` or `slate-900`. Use rol
 
 ## 4. Lint enforcement
 
-A custom ESLint rule (`design-system/enforce-tokens`, configured in `client/eslint.config.js`) fails the build on:
+A custom ESLint plugin (`design-system/enforce-tokens`, configured in `client/eslint.config.js`) fails the build on:
 
 - raw palette colors, such as `bg-blue-600` or `text-slate-500`;
 - arbitrary bracket values, such as `[#1a202c]` or `[hsl(...)]`;
 - arbitrary sizes and radii, such as `rounded-[8px]` or `text-[14px]`.
+
+Outside `client/src/components/ui/`, `react/forbid-elements` warns on raw `<button>`, `<input>`, and `<select>` elements so Tier 1 primitives are used instead.
 
 To check:
 

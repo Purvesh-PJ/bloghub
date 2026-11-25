@@ -76,4 +76,35 @@ export default [
       'design-system/no-arbitrary-sizing': 'warn',
     },
   },
+
+  // Enforce Tier-1 UI primitives outside src/components/ui/ and tests
+  {
+    files: ['src/**/*.{js,jsx}'],
+    ignores: [
+      'src/components/ui/**',
+      'src/components/layout/ErrorBoundary.jsx',
+      'src/**/__tests__/**',
+    ],
+    rules: {
+      'react/forbid-elements': [
+        'warn',
+        {
+          forbid: [
+            {
+              element: 'button',
+              message: 'Use <Button> or <IconButton> from components/ui/ instead of raw <button>.',
+            },
+            {
+              element: 'input',
+              message: 'Use <Input> from components/ui/ instead of raw <input>.',
+            },
+            {
+              element: 'select',
+              message: 'Use <Select> from components/ui/ instead of raw <select>.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];
