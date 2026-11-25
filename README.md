@@ -56,6 +56,7 @@ The client and the API are separate and talk only through a JSON REST API. The d
 | [Development](docs/DEVELOPMENT.md) | Prerequisites, local setup, environment variables, and running dev servers |
 | [API Reference](docs/API.md) | REST endpoints, auth headers, and response shapes |
 | [Testing](docs/TESTING.md) | Test suites, in-memory DB setup, and commands |
+| [Quality & Audits](docs/QUALITY.md) | Linting, formatting, bundle budgets, and Lighthouse checks |
 | [Deployment](docs/DEPLOYMENT.md) | Production build, proxy setup, and health checks |
 | [Architecture](ARCHITECTURE.md) | System structure and how a request flows through it |
 | [Database](docs/DATABASE.md) | Connection, migrations, seeding, and health checks |
