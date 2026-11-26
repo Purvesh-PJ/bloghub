@@ -7,8 +7,12 @@ import { postService } from '../../posts';
 import { useDebounced } from '../../posts/hooks/useDebounced';
 import { Section } from '../../../components/layout/PageShell';
 import { TableSkeleton } from '../../../components/ui';
-import { ConfirmDialog, BulkActionBar } from '../../../components/shared';
-import { FilterToolbar, DataView } from '../../../components/patterns';
+import {
+  ConfirmDialog,
+  BulkActionBar,
+  FilterToolbar,
+  DataView,
+} from '../../../components/patterns';
 import { AdminPostsTable } from '../components/AdminPostsTable';
 import { queryKeys } from '../../../config/queryKeys';
 

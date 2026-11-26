@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { MessageCircle } from 'lucide-react';
 import { Button, Card, TextArea, Avatar, EmptyState } from '../../../components/ui';
-import { ConfirmDialog } from '../../../components/shared';
+import { ConfirmDialog } from '../../../components/patterns';
 
 export function PostCommentsSection({
   comments = [],

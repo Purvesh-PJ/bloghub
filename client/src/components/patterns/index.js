@@ -8,5 +8,5 @@ export { DataView } from './DataView';
 export { SettingSection } from './SettingSection';
 export { StatsGrid } from './StatsGrid';
 export { ChoiceGrid } from './ChoiceGrid';
-export { ConfirmDialog } from '../shared/ConfirmDialog';
-export { BulkActionBar } from '../shared/BulkActionBar';
+export { ConfirmDialog } from './ConfirmDialog';
+export { BulkActionBar } from './BulkActionBar';

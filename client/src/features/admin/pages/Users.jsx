@@ -7,8 +7,7 @@ import { userService } from '../../users';
 import { useAuth } from '../../../features/auth';
 import { Section } from '../../../components/layout/PageShell';
 import { Input, TableSkeleton } from '../../../components/ui';
-import { ConfirmDialog } from '../../../components/shared';
-import { DataView } from '../../../components/patterns';
+import { ConfirmDialog, DataView } from '../../../components/patterns';
 import { AdminUsersTable } from '../components/AdminUsersTable';
 import { queryKeys } from '../../../config/queryKeys';
 

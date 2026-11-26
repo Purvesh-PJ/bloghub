@@ -4,8 +4,12 @@ import { PenLine, Search as SearchIcon } from 'lucide-react';
 import { useStoriesManagement } from '../hooks/useStoriesManagement';
 import { PageShell } from '../../../components/layout/PageShell';
 import { StoryRow } from '../components/StoryRow';
-import { ConfirmDialog, BulkActionBar } from '../../../components/shared';
-import { FilterToolbar, DataView } from '../../../components/patterns';
+import {
+  ConfirmDialog,
+  BulkActionBar,
+  FilterToolbar,
+  DataView,
+} from '../../../components/patterns';
 import { Button, Card, Spinner, TableSkeleton, Pagination, Checkbox } from '../../../components/ui';
 
 const FILTERS = [

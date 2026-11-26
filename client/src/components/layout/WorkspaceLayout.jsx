@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth';
 import { useCurrentUser } from '../../features/users';
-import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { ConfirmDialog } from '../patterns';
 import {
   WorkspaceSidebar,
   WorkspaceHeader,

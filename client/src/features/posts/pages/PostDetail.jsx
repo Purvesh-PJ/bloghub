@@ -19,7 +19,7 @@ import {
 } from '../../../config/markdown';
 import { PageShell } from '../../../components/layout/PageShell';
 import { Button, EmptyState } from '../../../components/ui';
-import { ConfirmDialog } from '../../../components/shared';
+import { ConfirmDialog } from '../../../components/patterns';
 import { PostDetailSkeleton, PostHeader, PostActionBar, PostCommentsSection } from '../components';
 import { queryKeys } from '../../../config/queryKeys';
 

@@ -8,8 +8,7 @@ import { postService } from '../../posts';
 import { commentService } from '../services/commentService';
 import { PageShell } from '../../../components/layout/PageShell';
 import { Button, Card, Select, EmptyState, Skeleton, TableSkeleton } from '../../../components/ui';
-import { ConfirmDialog } from '../../../components/shared';
-import { DataView } from '../../../components/patterns';
+import { ConfirmDialog, DataView } from '../../../components/patterns';
 import { ResponseItem } from '../components/ResponseItem';
 import { queryKeys } from '../../../config/queryKeys';
 
