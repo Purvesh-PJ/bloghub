@@ -22,6 +22,11 @@ Write in a live Markdown studio, explore a trending feed powered by genuine read
 
 </div>
 
+|                         Read                          |                                 Write                                  |                             Moderate                             |
+| :---------------------------------------------------: | :--------------------------------------------------------------------: | :--------------------------------------------------------------: |
+| ![Article reader](client/public/screenshots/post.png) | ![Live Markdown studio](client/public/screenshots/markdown-editor.png) | ![Admin console](client/public/screenshots/admin-workspace.png)  |
+|   Focused 720px reader, themes, comments, and likes   |       Live split-pane Markdown editor with auto-slugs and drafts       | Admin dashboard for stories, tags, users, and session revocation |
+
 ---
 
 ## Key Features
