@@ -3,6 +3,7 @@ const router = express.Router();
 const AuthController = require('../controllers/auth.controllers');
 const AuthUser = require('../middlewares/authenticateUser');
 const { validate } = require('../../../core/validation');
+const { authLimiter } = require('../../../core/security');
 const {
   signUpRules,
   signInRules,
@@ -10,8 +11,8 @@ const {
   changePasswordRules,
 } = require('../validators/auth.validators');
 
-router.post('/signin', signInRules, validate, AuthController.signIn);
-router.post('/signup', signUpRules, validate, AuthController.signUp);
+router.post('/signin', authLimiter, signInRules, validate, AuthController.signIn);
+router.post('/signup', authLimiter, signUpRules, validate, AuthController.signUp);
 router.post('/refreshToken', refreshRules, validate, AuthController.refreshToken);
 
 // Revokes every token issued to the caller. Requires a valid session, since there is nothing
