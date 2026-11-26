@@ -14,6 +14,7 @@ assertEnv();
 
 const { connectDB } = require('./config/db');
 const { errorHandler } = require('./core/errors');
+const { healthRoutes } = require('./core/health');
 const { requestLogger, logger } = require('./core/logging');
 const { generalLimiter } = require('./core/security');
 
@@ -44,24 +45,10 @@ app.use(clientUrl ? cors({ origin: clientUrl, credentials: true }) : cors({ orig
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.json({ limit: '1mb' }));
 
-// Health & readiness probes bypass rate limiters and reveal only liveness/readiness.
-app.get(['/health', '/api/health'], (req, res) => {
-  res.status(200).json({ status: 'ok', uptime: process.uptime() });
-});
+// Health & readiness probes bypass rate limiters
+app.use(healthRoutes);
 
-app.get(['/ready', '/api/ready'], async (req, res) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.status(503).json({ status: 'unavailable' });
-  }
-  try {
-    await mongoose.connection.db.admin().ping();
-    return res.status(200).json({ status: 'ready' });
-  } catch {
-    return res.status(503).json({ status: 'unavailable' });
-  }
-});
-
-// API router
+// API routes
 const router = express.Router();
 router.use(generalLimiter);
 router.use('/posts', postRoutes);
