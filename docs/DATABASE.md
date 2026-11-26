@@ -17,7 +17,7 @@ MONGO_DB_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/bloghub?retryWr
 The connection module (`backend/src/config/db.js`) manages the Mongoose lifecycle:
 
 - Logs connection success, errors, and unexpected disconnections.
-- Handles graceful shutdown on `SIGINT` by closing the database connection cleanly.
+- Handles graceful shutdown on `SIGINT` and `SIGTERM` by draining active requests and closing the database connection cleanly.
 
 ## Seeding & Local Reset
 

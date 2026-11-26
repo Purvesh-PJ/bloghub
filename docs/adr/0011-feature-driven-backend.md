@@ -41,7 +41,9 @@ backend/
 └── src/                          # 100% Application Runtime Source Code
     ├── core/                     # Cross-cutting HTTP & technical infrastructure
     │   ├── errors/               # AppError, errorHandler
+    │   ├── health/               # /health & /ready probes
     │   ├── logging/              # logger, requestLogger
+    │   ├── security/             # generalLimiter, authLimiter
     │   ├── storage/              # Multer memory storage & validation
     │   ├── validation/           # express-validator runner & ObjectId validation
     │   ├── async/                # asyncHandler wrapper
