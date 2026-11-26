@@ -4,6 +4,8 @@ const validation = require('./validation');
 const storage = require('./storage');
 const asyncWrapper = require('./async');
 const utils = require('./utils');
+const health = require('./health');
+const security = require('./security');
 
 module.exports = {
   ...errors,
@@ -12,4 +14,6 @@ module.exports = {
   ...storage,
   ...asyncWrapper,
   ...utils,
+  ...health,
+  ...security,
 };
